@@ -13,3 +13,5 @@
 /Binaries/Assembly-CSharp.dll
 /Binaries/Assembly-CSharp-firstpass.dll
 /Binaries/LogLibrary.dll
+/Mod/obj
+/Viewer/obj
