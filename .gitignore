@@ -1,0 +1,15 @@
+/Build
+/.vs
+/Binaries/mscorlib.dll
+/Binaries/netstandard.dll
+/Binaries/System.dll
+/Binaries/System.Drawing.dll
+/Binaries/System.Xml.dll
+/Binaries/UnityEngine.CoreModule.dll
+/Binaries/UnityEngine.dll
+/Binaries/UnityEngine.IMGUIModule.dll
+/Binaries/UnityEngine.UI.dll
+/Binaries/0Harmony.dll
+/Binaries/Assembly-CSharp.dll
+/Binaries/Assembly-CSharp-firstpass.dll
+/Binaries/LogLibrary.dll
