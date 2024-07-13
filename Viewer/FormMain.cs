@@ -89,16 +89,17 @@ namespace WalkerSim.Viewer
         {
             simulation.Update(simTimer.Interval / 1000.0f);
 
+            // TODO: Add more UI controls for this.
             if (false)
             {
-                if (simulation.Events.Count < 100 && prng.NextDouble() < 0.1)
+                if (simulation.Events.Count < 3 && prng.NextDouble() < 0.01)
                 {
                     var pos = new Vector3((float)(WorldMins.X + (WorldMaxs.X - WorldMins.X) * prng.NextDouble()),
                                           (float)(WorldMins.Y + (WorldMaxs.Y - WorldMins.Y) * prng.NextDouble()),
                                           0f);
                     var radius = 500.0f;
 
-                    simulation.AddNoiseEvent(pos, radius, 15.0f);
+                    simulation.AddNoiseEvent(pos, radius, 2.0f);
                 }
             }
 

@@ -258,14 +258,7 @@ namespace WalkerSim
             }
 
             // Log all variables from noise.
-            /*
-            public float volume;
-            public float duration;
-            public float muffledWhenCrouched;
-            public float heatMapStrength;
-            public ulong heatMapWorldTimeToLive;
-            */
-            Logging.Out("Noise: {0}, Volume: {1}, Duration: {2}, MuffledWhenCrouched: {3}, HeatMapStrength: {4}, HeatMapWorldTimeToLive: {5}",
+            Logging.Debug("Noise: {0}, Volume: {1}, Duration: {2}, MuffledWhenCrouched: {3}, HeatMapStrength: {4}, HeatMapWorldTimeToLive: {5}",
                                clipName,
                                noise.volume,
                                noise.duration,
@@ -275,8 +268,14 @@ namespace WalkerSim
 
             var simulation = Simulation.Instance;
 
-            //var pos = VectorUtils.ToSim(position);
-            //simulation.AddNoiseEvent(VectorUtils.ToSim(position), 500.0f, 15.0f);
+            var sndInfo = SoundInfo.GetSoundInfo(clipName);
+            if (sndInfo == null)
+            {
+                Logging.Debug("Not SoundInfo for: {0}", clipName);
+                return;
+            }
+
+            simulation.AddNoiseEvent(VectorUtils.ToSim(position), sndInfo.Radius, sndInfo.DecayRate);
         }
     }
 }
