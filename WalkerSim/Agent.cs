@@ -20,11 +20,11 @@
         public int Health;
         public State CurrentState;
 
-        public Agent(int index, float x, float y, int group)
+        public Agent(int index, int group)
         {
             Index = index;
             Group = group;
-            Position = new Vector3(x, y);
+            Position = Vector3.Zero;
             Velocity = Vector3.Zero;
             CellIndex = -1;
             CurrentState = State.Wandering;

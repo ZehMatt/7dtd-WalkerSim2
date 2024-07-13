@@ -134,22 +134,12 @@ namespace WalkerSim
             return new Vector3(x, y);
         }
 
-        void Populate()
+        Vector3 GetStartLocation(Vector3[] groupStarts, int index, int groupIndex)
         {
-            agents.Clear();
-
-            _groupCount = MaxAgents / GroupSize;
-
-            Vector3[] groupStartPos = new Vector3[_groupCount];
-            for (int i = 0; i < groupStartPos.Length; i++)
+            // TODO: Make this an option.
+            if (false)
             {
-                groupStartPos[i] = GetRandomPosition();
-            }
-
-            for (int i = 0; i < MaxAgents; i++)
-            {
-                int groupIndex = i / GroupSize;
-                float groupOffset = (i % GroupSize) / (float)GroupSize;
+                float groupOffset = (index % GroupSize) / (float)GroupSize;
 
                 // Spawn in circle.
                 float angle = groupOffset * (float)System.Math.PI * 2.0f;
@@ -157,8 +147,37 @@ namespace WalkerSim
                 float offsetX = (float)System.Math.Cos(angle) * radius;
                 float offsetY = (float)System.Math.Sin(angle) * radius;
 
-                var agent = new Agent(i, 0.0f, 0.0f, groupIndex);
-                agent.Position = groupStartPos[groupIndex] + new Vector3(offsetX, offsetY);
+                return groupStarts[groupIndex] + new Vector3(offsetX, offsetY);
+            }
+            else
+            {
+                // Pick a random position.
+                return GetRandomPosition();
+            }
+        }
+
+        void Populate()
+        {
+            agents.Clear();
+
+            _groupCount = MaxAgents / GroupSize;
+            if (MaxAgents % GroupSize != 0)
+            {
+                _groupCount++;
+            }
+
+            Vector3[] groupStartPos = new Vector3[_groupCount];
+            for (int i = 0; i < groupStartPos.Length; i++)
+            {
+                groupStartPos[i] = GetRandomPosition();
+            }
+
+            for (int index = 0; index < MaxAgents; index++)
+            {
+                int groupIndex = index / GroupSize;
+
+                var agent = new Agent(index, groupIndex);
+                agent.Position = GetStartLocation(groupStartPos, index, groupIndex);
 
                 // Ensure the position is not out of bounds.
                 Warp(agent);
