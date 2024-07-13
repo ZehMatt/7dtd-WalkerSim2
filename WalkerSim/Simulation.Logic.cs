@@ -140,7 +140,7 @@ namespace WalkerSim
                 _windDirTarget.Y = (float)_random.NextDouble() * 2.0f - 1.0f;
 
                 // Pick a random delay for the next change.
-                _nextWindChange = _ticks + _random.Next(2000, 4000);
+                _nextWindChange = _ticks + _random.Next(4000, 6000);
             }
 
             // Approach the target direction.
@@ -377,7 +377,7 @@ namespace WalkerSim
             }
             vel.Validate();
 
-            float speedScale = 20.0f;
+            float speedScale = 1.0f;
 
             var dir = Vector3.Normalize(vel);
             pos += (dir * speedScale) * TickRate;
@@ -421,8 +421,6 @@ namespace WalkerSim
 
             if (agent.Position.Y > WorldMaxs.Y - BorderSize)
                 agent.Position.Y = WorldMins.Y + BorderSize + EdgeDistance;
-
-            //agent.Velocity = agent.Velocity * -1;
         }
 
     }
