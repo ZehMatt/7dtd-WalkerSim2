@@ -6,9 +6,12 @@ namespace WalkerSim
     [HarmonyPatch("StartSpawning")]
     class HordeSpawnHook
     {
-        static bool Prefix(AIWanderingHordeSpawner.SpawnType _spawnType)
+        static bool Prefix(AIDirectorWanderingHordeComponent __instance, AIWanderingHordeSpawner.SpawnType _spawnType)
         {
             Logging.Out("Preventing wandering horde spawn.");
+
+            // Prevent it from running each frame.
+            __instance.SetNextTime(_spawnType, ulong.MaxValue);
 
             // Prevent hordes from spawning.
             return false;
