@@ -46,7 +46,7 @@ namespace WalkerSim
             var worldMins = new Vector3(min.x, min.x, min.y);
             var worldMaxs = new Vector3(max.x, max.x, max.y);
 
-            var zombieCount = 2000;
+            var zombieCount = 4000;
             simulation.Reset(worldMins, worldMaxs, zombieCount);
 
             Logging.Out("Initialized Simulation World, World Size: {0}, {1}; Zombies: {2}", worldMins, worldMaxs, zombieCount);
@@ -167,7 +167,6 @@ namespace WalkerSim
 
             if (isPaused)
             {
-                Logging.Out("Game is paused");
                 return;
             }
 
