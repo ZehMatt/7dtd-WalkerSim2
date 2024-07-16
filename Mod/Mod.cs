@@ -46,7 +46,7 @@ namespace WalkerSim
             var worldMins = new Vector3(min.x, min.x, min.y);
             var worldMaxs = new Vector3(max.x, max.x, max.y);
 
-            var zombieCount = 4000;
+            var zombieCount = 8000;
             simulation.Reset(worldMins, worldMaxs, zombieCount);
 
             Logging.Out("Initialized Simulation World, World Size: {0}, {1}; Zombies: {2}", worldMins, worldMaxs, zombieCount);
@@ -80,6 +80,14 @@ namespace WalkerSim
             LoadMapData();
 
             var simulation = Simulation.Instance;
+
+            Logging.Out("Spinning up simulation...");
+            for (int i = 0; i < 5000; i++)
+            {
+                simulation.Tick();
+            }
+
+            Logging.Out("done, starting simulation.");
             simulation.Start();
         }
 

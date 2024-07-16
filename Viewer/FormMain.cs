@@ -15,7 +15,7 @@ namespace WalkerSim.Viewer
         static readonly Vector3 WorldMins = new Vector3(-(WorldSizeX * 0.5f), -(WorldSizeY * 0.5f), 0);
         static readonly Vector3 WorldMaxs = new Vector3(WorldSizeX * 0.5f, WorldSizeY * 0.5f, 256);
 
-        static readonly int MaxAgents = 4000;
+        static readonly int MaxAgents = 8000;
 
         Simulation simulation = Simulation.Instance;
         Random prng = new Random(1);
@@ -58,24 +58,34 @@ namespace WalkerSim.Viewer
 
             simulation.LoadMapData(@"G:\Steam\steamapps\common\7 Days To Die\Data\Worlds\Navezgane");
 
-            // Add a few fake players.
-            var prng = new System.Random(1);
-            for (var i = 0; i < 10; i++)
+            var addFakePlayers = false;
+            if (addFakePlayers)
             {
-                // Select random position between world min and max.
-                var x = (float)(WorldMins.X + (WorldMaxs.X - WorldMins.X) * prng.NextDouble());
-                var y = (float)(WorldMins.Y + (WorldMaxs.Y - WorldMins.Y) * prng.NextDouble());
-                var z = 0f;
+                // Add a few fake players.
+                var prng = new System.Random(1);
+                for (var i = 0; i < 10; i++)
+                {
+                    // Select random position between world min and max.
+                    var x = (float)(WorldMins.X + (WorldMaxs.X - WorldMins.X) * prng.NextDouble());
+                    var y = (float)(WorldMins.Y + (WorldMaxs.Y - WorldMins.Y) * prng.NextDouble());
+                    var z = 0f;
 
-                var maxViewDistance = 12; // GamePrefs.GetInt(EnumGamePrefs.ServerMaxAllowedViewDistance);
-                var viewRadius = (maxViewDistance * 16) / 2;
+                    var maxViewDistance = 12; // GamePrefs.GetInt(EnumGamePrefs.ServerMaxAllowedViewDistance);
+                    var viewRadius = (maxViewDistance * 16) / 2;
 
-                simulation.AddPlayer(i, new Vector3(x, y, z), viewRadius);
+                    simulation.AddPlayer(i, new Vector3(x, y, z), viewRadius);
+                }
+
             }
 
             GenerateColorTable();
 
             simTimer.Start();
+
+            for (int i = 0; i < 3000; i++)
+            {
+                simulation.Tick();
+            }
 
             simulation.Start();
 
@@ -90,7 +100,8 @@ namespace WalkerSim.Viewer
             simulation.Update(simTimer.Interval / 1000.0f);
 
             // TODO: Add more UI controls for this.
-            if (false)
+            var fakeGunshots = true;
+            if (fakeGunshots)
             {
                 if (simulation.Events.Count < 3 && prng.NextDouble() < 0.01)
                 {

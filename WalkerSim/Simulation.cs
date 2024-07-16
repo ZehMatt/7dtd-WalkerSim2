@@ -23,8 +23,10 @@ namespace WalkerSim
 
         public float TimeScale = 1.0f;
         public int MaxAgents = 0;
+        public uint SlowIterator = 0;
         public readonly float TickRate = 1f / 40f;
-        public readonly int GroupSize = 4;
+
+        public readonly int GroupSize = 6;
 
         private float _accumulator = 0f;
         private int _ticks = 0;
@@ -86,6 +88,7 @@ namespace WalkerSim
             WorldMins = worldMins;
             WorldMaxs = worldMaxs;
             MaxAgents = maxAgents;
+            SlowIterator = 0;
 
             SetupGrid();
             Populate();
@@ -137,7 +140,7 @@ namespace WalkerSim
         Vector3 GetStartLocation(Vector3[] groupStarts, int index, int groupIndex)
         {
             // TODO: Make this an option.
-            if (false)
+            if (true)
             {
                 float groupOffset = (index % GroupSize) / (float)GroupSize;
 
@@ -214,12 +217,15 @@ namespace WalkerSim
 
                 _accumulator += deltaTime * TimeScale;
 
+                if (_accumulator < TickRate)
+                {
+                    Thread.Sleep(2);
+                }
+
                 while (_accumulator > TickRate && _running)
                 {
                     Tick();
-
                     _accumulator -= TickRate;
-                    _ticks++;
                 }
 
                 if (!_running)

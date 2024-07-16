@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace WalkerSim
@@ -12,6 +13,7 @@ namespace WalkerSim
 
         private Vector3 _windDir = new Vector3(1, 0, 0);
         private Vector3 _windDirTarget = new Vector3(1, 0, 0);
+        private float _windTime = 0;
         private int _nextWindChange = 0;
 
         public Vector3 WindDirection
@@ -35,16 +37,28 @@ namespace WalkerSim
                 events.AddRange(_events);
             }
 
+            var maxUpdates = 500;
+            var now = DateTime.Now;
+
             // This is mostly thread-safe, it might race the position but we don't need it super accurate.
-            System.Threading.Tasks.Parallel.For(0, agents.Count, i =>
+            //System.Threading.Tasks.Parallel.For(0, agents.Count, i =>
             //agents.ForEach((agent) =>
+            for (int i = 0; i < maxUpdates; i++)
             {
-                Agent agent = agents[i];
+                var agentIndex = (int)(SlowIterator % agents.Count);
+                var agent = agents[agentIndex];
+
+                var deltaTime = now - agent.LastUpdate;
+                agent.LastUpdate = now;
+
+                // NOTE: We use a prime number here to have a better distribution of agents.
+                SlowIterator += 193;
+
                 if (agent.CurrentState != Agent.State.Wandering)
                     return;
 
 #if DEBUG
-                Debug.Assert(agent.Index == i);
+                Debug.Assert(agent.Index == agentIndex);
                 Debug.Assert(agent.Position.X >= WorldMins.X);
                 Debug.Assert(agent.Position.X <= WorldMaxs.X);
                 Debug.Assert(agent.Position.Y >= WorldMins.Y);
@@ -67,33 +81,31 @@ namespace WalkerSim
                 }
 
                 {
-                    var addVel = Avoid(agent, nearby, 50f, .01f);
+                    var addVel = Avoid(agent, nearby, 50f, .002f);
                     addVel.Validate();
                     curVel += addVel;
                 }
 
                 {
-                    var addVel = Group(agent, nearby, 50f, .01f);
+                    var addVel = Group(agent, nearby, 250f, .0001f);
                     addVel.Validate();
                     curVel += addVel;
                 }
 
                 {
-                    var addVel = GroupAvoid(agent, nearby, 350f, .00001f);
+                    var addVel = GroupAvoid(agent, nearby, 150f, .0001f);
                     addVel.Validate();
                     curVel += addVel;
                 }
 
-                if (true)
                 {
                     var addVel = Wind(agent, .05f);
                     addVel.Validate();
                     curVel += addVel;
                 }
 
-                if (true)
                 {
-                    var addVel = StickToRoads(agent, .01f);
+                    var addVel = StickToRoads(agent, .04f);
                     addVel.Validate();
                     curVel += addVel;
                 }
@@ -107,10 +119,10 @@ namespace WalkerSim
                 curVel.Validate();
                 agent.Velocity = curVel;
 
-                MoveForward(agent);
+                MoveForward(agent, (float)deltaTime.TotalSeconds);
                 //BounceOffWalls(ref agent);
                 Warp(agent);
-            });
+            }
 
             // Update the grid, can't do this in parallel since it's not thread safe.
             for (int i = 0; i < agents.Count; i++)
@@ -129,23 +141,30 @@ namespace WalkerSim
 
             if (_ticks > 1)
                 averageTickTime *= 0.5f;
+
+            _ticks++;
         }
 
         private void UpdateWindDirection()
         {
             if (_ticks >= _nextWindChange)
             {
+                var windIncrement = 1.2f * TickRate;
+
+                _windTime += windIncrement;
+
                 // Pick new direction.
-                _windDirTarget.X = (float)_random.NextDouble() * 2.0f - 1.0f;
-                _windDirTarget.Y = (float)_random.NextDouble() * 2.0f - 1.0f;
+                _windDirTarget.X = (float)System.Math.Cos(_windTime);
+                _windDirTarget.Y = (float)System.Math.Sin(_windTime);
 
                 // Pick a random delay for the next change.
-                _nextWindChange = _ticks + _random.Next(4000, 6000);
+                _nextWindChange = _ticks + _random.Next(400, 600);
             }
 
             // Approach the target direction.
             var delta = _windDirTarget - _windDir;
-            _windDir += delta * TickRate;
+            var windChangeSpeed = 1.0f;
+            _windDir += (delta * windChangeSpeed) * TickRate;
         }
 
         public float GetTickTime()
@@ -350,7 +369,7 @@ namespace WalkerSim
             return sum * power;
         }
 
-        public void MoveForward(Agent agent, float minSpeed = 1, float maxSpeed = 5)
+        public void MoveForward(Agent agent, float deltaTime, float minSpeed = 1, float maxSpeed = 5)
         {
             // Keep the Z axis clean.
             agent.Position.Z = 0;
@@ -377,10 +396,10 @@ namespace WalkerSim
             }
             vel.Validate();
 
-            float speedScale = 1.0f;
+            float speedScale = 2.0f;
 
             var dir = Vector3.Normalize(vel);
-            pos += (dir * speedScale) * TickRate;
+            pos += (dir * speedScale) * deltaTime;
             pos.Validate();
 
             agent.Velocity = vel;
