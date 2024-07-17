@@ -1,59 +1,10 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace WalkerSim
 {
     internal class SpawnManager
     {
         static int _lastClassId = -1;
-
-        // NOTE: The original EntityGroups.GetRandomFromGroupList is not correct.
-        // Illustration for 100 iterations:
-        // Original:
-        //  Selection 0 occurred 79 times.
-        //  Selection -1 occurred 10 times.
-        //  Selection 1 occurred 5 times.
-        //  Selection 2 occurred 6 times.
-        // Custom:
-        //  Selection 0 occurred 86 times.
-        //  Selection 1 occurred 5 times.
-        //  Selection 2 occurred 9 times.
-        // -1 should only occur when the group list is empty which it isnt.
-        private static int GetRandomFromGroupList(List<SEntityClassAndProb> grpList, GameRandom random)
-        {
-            var totalWeight = 0.0f;
-            foreach (var entry in grpList)
-            {
-                totalWeight += entry.prob;
-            }
-            var max = random.RandomFloat * totalWeight;
-            var cur = 0.0f;
-            foreach (var entry in grpList)
-            {
-                cur += entry.prob;
-                if (cur > max)
-                {
-                    return entry.entityClassId;
-                }
-            }
-            return -1;
-        }
-
-        private static int GetRandomFromGroup(string _sEntityGroupName, ref int lastClassId, GameRandom random = null)
-        {
-            List<SEntityClassAndProb> grpList = EntityGroups.list[_sEntityGroupName];
-            int num = 0;
-            for (int i = 0; i < 3; i++)
-            {
-                num = GetRandomFromGroupList(grpList, random);
-                if (num != lastClassId)
-                {
-                    lastClassId = num;
-                    break;
-                }
-            }
-            return num;
-        }
 
         static private bool CanSpawnZombie()
         {
@@ -145,7 +96,7 @@ namespace WalkerSim
 
                     int lastClassId = _lastClassId;
 
-                    int entityClassId = GetRandomFromGroup(group.entityGroupRefName, ref lastClassId, gameRandom);
+                    int entityClassId = EntityGroups.GetRandomFromGroup(group.entityGroupRefName, ref lastClassId, gameRandom);
                     if (entityClassId != -1 && entityClassId != 0)
                     {
                         Logging.Debug("Selected entity class id {0} : {1}", entityClassId, group.entityGroupRefName);
