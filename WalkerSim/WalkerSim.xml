@@ -1,0 +1,5 @@
+﻿<WalkerSim>
+  <RandomSeed>1</RandomSeed>
+  <MaxAgents>10000</MaxAgents>
+  <GroupSize>10</GroupSize>
+</WalkerSim>

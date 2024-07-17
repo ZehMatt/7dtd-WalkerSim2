@@ -23,6 +23,10 @@ namespace WalkerSim
         public State CurrentState;
         public DateTime LastUpdate;
 
+        public Agent()
+        {
+        }
+
         public Agent(int index, int group)
         {
             Index = index;

@@ -16,21 +16,23 @@ namespace WalkerSim
     {
         public static Simulation Instance = new Simulation();
 
+        private Config _config = new Config();
+
         private List<Agent> agents = new List<Agent>();
+
+        public float TimeScale = 1.0f;
 
         public Vector3 WorldMins = Vector3.Zero;
         public Vector3 WorldMaxs = Vector3.Zero;
 
-        public float TimeScale = 1.0f;
-        public int MaxAgents = 0;
-        public uint SlowIterator = 0;
+        public uint _slowIterator = 0;
         public readonly float TickRate = 1f / 40f;
-
-        public readonly int GroupSize = 6;
 
         private float _accumulator = 0f;
         private int _ticks = 0;
+
         private System.Random _random;
+
         private MapData _mapData;
         private bool _initialized = false;
 
@@ -79,16 +81,16 @@ namespace WalkerSim
             _thread.Start();
         }
 
-        public void Reset(Vector3 worldMins, Vector3 worldMaxs, int maxAgents)
+        public void Reset(Vector3 worldMins, Vector3 worldMaxs, Config config)
         {
             Stop();
 
-            _random = new System.Random(1);
+            _config = config;
+            _random = new System.Random(config.RandomSeed);
+            _slowIterator = 0;
 
             WorldMins = worldMins;
             WorldMaxs = worldMaxs;
-            MaxAgents = maxAgents;
-            SlowIterator = 0;
 
             SetupGrid();
             Populate();
@@ -142,7 +144,7 @@ namespace WalkerSim
             // TODO: Make this an option.
             if (true)
             {
-                float groupOffset = (index % GroupSize) / (float)GroupSize;
+                float groupOffset = (index % _config.GroupSize) / (float)_config.GroupSize;
 
                 // Spawn in circle.
                 float angle = groupOffset * (float)System.Math.PI * 2.0f;
@@ -163,8 +165,8 @@ namespace WalkerSim
         {
             agents.Clear();
 
-            _groupCount = MaxAgents / GroupSize;
-            if (MaxAgents % GroupSize != 0)
+            _groupCount = _config.MaxAgents / _config.GroupSize;
+            if (_config.MaxAgents % _config.GroupSize != 0)
             {
                 _groupCount++;
             }
@@ -175,9 +177,9 @@ namespace WalkerSim
                 groupStartPos[i] = GetRandomPosition();
             }
 
-            for (int index = 0; index < MaxAgents; index++)
+            for (int index = 0; index < _config.MaxAgents; index++)
             {
-                int groupIndex = index / GroupSize;
+                int groupIndex = index / _config.GroupSize;
 
                 var agent = new Agent(index, groupIndex);
                 agent.Position = GetStartLocation(groupStartPos, index, groupIndex);

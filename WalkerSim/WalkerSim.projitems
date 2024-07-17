@@ -10,7 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Agent.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Configuration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Config.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HeightMap.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ImageUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Logging.cs" />
@@ -21,10 +21,16 @@
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Grid.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Simulation.LoadSave.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Logic.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Players.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Spawner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Vector3.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)WalkerSim.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>

@@ -36,6 +36,38 @@ namespace WalkerSim
         {
         }
 
+        static Config LoadConfiguration()
+        {
+            var worldFolder = PathAbstractions.WorldsSearchPaths.GetLocation(GamePrefs.GetString(EnumGamePrefs.GameWorld)).FullPath;
+            Logging.Out("World Folder: {0}", worldFolder);
+
+            var worldFolderConfig = System.IO.Path.Combine(worldFolder, "WalkerSim.xml");
+            if (System.IO.File.Exists(worldFolderConfig))
+            {
+                Logging.Out("Found WalkerSim config for world, loading configuration from: {0}", worldFolderConfig);
+                return Config.LoadFromFile(worldFolderConfig);
+            }
+
+            // Get the assembly path.
+            var assemblyPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            var defaultConfigPath = System.IO.Path.Combine(assemblyPath, "WalkerSim.xml");
+
+            if (System.IO.File.Exists(defaultConfigPath))
+            {
+                Logging.Out("Loading default config from: {0}", defaultConfigPath);
+                var config = Config.LoadFromFile(defaultConfigPath);
+                if (config == null)
+                {
+                    Logging.Err("Failed to load default config, using defaults.");
+                    return new Config();
+                }
+                return config;
+            }
+
+            Logging.Out("No config found, using defaults.");
+            return new Config();
+        }
+
         static void InitializeSimWorld()
         {
             var simulation = Simulation.Instance;
@@ -46,10 +78,10 @@ namespace WalkerSim
             var worldMins = new Vector3(min.x, min.x, min.y);
             var worldMaxs = new Vector3(max.x, max.x, max.y);
 
-            var zombieCount = 8000;
-            simulation.Reset(worldMins, worldMaxs, zombieCount);
+            var config = LoadConfiguration();
+            simulation.Reset(worldMins, worldMaxs, config);
 
-            Logging.Out("Initialized Simulation World, World Size: {0}, {1}; Zombies: {2}", worldMins, worldMaxs, zombieCount);
+            Logging.Out("Initialized Simulation World, World Size: {0}, {1}; Agents: {2}", worldMins, worldMaxs, config.MaxAgents);
         }
 
         static void LoadMapData()

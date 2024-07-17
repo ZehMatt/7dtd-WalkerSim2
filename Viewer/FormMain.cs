@@ -15,7 +15,10 @@ namespace WalkerSim.Viewer
         static readonly Vector3 WorldMins = new Vector3(-(WorldSizeX * 0.5f), -(WorldSizeY * 0.5f), 0);
         static readonly Vector3 WorldMaxs = new Vector3(WorldSizeX * 0.5f, WorldSizeY * 0.5f, 256);
 
-        static readonly int MaxAgents = 8000;
+        static WalkerSim.Config Config = new WalkerSim.Config()
+        {
+            MaxAgents = 6000,
+        };
 
         Simulation simulation = Simulation.Instance;
         Random prng = new Random(1);
@@ -28,7 +31,7 @@ namespace WalkerSim.Viewer
 
         void GenerateColorTable()
         {
-            var groupCount = simulation.MaxAgents / simulation.GroupSize;
+            var groupCount = Config.MaxAgents / Config.GroupSize;
             ColorTable = new Brush[groupCount];
 
             for (int i = 0; i < groupCount; i++)
@@ -54,7 +57,7 @@ namespace WalkerSim.Viewer
             gr = System.Drawing.Graphics.FromImage(bitmap);
             simCanvas.Image = bitmap;
 
-            simulation.Reset(WorldMins, WorldMaxs, MaxAgents);
+            simulation.Reset(WorldMins, WorldMaxs, Config);
 
             simulation.LoadMapData(@"G:\Steam\steamapps\common\7 Days To Die\Data\Worlds\Navezgane");
 
@@ -225,6 +228,11 @@ namespace WalkerSim.Viewer
             RenderToBitmap();
 
             simCanvas.Invalidate();
+        }
+
+        private void restartToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

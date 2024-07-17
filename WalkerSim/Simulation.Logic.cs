@@ -45,14 +45,14 @@ namespace WalkerSim
             //agents.ForEach((agent) =>
             for (int i = 0; i < maxUpdates; i++)
             {
-                var agentIndex = (int)(SlowIterator % agents.Count);
+                var agentIndex = (int)(_slowIterator % agents.Count);
                 var agent = agents[agentIndex];
 
                 var deltaTime = now - agent.LastUpdate;
                 agent.LastUpdate = now;
 
                 // NOTE: We use a prime number here to have a better distribution of agents.
-                SlowIterator += 193;
+                _slowIterator += 193;
 
                 if (agent.CurrentState != Agent.State.Wandering)
                     return;
@@ -264,9 +264,10 @@ namespace WalkerSim
 
             return sumCloseness * power;
         }
+
         private Vector3 GroupAvoid(Agent agent, List<Agent> nearby, float distance, float power)
         {
-            var groupCount = MaxAgents / GroupSize;
+            var groupCount = _groupCount;
             var distanceSqr = distance;
             // point away from other groups.
             var sumCloseness = Vector3.Zero;

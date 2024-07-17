@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
 
 namespace WalkerSim
@@ -54,13 +53,6 @@ namespace WalkerSim
         public int Height
         {
             get => _height;
-        }
-
-        // This functions expects data to be RGBA with 8 bits per channel.
-        // The data is expected to be in row-major order.
-        public bool LoadFromData(UInt32[] data, int width, int height)
-        {
-            return true;
         }
 
         public static Roads LoadFromBitmap(Bitmap img)
