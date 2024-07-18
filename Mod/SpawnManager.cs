@@ -177,7 +177,7 @@ namespace WalkerSim
             rot.y = 0;
             rot.Normalize();
 
-            var spawnedAgent = EntityFactory.CreateEntity(entityClassId, worldPos, rot) as EntityZombie;
+            var spawnedAgent = EntityFactory.CreateEntity(entityClassId, worldPos, rot) as EntityAlive;
             if (spawnedAgent == null)
             {
                 Logging.DebugErr("Unable to create zombie entity!, Class Id: {0}, Pos: {1}", entityClassId, worldPos);
@@ -188,9 +188,13 @@ namespace WalkerSim
             _lastClassId = entityClassId;
 
             spawnedAgent.bIsChunkObserver = true;
-            spawnedAgent.IsHordeZombie = true;
             spawnedAgent.SetSpawnerSource(EnumSpawnerSource.StaticSpawner);
             spawnedAgent.moveDirection = rot;
+
+            if (spawnedAgent is EntityZombie spawnedZombie)
+            {
+                spawnedZombie.IsHordeZombie = true;
+            }
 
             if (agent.Health != -1)
             {
