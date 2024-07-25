@@ -25,6 +25,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Logic.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Players.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Spawner.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Simulation.State.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Vector3.cs" />
   </ItemGroup>
@@ -32,5 +33,11 @@
     <Content Include="$(MSBuildThisFileDirectory)WalkerSim.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)WalkerSimSchema.xsd">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

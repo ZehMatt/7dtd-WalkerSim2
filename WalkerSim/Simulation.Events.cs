@@ -17,15 +17,13 @@ namespace WalkerSim
             public float DecayRate;
         }
 
-        private List<EventData> _events = new List<EventData>();
-
         public IReadOnlyList<EventData> Events
         {
             get
             {
-                lock (_events)
+                lock (_state)
                 {
-                    var copy = new List<EventData>(_events);
+                    var copy = new List<EventData>(_state.Events);
                     return copy;
                 }
             }
@@ -33,13 +31,13 @@ namespace WalkerSim
 
         private void AddEvent(EventData data)
         {
-            lock (_events)
+            lock (_state)
             {
                 var mergeDistance = 250;
                 var mergeDistanceSqr = mergeDistance * mergeDistance;
 
                 // Check if we can merge with an existing event.
-                foreach (var ev in _events)
+                foreach (var ev in _state.Events)
                 {
                     if (ev.Type != data.Type)
                     {
@@ -59,7 +57,7 @@ namespace WalkerSim
                     return;
                 }
 
-                _events.Add(data);
+                _state.Events.Add(data);
             }
         }
 
@@ -80,9 +78,9 @@ namespace WalkerSim
         {
             var dt = TickRate;
 
-            lock (_events)
+            lock (_state)
             {
-                foreach (var ev in _events)
+                foreach (var ev in _state.Events)
                 {
                     if (ev.Type == EventType.Noise)
                     {
@@ -93,7 +91,7 @@ namespace WalkerSim
                 }
 
                 // Erase expired events.
-                _events.RemoveAll(ev => ev.Radius <= 0);
+                _state.Events.RemoveAll(ev => ev.Radius <= 0);
             }
         }
     }

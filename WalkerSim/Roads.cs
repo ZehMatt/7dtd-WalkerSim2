@@ -3,14 +3,14 @@ using System.Drawing;
 
 namespace WalkerSim
 {
-    enum RoadType : byte
+    public enum RoadType : byte
     {
         None = 0,
         Asphalt,
         Offroad,
     }
 
-    internal class Roads
+    public class Roads
     {
         const int ScaledWidth = 768;
         const int ScaledHeight = 768;

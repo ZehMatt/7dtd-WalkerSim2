@@ -57,9 +57,8 @@ namespace WalkerSim.Viewer
             gr = System.Drawing.Graphics.FromImage(bitmap);
             simCanvas.Image = bitmap;
 
-            simulation.Reset(WorldMins, WorldMaxs, Config);
-
             simulation.LoadMapData(@"G:\Steam\steamapps\common\7 Days To Die\Data\Worlds\Navezgane");
+            simulation.Reset(WorldMins, WorldMaxs, Config);
 
             var addFakePlayers = false;
             if (addFakePlayers)
@@ -85,9 +84,13 @@ namespace WalkerSim.Viewer
 
             simTimer.Start();
 
-            for (int i = 0; i < 3000; i++)
+            var warmup = false;
+            if (warmup)
             {
-                simulation.Tick();
+                for (int i = 0; i < 3000; i++)
+                {
+                    simulation.Tick();
+                }
             }
 
             simulation.Start();
@@ -125,9 +128,7 @@ namespace WalkerSim.Viewer
 
         Vector3 RemapPosition(Vector3 pos)
         {
-            pos.X = Math.Remap(pos.X, simulation.WorldMins.X, simulation.WorldMaxs.X, 0f, (float)ImageWidth);
-            pos.Y = Math.Remap(pos.Y, simulation.WorldMins.Y, simulation.WorldMaxs.Y, 0f, (float)ImageHeight);
-            return pos;
+            return simulation.RemapPosition2D(pos, Vector3.Zero, new Vector3(ImageWidth, ImageHeight));
         }
 
         private Bitmap GetCachedRoadsBitmap()
@@ -200,6 +201,7 @@ namespace WalkerSim.Viewer
             }
 
             var plyIdx = 0;
+            var worldSize = simulation.WorldSize;
             foreach (var kv in simulation.Players)
             {
                 var player = kv.Value;
@@ -209,15 +211,14 @@ namespace WalkerSim.Viewer
                 //gr.FillRectangle(color, imagePos.X, imagePos.Y, 1f, 1f);
                 gr.FillEllipse(color, imagePos.X - 2, imagePos.Y - 2, 4f, 4f);
 
-                var worldLengthX = simulation.WorldMaxs.X - simulation.WorldMins.X;
-                var viewRadius = Math.Remap(player.ViewRadius, 0, worldLengthX, 0, ImageWidth);
+                var viewRadius = Math.Remap(player.ViewRadius, 0, worldSize.X, 0, ImageWidth);
                 gr.DrawEllipse(Pens.Blue, imagePos.X - viewRadius, imagePos.Y - viewRadius, viewRadius * 2, viewRadius * 2);
             }
 
             foreach (var ev in simulation.Events)
             {
                 var imagePos = RemapPosition(ev.Position);
-                var radius = Math.Remap(ev.Radius, 0, simulation.WorldMaxs.X, 0, ImageWidth);
+                var radius = Math.Remap(ev.Radius, 0, worldSize.X, 0, ImageWidth);
 
                 gr.DrawEllipse(Pens.Red, imagePos.X - radius, imagePos.Y - radius, radius * 2, radius * 2);
             }

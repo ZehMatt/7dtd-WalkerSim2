@@ -8,8 +8,6 @@ namespace WalkerSim
 
         private AgentDespawnHandler _agentDespawnHandler;
 
-        private Dictionary<int, Agent> _active = new Dictionary<int, Agent>();
-
         private List<int> _cleanUpList = new List<int>();
 
 
@@ -17,7 +15,7 @@ namespace WalkerSim
         {
             get
             {
-                return _active;
+                return _state.Active;
             }
         }
 
@@ -28,14 +26,14 @@ namespace WalkerSim
 
         private void AddActiveAgent(int entityId, Agent agent)
         {
-            _active.Add(entityId, agent);
+            _state.Active.Add(entityId, agent);
         }
 
         private void RemoveInactiveAgents()
         {
             _cleanUpList.Clear();
 
-            foreach (var kv in _active)
+            foreach (var kv in _state.Active)
             {
                 if (kv.Value.CurrentState != Agent.State.Active)
                 {
@@ -45,13 +43,13 @@ namespace WalkerSim
 
             foreach (var entityId in _cleanUpList)
             {
-                _active.Remove(entityId);
+                _state.Active.Remove(entityId);
             }
         }
 
         public void MarkAgentDead(int entityId)
         {
-            if (_active.TryGetValue(entityId, out var agent))
+            if (_state.Active.TryGetValue(entityId, out var agent))
             {
                 agent.CurrentState = Agent.State.Dead;
             }
@@ -59,7 +57,7 @@ namespace WalkerSim
 
         private void CheckAgentDespawn()
         {
-            foreach (var kv in _active)
+            foreach (var kv in _state.Active)
             {
                 var agent = kv.Value;
                 if (agent.CurrentState != Agent.State.Active)
@@ -68,7 +66,7 @@ namespace WalkerSim
                 var pos = agent.Position;
 
                 var isNearPlayer = false;
-                foreach (var ply in players)
+                foreach (var ply in _state.Players)
                 {
                     if (!ply.Value.IsAlive)
                         continue;

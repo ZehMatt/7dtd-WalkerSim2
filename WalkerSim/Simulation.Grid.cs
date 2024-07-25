@@ -26,9 +26,12 @@ namespace WalkerSim
 
         int GetCellIndex(float x, float y)
         {
+            var worldMins = _state.WorldMins;
+            var worldMaxs = _state.WorldMaxs;
+
             // The grid uses 0, 0 as starting origin.
-            float remapX = Math.Remap(x, WorldMins.X, WorldMaxs.X, 0f, WorldSize.X);
-            float remapY = Math.Remap(y, WorldMins.Y, WorldMaxs.Y, 0f, WorldSize.Y);
+            float remapX = Math.Remap(x, worldMins.X, worldMaxs.X, 0f, WorldSize.X);
+            float remapY = Math.Remap(y, worldMins.Y, worldMaxs.Y, 0f, WorldSize.Y);
 
             int cellX = (int)(remapX / GridSize);
             int cellY = (int)(remapY / GridSize);
@@ -96,9 +99,12 @@ namespace WalkerSim
                 res = new List<Agent>();
             }
 
+            var worldMins = _state.WorldMins;
+            var worldMaxs = _state.WorldMaxs;
+
             // The grid uses 0, 0 as starting origin.
-            float remapX = Math.Remap(pos.X, WorldMins.X, WorldMaxs.X, 0f, WorldSize.X);
-            float remapY = Math.Remap(pos.Y, WorldMins.Y, WorldMaxs.Y, 0f, WorldSize.Y);
+            float remapX = Math.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, WorldSize.X);
+            float remapY = Math.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, WorldSize.Y);
 
             int cellX = (int)(remapX / GridSize);
             int cellY = (int)(remapY / GridSize);

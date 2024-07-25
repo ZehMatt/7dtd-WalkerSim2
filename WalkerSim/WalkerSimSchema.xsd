@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://zeh.matt/WalkerSimSchema.xsd"
+xmlns="http://zeh.matt/WalkerSimSchema.xsd" elementFormDefault="qualified">
+  <xs:element name="WalkerSim">
+    <xs:complexType mixed="true">
+      <xs:sequence>
+        <xs:element name="RandomSeed" type="xs:int">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">
+              The seed for the random number generator used by the simulation
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="MaxAgents">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">
+              The maximum amount of agents to simulate.
+            </xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:integer">
+              <xs:minInclusive value="1"/>
+              <xs:maxInclusive value="50000"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+        <xs:element name="GroupSize">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">
+              Each agent will be assigned to a group, the group size determines how many agents
+              will be in the same group. Agents will try to stick to other agents from the same group
+              and avoid other agents from a different group.
+            </xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:integer">
+              <xs:minInclusive value="1"/>
+              <xs:maxInclusive value="100"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+        <xs:element name="StartAgentsGrouped" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">
+              If this is set to false then agents will not spawn near other agents of the same group,
+              if set to true agents will spawn near other group members.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="AgentStartPosition">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">
+              This is where the agents will start at when the simulation is created.
+            </xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="RandomBorderLocation"/>
+              <xs:enumeration value="RandomLocation"/>
+              <xs:enumeration value="RandomPOI"/>
+              <xs:enumeration value="Mixed"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+        <xs:element name="AgentRespawnLocation">
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="None"/>
+              <xs:enumeration value="RandomBorderLocation"/>
+              <xs:enumeration value="RandomLocation"/>
+              <xs:enumeration value="RandomPOI"/>
+              <xs:enumeration value="Mixed"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+        <xs:element name="PauseWithoutPlayers" type="xs:boolean"/>
+        <xs:element name="PauseDuringBloodmoon" type="xs:boolean"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

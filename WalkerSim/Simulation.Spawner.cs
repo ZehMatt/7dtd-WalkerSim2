@@ -22,7 +22,7 @@ namespace WalkerSim
         private void CheckAgentSpawn()
         {
             var nearby = new List<Agent>();
-            foreach (var kv in players)
+            foreach (var kv in _state.Players)
             {
                 var player = kv.Value;
 

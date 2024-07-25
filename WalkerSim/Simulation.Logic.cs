@@ -11,14 +11,9 @@ namespace WalkerSim
 
         private Stopwatch tickWatch = new Stopwatch();
 
-        private Vector3 _windDir = new Vector3(1, 0, 0);
-        private Vector3 _windDirTarget = new Vector3(1, 0, 0);
-        private float _windTime = 0;
-        private int _nextWindChange = 0;
-
         public Vector3 WindDirection
         {
-            get => _windDir;
+            get => _state.WindDir;
         }
 
         public void Tick()
@@ -32,40 +27,46 @@ namespace WalkerSim
 
             // We make a copy of the events to avoid locking/unlocking per agent.
             var events = new List<EventData>();
-            lock (_events)
+            lock (_state)
             {
-                events.AddRange(_events);
+                events.AddRange(_state.Events);
             }
 
             var maxUpdates = 500;
             var now = DateTime.Now;
+            var agents = _state.Agents;
+            var worldMins = _state.WorldMins;
+            var worldMaxs = _state.WorldMaxs;
+            var nearby = new List<Agent>();
 
             // This is mostly thread-safe, it might race the position but we don't need it super accurate.
             //System.Threading.Tasks.Parallel.For(0, agents.Count, i =>
             //agents.ForEach((agent) =>
             for (int i = 0; i < maxUpdates; i++)
             {
-                var agentIndex = (int)(_slowIterator % agents.Count);
+                var agentIndex = (int)(_state.SlowIterator % agents.Count);
                 var agent = agents[agentIndex];
 
                 var deltaTime = now - agent.LastUpdate;
                 agent.LastUpdate = now;
 
                 // NOTE: We use a prime number here to have a better distribution of agents.
-                _slowIterator += 193;
+                _state.SlowIterator += 193;
 
                 if (agent.CurrentState != Agent.State.Wandering)
                     return;
 
 #if DEBUG
                 Debug.Assert(agent.Index == agentIndex);
-                Debug.Assert(agent.Position.X >= WorldMins.X);
-                Debug.Assert(agent.Position.X <= WorldMaxs.X);
-                Debug.Assert(agent.Position.Y >= WorldMins.Y);
-                Debug.Assert(agent.Position.Y <= WorldMaxs.Y);
+                Debug.Assert(agent.Position.X >= worldMins.X);
+                Debug.Assert(agent.Position.X <= worldMaxs.X);
+                Debug.Assert(agent.Position.Y >= worldMins.Y);
+                Debug.Assert(agent.Position.Y <= worldMaxs.Y);
 #endif
 
-                var nearby = QueryNearby(agent.Position, agent.Index, maxNeighborDistance);
+                nearby.Clear();
+                QueryNearby(agent.Position, agent.Index, maxNeighborDistance, nearby);
+
                 var curVel = agent.Velocity;
 
                 {
@@ -99,13 +100,13 @@ namespace WalkerSim
                 }
 
                 {
-                    var addVel = Wind(agent, .05f);
+                    var addVel = Wind(agent, nearby, .05f);
                     addVel.Validate();
                     curVel += addVel;
                 }
 
                 {
-                    var addVel = StickToRoads(agent, .04f);
+                    var addVel = StickToRoads(agent, nearby, .04f);
                     addVel.Validate();
                     curVel += addVel;
                 }
@@ -147,24 +148,27 @@ namespace WalkerSim
 
         private void UpdateWindDirection()
         {
-            if (_ticks >= _nextWindChange)
+            var prng = _state.PRNG;
+
+            if (_ticks >= _state.TickNextWindChange)
             {
                 var windIncrement = 1.2f * TickRate;
 
-                _windTime += windIncrement;
+                _state.WindTime += windIncrement;
 
                 // Pick new direction.
-                _windDirTarget.X = (float)System.Math.Cos(_windTime);
-                _windDirTarget.Y = (float)System.Math.Sin(_windTime);
+                _state.WindDirTarget.X = (float)System.Math.Cos(_state.WindTime);
+                _state.WindDirTarget.Y = (float)System.Math.Sin(_state.WindTime);
 
                 // Pick a random delay for the next change.
-                _nextWindChange = _ticks + _random.Next(400, 600);
+                _state.TickNextWindChange = _ticks + prng.Next(400, 600);
             }
 
             // Approach the target direction.
-            var delta = _windDirTarget - _windDir;
+            var delta = _state.WindDirTarget - _state.WindDir;
             var windChangeSpeed = 1.0f;
-            _windDir += (delta * windChangeSpeed) * TickRate;
+
+            _state.WindDir += (delta * windChangeSpeed) * TickRate;
         }
 
         public float GetTickTime()
@@ -291,12 +295,12 @@ namespace WalkerSim
             return sumCloseness * power;
         }
 
-        private Vector3 Wind(Agent agent, float power)
+        private Vector3 Wind(Agent agent, List<Agent> _, float power)
         {
-            return _windDir * power;
+            return _state.WindDir * power;
         }
 
-        private Vector3 StickToRoads(Agent agent, float power)
+        private Vector3 StickToRoads(Agent agent, List<Agent> _, float power)
         {
             // Remap the position to the roads bitmap.
             if (MapData == null)
@@ -311,8 +315,11 @@ namespace WalkerSim
             }
 
             var pos = agent.Position;
-            var x = Math.Remap(pos.X, WorldMins.X, WorldMaxs.X, 0f, roads.Width);
-            var y = Math.Remap(pos.Y, WorldMins.Y, WorldMaxs.Y, 0f, roads.Height);
+            var worldMins = _state.WorldMins;
+            var worldMaxs = _state.WorldMaxs;
+
+            var x = Math.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, roads.Width);
+            var y = Math.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, roads.Height);
 
             int ix = (int)x;
             int iy = (int)y;
@@ -409,38 +416,44 @@ namespace WalkerSim
 
         private void BounceOffWalls(Agent agent)
         {
+            var worldMins = _state.WorldMins;
+            var worldMaxs = _state.WorldMaxs;
+
             float turn = .5f;
-            if (agent.Position.X <= WorldMins.X)
+            if (agent.Position.X <= worldMins.X)
                 agent.Velocity.X += turn;
 
-            if (agent.Position.X >= WorldMaxs.X)
+            if (agent.Position.X >= worldMaxs.X)
                 agent.Velocity.X -= turn;
 
-            if (agent.Position.Y <= WorldMins.Y)
+            if (agent.Position.Y <= worldMins.Y)
                 agent.Velocity.Y += turn;
 
-            if (agent.Position.Y >= WorldMaxs.Y)
+            if (agent.Position.Y >= worldMaxs.Y)
                 agent.Velocity.Y -= turn;
 
-            agent.Position = Vector3.Clamp(agent.Position, WorldMins, WorldMaxs);
+            agent.Position = Vector3.Clamp(agent.Position, worldMins, worldMaxs);
         }
 
         private void Warp(Agent agent)
         {
+            var worldMins = _state.WorldMins;
+            var worldMaxs = _state.WorldMaxs;
+
             float BorderSize = 100.0f;
             float EdgeDistance = 100.0f;
 
-            if (agent.Position.X < WorldMins.X + BorderSize)
-                agent.Position.X = WorldMaxs.X - BorderSize - EdgeDistance;
+            if (agent.Position.X < worldMins.X + BorderSize)
+                agent.Position.X = worldMaxs.X - BorderSize - EdgeDistance;
 
-            if (agent.Position.X > WorldMaxs.X - BorderSize)
-                agent.Position.X = WorldMins.X + BorderSize + EdgeDistance;
+            if (agent.Position.X > worldMaxs.X - BorderSize)
+                agent.Position.X = worldMins.X + BorderSize + EdgeDistance;
 
-            if (agent.Position.Y < WorldMins.Y + BorderSize)
-                agent.Position.Y = WorldMaxs.Y - BorderSize - EdgeDistance;
+            if (agent.Position.Y < worldMins.Y + BorderSize)
+                agent.Position.Y = worldMaxs.Y - BorderSize - EdgeDistance;
 
-            if (agent.Position.Y > WorldMaxs.Y - BorderSize)
-                agent.Position.Y = WorldMins.Y + BorderSize + EdgeDistance;
+            if (agent.Position.Y > worldMaxs.Y - BorderSize)
+                agent.Position.Y = worldMins.Y + BorderSize + EdgeDistance;
         }
 
     }

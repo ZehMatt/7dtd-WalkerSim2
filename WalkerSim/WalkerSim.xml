@@ -1,5 +1,12 @@
-﻿<WalkerSim>
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="WalkerSimSchema.xsd"?>
+<WalkerSim xmlns="http://zeh.matt/WalkerSimSchema.xsd">
   <RandomSeed>1</RandomSeed>
   <MaxAgents>10000</MaxAgents>
   <GroupSize>10</GroupSize>
+  <StartAgentsGrouped>true</StartAgentsGrouped>
+  <AgentStartPosition>RandomBorderLocation</AgentStartPosition>
+  <AgentRespawnLocation>RandomBorderLocation</AgentRespawnLocation>
+  <PauseWithoutPlayers>true</PauseWithoutPlayers>
+  <PauseDuringBloodmoon>true</PauseDuringBloodmoon>
 </WalkerSim>

@@ -107,9 +107,9 @@ namespace WalkerSim
 
         static void GameStartDone()
         {
-            InitializeSimWorld();
-
             LoadMapData();
+
+            InitializeSimWorld();
 
             var simulation = Simulation.Instance;
 

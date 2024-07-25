@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace WalkerSim
 {
-    internal struct Vector3 : IEquatable<Vector3>
+    public struct Vector3 : IEquatable<Vector3>
     {
         public static readonly Vector3 Zero = new Vector3(0f, 0f, 0f);
         public static readonly Vector3 One = new Vector3(1f, 1f, 1f);
@@ -128,6 +128,19 @@ namespace WalkerSim
             return string.Format("({0}, {1}, {2})", X, Y, Z);
         }
 
+        public static Vector3 Parse(string s, bool isUnity)
+        {
+            var parts = s.Split(',');
+            if (parts.Length != 3)
+            {
+                throw new FormatException("Invalid position format");
+            }
+
+            if (isUnity)
+                return new Vector3(float.Parse(parts[0]), -float.Parse(parts[2]), float.Parse(parts[1]));
+            else
+                return new Vector3(float.Parse(parts[0]), float.Parse(parts[1]), float.Parse(parts[2]));
+        }
 
         public bool Equals(Vector3 other)
         {

@@ -1,8 +1,9 @@
 ﻿using System.Drawing;
+using System.Xml.Serialization;
 
 namespace WalkerSim
 {
-    internal class MapData
+    public class MapData
     {
         public class MapInfo
         {
@@ -13,23 +14,60 @@ namespace WalkerSim
             public int HeightMapHeight;
         }
 
+        [XmlRoot("prefabs")]
+        public class PrefabsData
+        {
+            [XmlElement("decoration")]
+            public Decoration[] Decorations;
+        }
+
+        public class Decoration
+        {
+            [XmlAttribute("type")]
+            public string Type;
+
+            [XmlAttribute("name")]
+            public string Name;
+
+            [XmlIgnore]
+            public Vector3 Position;
+
+            [XmlAttribute("position")]
+            public string PositionString
+            {
+                get => Position.ToString();
+                set
+                {
+                    Position = Vector3.Parse(value, true);
+                }
+            }
+
+            [XmlAttribute("rotation")]
+            public int Rotation;
+
+            [XmlAttribute("y_is_groundlevel")]
+            public bool YIsGroundlevel;
+        }
+
         private Roads _roads;
-        private MapInfo _info;
 
         public Roads Roads
         {
-            get
-            {
-                return _roads;
-            }
+            get => _roads;
         }
+
+        private MapInfo _info;
 
         public MapInfo Info
         {
-            get
-            {
-                return _info;
-            }
+            get => _info;
+        }
+
+        private PrefabsData _prefabs;
+
+        public PrefabsData Prefabs
+        {
+            get => _prefabs;
         }
 
         private static MapInfo ParseInfo(string path)
@@ -110,6 +148,23 @@ namespace WalkerSim
             return Roads.LoadFromBitmap((Bitmap)img);
         }
 
+        private static PrefabsData LoadPrefabs(string folderPath)
+        {
+            var filePath = System.IO.Path.Combine(folderPath, "prefabs.xml");
+            var serializer = new XmlSerializer(typeof(PrefabsData));
+            try
+            {
+                using (var reader = new System.IO.StreamReader(filePath))
+                {
+                    return (PrefabsData)serializer.Deserialize(reader);
+                }
+            }
+            catch (System.Exception)
+            {
+                return null;
+            }
+        }
+
         public static MapData LoadFromFolder(string folderPath)
         {
             // Parse map_info.xml
@@ -126,10 +181,16 @@ namespace WalkerSim
                 return null;
             }
 
-            var res = new MapData();
+            var prefabs = LoadPrefabs(folderPath);
+            if (prefabs == null)
+            {
+                return null;
+            }
 
+            var res = new MapData();
             res._info = info;
             res._roads = roads;
+            res._prefabs = prefabs;
 
             return res;
         }

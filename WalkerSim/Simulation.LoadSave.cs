@@ -12,6 +12,8 @@ namespace WalkerSim
 
         private void SaveAgents(BinaryWriter writer)
         {
+            var agents = _state.Agents;
+
             writer.Write(agents.Count);
             foreach (var agent in agents)
             {
@@ -25,6 +27,8 @@ namespace WalkerSim
 
         private void LoadAgents(BinaryReader reader)
         {
+            var agents = _state.Agents;
+
             agents.Clear();
             var count = reader.ReadInt32();
             for (int i = 0; i < count; i++)
@@ -41,8 +45,10 @@ namespace WalkerSim
 
         private void SaveEvents(BinaryWriter writer)
         {
-            writer.Write(_events.Count);
-            foreach (var ev in _events)
+            var events = _state.Events;
+
+            writer.Write(events.Count);
+            foreach (var ev in events)
             {
                 writer.Write((int)ev.Type);
                 writer.Write(ev.Position.X);
@@ -55,7 +61,9 @@ namespace WalkerSim
 
         private void LoadEvents(BinaryReader reader)
         {
-            _events.Clear();
+            var events = _state.Events;
+            events.Clear();
+
             var count = reader.ReadInt32();
             for (int i = 0; i < count; i++)
             {
@@ -66,7 +74,7 @@ namespace WalkerSim
                 ev.Position.Z = reader.ReadSingle();
                 ev.Radius = reader.ReadSingle();
                 ev.DecayRate = reader.ReadSingle();
-                _events.Add(ev);
+                events.Add(ev);
             }
         }
 
