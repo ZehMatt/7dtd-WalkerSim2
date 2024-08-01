@@ -11,6 +11,7 @@ namespace WalkerSim
             public List<Agent> Agents = new List<Agent>();
             public Vector3 WorldMins = Vector3.Zero;
             public Vector3 WorldMaxs = Vector3.Zero;
+            public MapData MapData = null;
             public ConcurrentDictionary<int, Player> Players = new ConcurrentDictionary<int, Player>();
             public List<EventData> Events = new List<EventData>();
             public Dictionary<int, Agent> Active = new Dictionary<int, Agent>();
@@ -20,6 +21,7 @@ namespace WalkerSim
             public Vector3 WindDirTarget = new Vector3(1, 0, 0);
             public float WindTime = 0;
             public int TickNextWindChange = 0;
+            public int GroupCount = 0;
 
             public void Reset()
             {
@@ -36,6 +38,7 @@ namespace WalkerSim
                 WindDirTarget = new Vector3(1, 0, 0);
                 WindTime = 0;
                 TickNextWindChange = 0;
+                GroupCount = 0;
             }
         }
 

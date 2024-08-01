@@ -4,7 +4,7 @@ namespace WalkerSim
 {
     internal partial class Simulation
     {
-        const int GridSize = 128;
+        const int CellSize = 128;
 
         List<Agent>[] grid;
         int CellCountX = 0;
@@ -13,8 +13,8 @@ namespace WalkerSim
 
         void SetupGrid()
         {
-            CellCountX = (int)System.Math.Ceiling(WorldSize.X / GridSize);
-            CellCountY = (int)System.Math.Ceiling(WorldSize.Y / GridSize);
+            CellCountX = (int)System.Math.Ceiling(WorldSize.X / CellSize);
+            CellCountY = (int)System.Math.Ceiling(WorldSize.Y / CellSize);
 
             TotalCells = CellCountX * CellCountY;
             grid = new List<Agent>[TotalCells];
@@ -33,8 +33,8 @@ namespace WalkerSim
             float remapX = Math.Remap(x, worldMins.X, worldMaxs.X, 0f, WorldSize.X);
             float remapY = Math.Remap(y, worldMins.Y, worldMaxs.Y, 0f, WorldSize.Y);
 
-            int cellX = (int)(remapX / GridSize);
-            int cellY = (int)(remapY / GridSize);
+            int cellX = (int)(remapX / CellSize);
+            int cellY = (int)(remapY / CellSize);
 
             return cellX * CellCountY + cellY;
         }
@@ -74,10 +74,8 @@ namespace WalkerSim
 
             var cell = grid[cellIndex];
             var maxDistSqr = maxDist * maxDist;
-            for (int i = 0; i < cell.Count; i++)
+            foreach (var other in cell)
             {
-                var other = cell[i];
-
                 if (other.CurrentState != Agent.State.Wandering)
                     continue;
 
@@ -106,31 +104,26 @@ namespace WalkerSim
             float remapX = Math.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, WorldSize.X);
             float remapY = Math.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, WorldSize.Y);
 
-            int cellX = (int)(remapX / GridSize);
-            int cellY = (int)(remapY / GridSize);
+            int cellX = (int)(remapX / CellSize);
+            int cellY = (int)(remapY / CellSize);
 
             // Center.
-            {
-                QueryCell(pos, cellX, cellY, excludeIndex, maxDistance, res);
-            }
+            QueryCell(pos, cellX, cellY, excludeIndex, maxDistance, res);
 
-            // Left neighbor.
+            // NOTE: This is technically not the right way to do as it doesn't cover maxDistance.
+            // Due to performance reasons this is still good enough.
+            if (maxDistance >= CellSize)
             {
+                // Left neighbor.
                 QueryCell(pos, cellX - 1, cellY, excludeIndex, maxDistance, res);
-            }
 
-            // Right neighbor.
-            {
+                // Right neighbor.
                 QueryCell(pos, cellX + 1, cellY, excludeIndex, maxDistance, res);
-            }
 
-            // Top neighbor.
-            {
+                // Top neighbor.
                 QueryCell(pos, cellX, cellY - 1, excludeIndex, maxDistance, res);
-            }
 
-            // Bottom neighbor.
-            {
+                // Bottom neighbor.
                 QueryCell(pos, cellX, cellY + 1, excludeIndex, maxDistance, res);
             }
 

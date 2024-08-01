@@ -1,8 +1,9 @@
-﻿using System.Xml.Serialization;
+﻿using System.Linq;
+using System.Xml.Serialization;
 
 namespace WalkerSim
 {
-    [XmlRoot("WalkerSim")]
+    [XmlRoot("WalkerSim", Namespace = "http://zeh.matt/WalkerSimSchema")]
     public class Config
     {
         public enum SpawnLocation
@@ -19,20 +20,65 @@ namespace WalkerSim
             Mixed,
         }
 
+        public enum MovementProcessorType
+        {
+            Invalid = 0,
+            [XmlEnum("Flock")]
+            Flock,
+            [XmlEnum("Align")]
+            Align,
+            [XmlEnum("Avoid")]
+            Avoid,
+            [XmlEnum("Group")]
+            Group,
+            [XmlEnum("GroupAvoid")]
+            GroupAvoid,
+            [XmlEnum("Wind")]
+            Wind,
+            [XmlEnum("StickToRoads")]
+            StickToRoads,
+            [XmlEnum("WorldEvents")]
+            WorldEvents,
+        }
+
+        public class MovementProcessor
+        {
+            [XmlAttribute("Type")]
+            public MovementProcessorType Type;
+
+            [XmlAttribute("Distance")]
+            public float Distance = 0.0f;
+
+            [XmlAttribute("Power")]
+            public float Power = 0.0f;
+        }
+
+        public class MovementProcessors
+        {
+            [XmlAttribute("Group")]
+            public int Group = -1;
+
+            [XmlAttribute("SpeedScale")]
+            public float SpeedScale = 1.0f;
+
+            [XmlElement("Processor")]
+            public MovementProcessor[] Entries;
+        }
+
         [XmlElement("RandomSeed")]
-        public int RandomSeed = 1;
+        public int RandomSeed = 1337;
 
         [XmlElement("MaxAgents")]
-        public int MaxAgents = 5000;
+        public int MaxAgents = 10000;
 
         [XmlElement("StartAgentsGrouped")]
         public bool StartAgentsGrouped = true;
 
         [XmlElement("GroupSize")]
-        public int GroupSize = 10;
+        public int GroupSize = 200;
 
         [XmlElement("AgentStartLocation")]
-        public SpawnLocation StartLocation = SpawnLocation.RandomPOI;
+        public SpawnLocation StartLocation = SpawnLocation.RandomLocation;
 
         [XmlElement("AgentRespawnLocation")]
         public SpawnLocation RespawnType = SpawnLocation.None;
@@ -43,6 +89,70 @@ namespace WalkerSim
         [XmlElement("PauseDuringBloodmoon")]
         public bool PauseDuringBloodmoon = false;
 
+        [XmlElement("MovementProcessors")]
+        public MovementProcessors[] Processors = new MovementProcessors[]
+        {
+            new MovementProcessors {
+                Group = -1,
+                SpeedScale = 1.0f,
+                Entries = new MovementProcessor[] {
+                    new MovementProcessor()
+                    {
+                        Type = MovementProcessorType.Flock,
+                        Distance = 150f,
+                        Power = 0.003f,
+                    },
+                    new MovementProcessor()
+                    {
+                        Type = MovementProcessorType.Align,
+                        Distance = 150f,
+                        Power = 0.001f,
+                    },
+                    new MovementProcessor()
+                    {
+                        Type = MovementProcessorType.Avoid,
+                        Distance = 50f,
+                        Power = 0.002f,
+                    },
+                    new MovementProcessor()
+                    {
+                        Type = MovementProcessorType.Group,
+                        Distance = 250f,
+                        Power = 0.0001f,
+                    },
+                    new MovementProcessor()
+                    {
+                        Type = MovementProcessorType.GroupAvoid,
+                        Distance = 150f,
+                        Power = 0.0001f,
+                    },
+                    new MovementProcessor()
+                    {
+                        Type = MovementProcessorType.Wind,
+                        Distance = 0f,
+                        Power = 0.05f,
+                    },
+                    new MovementProcessor()
+                    {
+                        Type = MovementProcessorType.StickToRoads,
+                        Distance = 0f,
+                        Power = 0.04f,
+                    },
+                    new MovementProcessor()
+                    {
+                        Type = MovementProcessorType.WorldEvents,
+                        Distance = 0f,
+                        Power = 0.05f,
+                    },
+                }
+            },
+        };
+
+        private static bool IsProcessorGroupUsed(Config config, int group)
+        {
+            return config.Processors.Any(x => x.Group == group);
+        }
+
         public static Config LoadFromFile(string filePath)
         {
             var serializer = new XmlSerializer(typeof(Config));
@@ -50,11 +160,13 @@ namespace WalkerSim
             {
                 using (var reader = new System.IO.StreamReader(filePath))
                 {
-                    return (Config)serializer.Deserialize(reader);
+                    var config = (Config)serializer.Deserialize(reader);
+                    return config;
                 }
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                Logging.Exception(ex);
                 return null;
             }
         }

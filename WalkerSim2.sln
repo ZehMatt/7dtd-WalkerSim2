@@ -9,6 +9,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "WalkerSim", "WalkerSim\Walk
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mod", "Mod\Mod.csproj", "{5E392257-9B08-4E5E-8ED3-9FF143A25CCF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{9A5C48F2-F53F-45E4-ACF4-E70605A0BC21}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +25,10 @@ Global
 		{5E392257-9B08-4E5E-8ED3-9FF143A25CCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5E392257-9B08-4E5E-8ED3-9FF143A25CCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E392257-9B08-4E5E-8ED3-9FF143A25CCF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A5C48F2-F53F-45E4-ACF4-E70605A0BC21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A5C48F2-F53F-45E4-ACF4-E70605A0BC21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A5C48F2-F53F-45E4-ACF4-E70605A0BC21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A5C48F2-F53F-45E4-ACF4-E70605A0BC21}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -33,6 +39,7 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		WalkerSim\WalkerSim.projitems*{5e392257-9b08-4e5e-8ed3-9ff143a25ccf}*SharedItemsImports = 4
 		WalkerSim\WalkerSim.projitems*{8bd1723c-67b3-45a9-b177-feb49f2407d8}*SharedItemsImports = 13
+		WalkerSim\WalkerSim.projitems*{9a5c48f2-f53f-45e4-acf4-e70605a0bc21}*SharedItemsImports = 4
 		WalkerSim\WalkerSim.projitems*{baed52f2-7bc2-43b2-b097-0cc2d830fdf8}*SharedItemsImports = 4
 	EndGlobalSection
 EndGlobal

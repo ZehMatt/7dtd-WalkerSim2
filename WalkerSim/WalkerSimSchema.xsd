@@ -1,81 +1,202 @@
-﻿<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://zeh.matt/WalkerSimSchema.xsd"
-xmlns="http://zeh.matt/WalkerSimSchema.xsd" elementFormDefault="qualified">
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://zeh.matt/WalkerSimSchema"
+           xmlns="http://zeh.matt/WalkerSimSchema"
+           elementFormDefault="qualified">
+
+  <xs:simpleType name="AgentPositionType">
+    <xs:annotation>
+      <xs:documentation>
+        Specifies the starting position of agents in the simulation.
+        Choices include:
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="RandomBorderLocation">
+        <xs:annotation>
+          <xs:documentation>Random position near the border.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="RandomLocation">
+        <xs:annotation>
+          <xs:documentation>Random position anywhere in the simulation area.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="RandomPOI">
+        <xs:annotation>
+          <xs:documentation>Random position at a Point of Interest (POI).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Mixed">
+        <xs:annotation>
+          <xs:documentation>Randomly selects between RandomBorderLocation, RandomLocation, RandomPOI.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="RespawnPositionType">
+    <xs:annotation>
+      <xs:documentation>
+        Specifies the respawn position of agents when they cease to exist in the simulation.
+        Choices include:
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="None">
+        <xs:annotation>
+          <xs:documentation>Disables respawning, clearing all agents.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="RandomBorderLocation">
+        <xs:annotation>
+          <xs:documentation>Random position near the border.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="RandomLocation">
+        <xs:annotation>
+          <xs:documentation>Random position anywhere in the simulation area.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="RandomPOI">
+        <xs:annotation>
+          <xs:documentation>Random position at a Point of Interest (POI).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Mixed">
+        <xs:annotation>
+          <xs:documentation>Randomly selects between RandomBorderLocation, RandomLocation, RandomPOI</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ProcessorTypeEnum">
+    <xs:annotation>
+      <xs:documentation>
+        Specifies the type of processor used in the simulation.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Flock">
+        <xs:annotation>
+          <xs:documentation>Keeps agents near other agents. Uses 'Distance' and 'Power'.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Align">
+        <xs:annotation>
+          <xs:documentation>Aligns movement direction of the agent with nearby agents. Uses 'Distance' and 'Power'.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Avoid">
+        <xs:annotation>
+          <xs:documentation>Steers agents away from other agents. Uses 'Distance' and 'Power'.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Group">
+        <xs:annotation>
+          <xs:documentation>Steers agents towards other agents in the same group. Uses 'Distance' and 'Power'.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="GroupAvoid">
+        <xs:annotation>
+          <xs:documentation>Steers agents away from agents not in the same group. Uses 'Distance' and 'Power'.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Wind">
+        <xs:annotation>
+          <xs:documentation>Influences movement direction by wind direction, which changes over time. Only 'Power' is used.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="StickToRoads">
+        <xs:annotation>
+          <xs:documentation>Steers agents towards nearby roads. Only 'Power' is used.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="WorldEvents">
+        <xs:annotation>
+          <xs:documentation>Steers agents towards world events. Only 'Power' is used.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:element name="Processor">
+    <xs:complexType>
+      <xs:attribute name="Type" type="ProcessorTypeEnum" use="required"/>
+      <xs:attribute name="Distance" type="xs:float" use="optional">
+        <xs:annotation>
+          <xs:documentation>The maximum distance the processor is allowed to do queries, this typically means nearby agents. Some processors do not make use of it.</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="Power" type="xs:float" use="required" >
+        <xs:annotation>
+          <xs:documentation>Power is a multiplier which determines how much influence it has.</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="MovementProcessors">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="Processor" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="Group" type="xs:int" use="required"/>
+      <xs:attribute name="SpeedScale" type="xs:float" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
   <xs:element name="WalkerSim">
-    <xs:complexType mixed="true">
+    <xs:complexType>
       <xs:sequence>
         <xs:element name="RandomSeed" type="xs:int">
           <xs:annotation>
-            <xs:documentation xml:lang="en">
-              The seed for the random number generator used by the simulation
-            </xs:documentation>
+            <xs:documentation>Random seed for the random number generator</xs:documentation>
           </xs:annotation>
         </xs:element>
-        <xs:element name="MaxAgents">
+        <xs:element name="MaxAgents" type="xs:int">
           <xs:annotation>
-            <xs:documentation xml:lang="en">
-              The maximum amount of agents to simulate.
-            </xs:documentation>
+            <xs:documentation>Maximum amount of agents to simulate, it will never exceed the number</xs:documentation>
           </xs:annotation>
-          <xs:simpleType>
-            <xs:restriction base="xs:integer">
-              <xs:minInclusive value="1"/>
-              <xs:maxInclusive value="50000"/>
-            </xs:restriction>
-          </xs:simpleType>
         </xs:element>
-        <xs:element name="GroupSize">
+        <xs:element name="GroupSize" type="xs:int">
           <xs:annotation>
-            <xs:documentation xml:lang="en">
-              Each agent will be assigned to a group, the group size determines how many agents
-              will be in the same group. Agents will try to stick to other agents from the same group
-              and avoid other agents from a different group.
-            </xs:documentation>
+            <xs:documentation>Agents will be assigned to a group, this specifies how many members a group will have</xs:documentation>
           </xs:annotation>
-          <xs:simpleType>
-            <xs:restriction base="xs:integer">
-              <xs:minInclusive value="1"/>
-              <xs:maxInclusive value="100"/>
-            </xs:restriction>
-          </xs:simpleType>
         </xs:element>
         <xs:element name="StartAgentsGrouped" type="xs:boolean">
           <xs:annotation>
-            <xs:documentation xml:lang="en">
-              If this is set to false then agents will not spawn near other agents of the same group,
-              if set to true agents will spawn near other group members.
-            </xs:documentation>
+            <xs:documentation>This will put agents of the same group closer together at initial start of the simulation</xs:documentation>
           </xs:annotation>
         </xs:element>
-        <xs:element name="AgentStartPosition">
+        <xs:element name="AgentStartPosition" type="AgentPositionType">
           <xs:annotation>
-            <xs:documentation xml:lang="en">
-              This is where the agents will start at when the simulation is created.
+            <xs:documentation>
+              The position of where agents are placed on the initial start of the simulation.
             </xs:documentation>
           </xs:annotation>
-          <xs:simpleType>
-            <xs:restriction base="xs:string">
-              <xs:enumeration value="RandomBorderLocation"/>
-              <xs:enumeration value="RandomLocation"/>
-              <xs:enumeration value="RandomPOI"/>
-              <xs:enumeration value="Mixed"/>
-            </xs:restriction>
-          </xs:simpleType>
         </xs:element>
-        <xs:element name="AgentRespawnLocation">
-          <xs:simpleType>
-            <xs:restriction base="xs:string">
-              <xs:enumeration value="None"/>
-              <xs:enumeration value="RandomBorderLocation"/>
-              <xs:enumeration value="RandomLocation"/>
-              <xs:enumeration value="RandomPOI"/>
-              <xs:enumeration value="Mixed"/>
-            </xs:restriction>
-          </xs:simpleType>
+        <xs:element name="AgentRespawnLocation" type="RespawnPositionType">
+          <xs:annotation>
+            <xs:documentation>
+              The position of where the agent will be placed when the in-game actor ceases to exist.
+            </xs:documentation>
+          </xs:annotation>
         </xs:element>
-        <xs:element name="PauseWithoutPlayers" type="xs:boolean"/>
-        <xs:element name="PauseDuringBloodmoon" type="xs:boolean"/>
+        <xs:element name="PauseWithoutPlayers" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>The option specifies if the simulation should be paused when no players are on the server</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="PauseDuringBloodmoon" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>Specifies if the simulation should be paused during blood moons</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="MovementProcessors" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+
 </xs:schema>

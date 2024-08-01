@@ -15,10 +15,7 @@ namespace WalkerSim.Viewer
         static readonly Vector3 WorldMins = new Vector3(-(WorldSizeX * 0.5f), -(WorldSizeY * 0.5f), 0);
         static readonly Vector3 WorldMaxs = new Vector3(WorldSizeX * 0.5f, WorldSizeY * 0.5f, 256);
 
-        static WalkerSim.Config Config = new WalkerSim.Config()
-        {
-            MaxAgents = 6000,
-        };
+        static WalkerSim.Config Config;
 
         Simulation simulation = Simulation.Instance;
         Random prng = new Random(1);
@@ -26,20 +23,17 @@ namespace WalkerSim.Viewer
         Bitmap roadBitmap;
         System.Drawing.Graphics gr;
 
-        Brush[] ColorTable;
+        Brush[] GroupColors;
         Brush[] PlayerColors;
 
         void GenerateColorTable()
         {
             var groupCount = Config.MaxAgents / Config.GroupSize;
-            ColorTable = new Brush[groupCount];
+            GroupColors = new Brush[groupCount];
 
             for (int i = 0; i < groupCount; i++)
             {
-                var r = (byte)(i * 10 % 255);
-                var g = (byte)(i * 20 % 255);
-                var b = (byte)(i * 30 % 255);
-                ColorTable[i] = new SolidBrush(System.Drawing.Color.FromArgb(r, g, b));
+                GroupColors[i] = new SolidBrush(ColorTable.GetColorForIndex(i));
             }
 
             PlayerColors = new Brush[64];
@@ -53,11 +47,13 @@ namespace WalkerSim.Viewer
         {
             InitializeComponent();
 
+            Config = Config.LoadFromFile("WalkerSim.xml");
+
             bitmap = new Bitmap(ImageWidth, ImageHeight);
             gr = System.Drawing.Graphics.FromImage(bitmap);
             simCanvas.Image = bitmap;
 
-            simulation.LoadMapData(@"G:\Steam\steamapps\common\7 Days To Die\Data\Worlds\Navezgane");
+            simulation.LoadMapData(@"C:\Users\Matt\AppData\Roaming\7DaysToDie\GeneratedWorlds\Ducufa Valley");
             simulation.Reset(WorldMins, WorldMaxs, Config);
 
             var addFakePlayers = false;
@@ -106,7 +102,7 @@ namespace WalkerSim.Viewer
             simulation.Update(simTimer.Interval / 1000.0f);
 
             // TODO: Add more UI controls for this.
-            var fakeGunshots = true;
+            var fakeGunshots = false;
             if (fakeGunshots)
             {
                 if (simulation.Events.Count < 3 && prng.NextDouble() < 0.01)
@@ -152,8 +148,8 @@ namespace WalkerSim.Viewer
             {
                 gr.Clear(System.Drawing.Color.Black);
 
-                var brushRed = new SolidBrush(Color.FromArgb(32, 255, 0, 0));
-                var brushGreen = new SolidBrush(Color.FromArgb(32, 0, 255, 0));
+                var brushRed = new SolidBrush(Color.FromArgb(100, 255, 0, 0));
+                var brushGreen = new SolidBrush(Color.FromArgb(100, 0, 255, 0));
 
                 for (int y = 0; y < roads.Height; y++)
                 {
@@ -196,7 +192,7 @@ namespace WalkerSim.Viewer
             {
                 var imagePos = RemapPosition(agent.Position);
 
-                var color = ColorTable[agent.Group % ColorTable.Length];
+                var color = GroupColors[agent.Group % GroupColors.Length];
                 gr.FillRectangle(color, imagePos.X, imagePos.Y, 1f, 1f);
             }
 

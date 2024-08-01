@@ -11,9 +11,101 @@ namespace WalkerSim
 
         private Stopwatch tickWatch = new Stopwatch();
 
+        // Singleton instances to avoid GCing.
+        private List<Agent> _nearby = new List<Agent>();
+        private List<EventData> _events = new List<EventData>();
+
+        private delegate Vector3 MovementProcessorDelegate(State state, Agent agent, List<EventData> events, List<Agent> nearby, float distance, float power);
+
+        class MovementProcessor
+        {
+            public List<Processor> Entries;
+            public float SpeedScale = 1.0f;
+        }
+
+        class Processor
+        {
+            public MovementProcessorDelegate Handler;
+            public float Distance;
+            public float Power;
+        }
+
+        List<MovementProcessor> _processors = new List<MovementProcessor>();
+
         public Vector3 WindDirection
         {
             get => _state.WindDir;
+        }
+
+        private void SetupProcessors()
+        {
+            _processors.Clear();
+
+            // Zero init the list based on group count.
+            for (int i = 0; i < _state.GroupCount; i++)
+            {
+                _processors.Add(new MovementProcessor());
+            }
+
+            foreach (var processorGroup in _state.Config.Processors)
+            {
+                var processors = new List<Processor>();
+                foreach (var processor in processorGroup.Entries)
+                {
+                    var entry = new Processor();
+                    entry.Distance = processor.Distance;
+                    entry.Power = processor.Power;
+                    switch (processor.Type)
+                    {
+                        case Config.MovementProcessorType.Flock:
+                            entry.Handler = Flock;
+                            break;
+                        case Config.MovementProcessorType.Align:
+                            entry.Handler = Align;
+                            break;
+                        case Config.MovementProcessorType.Avoid:
+                            entry.Handler = Avoid;
+                            break;
+                        case Config.MovementProcessorType.Group:
+                            entry.Handler = Group;
+                            break;
+                        case Config.MovementProcessorType.GroupAvoid:
+                            entry.Handler = GroupAvoid;
+                            break;
+                        case Config.MovementProcessorType.Wind:
+                            entry.Handler = Wind;
+                            break;
+                        case Config.MovementProcessorType.StickToRoads:
+                            entry.Handler = StickToRoads;
+                            break;
+                        case Config.MovementProcessorType.WorldEvents:
+                            entry.Handler = WorldEvents;
+                            break;
+                        case Config.MovementProcessorType.Invalid:
+                            throw new InvalidOperationException("Invalid movement processor type");
+                        default:
+                            throw new InvalidOperationException("Unhandled movement processor type: " + processor.Type.ToString());
+
+                    }
+                    processors.Add(entry);
+                }
+
+                if (processorGroup.Group == -1)
+                {
+                    // Fill all.
+                    for (int i = 0; i < _processors.Count; i++)
+                    {
+                        _processors[i].Entries = processors;
+                        _processors[i].SpeedScale = processorGroup.SpeedScale;
+                    }
+                }
+                else
+                {
+                    // Override.
+                    _processors[processorGroup.Group].Entries = processors;
+                    _processors[processorGroup.Group].SpeedScale = processorGroup.SpeedScale;
+                }
+            }
         }
 
         public void Tick()
@@ -26,23 +118,17 @@ namespace WalkerSim
             float maxNeighborDistance = 750f;
 
             // We make a copy of the events to avoid locking/unlocking per agent.
-            var events = new List<EventData>();
             lock (_state)
             {
-                events.AddRange(_state.Events);
+                _events.Clear();
+                _events.AddRange(_state.Events);
             }
 
             var maxUpdates = 500;
             var now = DateTime.Now;
             var agents = _state.Agents;
-            var worldMins = _state.WorldMins;
-            var worldMaxs = _state.WorldMaxs;
-            var nearby = new List<Agent>();
 
-            // This is mostly thread-safe, it might race the position but we don't need it super accurate.
-            //System.Threading.Tasks.Parallel.For(0, agents.Count, i =>
-            //agents.ForEach((agent) =>
-            for (int i = 0; i < maxUpdates; i++)
+            for (int iteration = 0; iteration < maxUpdates; iteration++)
             {
                 var agentIndex = (int)(_state.SlowIterator % agents.Count);
                 var agent = agents[agentIndex];
@@ -57,6 +143,8 @@ namespace WalkerSim
                     return;
 
 #if DEBUG
+                var worldMins = _state.WorldMins;
+                var worldMaxs = _state.WorldMaxs;
                 Debug.Assert(agent.Index == agentIndex);
                 Debug.Assert(agent.Position.X >= worldMins.X);
                 Debug.Assert(agent.Position.X <= worldMaxs.X);
@@ -64,63 +152,27 @@ namespace WalkerSim
                 Debug.Assert(agent.Position.Y <= worldMaxs.Y);
 #endif
 
-                nearby.Clear();
-                QueryNearby(agent.Position, agent.Index, maxNeighborDistance, nearby);
+                _nearby.Clear();
+                QueryNearby(agent.Position, agent.Index, maxNeighborDistance, _nearby);
 
                 var curVel = agent.Velocity;
 
+                var processorGroup = _processors[agent.Group];
+                for (int i = 0; i < processorGroup.Entries.Count; i++)
                 {
-                    var addVel = Flock(agent, nearby, 150f, .003f);
-                    addVel.Validate();
-                    curVel += addVel;
-                }
+                    var processor = processorGroup.Entries[i];
 
-                {
-                    var addVel = Align(agent, nearby, 150f, .001f);
+                    var addVel = processor.Handler(_state, agent, _events, _nearby, processor.Distance, processor.Power);
                     addVel.Validate();
-                    curVel += addVel;
-                }
 
-                {
-                    var addVel = Avoid(agent, nearby, 50f, .002f);
-                    addVel.Validate();
-                    curVel += addVel;
-                }
-
-                {
-                    var addVel = Group(agent, nearby, 250f, .0001f);
-                    addVel.Validate();
-                    curVel += addVel;
-                }
-
-                {
-                    var addVel = GroupAvoid(agent, nearby, 150f, .0001f);
-                    addVel.Validate();
-                    curVel += addVel;
-                }
-
-                {
-                    var addVel = Wind(agent, nearby, .05f);
-                    addVel.Validate();
-                    curVel += addVel;
-                }
-
-                {
-                    var addVel = StickToRoads(agent, nearby, .04f);
-                    addVel.Validate();
-                    curVel += addVel;
-                }
-
-                {
-                    var addVel = ProcessEvents(events, agent, .05f);
-                    addVel.Validate();
                     curVel += addVel;
                 }
 
                 curVel.Validate();
                 agent.Velocity = curVel;
 
-                MoveForward(agent, (float)deltaTime.TotalSeconds);
+                MoveForward(agent, (float)deltaTime.TotalSeconds, processorGroup.SpeedScale);
+
                 //BounceOffWalls(ref agent);
                 Warp(agent);
             }
@@ -181,7 +233,7 @@ namespace WalkerSim
             return averageTickTime;
         }
 
-        private Vector3 Flock(Agent agent, List<Agent> nearby, float distance, float power)
+        private static Vector3 Flock(State state, Agent agent, List<EventData> events, List<Agent> nearby, float distance, float power)
         {
             var distanceSqr = distance;
             // point toward the center of the flock (mean flock boid position)
@@ -204,7 +256,7 @@ namespace WalkerSim
             return center * power;
         }
 
-        private Vector3 Align(Agent agent, List<Agent> nearby, float distance, float power)
+        private static Vector3 Align(State state, Agent agent, List<EventData> events, List<Agent> nearby, float distance, float power)
         {
             var distanceSqr = distance;
             // point toward the center of the flock (mean flock boid position)
@@ -230,7 +282,7 @@ namespace WalkerSim
             return delta * power;
         }
 
-        private Vector3 Avoid(Agent agent, List<Agent> nearby, float distance, float power)
+        private static Vector3 Avoid(State state, Agent agent, List<EventData> events, List<Agent> nearby, float distance, float power)
         {
             var distanceSqr = distance;
             // point away as boids get close
@@ -247,7 +299,7 @@ namespace WalkerSim
             return sumCloseness * power;
         }
 
-        private Vector3 Group(Agent agent, List<Agent> nearby, float distance, float power)
+        private static Vector3 Group(State state, Agent agent, List<EventData> events, List<Agent> nearby, float distance, float power)
         {
             var distanceSqr = distance;
             // point towards same group
@@ -269,54 +321,55 @@ namespace WalkerSim
             return sumCloseness * power;
         }
 
-        private Vector3 GroupAvoid(Agent agent, List<Agent> nearby, float distance, float power)
+        private static Vector3 GroupAvoid(State state, Agent agent, List<EventData> events, List<Agent> nearby, float distance, float power)
         {
-            var groupCount = _groupCount;
+            var groupCount = state.GroupCount;
             var distanceSqr = distance;
-            // point away from other groups.
-            var sumCloseness = Vector3.Zero;
+
+            var sum = Vector3.Zero;
+            var count = 0;
             for (int i = 0; i < nearby.Count; i++)
             {
                 var neighbor = nearby[i];
+                if (neighbor.Group == agent.Group)
+                    continue;
+
                 var distanceAway = Vector3.Distance(agent.Position, neighbor.Position);
                 if (distanceAway > distanceSqr)
                     continue;
 
-                float groupDistance = ((float)Math.Abs(agent.Group - neighbor.Group) / (float)groupCount);
-                float groupDislikeFactor = groupDistance * 0.6f;
-                float closeness = distanceSqr - distanceAway;
-
-                var delta = agent.Position - neighbor.Position;
-                delta.Z = 0;
-
-                sumCloseness += delta * (closeness * groupDislikeFactor);
+                sum += neighbor.Position;
             }
 
-            return sumCloseness * power;
+            if (count == 0)
+                return Vector3.Zero;
+
+            var delta = (sum / count) - agent.Position;
+            return delta * power;
         }
 
-        private Vector3 Wind(Agent agent, List<Agent> _, float power)
+        private static Vector3 Wind(State state, Agent agent, List<EventData> events, List<Agent> nearby, float distance, float power)
         {
-            return _state.WindDir * power;
+            return state.WindDir * power;
         }
 
-        private Vector3 StickToRoads(Agent agent, List<Agent> _, float power)
+        private static Vector3 StickToRoads(State state, Agent agent, List<EventData> events, List<Agent> nearby, float distance, float power)
         {
             // Remap the position to the roads bitmap.
-            if (MapData == null)
+            if (state.MapData == null)
             {
                 return Vector3.Zero;
             }
 
-            var roads = MapData.Roads;
+            var roads = state.MapData.Roads;
             if (roads == null)
             {
                 return Vector3.Zero;
             }
 
             var pos = agent.Position;
-            var worldMins = _state.WorldMins;
-            var worldMaxs = _state.WorldMaxs;
+            var worldMins = state.WorldMins;
+            var worldMaxs = state.WorldMaxs;
 
             var x = Math.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, roads.Width);
             var y = Math.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, roads.Height);
@@ -345,7 +398,7 @@ namespace WalkerSim
             return Vector3.Zero;
         }
 
-        private Vector3 ProcessEvents(IReadOnlyList<EventData> events, Agent agent, float power)
+        private Vector3 WorldEvents(State state, Agent agent, List<EventData> events, List<Agent> nearby, float distance, float power)
         {
             Vector3 sum = Vector3.Zero;
 
@@ -377,8 +430,11 @@ namespace WalkerSim
             return sum * power;
         }
 
-        public void MoveForward(Agent agent, float deltaTime, float minSpeed = 1, float maxSpeed = 5)
+        public void MoveForward(Agent agent, float deltaTime, float power)
         {
+            // Cap the deltaTime
+            deltaTime = System.Math.Min(deltaTime, 0.2f);
+
             // Keep the Z axis clean.
             agent.Position.Z = 0;
             agent.Velocity.Z = 0;
@@ -389,25 +445,8 @@ namespace WalkerSim
             var vel = agent.Velocity;
             vel.Validate();
 
-            var speed = vel.Magnitude();
-            if (speed == 0f)
-            {
-                vel = Vector3.One * minSpeed;
-            }
-            else if (speed > maxSpeed)
-            {
-                vel = (vel / speed) * maxSpeed;
-            }
-            else if (speed < minSpeed)
-            {
-                vel = (vel / speed) * minSpeed;
-            }
-            vel.Validate();
-
-            float speedScale = 2.0f;
-
             var dir = Vector3.Normalize(vel);
-            pos += (dir * speedScale) * deltaTime;
+            pos += (dir * power) * deltaTime;
             pos.Validate();
 
             agent.Velocity = vel;

@@ -17,12 +17,11 @@ namespace WalkerSim
         public static Simulation Instance = new Simulation();
 
         public float TimeScale = 1.0f;
-        public readonly float TickRate = 1f / 40f;
+        public readonly float TickRate = 1f / 60f;
 
         private float _accumulator = 0f;
         private int _ticks = 0;
 
-        private MapData _mapData;
         private bool _initialized = false;
 
         private Thread _thread;
@@ -31,15 +30,14 @@ namespace WalkerSim
 
         private Vector3[] _groupStarts = new Vector3[0];
 
-        private int _groupCount = 0;
         public int GroupCount
         {
-            get => _groupCount;
+            get => _state.GroupCount;
         }
 
         public MapData MapData
         {
-            get => _mapData;
+            get => _state.MapData;
         }
 
         public IReadOnlyList<Agent> Agents
@@ -85,6 +83,7 @@ namespace WalkerSim
 
             SetupGrid();
             Populate();
+            SetupProcessors();
 
             _initialized = true;
             _accumulator = 0.0f;
@@ -114,8 +113,8 @@ namespace WalkerSim
 
         public bool LoadMapData(string directoryPath)
         {
-            _mapData = MapData.LoadFromFolder(directoryPath);
-            if (_mapData == null)
+            _state.MapData = MapData.LoadFromFolder(directoryPath);
+            if (_state.MapData == null)
                 return false;
 
             return true;
@@ -176,7 +175,7 @@ namespace WalkerSim
 
         Vector3 GetRandomPOIPosition()
         {
-            var mapData = _mapData;
+            var mapData = _state.MapData;
             var prefabs = mapData.Prefabs;
             var decos = prefabs.Decorations;
             var prng = _state.PRNG;
@@ -249,13 +248,13 @@ namespace WalkerSim
 
             agents.Clear();
 
-            _groupCount = config.MaxAgents / config.GroupSize;
+            _state.GroupCount = config.MaxAgents / config.GroupSize;
             if (config.MaxAgents % config.GroupSize != 0)
             {
-                _groupCount++;
+                _state.GroupCount++;
             }
 
-            _groupStarts = new Vector3[_groupCount];
+            _groupStarts = new Vector3[_state.GroupCount];
             for (int i = 0; i < _groupStarts.Length; i++)
             {
                 _groupStarts[i] = GetStartLocation();
