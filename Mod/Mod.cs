@@ -112,14 +112,20 @@ namespace WalkerSim
             InitializeSimWorld();
 
             var simulation = Simulation.Instance;
+            var config = simulation.Config;
 
-            Logging.Out("Spinning up simulation...");
-            for (int i = 0; i < 5000; i++)
+            // Advance the simulation by specified ticks.
+            if (config.TicksToAdvanceOnStartup > 0)
             {
-                simulation.Tick();
+                Logging.Out("Spinning up simulation...");
+                for (int i = 0; i < config.TicksToAdvanceOnStartup; i++)
+                {
+                    simulation.Tick();
+                }
+
+                Logging.Out("done, starting simulation.");
             }
 
-            Logging.Out("done, starting simulation.");
             simulation.Start();
         }
 

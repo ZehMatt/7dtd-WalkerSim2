@@ -165,6 +165,11 @@
             <xs:documentation>Agents will be assigned to a group, this specifies how many members a group will have</xs:documentation>
           </xs:annotation>
         </xs:element>
+        <xs:element name="TicksToAdvanceOnStartup" type="xs:int" default="0">
+          <xs:annotation>
+            <xs:documentation>In case a new simulation starts this is the amount of ticks it will advance in one go</xs:documentation>
+          </xs:annotation>
+        </xs:element>
         <xs:element name="StartAgentsGrouped" type="xs:boolean">
           <xs:annotation>
             <xs:documentation>This will put agents of the same group closer together at initial start of the simulation</xs:documentation>

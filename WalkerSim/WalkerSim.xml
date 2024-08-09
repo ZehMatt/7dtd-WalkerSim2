@@ -11,6 +11,9 @@
 
   <!-- Agents will be assigned to a group, this specifies how many members a group will have -->
   <GroupSize>25</GroupSize>
+  
+  <!-- In case a new simulation starts this is the amount of ticks it will advance in one go -->
+  <TicksToAdvanceOnStartup>0</TicksToAdvanceOnStartup>
 
   <!-- This will put agents of the same group closer together at initial start of the simulation -->
   <StartAgentsGrouped>false</StartAgentsGrouped>

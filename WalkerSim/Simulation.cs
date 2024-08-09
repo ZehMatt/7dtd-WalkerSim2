@@ -35,6 +35,11 @@ namespace WalkerSim
             get => _state.GroupCount;
         }
 
+        public Config Config
+        {
+            get => _state.Config;
+        }
+
         public MapData MapData
         {
             get => _state.MapData;
