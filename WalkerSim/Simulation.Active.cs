@@ -55,41 +55,47 @@ namespace WalkerSim
             }
         }
 
+        private bool IsInsidePlayerMaxView(Vector3 pos)
+        {
+            foreach (var ply in _state.Players)
+            {
+                if (!ply.Value.IsAlive)
+                    continue;
+
+                var dist = Vector3.Distance(pos, ply.Value.Position);
+
+                // We add a little offset to avoid constant spawn-despawning.
+                if (dist >= ply.Value.ViewRadius + 8)
+                {
+                    continue;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
         private void CheckAgentDespawn()
         {
+            if (_agentDespawnHandler == null)
+                return;
+
             foreach (var kv in _state.Active)
             {
                 var agent = kv.Value;
                 if (agent.CurrentState != Agent.State.Active)
                     continue;
 
-                var pos = agent.Position;
-
-                var isNearPlayer = false;
-                foreach (var ply in _state.Players)
-                {
-                    if (!ply.Value.IsAlive)
-                        continue;
-
-                    var dist = agent.GetDistance(ply.Value.Position);
-
-                    // NOTE: It has to be fully outside to avoid constant spawning/despawning.
-                    if (dist <= (ply.Value.ViewRadius + 8))
-                        continue;
-
-                    isNearPlayer = true;
-                    break;
-                }
-
-                if (!isNearPlayer)
+                var insidePlayerView = IsInsidePlayerMaxView(agent.Position);
+                if (insidePlayerView)
                     continue;
 
-                if (_agentDespawnHandler != null)
-                {
-                    _agentDespawnHandler(agent);
+                // Handle the despawn.
+                _agentDespawnHandler(agent);
 
-                    agent.CurrentState = Agent.State.Wandering;
-                }
+                // Activate in simulation.
+                agent.CurrentState = Agent.State.Wandering;
             }
         }
     }
