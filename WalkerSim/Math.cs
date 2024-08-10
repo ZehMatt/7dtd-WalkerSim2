@@ -20,6 +20,17 @@ namespace WalkerSim
             return value;
         }
 
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int Clamp(int value, int min, int max)
+        {
+            if (value < min)
+                return min;
+            if (value > max)
+                return max;
+            return value;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Abs(int value)
         {

@@ -156,6 +156,15 @@ namespace WalkerSim
             return config.Processors.Any(x => x.Group == group);
         }
 
+        private static void SanitizeConfig(Config config)
+        {
+            if (config.MaxAgents <= 0 || config.MaxAgents > 30_000)
+            {
+                Logging.Warn("Invalid value for MaxAgents (Min: 1, Max: 30000), clamping.");
+                config.MaxAgents = Math.Clamp(config.MaxAgents, 1, 30000);
+            }
+        }
+
         public static Config LoadFromFile(string filePath)
         {
             var serializer = new XmlSerializer(typeof(Config));
@@ -164,6 +173,10 @@ namespace WalkerSim
                 using (var reader = new System.IO.StreamReader(filePath))
                 {
                     var config = (Config)serializer.Deserialize(reader);
+                    if (config == null)
+                        return null;
+
+                    SanitizeConfig(config);
                     return config;
                 }
             }
