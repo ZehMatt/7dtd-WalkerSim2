@@ -22,6 +22,7 @@ namespace WalkerSim
             public float WindTime = 0;
             public int TickNextWindChange = 0;
             public int GroupCount = 0;
+            public float MaxNeighbourDistance = 0;
 
             public void Reset()
             {

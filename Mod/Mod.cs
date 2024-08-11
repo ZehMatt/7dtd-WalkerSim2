@@ -156,7 +156,10 @@ namespace WalkerSim
             {
                 var agent = kv.Value;
                 if (agent.EntityId == -1)
+                {
+                    Logging.Debug("Agent has no entity id, skipping.");
                     continue;
+                }
 
                 var entity = world.GetEntity(agent.EntityId);
                 if (entity == null)
@@ -165,6 +168,7 @@ namespace WalkerSim
 
                     // Mark as dead so it will be sweeped.
                     agent.CurrentState = Agent.State.Dead;
+                    agent.EntityId = -1;
                     agent.ResetSpawnData();
 
                     continue;
@@ -176,6 +180,7 @@ namespace WalkerSim
 
                     // Mark as dead so it will be sweeped.
                     agent.CurrentState = Agent.State.Dead;
+                    agent.EntityId = -1;
                     agent.ResetSpawnData();
 
                     continue;
@@ -302,6 +307,9 @@ namespace WalkerSim
                 }
             }
 
+            var simulation = Simulation.Instance;
+
+#if false
             // Log all variables from noise.
             Logging.Debug("Noise: {0}, Volume: {1}, Duration: {2}, MuffledWhenCrouched: {3}, HeatMapStrength: {4}, HeatMapWorldTimeToLive: {5}",
                                clipName,
@@ -310,13 +318,14 @@ namespace WalkerSim
                                noise.muffledWhenCrouched,
                                noise.heatMapStrength,
                                noise.heatMapWorldTimeToLive);
-
-            var simulation = Simulation.Instance;
+#endif
 
             var sndInfo = SoundInfo.GetSoundInfo(clipName);
             if (sndInfo == null)
             {
+#if false
                 Logging.Debug("Not SoundInfo for: {0}", clipName);
+#endif
                 return;
             }
 

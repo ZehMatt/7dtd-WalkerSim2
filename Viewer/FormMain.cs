@@ -53,6 +53,8 @@ namespace WalkerSim.Viewer
             gr = System.Drawing.Graphics.FromImage(bitmap);
             simCanvas.Image = bitmap;
 
+            // "G:\Steam\steamapps\common\7 Days To Die\Data\Worlds\Navezgane"
+            // "C:\Users\Matt\AppData\Roaming\7DaysToDie\GeneratedWorlds\Ducufa Valley"
             simulation.LoadMapData(@"C:\Users\Matt\AppData\Roaming\7DaysToDie\GeneratedWorlds\Ducufa Valley");
             simulation.Reset(WorldMins, WorldMaxs, Config);
 
@@ -122,9 +124,22 @@ namespace WalkerSim.Viewer
             RenderSimulation();
         }
 
-        Vector3 RemapPosition(Vector3 pos)
+        Vector3 SimPosToBitmapPos(Vector3 pos)
         {
             return simulation.RemapPosition2D(pos, Vector3.Zero, new Vector3(ImageWidth, ImageHeight));
+        }
+
+
+        Vector3 BitmapPosToSimPos(int x, int y)
+        {
+            var sim = Simulation.Instance;
+            var worldMins = sim.WorldMins;
+            var worldMaxs = sim.WorldMaxs;
+
+            var newX = Math.Remap(x, 0, ImageWidth, worldMins.X, worldMaxs.X);
+            var newY = Math.Remap(y, 0, ImageHeight, worldMins.Y, worldMaxs.Y);
+
+            return new Vector3(newX, newY);
         }
 
         private Bitmap GetCachedRoadsBitmap()
@@ -181,19 +196,25 @@ namespace WalkerSim.Viewer
         {
             gr.Clear(System.Drawing.Color.Black);
 
-            var roadsBitmap = GetCachedRoadsBitmap();
-            if (roadsBitmap != null)
+            if (viewRoads.Checked)
             {
-                gr.DrawImage(roadsBitmap, 0, 0);
+                var roadsBitmap = GetCachedRoadsBitmap();
+                if (roadsBitmap != null)
+                {
+                    gr.DrawImage(roadsBitmap, 0, 0);
+                }
             }
 
-            var agents = simulation.Agents;
-            foreach (var agent in agents)
+            if (viewAgents.Checked)
             {
-                var imagePos = RemapPosition(agent.Position);
+                var agents = simulation.Agents;
+                foreach (var agent in agents)
+                {
+                    var imagePos = SimPosToBitmapPos(agent.Position);
 
-                var color = GroupColors[agent.Group % GroupColors.Length];
-                gr.FillRectangle(color, imagePos.X, imagePos.Y, 1f, 1f);
+                    var color = GroupColors[agent.Group % GroupColors.Length];
+                    gr.FillRectangle(color, imagePos.X, imagePos.Y, 1f, 1f);
+                }
             }
 
             var plyIdx = 0;
@@ -201,7 +222,7 @@ namespace WalkerSim.Viewer
             foreach (var kv in simulation.Players)
             {
                 var player = kv.Value;
-                var imagePos = RemapPosition(player.Position);
+                var imagePos = SimPosToBitmapPos(player.Position);
 
                 var color = PlayerColors[plyIdx++ % PlayerColors.Length];
                 //gr.FillRectangle(color, imagePos.X, imagePos.Y, 1f, 1f);
@@ -211,13 +232,35 @@ namespace WalkerSim.Viewer
                 gr.DrawEllipse(Pens.Blue, imagePos.X - viewRadius, imagePos.Y - viewRadius, viewRadius * 2, viewRadius * 2);
             }
 
-            foreach (var ev in simulation.Events)
+            if (viewEvents.Checked)
             {
-                var imagePos = RemapPosition(ev.Position);
-                var radius = Math.Remap(ev.Radius, 0, worldSize.X, 0, ImageWidth);
+                foreach (var ev in simulation.Events)
+                {
+                    var imagePos = SimPosToBitmapPos(ev.Position);
+                    var radius = Math.Remap(ev.Radius, 0, worldSize.X, 0, ImageWidth);
 
-                gr.DrawEllipse(Pens.Red, imagePos.X - radius, imagePos.Y - radius, radius * 2, radius * 2);
+                    gr.DrawEllipse(Pens.Red, imagePos.X - radius, imagePos.Y - radius, radius * 2, radius * 2);
+                }
             }
+
+            if (Tool.Active != null)
+            {
+                var mousePos = simCanvas.PointToClient(MousePosition);
+                var imagePos = simCanvas.TranslateToImagePosition(mousePos);
+                var simPos = BitmapPosToSimPos(imagePos.X, imagePos.Y);
+
+                if (simPos.X < simulation.WorldMins.X)
+                    return;
+                if (simPos.Y < simulation.WorldMins.Y)
+                    return;
+                if (simPos.X > simulation.WorldMaxs.X)
+                    return;
+                if (simPos.Y > simulation.WorldMaxs.Y)
+                    return;
+
+                Tool.Active.DrawPreview(simCanvas, gr, simPos);
+            }
+
         }
 
         private void RenderSimulation()
@@ -230,6 +273,37 @@ namespace WalkerSim.Viewer
         private void restartToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void simCanvas_MouseClick(object sender, MouseEventArgs e)
+        {
+            var simulation = Simulation.Instance;
+
+            var imagePos = simCanvas.TranslateToImagePosition(e.Location);
+            var simPos = BitmapPosToSimPos(imagePos.X, imagePos.Y);
+
+            if (simPos.X < simulation.WorldMins.X)
+                return;
+            if (simPos.Y < simulation.WorldMins.Y)
+                return;
+            if (simPos.X > simulation.WorldMaxs.X)
+                return;
+            if (simPos.Y > simulation.WorldMaxs.Y)
+                return;
+
+            if (Tool.Active != null)
+            {
+                Tool.Active.OnClick(simPos);
+            }
+
+            Tool.Active = null;
+            simCanvas.Cursor = Cursors.Default;
+        }
+
+        private void OnClickSoundEmit(object sender, EventArgs e)
+        {
+            Tool.Active = new SoundEventTool();
+            simCanvas.Cursor = Cursors.Cross;
         }
     }
 }

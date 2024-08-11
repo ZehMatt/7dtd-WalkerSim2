@@ -27,6 +27,8 @@ namespace WalkerSim
         private void AddActiveAgent(int entityId, Agent agent)
         {
             _state.Active.Add(entityId, agent);
+
+            Logging.Debug("Added agent with entity id {0} to active list, list size {1}", entityId, _state.Active.Count);
         }
 
         private void RemoveInactiveAgents()
@@ -43,6 +45,7 @@ namespace WalkerSim
 
             foreach (var entityId in _cleanUpList)
             {
+                Logging.Debug("Removed agent with entity id {0} from active list", entityId);
                 _state.Active.Remove(entityId);
             }
         }

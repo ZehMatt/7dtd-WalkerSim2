@@ -55,6 +55,16 @@ namespace WalkerSim
             get => _state.WorldMaxs - _state.WorldMins;
         }
 
+        public Vector3 WorldMins
+        {
+            get => _state.WorldMins;
+        }
+
+        public Vector3 WorldMaxs
+        {
+            get => _state.WorldMaxs;
+        }
+
         public void Stop()
         {
             if (_thread == null)

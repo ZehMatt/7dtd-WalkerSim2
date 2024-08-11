@@ -106,6 +106,17 @@ namespace WalkerSim
                     _processors[processorGroup.Group].SpeedScale = processorGroup.SpeedScale;
                 }
             }
+
+            // Find the maximum query distance.
+            _state.MaxNeighbourDistance = 0.0f;
+
+            foreach (var processorList in _processors)
+            {
+                foreach (var processor in processorList.Entries)
+                {
+                    _state.MaxNeighbourDistance = System.Math.Max(_state.MaxNeighbourDistance, processor.Distance);
+                }
+            }
         }
 
         public void Tick()
@@ -115,7 +126,7 @@ namespace WalkerSim
             UpdateWindDirection();
             UpdateEvents();
 
-            float maxNeighborDistance = 750f;
+            float maxNeighborDistance = _state.MaxNeighbourDistance;
 
             // We make a copy of the events to avoid locking/unlocking per agent.
             lock (_state)
@@ -155,7 +166,7 @@ namespace WalkerSim
                 _nearby.Clear();
                 QueryNearby(agent.Position, agent.Index, maxNeighborDistance, _nearby);
 
-                var curVel = agent.Velocity;
+                var curVel = Vector3.Zero;
 
                 var processorGroup = _processors[agent.Group];
                 for (int i = 0; i < processorGroup.Entries.Count; i++)
@@ -171,7 +182,7 @@ namespace WalkerSim
                 curVel.Validate();
                 agent.Velocity = curVel;
 
-                MoveForward(agent, (float)deltaTime.TotalSeconds, processorGroup.SpeedScale);
+                ApplyMovement(agent, (float)deltaTime.TotalSeconds, processorGroup.SpeedScale);
 
                 //BounceOffWalls(ref agent);
                 Warp(agent);
@@ -403,8 +414,9 @@ namespace WalkerSim
             Vector3 sum = Vector3.Zero;
 
             float n = 0;
-            foreach (var ev in events)
+            for (int i = 0; i < events.Count; i++)
             {
+                var ev = events[i];
                 if (ev.Type == EventType.Noise)
                 {
                     var dist = Vector3.Distance(agent.Position, ev.Position);
@@ -430,7 +442,7 @@ namespace WalkerSim
             return sum * power;
         }
 
-        public void MoveForward(Agent agent, float deltaTime, float power)
+        public void ApplyMovement(Agent agent, float deltaTime, float power)
         {
             // Cap the deltaTime
             deltaTime = System.Math.Min(deltaTime, 0.2f);

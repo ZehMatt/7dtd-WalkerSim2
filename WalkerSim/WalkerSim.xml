@@ -10,7 +10,7 @@
   <MaxAgents>15000</MaxAgents>
 
   <!-- Agents will be assigned to a group, this specifies how many members a group will have -->
-  <GroupSize>25</GroupSize>
+  <GroupSize>500</GroupSize>
   
   <!-- In case a new simulation starts this is the amount of ticks it will advance in one go -->
   <TicksToAdvanceOnStartup>0</TicksToAdvanceOnStartup>
@@ -25,7 +25,7 @@
           RandomPOI: Random POI position.
           Mixed: Selects a random choice from above for each agent.
   -->
-  <AgentStartPosition>Mixed</AgentStartPosition>
+  <AgentStartPosition>RandomLocation</AgentStartPosition>
 
   <!-- The position of where the agent will be placed when the in-game actor ceases to exist.
        Choices:
@@ -35,7 +35,7 @@
           RandomPOI: Random POI position.
           Mixed: Selects a random choice from above for each agent excluding 'None'.
   -->
-  <AgentRespawnLocation>RandomBorderLocation</AgentRespawnLocation>
+  <AgentRespawnLocation>RandomLocation</AgentRespawnLocation>
 
   <!-- The option specifies if the simulation should be paused when no players are on the server -->
   <PauseWithoutPlayers>true</PauseWithoutPlayers>
@@ -56,26 +56,43 @@
           StickToRoads: Agents will steer towards close by roads.
   -->
   <MovementProcessors Group="-1" SpeedScale="1.0">
-    <!-- Without specifying a Group it will apply to all groups. -->
     <Processor Type="Flock" Distance="150.0" Power="0.003" />
     <Processor Type="Align" Distance="150.0" Power="0.001" />
     <Processor Type="Avoid" Distance="50.0" Power="0.002" />
-    <Processor Type="Group" Distance="250.0" Power="0.0001" />
-    <Processor Type="GroupAvoid" Distance="250.0" Power="0.01" />
+    <Processor Type="Group" Distance="50.0" Power="0.002" />
+    <Processor Type="GroupAvoid" Distance="50.0" Power="0.04" />
     <Processor Type="Wind" Power="0.07" />
-    <Processor Type="StickToRoads" Power="0.09" />
+    <Processor Type="StickToRoads" Power="0.01" />
     <Processor Type="WorldEvents" Power="0.05" />
   </MovementProcessors>
 
   <MovementProcessors Group="0" SpeedScale="1.0">
-    <!-- All of the following processors only apply to group with index 1. -->
     <Processor Type="Flock" Distance="150.0" Power="0.003" />
     <Processor Type="Align" Distance="150.0" Power="0.001" />
     <Processor Type="Avoid" Distance="50.0" Power="0.002" />
-    <Processor Type="Group" Distance="250.0" Power="0.01" />
-    <Processor Type="GroupAvoid" Distance="150.0" Power="0.01" />
-    <Processor Type="Wind" Power="0.0001" />
-    <Processor Type="StickToRoads" Power="0.4" />
+    <Processor Type="Group" Distance="50.0" Power="0.002" />
+    <Processor Type="GroupAvoid" Distance="50.0" Power="0.08" />
+    <Processor Type="Wind" Power="0.007" />
+    <Processor Type="WorldEvents" Power="0.05" />
+  </MovementProcessors>
+
+  <MovementProcessors Group="1" SpeedScale="1.0">
+    <Processor Type="Flock" Distance="150.0" Power="0.003" />
+    <Processor Type="Align" Distance="150.0" Power="0.001" />
+    <Processor Type="Avoid" Distance="50.0" Power="0.002" />
+    <Processor Type="Group" Distance="50.0" Power="0.002" />
+    <Processor Type="GroupAvoid" Distance="50.0" Power="0.8" />
+    <Processor Type="Wind" Power="0.007" />
+    <Processor Type="WorldEvents" Power="0.05" />
+  </MovementProcessors>
+
+  <MovementProcessors Group="2" SpeedScale="1.0">
+    <Processor Type="Flock" Distance="150.0" Power="0.003" />
+    <Processor Type="Align" Distance="150.0" Power="0.001" />
+    <Processor Type="Avoid" Distance="50.0" Power="0.002" />
+    <Processor Type="Group" Distance="50.0" Power="0.002" />
+    <Processor Type="GroupAvoid" Distance="50.0" Power="0.8" />
+    <Processor Type="Wind" Power="0.007" />
     <Processor Type="WorldEvents" Power="0.05" />
   </MovementProcessors>
 

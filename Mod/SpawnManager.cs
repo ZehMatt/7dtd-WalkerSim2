@@ -33,11 +33,13 @@ namespace WalkerSim
 
             if (!world.CanMobsSpawnAtPos(position))
             {
+                Logging.Debug("CanMobsSpawnAtPos returned false for position {0}", position);
                 return false;
             }
 
             if (world.isPositionInRangeOfBedrolls(position))
             {
+                Logging.Debug("Position {0} is near a bedroll", position);
                 return false;
             }
 
@@ -144,11 +146,11 @@ namespace WalkerSim
 
             if (!CanSpawnAtPosition(worldPos))
             {
-                Logging.Debug("Failed to spawn agent, position not suitable at {0}, {1}, {2}", worldPos.x, worldPos.y, worldPos.z);
+                Logging.Debug("Failed to spawn agent, position not suitable at {0}", worldPos);
                 return -1;
             }
 
-            Logging.Out("Spawning agent at {0}, {1}, {2}", worldPos.x, worldPos.y, worldPos.z);
+            Logging.Out("Spawning agent at {0}", worldPos);
 
             // Use previously assigned entity class id.
             int entityClassId = agent.EntityClassId;
@@ -213,7 +215,7 @@ namespace WalkerSim
             agent.CurrentState = Agent.State.Active;
             agent.Health = spawnedAgent.Health;
 
-            Logging.Debug("Agent spawned at {0}, {1}, {2}, entity id {3}", worldPos.x, worldPos.y, worldPos.z, spawnedAgent.entityId);
+            Logging.Debug("Agent spawned at {0}, entity id {1}", worldPos, spawnedAgent.entityId);
 
             return spawnedAgent.entityId;
         }
@@ -236,10 +238,10 @@ namespace WalkerSim
             // Retain current state.
             agent.Health = entity.Health;
 
-            agent.Velocity = new Vector3(entity.moveDirection.x, entity.moveDirection.z, entity.moveDirection.y);
+            agent.Velocity = VectorUtils.ToSim(entity.moveDirection);
             agent.Velocity.Validate();
 
-            agent.Position = new Vector3(entity.position.x, entity.position.z, entity.position.y);
+            agent.Position = VectorUtils.ToSim(entity.position);
             agent.Position.Validate();
 
             world.RemoveEntity(entity.entityId, EnumRemoveEntityReason.Despawned);

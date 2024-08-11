@@ -54,10 +54,10 @@ namespace WalkerSim
         public static void Debug(string message) => Message(Level.Info, message);
 
         [Conditional("DEBUG")]
-        public static void Debug(string format, params object[] args) => Message(Level.Error, string.Format(format, args));
+        public static void Debug(string format, params object[] args) => Message(Level.Info, string.Format(format, args));
 
         [Conditional("DEBUG")]
-        public static void DebugErr(string message) => Message(Level.Info, message);
+        public static void DebugErr(string message) => Message(Level.Error, message);
 
         [Conditional("DEBUG")]
         public static void DebugErr(string format, params object[] args) => Message(Level.Error, string.Format(format, args));

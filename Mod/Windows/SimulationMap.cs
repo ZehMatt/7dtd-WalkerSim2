@@ -74,6 +74,9 @@ namespace WalkerSim
 
             UnityEngine.RenderTexture.active = roadsTexture;
 
+            var colorMainRoad = new UnityEngine.Color(1.0f, 1.0f, 1.0f, 0.4f);
+            var colorOffRoad = new UnityEngine.Color(1.0f, 1.0f, 1.0f, 0.2f);
+
             {
                 GL.Clear(true, true, UnityEngine.Color.black);
 
@@ -92,7 +95,7 @@ namespace WalkerSim
                             var posX = Math.Remap(x, 0, roads.Width, 0, kWidth);
                             var posY = Math.Remap(y, 0, roads.Height, 0, kHeight);
 
-                            var color = roadType == RoadType.Asphalt ? UnityEngine.Color.red : UnityEngine.Color.green;
+                            var color = roadType == RoadType.Asphalt ? colorMainRoad : colorOffRoad;
                             Drawing.Primitives.DrawPixel(new UnityEngine.Vector2(posX, posY), color);
                         }
                     }
@@ -131,7 +134,15 @@ namespace WalkerSim
                         var pos = simulation.RemapPosition2D(agent.Position, Vector3.Zero, kCanvas);
                         var color = colors[agent.Group];
 
-                        Drawing.Primitives.DrawPixel(new UnityEngine.Vector2(pos.X, pos.Y), color);
+                        if (agent.CurrentState == Agent.State.Active)
+                        {
+                            Drawing.Primitives.DrawFilledCircle(new UnityEngine.Vector2(pos.X, pos.Y), 2, UnityEngine.Color.red);
+                        }
+                        else
+                        {
+                            Drawing.Primitives.DrawPixel(new UnityEngine.Vector2(pos.X, pos.Y), color);
+                        }
+
                     }
                 }
 

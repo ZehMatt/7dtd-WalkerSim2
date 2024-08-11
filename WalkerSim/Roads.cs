@@ -15,8 +15,7 @@ namespace WalkerSim
         const int ScaledWidth = 768;
         const int ScaledHeight = 768;
 
-        const int GridX = 32;
-        const int GridY = 32;
+        const int CellSize = 64;
 
         RoadType[] _data;
         int _width;
@@ -87,8 +86,8 @@ namespace WalkerSim
             res._data = data;
 
             // Create the grid.
-            res._gridWidth = (int)Math.Ceiling((float)width / GridX);
-            res._gridHeight = (int)Math.Ceiling((float)height / GridY);
+            res._gridWidth = (int)Math.Ceiling((float)width / CellSize);
+            res._gridHeight = (int)Math.Ceiling((float)height / CellSize);
             res._roadGrid = new Cell[res._gridWidth * res._gridHeight];
             for (int i = 0; i < res._roadGrid.Length; i++)
             {
@@ -107,8 +106,8 @@ namespace WalkerSim
                     if (roadType == RoadType.None)
                         continue;
 
-                    var cellX = x / GridX;
-                    var cellY = y / GridY;
+                    var cellX = x / CellSize;
+                    var cellY = y / CellSize;
                     var cellIndex = cellY * res._gridWidth + cellX;
                     var cell = res._roadGrid[cellIndex];
 
@@ -159,8 +158,8 @@ namespace WalkerSim
         {
             var closest = RoadPoint.Invalid;
 
-            var cellX = x / GridX;
-            var cellY = y / GridY;
+            var cellX = x / CellSize;
+            var cellY = y / CellSize;
             var cellIndex = cellY * _gridWidth + cellX;
             var cell = _roadGrid[cellIndex];
 

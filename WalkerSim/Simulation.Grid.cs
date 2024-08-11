@@ -4,9 +4,9 @@ namespace WalkerSim
 {
     internal partial class Simulation
     {
-        const int CellSize = 128;
+        const int CellSize = 96;
 
-        List<Agent>[] grid;
+        List<int>[] grid;
         int CellCountX = 0;
         int CellCountY = 0;
         int TotalCells = 0;
@@ -17,10 +17,10 @@ namespace WalkerSim
             CellCountY = (int)System.Math.Ceiling(WorldSize.Y / CellSize);
 
             TotalCells = CellCountX * CellCountY;
-            grid = new List<Agent>[TotalCells];
+            grid = new List<int>[TotalCells];
             for (int i = 0; i < TotalCells; i++)
             {
-                grid[i] = new List<Agent>();
+                grid[i] = new List<int>();
             }
         }
 
@@ -51,8 +51,9 @@ namespace WalkerSim
             {
                 if (agent.CellIndex != -1)
                 {
+                    // Remove from old cell.
                     var oldCellList = grid[agent.CellIndex];
-                    oldCellList.Remove(agent);
+                    oldCellList.Remove(agent.Index);
                 }
 
                 if (newCellIndex < 0)
@@ -60,8 +61,10 @@ namespace WalkerSim
                 if (newCellIndex >= TotalCells)
                     newCellIndex = TotalCells - 1;
 
+                // Add to new cell.
                 var newCellList = grid[newCellIndex];
-                newCellList.Add(agent);
+                newCellList.Add(agent.Index);
+
                 agent.CellIndex = newCellIndex;
             }
         }
@@ -74,8 +77,11 @@ namespace WalkerSim
 
             var cell = grid[cellIndex];
             var maxDistSqr = maxDist * maxDist;
-            foreach (var other in cell)
+            for (int i = 0; i < cell.Count; i++)
             {
+                var idx = cell[i];
+                var other = _state.Agents[idx];
+
                 if (other.CurrentState != Agent.State.Wandering)
                     continue;
 
@@ -107,28 +113,21 @@ namespace WalkerSim
             int cellX = (int)(remapX / CellSize);
             int cellY = (int)(remapY / CellSize);
 
-            // Center.
-            QueryCell(pos, cellX, cellY, excludeIndex, maxDistance, res);
+            // Calculate the number of cells to search in each direction based on maxDistance
+            int cellRadius = (int)(maxDistance / CellSize) + 1;
 
-            // NOTE: This is technically not the right way to do as it doesn't cover maxDistance.
-            // Due to performance reasons this is still good enough.
-            if (maxDistance >= CellSize)
+            // Iterate over all cells in the bounding box defined by maxDistance
+            for (int x = -cellRadius; x <= cellRadius; x++)
             {
-                // Left neighbor.
-                QueryCell(pos, cellX - 1, cellY, excludeIndex, maxDistance, res);
-
-                // Right neighbor.
-                QueryCell(pos, cellX + 1, cellY, excludeIndex, maxDistance, res);
-
-                // Top neighbor.
-                QueryCell(pos, cellX, cellY - 1, excludeIndex, maxDistance, res);
-
-                // Bottom neighbor.
-                QueryCell(pos, cellX, cellY + 1, excludeIndex, maxDistance, res);
+                for (int y = -cellRadius; y <= cellRadius; y++)
+                {
+                    QueryCell(pos, cellX + x, cellY + y, excludeIndex, maxDistance, res);
+                }
             }
 
             return res;
         }
+
 
     }
 }
