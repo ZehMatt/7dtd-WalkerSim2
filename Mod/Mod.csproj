@@ -51,10 +51,6 @@
       <HintPath>..\Binaries\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>..\Binaries\Assembly-CSharp-firstpass.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="LogLibrary">
       <HintPath>..\Binaries\LogLibrary.dll</HintPath>
       <Private>False</Private>

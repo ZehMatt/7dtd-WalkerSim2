@@ -1,5 +1,4 @@
 You need to copy following binaries to this folder:
-- "7 Days To Die/7DaysToDie_Data/Managed/Assembly-CSharp-firstpass.dll"
 - "7 Days To Die/7DaysToDie_Data/Managed/Assembly-CSharp.dll"
 - "7 Days To Die/7DaysToDie_Data/Managed/LogLibrary.dll"
 - "7 Days To Die/7DaysToDie_Data/Managed/mscorlib.dll"
