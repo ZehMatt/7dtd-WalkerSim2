@@ -236,14 +236,13 @@ namespace WalkerSim
         Vector3 GetStartLocation(int index, int groupIndex)
         {
             var config = _state.Config;
+            var maxDistance = (float)_state.Config.GroupSize * 0.8f;
 
             if (config.StartAgentsGrouped)
             {
-                float groupOffset = (index % config.GroupSize) / (float)config.GroupSize;
-
                 // Spawn in circle.
-                float angle = groupOffset * (float)System.Math.PI * 2.0f;
-                float radius = 140.0f;
+                float angle = (float)_state.PRNG.NextDouble() * (float)System.Math.PI * 2.0f;
+                float radius = (float)_state.PRNG.NextDouble() * maxDistance;
                 float offsetX = (float)System.Math.Cos(angle) * radius;
                 float offsetY = (float)System.Math.Sin(angle) * radius;
 
