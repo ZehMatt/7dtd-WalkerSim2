@@ -134,13 +134,11 @@ namespace WalkerSim
             // Advance the simulation by specified ticks.
             if (config.TicksToAdvanceOnStartup > 0)
             {
-                Logging.Out("Spinning up simulation...");
-                for (int i = 0; i < config.TicksToAdvanceOnStartup; i++)
-                {
-                    simulation.Tick();
-                }
+                Logging.Out("Advancing simulation for {0} ticks...", config.TicksToAdvanceOnStartup);
 
-                Logging.Out("done, starting simulation...");
+                simulation.FastAdvance(config.TicksToAdvanceOnStartup);
+
+                Logging.Out("... done.");
             }
 
             simulation.Start();

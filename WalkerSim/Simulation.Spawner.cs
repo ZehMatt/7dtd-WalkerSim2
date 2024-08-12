@@ -35,7 +35,7 @@ namespace WalkerSim
                 var activationBorderSize = 4.0f;
 
                 nearby.Clear();
-                QueryNearby(playerPos, -1, player.ViewRadius, nearby);
+                QueryCells(playerPos, -1, player.ViewRadius, nearby);
 
                 foreach (var agent in nearby)
                 {

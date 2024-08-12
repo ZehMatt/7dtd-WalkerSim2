@@ -57,7 +57,7 @@ namespace WalkerSim.Tests
                 // Put all agents around the player.
                 SetAgentsAroundPos(sim, centerPos, 60);
 
-                var agents = sim.QueryNearby(centerPos, -1, 80);
+                var agents = sim.QueryCells(centerPos, -1, 80);
                 Assert.IsNotNull(agents);
 
                 Assert.AreEqual(sim.Agents.Count, agents.Count);

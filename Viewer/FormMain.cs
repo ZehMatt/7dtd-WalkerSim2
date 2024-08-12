@@ -82,13 +82,9 @@ namespace WalkerSim.Viewer
 
             simTimer.Start();
 
-            var warmup = false;
-            if (warmup)
+            if (Config.TicksToAdvanceOnStartup > 0)
             {
-                for (int i = 0; i < 3000; i++)
-                {
-                    simulation.Tick();
-                }
+                simulation.FastAdvance(Config.TicksToAdvanceOnStartup);
             }
 
             simulation.Start();

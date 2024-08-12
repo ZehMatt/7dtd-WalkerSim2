@@ -4,19 +4,19 @@
            xsi:schemaLocation="http://zeh.matt/WalkerSimSchema WalkerSimSchema.xsd">
 
   <!-- Random seed for the random number generator -->
-  <RandomSeed>1</RandomSeed>
+  <RandomSeed>1337</RandomSeed>
 
   <!-- Maximum amount of agents to simulate, it will never exceed the number -->
   <MaxAgents>15000</MaxAgents>
 
   <!-- Agents will be assigned to a group, this specifies how many members a group will have -->
-  <GroupSize>500</GroupSize>
+  <GroupSize>100</GroupSize>
   
   <!-- In case a new simulation starts this is the amount of ticks it will advance in one go -->
-  <TicksToAdvanceOnStartup>0</TicksToAdvanceOnStartup>
+  <TicksToAdvanceOnStartup>100</TicksToAdvanceOnStartup>
 
   <!-- This will put agents of the same group closer together at initial start of the simulation -->
-  <StartAgentsGrouped>false</StartAgentsGrouped>
+  <StartAgentsGrouped>true</StartAgentsGrouped>
 
   <!-- The position of where agents are placed on the initial start of the simulation
        Choices:
@@ -25,7 +25,7 @@
           RandomPOI: Random POI position.
           Mixed: Selects a random choice from above for each agent.
   -->
-  <AgentStartPosition>RandomLocation</AgentStartPosition>
+  <AgentStartPosition>Mixed</AgentStartPosition>
 
   <!-- The position of where the agent will be placed when the in-game actor ceases to exist.
        Choices:
@@ -58,38 +58,38 @@
   <MovementProcessors Group="-1" SpeedScale="1.0">
     <Processor Type="Flock" Distance="150.0" Power="0.003" />
     <Processor Type="Align" Distance="150.0" Power="0.001" />
-    <Processor Type="Avoid" Distance="50.0" Power="0.002" />
-    <Processor Type="Group" Distance="50.0" Power="0.002" />
+    <Processor Type="Avoid" Distance="50.0" Power="0.0015" />
+    <Processor Type="Group" Distance="50.0" Power="0.0025" />
     <Processor Type="GroupAvoid" Distance="50.0" Power="0.04" />
     <Processor Type="Wind" Power="0.07" />
     <Processor Type="StickToRoads" Power="0.01" />
     <Processor Type="WorldEvents" Power="0.05" />
   </MovementProcessors>
 
-  <MovementProcessors Group="0" SpeedScale="1.0">
+  <MovementProcessors Group="0" SpeedScale="1.2">
     <Processor Type="Flock" Distance="150.0" Power="0.003" />
     <Processor Type="Align" Distance="150.0" Power="0.001" />
-    <Processor Type="Avoid" Distance="50.0" Power="0.002" />
+    <Processor Type="Avoid" Distance="50.0" Power="0.0015" />
     <Processor Type="Group" Distance="50.0" Power="0.002" />
     <Processor Type="GroupAvoid" Distance="50.0" Power="0.08" />
     <Processor Type="Wind" Power="0.007" />
     <Processor Type="WorldEvents" Power="0.05" />
   </MovementProcessors>
 
-  <MovementProcessors Group="1" SpeedScale="1.0">
+  <MovementProcessors Group="1" SpeedScale="1.3">
     <Processor Type="Flock" Distance="150.0" Power="0.003" />
     <Processor Type="Align" Distance="150.0" Power="0.001" />
-    <Processor Type="Avoid" Distance="50.0" Power="0.002" />
+    <Processor Type="Avoid" Distance="50.0" Power="0.0015" />
     <Processor Type="Group" Distance="50.0" Power="0.002" />
     <Processor Type="GroupAvoid" Distance="50.0" Power="0.8" />
     <Processor Type="Wind" Power="0.007" />
     <Processor Type="WorldEvents" Power="0.05" />
   </MovementProcessors>
 
-  <MovementProcessors Group="2" SpeedScale="1.0">
+  <MovementProcessors Group="2" SpeedScale="1.4">
     <Processor Type="Flock" Distance="150.0" Power="0.003" />
     <Processor Type="Align" Distance="150.0" Power="0.001" />
-    <Processor Type="Avoid" Distance="50.0" Power="0.002" />
+    <Processor Type="Avoid" Distance="50.0" Power="0.0015" />
     <Processor Type="Group" Distance="50.0" Power="0.002" />
     <Processor Type="GroupAvoid" Distance="50.0" Power="0.8" />
     <Processor Type="Wind" Power="0.007" />

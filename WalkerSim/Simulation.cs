@@ -17,7 +17,7 @@ namespace WalkerSim
         public static Simulation Instance = new Simulation();
 
         public float TimeScale = 1.0f;
-        public readonly float TickRate = 1f / 60f;
+        public readonly float TickRate = 1f / 40f;
 
         private float _accumulator = 0f;
         private int _ticks = 0;
@@ -27,6 +27,7 @@ namespace WalkerSim
         private Thread _thread;
         private bool _running = false;
         private bool _paused = false;
+        private float _speedScale = 1.0f;
 
         private Vector3[] _groupStarts = new Vector3[0];
 
@@ -77,6 +78,17 @@ namespace WalkerSim
             _thread = null;
 
             Logging.Out("Simulation stopped.");
+        }
+
+        public void FastAdvance(int numTicks)
+        {
+            var oldScale = _speedScale;
+            _speedScale = 1500.0f;
+            for (int i = 0; i < numTicks; i++)
+            {
+                Tick();
+            }
+            _speedScale = oldScale;
         }
 
         public void Start()
@@ -143,10 +155,11 @@ namespace WalkerSim
         Vector3 GetRandomPosition()
         {
             var prng = _state.PRNG;
+            float borderSize = 250;
             float x0 = (float)prng.NextDouble();
             float y0 = (float)prng.NextDouble();
-            float x = Math.Remap(x0, 0f, 1f, _state.WorldMins.X, _state.WorldMaxs.X);
-            float y = Math.Remap(y0, 0f, 1f, _state.WorldMins.Y, _state.WorldMaxs.Y);
+            float x = Math.Remap(x0, 0f, 1f, _state.WorldMins.X + borderSize, _state.WorldMaxs.X - borderSize);
+            float y = Math.Remap(y0, 0f, 1f, _state.WorldMins.Y + borderSize, _state.WorldMaxs.Y - borderSize);
             return new Vector3(x, y);
         }
 

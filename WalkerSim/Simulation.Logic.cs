@@ -135,11 +135,10 @@ namespace WalkerSim
                 _events.AddRange(_state.Events);
             }
 
-            var maxUpdates = 500;
             var now = DateTime.Now;
             var agents = _state.Agents;
 
-            for (int iteration = 0; iteration < maxUpdates; iteration++)
+            while (tickWatch.Elapsed.TotalSeconds < TickRate)
             {
                 var agentIndex = (int)(_state.SlowIterator % agents.Count);
                 var agent = agents[agentIndex];
@@ -164,7 +163,7 @@ namespace WalkerSim
 #endif
 
                 _nearby.Clear();
-                QueryNearby(agent.Position, agent.Index, maxNeighborDistance, _nearby);
+                QueryCells(agent.Position, agent.Index, maxNeighborDistance, _nearby);
 
                 var curVel = Vector3.Zero;
 
@@ -182,7 +181,7 @@ namespace WalkerSim
                 curVel.Validate();
                 agent.Velocity = curVel;
 
-                ApplyMovement(agent, (float)deltaTime.TotalSeconds, processorGroup.SpeedScale);
+                ApplyMovement(agent, (float)deltaTime.TotalSeconds, processorGroup.SpeedScale * _speedScale);
 
                 //BounceOffWalls(ref agent);
                 Warp(agent);

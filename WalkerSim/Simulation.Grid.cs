@@ -96,7 +96,7 @@ namespace WalkerSim
             }
         }
 
-        public List<Agent> QueryNearby(Vector3 pos, int excludeIndex, float maxDistance, List<Agent> res = null)
+        public List<Agent> QueryCells(Vector3 pos, int excludeIndex, float maxDistance, List<Agent> res = null)
         {
             if (res == null)
             {
@@ -127,7 +127,5 @@ namespace WalkerSim
 
             return res;
         }
-
-
     }
 }
