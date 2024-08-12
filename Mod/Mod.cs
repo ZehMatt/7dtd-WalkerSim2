@@ -234,6 +234,17 @@ namespace WalkerSim
                 return;
 
             var isPaused = GameManager.Instance.IsPaused();
+            if (simulation.Config.PauseWithoutPlayers && world.Players.Count == 0)
+            {
+                isPaused = true;
+            }
+
+            // TODO: Validate if this is correct, there seems to be various ways to check this.
+            if (simulation.Config.PauseDuringBloodmoon && world.isEventBloodMoon)
+            {
+                isPaused = true;
+            }
+
             simulation.SetPaused(isPaused);
 
             if (isPaused)

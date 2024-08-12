@@ -123,6 +123,13 @@ namespace WalkerSim
 
         public void SetPaused(bool paused)
         {
+            if (_paused != paused)
+            {
+                if (paused)
+                    Logging.Out("Paused simulation.");
+                else
+                    Logging.Out("Resuming simulation.");
+            }
             _paused = paused;
         }
 
