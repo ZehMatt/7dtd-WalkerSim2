@@ -74,6 +74,9 @@ namespace WalkerSim
 
             _running = false;
             _thread.Join();
+            _thread = null;
+
+            Logging.Out("Simulation stopped.");
         }
 
         public void Start()
@@ -83,6 +86,8 @@ namespace WalkerSim
             _running = true;
             _thread = new Thread(() => ThreadUpdate());
             _thread.Start();
+
+            Logging.Out("Started Simulation.");
         }
 
         public void Reset(Vector3 worldMins, Vector3 worldMaxs, Config config)

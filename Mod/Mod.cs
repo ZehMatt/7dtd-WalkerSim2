@@ -105,8 +105,25 @@ namespace WalkerSim
                 Logging.Err("Failed to load map data");
         }
 
+        static bool IsHost()
+        {
+            if (GameManager.IsDedicatedServer)
+                return true;
+
+            if (SingletonMonoBehaviour<ConnectionManager>.Instance.IsServer)
+                return true;
+
+            return false;
+        }
+
         static void GameStartDone()
         {
+            if (!IsHost())
+            {
+                Logging.Out("WalkerSim disabled, not host.");
+                return;
+            }
+
             LoadMapData();
 
             InitializeSimWorld();
@@ -123,7 +140,7 @@ namespace WalkerSim
                     simulation.Tick();
                 }
 
-                Logging.Out("done, starting simulation.");
+                Logging.Out("done, starting simulation...");
             }
 
             simulation.Start();
@@ -205,6 +222,11 @@ namespace WalkerSim
 
         static void GameUpdate()
         {
+            if (!IsHost())
+            {
+                return;
+            }
+
             var world = GameManager.Instance.World;
             if (world == null)
                 return;
@@ -235,6 +257,11 @@ namespace WalkerSim
 
         static void GameShutdown()
         {
+            if (!IsHost())
+            {
+                return;
+            }
+
             var simulation = Simulation.Instance;
             simulation.Stop();
         }
@@ -253,6 +280,11 @@ namespace WalkerSim
 
         static void PlayerSpawnedInWorld(ClientInfo _cInfo, RespawnType _respawnReason, Vector3i _pos)
         {
+            if (!IsHost())
+            {
+                return;
+            }
+
             var simulation = Simulation.Instance;
 
             var maxViewDistance = GamePrefs.GetInt(EnumGamePrefs.ServerMaxAllowedViewDistance);
@@ -276,6 +308,11 @@ namespace WalkerSim
 
         static void PlayerDisconnected(ClientInfo _cInfo, bool _bShutdown)
         {
+            if (!IsHost())
+            {
+                return;
+            }
+
             var simulation = Simulation.Instance;
 
             var entityId = GetPlayerEntityId(_cInfo);
@@ -285,6 +322,11 @@ namespace WalkerSim
 
         static void EntityKilled(Entity _entity, Entity _source)
         {
+            if (!IsHost())
+            {
+                return;
+            }
+
             var simulation = Simulation.Instance;
 
             var entityId = _entity.entityId;
@@ -294,6 +336,11 @@ namespace WalkerSim
 
         internal static void NotifyNoise(Entity instigator, UnityEngine.Vector3 position, string clipName, float volumeScale)
         {
+            if (!IsHost())
+            {
+                return;
+            }
+
             if (!AIDirectorData.FindNoise(clipName, out AIDirectorData.Noise noise) || instigator is EntityEnemy)
             {
                 return;
