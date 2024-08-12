@@ -1,0 +1,12 @@
+7DaysToDieServer_Data/Managed/Assembly-CSharp.dll
+7DaysToDieServer_Data/Managed/LogLibrary.dll
+7DaysToDieServer_Data/Managed/mscorlib.dll
+7DaysToDieServer_Data/Managed/netstandard.dll
+7DaysToDieServer_Data/Managed/System.dll
+7DaysToDieServer_Data/Managed/System.Drawing.dll
+7DaysToDieServer_Data/Managed/System.Xml.dll
+7DaysToDieServer_Data/Managed/UnityEngine.CoreModule.dll
+7DaysToDieServer_Data/Managed/UnityEngine.dll
+7DaysToDieServer_Data/Managed/UnityEngine.IMGUIModule.dll
+7DaysToDieServer_Data/Managed/UnityEngine.UI.dll
+Mods/0_TFP_Harmony/0Harmony.dll

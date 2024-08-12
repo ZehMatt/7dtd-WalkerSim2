@@ -1,0 +1,90 @@
+name: Build
+on: [push, pull_request]
+jobs:
+  Build:
+    name: Build
+    # Skip building pull requests from the same repository
+    if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) }}
+    runs-on: windows-2019
+    defaults:
+      run:
+        shell: cmd
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set SHA12 environment variable
+      env:
+        COMMIT_SHA: ${{ github.sha }}
+      run: echo "COMMIT_SHA12=${COMMIT_SHA:0:12}" >> $GITHUB_ENV
+      shell: bash
+      if: runner.os == 'Linux'
+
+    - name: Set SHA12 environment variable (Windows)
+      env:
+        COMMIT_SHA: ${{ github.sha }}
+      run: |
+        $sha12 = $env:COMMIT_SHA.Substring(0,12)
+        echo "SHA12: $sha12"
+        echo "COMMIT_SHA12=$sha12" >> $env:GITHUB_ENV
+      shell: powershell
+      if: runner.os == 'Windows'
+
+    - name: Fetch DepotDownloader
+      run: |
+        curl.exe -LO https://github.com/SteamRE/DepotDownloader/releases/download/DepotDownloader_2.5.0/depotdownloader-2.5.0.zip
+        mkdir tools
+        tar -xf depotdownloader-2.5.0.zip -C tools
+
+    - name: Fetch required binaries
+      run: |
+        mkdir temp
+        dotnet ./tools/DepotDownloader.dll -app 294420 -depot 294421 -filelist ./Binaries/required_files.txt -dir ./temp
+        for /F "delims=" %%f in (./Binaries/required_files.txt) do (
+            set "file=%%f"
+            setlocal enabledelayedexpansion
+            set "file=!file:/=\!"
+            move /Y ".\temp\!file!" ".\Binaries\"
+            endlocal
+        )
+        rmdir /S /Q temp
+
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v2.0.0
+
+    - name: Setup Nuget
+      uses: Nuget/setup-nuget@v2.0.0
+
+    - name: Restore nuget packages
+      run: nuget restore WalkerSim2.sln
+
+    - name: Build
+      run: |
+        msbuild WalkerSim2.sln -t:rebuild -property:Configuration=Release
+
+    - name: Run tests
+      # There is some problem with the microsoft one, this fork fixes it.
+      uses: josepho0918/vstest-action@e6f6fd4212c7e41d549732d346865cf0d0afbf33
+      with:
+        testAssembly: |
+          /**/*test*.dll
+          !./**/*TestAdapter.dll
+          !./**/obj/**
+        searchFolder: ./Build/Release/Tests
+        runInParallel: true
+
+    - name: Prepare artifacts
+      id: prepare-artifacts
+      run: |
+        mkdir artifact
+        mkdir artifact/Mods
+        mkdir artifact/Mods/WalkerSim2
+        xcopy /I /Y /F ".\Build\Release\*" ".\artifact\Mods\WalkerSim2\"
+
+    - name: Publish artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: WalkerSim2-${{ env.COMMIT_SHA12 }}
+        path: |
+          ./artifact/**/*
+          !./artifact/**/*.pdb
