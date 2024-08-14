@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Xml.Serialization;
 
 namespace WalkerSim
@@ -72,6 +73,11 @@ namespace WalkerSim
 
         private static MapInfo ParseInfo(string path)
         {
+            if (!System.IO.File.Exists(path))
+            {
+                return null;
+            }
+
             var fileData = System.IO.File.ReadAllText(path, System.Text.Encoding.UTF8);
             if (fileData == null)
             {
@@ -167,13 +173,9 @@ namespace WalkerSim
 
         public static MapData LoadFromFolder(string folderPath)
         {
-            // Parse map_info.xml
+            // Parse map_info.xml         
             var mapInfoPath = System.IO.Path.Combine(folderPath, "map_info.xml");
-            var info = ParseInfo(mapInfoPath);
-            if (info == null)
-            {
-                return null;
-            }
+            var mapInfo = ParseInfo(mapInfoPath);
 
             var roads = LoadRoadSplat(folderPath);
             if (roads == null)
@@ -188,18 +190,15 @@ namespace WalkerSim
             }
 
             var res = new MapData();
-            res._info = info;
+            res._info = mapInfo;
             res._roads = roads;
             res._prefabs = prefabs;
 
+            // Garbage collect here, the PNGs are sometimes huge.
+            GC.Collect();
+            GC.WaitForFullGCComplete();
+
             return res;
-        }
-
-        public static MapData Load()
-        {
-            var mapData = LoadFromFolder("Data/Worlds/RandomGen/Preview");
-
-            return mapData;
         }
     }
 }

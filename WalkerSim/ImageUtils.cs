@@ -14,7 +14,7 @@ namespace WalkerSim
             var bmpData = img.LockBits(rect, ImageLockMode.ReadWrite, img.PixelFormat);
 
             int bytesPerPixel = Image.GetPixelFormatSize(img.PixelFormat) / 8;
-            int byteCount = bmpData.Stride * img.Height;
+            int byteCount = img.Width * img.Height * bytesPerPixel;
             byte[] pixels = new byte[byteCount];
 
             IntPtr ptrFirstPixel = bmpData.Scan0;

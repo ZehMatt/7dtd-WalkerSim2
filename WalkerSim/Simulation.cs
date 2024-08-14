@@ -253,7 +253,9 @@ namespace WalkerSim
         Vector3 GetStartLocation(int index, int groupIndex)
         {
             var config = _state.Config;
-            var maxDistance = (float)_state.Config.GroupSize * 0.8f;
+
+            // Give each agent 2 meters distance to each other.
+            var maxDistance = (float)_state.Config.GroupSize * 2.0f;
 
             if (config.StartAgentsGrouped)
             {

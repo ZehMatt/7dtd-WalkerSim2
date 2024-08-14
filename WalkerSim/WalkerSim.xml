@@ -7,7 +7,7 @@
   <RandomSeed>1337</RandomSeed>
 
   <!-- Maximum amount of agents to simulate, it will never exceed the number -->
-  <MaxAgents>15000</MaxAgents>
+  <MaxAgents>5000</MaxAgents>
 
   <!-- Agents will be assigned to a group, this specifies how many members a group will have -->
   <GroupSize>100</GroupSize>
@@ -59,7 +59,7 @@
     <Processor Type="Flock" Distance="150.0" Power="0.003" />
     <Processor Type="Align" Distance="150.0" Power="0.001" />
     <Processor Type="Avoid" Distance="50.0" Power="0.0015" />
-    <Processor Type="Group" Distance="50.0" Power="0.0025" />
+    <Processor Type="Group" Distance="50.0" Power="0.00025" />
     <Processor Type="GroupAvoid" Distance="50.0" Power="0.04" />
     <Processor Type="Wind" Power="0.07" />
     <Processor Type="StickToRoads" Power="0.01" />

@@ -181,7 +181,7 @@ namespace WalkerSim
                 curVel.Validate();
                 agent.Velocity = curVel;
 
-                ApplyMovement(agent, (float)deltaTime.TotalSeconds, processorGroup.SpeedScale * _speedScale);
+                ApplyMovement(agent, (float)deltaTime.TotalSeconds * TimeScale, processorGroup.SpeedScale);
 
                 //BounceOffWalls(ref agent);
                 Warp(agent);
@@ -444,7 +444,7 @@ namespace WalkerSim
         public void ApplyMovement(Agent agent, float deltaTime, float power)
         {
             // Cap the deltaTime
-            deltaTime = System.Math.Min(deltaTime, 0.2f);
+            deltaTime = System.Math.Min(deltaTime, 5.0f);
 
             // Keep the Z axis clean.
             agent.Position.Z = 0;

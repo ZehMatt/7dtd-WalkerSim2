@@ -16,7 +16,7 @@ namespace WalkerSim.Viewer
         static readonly Vector3 WorldMins = new Vector3(-(WorldSizeX * 0.5f), -(WorldSizeY * 0.5f), 0);
         static readonly Vector3 WorldMaxs = new Vector3(WorldSizeX * 0.5f, WorldSizeY * 0.5f, 256);
 
-        static WalkerSim.Config CurrentConfig;
+        static WalkerSim.Config CurrentConfig = new Config();
 
         Simulation simulation = Simulation.Instance;
         Random prng = new Random(1);
@@ -53,11 +53,32 @@ namespace WalkerSim.Viewer
                 simulation.Stop();
             };
 
+            SetupDrawingContext();
+            SetupWorlds();
             SetupLimits();
             SetupChoices();
             LoadDefaultConfiguration();
             UpdateConfigFields();
             //StartSimulation();
+        }
+
+        private void SetupDrawingContext()
+        {
+            bitmap = new Bitmap(ImageWidth, ImageHeight);
+            gr = System.Drawing.Graphics.FromImage(bitmap);
+            simCanvas.Image = bitmap;
+        }
+
+        private void SetupWorlds()
+        {
+            Worlds.FindWorlds();
+
+            inputWorld.Items.Clear();
+            foreach (var worldPath in Worlds.WorldFolders)
+            {
+                var folderName = System.IO.Path.GetFileName(worldPath);
+                inputWorld.Items.Add(folderName);
+            }
         }
 
         private void SetupLimits()
@@ -121,38 +142,9 @@ namespace WalkerSim.Viewer
             }
         }
 
-        private void StartSimulation()
+        private void RestartSimulation()
         {
-            CurrentConfig = Config.LoadFromFile("WalkerSim.xml");
-
-            bitmap = new Bitmap(ImageWidth, ImageHeight);
-            gr = System.Drawing.Graphics.FromImage(bitmap);
-            simCanvas.Image = bitmap;
-
-            // "G:\Steam\steamapps\common\7 Days To Die\Data\Worlds\Navezgane"
-            // "C:\Users\Matt\AppData\Roaming\7DaysToDie\GeneratedWorlds\Ducufa Valley"
-            simulation.LoadMapData(@"C:\Users\Matt\AppData\Roaming\7DaysToDie\GeneratedWorlds\Ducufa Valley");
             simulation.Reset(WorldMins, WorldMaxs, CurrentConfig);
-
-            var addFakePlayers = false;
-            if (addFakePlayers)
-            {
-                // Add a few fake players.
-                var prng = new System.Random(1);
-                for (var i = 0; i < 10; i++)
-                {
-                    // Select random position between world min and max.
-                    var x = (float)(WorldMins.X + (WorldMaxs.X - WorldMins.X) * prng.NextDouble());
-                    var y = (float)(WorldMins.Y + (WorldMaxs.Y - WorldMins.Y) * prng.NextDouble());
-                    var z = 0f;
-
-                    var maxViewDistance = 12; // GamePrefs.GetInt(EnumGamePrefs.ServerMaxAllowedViewDistance);
-                    var viewRadius = (maxViewDistance * 16) / 2;
-
-                    simulation.AddPlayer(i, new Vector3(x, y, z), viewRadius);
-                }
-
-            }
 
             GenerateColorTable();
 
@@ -257,6 +249,16 @@ namespace WalkerSim.Viewer
             return roadBitmap;
         }
 
+        private void ClearRoadBitmap()
+        {
+            if (roadBitmap == null)
+            {
+                return;
+            }
+            roadBitmap.Dispose();
+            roadBitmap = null;
+        }
+
         private void RenderToBitmap()
         {
             gr.Clear(System.Drawing.Color.Black);
@@ -335,11 +337,6 @@ namespace WalkerSim.Viewer
             simCanvas.Invalidate();
         }
 
-        private void restartToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void simCanvas_MouseClick(object sender, MouseEventArgs e)
         {
             var simulation = Simulation.Instance;
@@ -416,6 +413,79 @@ namespace WalkerSim.Viewer
 
             inputProcessorDistance.Value = (decimal)selectedProcessor.Distance;
             inputProcessorPower.Value = (decimal)selectedProcessor.Power;
+        }
+
+        private void OnPauseClick(object sender, EventArgs e)
+        {
+            simulation.SetPaused(true);
+            pauseToolStripMenuItem.Enabled = false;
+            resumeToolStripMenuItem.Enabled = true;
+        }
+
+        private void OnResumeClick(object sender, EventArgs e)
+        {
+            simulation.SetPaused(false);
+            pauseToolStripMenuItem.Enabled = true;
+            resumeToolStripMenuItem.Enabled = false;
+        }
+
+        private void OnRestartClick(object sender, EventArgs e)
+        {
+            RestartSimulation();
+        }
+
+        private void OnWorldSelectionChanged(object sender, EventArgs e)
+        {
+            var worldIdx = inputWorld.SelectedIndex;
+            if (worldIdx == -1)
+            {
+                return;
+            }
+
+            var worldPath = Worlds.WorldFolders[worldIdx];
+            simulation.LoadMapData(worldPath);
+
+            ClearRoadBitmap();
+            RenderSimulation();
+        }
+
+        private void OnTimeScale1Click(object sender, EventArgs e)
+        {
+            simulation.TimeScale = 1.0f;
+        }
+
+        private void OnTimeScale2Click(object sender, EventArgs e)
+        {
+            simulation.TimeScale = 2.0f;
+        }
+
+        private void OnTimeScale4Click(object sender, EventArgs e)
+        {
+            simulation.TimeScale = 4.0f;
+        }
+
+        private void OnTimeScale8Click(object sender, EventArgs e)
+        {
+            simulation.TimeScale = 8.0f;
+        }
+        private void OnTimeScale16Click(object sender, EventArgs e)
+        {
+            simulation.TimeScale = 16.0f;
+        }
+
+        private void OnTimeScale32Click(object sender, EventArgs e)
+        {
+            simulation.TimeScale = 32.0f;
+        }
+
+        private void OnTimeScale64Click(object sender, EventArgs e)
+        {
+            simulation.TimeScale = 64.0f;
+        }
+
+        private void OnTimeScale128Click(object sender, EventArgs e)
+        {
+            simulation.TimeScale = 128.0f;
         }
     }
 }
