@@ -182,7 +182,7 @@
             </xs:documentation>
           </xs:annotation>
         </xs:element>
-        <xs:element name="AgentRespawnLocation" type="RespawnPositionType">
+        <xs:element name="AgentRespawnPosition" type="RespawnPositionType">
           <xs:annotation>
             <xs:documentation>
               The position of where the agent will be placed when the in-game actor ceases to exist.

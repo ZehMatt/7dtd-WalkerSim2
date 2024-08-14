@@ -4,6 +4,14 @@ namespace WalkerSim
 {
     internal partial class Simulation
     {
+        internal class Player
+        {
+            public Vector3 Position;
+            public int EntityId;
+            public int ViewRadius;
+            public bool IsAlive;
+        }
+
         public IEnumerable<KeyValuePair<int, Player>> Players
         {
             get => _state.Players;

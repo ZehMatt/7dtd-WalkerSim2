@@ -4,14 +4,6 @@ using System.Threading;
 
 namespace WalkerSim
 {
-    internal class Player
-    {
-        public Vector3 Position;
-        public int EntityId;
-        public int ViewRadius;
-        public bool IsAlive;
-    }
-
     internal partial class Simulation
     {
         public static Simulation Instance = new Simulation();
@@ -234,23 +226,23 @@ namespace WalkerSim
             var config = _state.Config;
             var prng = _state.PRNG;
 
-            var startType = config.StartLocation;
-            if (startType == Config.SpawnLocation.Mixed)
+            var startType = config.StartPosition;
+            if (startType == Config.WorldLocation.Mixed)
             {
-                var min = Config.SpawnLocation.RandomBorderLocation;
-                var max = Config.SpawnLocation.RandomPOI;
-                startType = (Config.SpawnLocation)prng.Next((int)min, (int)max + 1);
+                var min = Config.WorldLocation.RandomBorderLocation;
+                var max = Config.WorldLocation.RandomPOI;
+                startType = (Config.WorldLocation)prng.Next((int)min, (int)max + 1);
             }
 
             switch (startType)
             {
-                case Config.SpawnLocation.None:
+                case Config.WorldLocation.None:
                     break;
-                case Config.SpawnLocation.RandomBorderLocation:
+                case Config.WorldLocation.RandomBorderLocation:
                     return GetRandomBorderPosition();
-                case Config.SpawnLocation.RandomLocation:
+                case Config.WorldLocation.RandomLocation:
                     return GetRandomPosition();
-                case Config.SpawnLocation.RandomPOI:
+                case Config.WorldLocation.RandomPOI:
                     return GetRandomPOIPosition();
             }
 

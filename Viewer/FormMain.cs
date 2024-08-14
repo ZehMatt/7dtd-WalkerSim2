@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace WalkerSim.Viewer
@@ -15,7 +16,7 @@ namespace WalkerSim.Viewer
         static readonly Vector3 WorldMins = new Vector3(-(WorldSizeX * 0.5f), -(WorldSizeY * 0.5f), 0);
         static readonly Vector3 WorldMaxs = new Vector3(WorldSizeX * 0.5f, WorldSizeY * 0.5f, 256);
 
-        static WalkerSim.Config Config;
+        static WalkerSim.Config CurrentConfig;
 
         Simulation simulation = Simulation.Instance;
         Random prng = new Random(1);
@@ -28,7 +29,7 @@ namespace WalkerSim.Viewer
 
         void GenerateColorTable()
         {
-            var groupCount = Config.MaxAgents / Config.GroupSize;
+            var groupCount = CurrentConfig.MaxAgents / CurrentConfig.GroupSize;
             GroupColors = new Brush[groupCount];
 
             for (int i = 0; i < groupCount; i++)
@@ -47,7 +48,82 @@ namespace WalkerSim.Viewer
         {
             InitializeComponent();
 
-            Config = Config.LoadFromFile("WalkerSim.xml");
+            this.FormClosed += (sender, e) =>
+            {
+                simulation.Stop();
+            };
+
+            SetupLimits();
+            SetupChoices();
+            LoadDefaultConfiguration();
+            UpdateConfigFields();
+            //StartSimulation();
+        }
+
+        private void SetupLimits()
+        {
+            inputMaxAgents.Minimum = Simulation.Limits.MinAgents;
+            inputMaxAgents.Maximum = Simulation.Limits.MaxAgents;
+            inputGroupSize.Minimum = 0;
+            inputGroupSize.Maximum = Simulation.Limits.MaxAgents;
+            inputRandomSeed.Minimum = 1;
+            inputRandomSeed.Maximum = UInt32.MaxValue;
+        }
+
+        private void SetupChoices()
+        {
+            var startChoices = Enum.GetValues(typeof(Config.WorldLocation)).Cast<Config.WorldLocation>();
+            foreach (var choice in startChoices)
+            {
+                if (choice == Config.WorldLocation.None)
+                    continue;
+
+                var name = Utils.GetWorldLocationString(choice);
+                inputStartPosition.Items.Add(name);
+            }
+
+            foreach (var choice in startChoices)
+            {
+                var name = Utils.GetWorldLocationString(choice);
+                inputRespawnPosition.Items.Add(name);
+            }
+        }
+
+        private void LoadDefaultConfiguration()
+        {
+            CurrentConfig = Config.LoadFromFile("WalkerSim.xml");
+        }
+
+        private void UpdateConfigFields()
+        {
+            if (CurrentConfig == null)
+                return;
+
+            inputRandomSeed.Value = CurrentConfig.RandomSeed;
+            inputMaxAgents.Value = CurrentConfig.MaxAgents;
+            inputGroupSize.Value = CurrentConfig.GroupSize;
+            inputStartGrouped.Checked = CurrentConfig.StartAgentsGrouped;
+            inputPausePlayerless.Checked = CurrentConfig.PauseWithoutPlayers;
+            inputPauseDuringBloodmoon.Checked = CurrentConfig.PauseDuringBloodmoon;
+
+            var spawnChoice = Utils.GetWorldLocationString(CurrentConfig.StartPosition);
+            inputStartPosition.SelectedItem = spawnChoice;
+
+            var respawnChoice = Utils.GetWorldLocationString(CurrentConfig.RespawnPosition);
+            inputRespawnPosition.SelectedItem = respawnChoice;
+
+            listProcessorGroups.Items.Clear();
+
+            var groups = CurrentConfig.Processors;
+            for (int i = 0; i < groups.Length; i++)
+            {
+                listProcessorGroups.Items.Add("Group #" + i);
+            }
+        }
+
+        private void StartSimulation()
+        {
+            CurrentConfig = Config.LoadFromFile("WalkerSim.xml");
 
             bitmap = new Bitmap(ImageWidth, ImageHeight);
             gr = System.Drawing.Graphics.FromImage(bitmap);
@@ -56,7 +132,7 @@ namespace WalkerSim.Viewer
             // "G:\Steam\steamapps\common\7 Days To Die\Data\Worlds\Navezgane"
             // "C:\Users\Matt\AppData\Roaming\7DaysToDie\GeneratedWorlds\Ducufa Valley"
             simulation.LoadMapData(@"C:\Users\Matt\AppData\Roaming\7DaysToDie\GeneratedWorlds\Ducufa Valley");
-            simulation.Reset(WorldMins, WorldMaxs, Config);
+            simulation.Reset(WorldMins, WorldMaxs, CurrentConfig);
 
             var addFakePlayers = false;
             if (addFakePlayers)
@@ -80,24 +156,18 @@ namespace WalkerSim.Viewer
 
             GenerateColorTable();
 
-            simTimer.Start();
-
-            if (Config.TicksToAdvanceOnStartup > 0)
+            if (CurrentConfig.TicksToAdvanceOnStartup > 0)
             {
-                simulation.FastAdvance(Config.TicksToAdvanceOnStartup);
+                simulation.FastAdvance(CurrentConfig.TicksToAdvanceOnStartup);
             }
 
             simulation.Start();
-
-            this.FormClosed += (sender, e) =>
-            {
-                simulation.Stop();
-            };
+            updateTimer.Start();
         }
 
         private void OnTick(object sender, EventArgs e)
         {
-            simulation.Update(simTimer.Interval / 1000.0f);
+            simulation.Update(updateTimer.Interval / 1000.0f);
 
             // TODO: Add more UI controls for this.
             var fakeGunshots = false;
@@ -124,7 +194,6 @@ namespace WalkerSim.Viewer
         {
             return simulation.RemapPosition2D(pos, Vector3.Zero, new Vector3(ImageWidth, ImageHeight));
         }
-
 
         Vector3 BitmapPosToSimPos(int x, int y)
         {
@@ -300,6 +369,53 @@ namespace WalkerSim.Viewer
         {
             Tool.Active = new SoundEventTool();
             simCanvas.Cursor = Cursors.Cross;
+        }
+
+        private void OnGroupSelection(object sender, EventArgs e)
+        {
+            var groupIdx = listProcessorGroups.SelectedIndex;
+
+            groupProps.Visible = groupIdx != -1;
+            groupProcessors.Visible = groupIdx != -1;
+            groupParameter.Visible = false;
+
+            if (groupIdx == -1)
+            {
+                return;
+            }
+
+            var selectedGroup = CurrentConfig.Processors[groupIdx];
+
+            inputMovementGroup.Value = selectedGroup.Group;
+            inputMovementSpeed.Value = (decimal)selectedGroup.SpeedScale;
+
+            listProcessors.Items.Clear();
+            foreach (var processor in selectedGroup.Entries)
+            {
+                listProcessors.Items.Add(processor.Type);
+            }
+        }
+
+        private void OnProcessorSelectionChanged(object sender, EventArgs e)
+        {
+            var groupIdx = listProcessorGroups.SelectedIndex;
+            if (groupIdx == -1)
+            {
+                return;
+            }
+
+            var processorIdx = listProcessors.SelectedIndex;
+            groupParameter.Visible = processorIdx != -1;
+            if (processorIdx == -1)
+            {
+                return;
+            }
+
+            var selectedGroup = CurrentConfig.Processors[groupIdx];
+            var selectedProcessor = selectedGroup.Entries[processorIdx];
+
+            inputProcessorDistance.Value = (decimal)selectedProcessor.Distance;
+            inputProcessorPower.Value = (decimal)selectedProcessor.Power;
         }
     }
 }

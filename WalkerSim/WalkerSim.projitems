@@ -21,6 +21,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Grid.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Simulation.Limits.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.LoadSave.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Logic.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Players.cs" />

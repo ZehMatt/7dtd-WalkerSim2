@@ -6,7 +6,7 @@ namespace WalkerSim
     [XmlRoot("WalkerSim", Namespace = "http://zeh.matt/WalkerSimSchema")]
     public class Config
     {
-        public enum SpawnLocation
+        public enum WorldLocation
         {
             [XmlEnum("None")]
             None = 0,
@@ -80,11 +80,11 @@ namespace WalkerSim
         [XmlElement("GroupSize")]
         public int GroupSize = 200;
 
-        [XmlElement("AgentStartLocation")]
-        public SpawnLocation StartLocation = SpawnLocation.RandomLocation;
+        [XmlElement("AgentStartPosition")]
+        public WorldLocation StartPosition = WorldLocation.RandomLocation;
 
-        [XmlElement("AgentRespawnLocation")]
-        public SpawnLocation RespawnType = SpawnLocation.None;
+        [XmlElement("AgentRespawnPosition")]
+        public WorldLocation RespawnPosition = WorldLocation.None;
 
         [XmlElement("PauseWithoutPlayers")]
         public bool PauseWithoutPlayers = false;
@@ -158,10 +158,16 @@ namespace WalkerSim
 
         private static void SanitizeConfig(Config config)
         {
-            if (config.MaxAgents <= 0 || config.MaxAgents > 30_000)
+            if (config.MaxAgents < Simulation.Limits.MinAgents ||
+                config.MaxAgents > Simulation.Limits.MaxAgents)
             {
-                Logging.Warn("Invalid value for MaxAgents (Min: 1, Max: 30000), clamping.");
-                config.MaxAgents = Math.Clamp(config.MaxAgents, 1, 30000);
+                Logging.Warn("Invalid value for MaxAgents (Min: {0}, Max: {1}), clamping.",
+                    Simulation.Limits.MinAgents,
+                    Simulation.Limits.MaxAgents);
+
+                config.MaxAgents = Math.Clamp(config.MaxAgents,
+                    Simulation.Limits.MinAgents,
+                    Simulation.Limits.MaxAgents);
             }
         }
 

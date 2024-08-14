@@ -25,7 +25,7 @@
           RandomPOI: Random POI position.
           Mixed: Selects a random choice from above for each agent.
   -->
-  <AgentStartPosition>Mixed</AgentStartPosition>
+  <AgentStartPosition>RandomLocation</AgentStartPosition>
 
   <!-- The position of where the agent will be placed when the in-game actor ceases to exist.
        Choices:
@@ -35,7 +35,7 @@
           RandomPOI: Random POI position.
           Mixed: Selects a random choice from above for each agent excluding 'None'.
   -->
-  <AgentRespawnLocation>RandomLocation</AgentRespawnLocation>
+  <AgentRespawnPosition>Mixed</AgentRespawnPosition>
 
   <!-- The option specifies if the simulation should be paused when no players are on the server -->
   <PauseWithoutPlayers>true</PauseWithoutPlayers>
