@@ -126,8 +126,6 @@ namespace WalkerSim
             UpdateWindDirection();
             UpdateEvents();
 
-            float maxNeighborDistance = _state.MaxNeighbourDistance;
-
             // We make a copy of the events to avoid locking/unlocking per agent.
             lock (_state)
             {
@@ -135,7 +133,6 @@ namespace WalkerSim
                 _events.AddRange(_state.Events);
             }
 
-            var now = DateTime.Now;
             var agents = _state.Agents;
 
             while (tickWatch.Elapsed.TotalSeconds < TickRate)
@@ -143,48 +140,17 @@ namespace WalkerSim
                 var agentIndex = (int)(_state.SlowIterator % agents.Count);
                 var agent = agents[agentIndex];
 
-                var deltaTime = now - agent.LastUpdate;
-                agent.LastUpdate = now;
-
                 // NOTE: We use a prime number here to have a better distribution of agents.
                 _state.SlowIterator += 193;
 
-                if (agent.CurrentState != Agent.State.Wandering)
-                    return;
-
-#if DEBUG
-                var worldMins = _state.WorldMins;
-                var worldMaxs = _state.WorldMaxs;
-                Debug.Assert(agent.Index == agentIndex);
-                Debug.Assert(agent.Position.X >= worldMins.X);
-                Debug.Assert(agent.Position.X <= worldMaxs.X);
-                Debug.Assert(agent.Position.Y >= worldMins.Y);
-                Debug.Assert(agent.Position.Y <= worldMaxs.Y);
-#endif
-
-                _nearby.Clear();
-                QueryCells(agent.Position, agent.Index, maxNeighborDistance, _nearby);
-
-                var curVel = Vector3.Zero;
-
-                var processorGroup = _processors[agent.Group];
-                for (int i = 0; i < processorGroup.Entries.Count; i++)
+                if (agent.CurrentState == Agent.State.Wandering)
                 {
-                    var processor = processorGroup.Entries[i];
-
-                    var addVel = processor.Handler(_state, agent, _events, _nearby, processor.Distance, processor.Power);
-                    addVel.Validate();
-
-                    curVel += addVel;
+                    UpdateAgent(agent);
                 }
-
-                curVel.Validate();
-                agent.Velocity = curVel;
-
-                ApplyMovement(agent, (float)deltaTime.TotalSeconds * TimeScale, processorGroup.SpeedScale);
-
-                //BounceOffWalls(ref agent);
-                Warp(agent);
+                else if (agent.CurrentState == Agent.State.Respawning)
+                {
+                    RespawnAgent(agent);
+                }
             }
 
             // Update the grid, can't do this in parallel since it's not thread safe.
@@ -206,6 +172,61 @@ namespace WalkerSim
                 averageTickTime *= 0.5f;
 
             _ticks++;
+        }
+
+        [Conditional("DEBUG")]
+        private void CheckPositionInBounds(Vector3 pos)
+        {
+            var worldMins = _state.WorldMins;
+            var worldMaxs = _state.WorldMaxs;
+            Debug.Assert(pos.X >= worldMins.X);
+            Debug.Assert(pos.X <= worldMaxs.X);
+            Debug.Assert(pos.Y >= worldMins.Y);
+            Debug.Assert(pos.Y <= worldMaxs.Y);
+        }
+
+        private void UpdateAgent(Agent agent)
+        {
+            var now = DateTime.Now;
+            var deltaTime = now - agent.LastUpdate;
+            agent.LastUpdate = now;
+
+            // Sanity check, omitted for release builds.
+            CheckPositionInBounds(agent.Position);
+
+            float maxNeighborDistance = _state.MaxNeighbourDistance;
+
+            _nearby.Clear();
+            QueryCells(agent.Position, agent.Index, maxNeighborDistance, _nearby);
+
+            var curVel = Vector3.Zero;
+
+            var processorGroup = _processors[agent.Group];
+            for (int i = 0; i < processorGroup.Entries.Count; i++)
+            {
+                var processor = processorGroup.Entries[i];
+
+                var addVel = processor.Handler(_state, agent, _events, _nearby, processor.Distance, processor.Power);
+                addVel.Validate();
+
+                curVel += addVel;
+            }
+
+            curVel.Validate();
+            agent.Velocity = curVel;
+
+            ApplyMovement(agent, (float)deltaTime.TotalSeconds * TimeScale, processorGroup.SpeedScale);
+
+            //BounceOffWalls(ref agent);
+            Warp(agent);
+        }
+
+        private void RespawnAgent(Agent agent)
+        {
+            var startPos = GetRespawnLocation();
+
+            agent.Position = startPos;
+            agent.CurrentState = Agent.State.Wandering;
         }
 
         private void UpdateWindDirection()

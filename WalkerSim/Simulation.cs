@@ -208,6 +208,11 @@ namespace WalkerSim
         Vector3 GetRandomPOIPosition()
         {
             var mapData = _state.MapData;
+            if (mapData == null)
+            {
+                // Can be null in viewer.
+                return GetRandomBorderPosition();
+            }
             var prefabs = mapData.Prefabs;
             var decos = prefabs.Decorations;
             var prng = _state.PRNG;
@@ -221,20 +226,19 @@ namespace WalkerSim
             return _groupStarts[groupIndex];
         }
 
-        Vector3 GetStartLocation()
+        Vector3 GetWorldLocation(Config.WorldLocation worldLoc)
         {
             var config = _state.Config;
             var prng = _state.PRNG;
 
-            var startType = config.StartPosition;
-            if (startType == Config.WorldLocation.Mixed)
+            if (worldLoc == Config.WorldLocation.Mixed)
             {
                 var min = Config.WorldLocation.RandomBorderLocation;
                 var max = Config.WorldLocation.RandomPOI;
-                startType = (Config.WorldLocation)prng.Next((int)min, (int)max + 1);
+                worldLoc = (Config.WorldLocation)prng.Next((int)min, (int)max + 1);
             }
 
-            switch (startType)
+            switch (worldLoc)
             {
                 case Config.WorldLocation.None:
                     break;
@@ -248,6 +252,18 @@ namespace WalkerSim
 
             // This should never happen.
             throw new System.Exception("Bad starting location type");
+        }
+
+        Vector3 GetStartLocation()
+        {
+            var config = _state.Config;
+            return GetWorldLocation(config.StartPosition);
+        }
+
+        Vector3 GetRespawnLocation()
+        {
+            var config = _state.Config;
+            return GetWorldLocation(config.RespawnPosition);
         }
 
         Vector3 GetStartLocation(int index, int groupIndex)

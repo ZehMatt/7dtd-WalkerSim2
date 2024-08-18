@@ -161,6 +161,23 @@ namespace WalkerSim
             }
         }
 
+        static bool IsEntityDead(Entity entity, int entityId)
+        {
+            if (entity == null)
+            {
+                Logging.Out("Entity not found: {0}", entityId);
+                return true;
+            }
+
+            if (!entity.IsAlive())
+            {
+                Logging.Out("Entity dead: {0}", entityId);
+                return true;
+            }
+
+            return false;
+        }
+
         static void UpdateActiveAgents()
         {
             var world = GameManager.Instance.World;
@@ -177,33 +194,18 @@ namespace WalkerSim
                 }
 
                 var entity = world.GetEntity(agent.EntityId);
-                if (entity == null)
+                if (IsEntityDead(entity, agent.EntityId))
                 {
-                    Logging.Out("Entity not found: {0}", agent.EntityId);
-
                     // Mark as dead so it will be sweeped.
-                    agent.CurrentState = Agent.State.Dead;
-                    agent.EntityId = -1;
-                    agent.ResetSpawnData();
-
-                    continue;
+                    simulation.MarkAgentDead(agent.EntityId);
                 }
-
-                if (!entity.IsAlive())
+                else
                 {
-                    Logging.Out("Entity dead: {0}", agent.EntityId);
-
-                    // Mark as dead so it will be sweeped.
-                    agent.CurrentState = Agent.State.Dead;
-                    agent.EntityId = -1;
-                    agent.ResetSpawnData();
-
-                    continue;
+                    // Update position.
+                    var newPos = entity.GetPosition();
+                    agent.Position = VectorUtils.ToSim(newPos);
+                    agent.Position.Validate();
                 }
-
-                var newPos = entity.GetPosition();
-                agent.Position = VectorUtils.ToSim(newPos);
-                agent.Position.Validate();
             }
         }
 

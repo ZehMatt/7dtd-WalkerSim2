@@ -76,7 +76,7 @@ namespace WalkerSim
 
         private void UpdateEvents()
         {
-            var dt = TickRate;
+            var dt = TickRate * TimeScale;
 
             lock (_state)
             {

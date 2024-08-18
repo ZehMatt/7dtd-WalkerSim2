@@ -337,34 +337,14 @@ namespace WalkerSim.Viewer
             simCanvas.Invalidate();
         }
 
-        private void simCanvas_MouseClick(object sender, MouseEventArgs e)
-        {
-            var simulation = Simulation.Instance;
-
-            var imagePos = simCanvas.TranslateToImagePosition(e.Location);
-            var simPos = BitmapPosToSimPos(imagePos.X, imagePos.Y);
-
-            if (simPos.X < simulation.WorldMins.X)
-                return;
-            if (simPos.Y < simulation.WorldMins.Y)
-                return;
-            if (simPos.X > simulation.WorldMaxs.X)
-                return;
-            if (simPos.Y > simulation.WorldMaxs.Y)
-                return;
-
-            if (Tool.Active != null)
-            {
-                Tool.Active.OnClick(simPos);
-            }
-
-            Tool.Active = null;
-            simCanvas.Cursor = Cursors.Default;
-        }
-
         private void OnClickSoundEmit(object sender, EventArgs e)
         {
             Tool.Active = new SoundEventTool();
+            simCanvas.Cursor = Cursors.Cross;
+        }
+        private void OnClickKill(object sender, EventArgs e)
+        {
+            Tool.Active = new KillTool();
             simCanvas.Cursor = Cursors.Cross;
         }
 
@@ -486,6 +466,31 @@ namespace WalkerSim.Viewer
         private void OnTimeScale128Click(object sender, EventArgs e)
         {
             simulation.TimeScale = 128.0f;
+        }
+
+        private void OnSimCanvasClick(object sender, MouseEventArgs e)
+        {
+            var simulation = Simulation.Instance;
+
+            var imagePos = simCanvas.TranslateToImagePosition(e.Location);
+            var simPos = BitmapPosToSimPos(imagePos.X, imagePos.Y);
+
+            if (simPos.X < simulation.WorldMins.X)
+                return;
+            if (simPos.Y < simulation.WorldMins.Y)
+                return;
+            if (simPos.X > simulation.WorldMaxs.X)
+                return;
+            if (simPos.Y > simulation.WorldMaxs.Y)
+                return;
+
+            if (Tool.Active != null)
+            {
+                Tool.Active.OnClick(simPos);
+            }
+
+            Tool.Active = null;
+            simCanvas.Cursor = Cursors.Default;
         }
     }
 }

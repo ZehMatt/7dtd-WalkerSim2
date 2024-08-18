@@ -10,7 +10,6 @@ namespace WalkerSim
 
         private List<int> _cleanUpList = new List<int>();
 
-
         public IReadOnlyDictionary<int, Agent> Active
         {
             get
@@ -27,7 +26,6 @@ namespace WalkerSim
         private void AddActiveAgent(int entityId, Agent agent)
         {
             _state.Active.Add(entityId, agent);
-
             Logging.Debug("Added agent with entity id {0} to active list, list size {1}", entityId, _state.Active.Count);
         }
 
@@ -54,7 +52,18 @@ namespace WalkerSim
         {
             if (_state.Active.TryGetValue(entityId, out var agent))
             {
-                agent.CurrentState = Agent.State.Dead;
+                agent.ResetSpawnData();
+
+                if (_state.Config.RespawnPosition == Config.WorldLocation.None)
+                {
+                    // No respawn, dead for good.
+                    agent.CurrentState = Agent.State.Dead;
+                }
+                else
+                {
+                    // Mark to be respawned.
+                    agent.CurrentState = Agent.State.Respawning;
+                }
             }
         }
 

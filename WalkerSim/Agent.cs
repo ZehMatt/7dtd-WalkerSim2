@@ -10,6 +10,7 @@ namespace WalkerSim
             PendingSpawn,
             Active,
             Dead,
+            Respawning,
         }
 
         public int Index;
