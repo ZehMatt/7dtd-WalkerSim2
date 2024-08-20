@@ -97,18 +97,21 @@ namespace WalkerSim
         {
             Stop();
 
-            _state.Config = config;
-            _state.PRNG = new System.Random(config.RandomSeed);
-            _state.SlowIterator = 0;
+            lock (_state)
+            {
+                _state.Config = config;
+                _state.PRNG = new System.Random(config.RandomSeed);
+                _state.SlowIterator = 0;
 
-            _state.WorldMins = worldMins;
-            _state.WorldMaxs = worldMaxs;
+                _state.WorldMins = worldMins;
+                _state.WorldMaxs = worldMaxs;
 
-            SetupGrid();
-            Populate();
-            SetupProcessors();
+                SetupGrid();
+                Populate();
+                SetupProcessors();
 
-            _initialized = true;
+                _initialized = true;
+            }
         }
 
         public void SetPaused(bool paused)
@@ -330,12 +333,15 @@ namespace WalkerSim
                     continue;
                 }
 
-                Tick();
+                lock (_state)
+                {
+                    Tick();
 
-                if (!_running)
-                    break;
+                    if (!_running)
+                        break;
 
-                CheckAgentSpawn();
+                    CheckAgentSpawn();
+                }
             }
         }
 
@@ -362,6 +368,16 @@ namespace WalkerSim
             pos.Z = 0;
 
             return pos;
+        }
+
+        public void ReloadConfig(Config config)
+        {
+            lock (_state)
+            {
+                _state.Config = config;
+
+                SetupProcessors();
+            }
         }
     }
 }

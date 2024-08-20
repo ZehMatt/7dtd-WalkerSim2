@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Xml.Serialization;
 
 namespace WalkerSim
@@ -62,7 +63,7 @@ namespace WalkerSim
             public float SpeedScale = 1.0f;
 
             [XmlElement("Processor")]
-            public MovementProcessor[] Entries;
+            public List<MovementProcessor> Entries = new List<MovementProcessor>();
         }
 
         [XmlElement("RandomSeed")]
@@ -96,63 +97,7 @@ namespace WalkerSim
         public bool PauseDuringBloodmoon = false;
 
         [XmlElement("MovementProcessors")]
-        public MovementProcessors[] Processors = new MovementProcessors[]
-        {
-            new MovementProcessors {
-                Group = -1,
-                SpeedScale = 1.0f,
-                Entries = new MovementProcessor[] {
-                    new MovementProcessor()
-                    {
-                        Type = MovementProcessorType.Flock,
-                        Distance = 150f,
-                        Power = 0.003f,
-                    },
-                    new MovementProcessor()
-                    {
-                        Type = MovementProcessorType.Align,
-                        Distance = 150f,
-                        Power = 0.001f,
-                    },
-                    new MovementProcessor()
-                    {
-                        Type = MovementProcessorType.Avoid,
-                        Distance = 50f,
-                        Power = 0.002f,
-                    },
-                    new MovementProcessor()
-                    {
-                        Type = MovementProcessorType.Group,
-                        Distance = 250f,
-                        Power = 0.0001f,
-                    },
-                    new MovementProcessor()
-                    {
-                        Type = MovementProcessorType.GroupAvoid,
-                        Distance = 150f,
-                        Power = 0.0001f,
-                    },
-                    new MovementProcessor()
-                    {
-                        Type = MovementProcessorType.Wind,
-                        Distance = 0f,
-                        Power = 0.05f,
-                    },
-                    new MovementProcessor()
-                    {
-                        Type = MovementProcessorType.StickToRoads,
-                        Distance = 0f,
-                        Power = 0.04f,
-                    },
-                    new MovementProcessor()
-                    {
-                        Type = MovementProcessorType.WorldEvents,
-                        Distance = 0f,
-                        Power = 0.05f,
-                    },
-                }
-            },
-        };
+        public List<MovementProcessors> Processors;
 
         private static bool IsProcessorGroupUsed(Config config, int group)
         {
@@ -194,6 +139,71 @@ namespace WalkerSim
                 Logging.Exception(ex);
                 return null;
             }
+        }
+
+        public static Config GetDefault()
+        {
+            var conf = new Config()
+            {
+                Processors = new List<MovementProcessors>
+                {
+                    new MovementProcessors {
+                        Group = -1,
+                        SpeedScale = 1.0f,
+                        Entries = new List<MovementProcessor> {
+                            new MovementProcessor()
+                            {
+                                Type = MovementProcessorType.Flock,
+                                Distance = 150f,
+                                Power = 0.003f,
+                            },
+                            new MovementProcessor()
+                            {
+                                Type = MovementProcessorType.Align,
+                                Distance = 150f,
+                                Power = 0.001f,
+                            },
+                            new MovementProcessor()
+                            {
+                                Type = MovementProcessorType.Avoid,
+                                Distance = 50f,
+                                Power = 0.002f,
+                            },
+                            new MovementProcessor()
+                            {
+                                Type = MovementProcessorType.Group,
+                                Distance = 250f,
+                                Power = 0.0001f,
+                            },
+                            new MovementProcessor()
+                            {
+                                Type = MovementProcessorType.GroupAvoid,
+                                Distance = 150f,
+                                Power = 0.0001f,
+                            },
+                            new MovementProcessor()
+                            {
+                                Type = MovementProcessorType.Wind,
+                                Distance = 0f,
+                                Power = 0.05f,
+                            },
+                            new MovementProcessor()
+                            {
+                                Type = MovementProcessorType.StickToRoads,
+                                Distance = 0f,
+                                Power = 0.04f,
+                            },
+                            new MovementProcessor()
+                            {
+                                Type = MovementProcessorType.WorldEvents,
+                                Distance = 0f,
+                                Power = 0.05f,
+                            },
+                        }
+                    },
+                }
+            };
+            return conf;
         }
     }
 }

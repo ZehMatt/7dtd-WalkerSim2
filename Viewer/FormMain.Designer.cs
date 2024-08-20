@@ -71,7 +71,7 @@
             this.label6 = new System.Windows.Forms.Label();
             this.inputMovementGroup = new System.Windows.Forms.NumericUpDown();
             this.groupProcessors = new System.Windows.Forms.GroupBox();
-            this.button3 = new System.Windows.Forms.Button();
+            this.buttonRemoveProcessor = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.groupParameter = new System.Windows.Forms.GroupBox();
             this.inputProcessorPower = new System.Windows.Forms.NumericUpDown();
@@ -79,11 +79,15 @@
             this.label9 = new System.Windows.Forms.Label();
             this.inputProcessorDistance = new System.Windows.Forms.NumericUpDown();
             this.listProcessors = new System.Windows.Forms.ListBox();
-            this.button2 = new System.Windows.Forms.Button();
+            this.buttonRemoveGroup = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.listProcessorGroups = new System.Windows.Forms.ListBox();
             this.killToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.reduceCPULoadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
+            this.loadConfigurationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -125,6 +129,10 @@
             // 
             // fileToolStripMenuItem
             // 
+            this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.loadConfigurationToolStripMenuItem,
+            this.toolStripMenuItem1,
+            this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
@@ -145,7 +153,7 @@
             this.viewRoads.CheckOnClick = true;
             this.viewRoads.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewRoads.Name = "viewRoads";
-            this.viewRoads.Size = new System.Drawing.Size(111, 22);
+            this.viewRoads.Size = new System.Drawing.Size(180, 22);
             this.viewRoads.Text = "Roads";
             // 
             // viewAgents
@@ -154,7 +162,7 @@
             this.viewAgents.CheckOnClick = true;
             this.viewAgents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewAgents.Name = "viewAgents";
-            this.viewAgents.Size = new System.Drawing.Size(111, 22);
+            this.viewAgents.Size = new System.Drawing.Size(180, 22);
             this.viewAgents.Text = "Agents";
             // 
             // viewEvents
@@ -163,7 +171,7 @@
             this.viewEvents.CheckOnClick = true;
             this.viewEvents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewEvents.Name = "viewEvents";
-            this.viewEvents.Size = new System.Drawing.Size(111, 22);
+            this.viewEvents.Size = new System.Drawing.Size(180, 22);
             this.viewEvents.Text = "Events";
             // 
             // simulationToolStripMenuItem
@@ -174,6 +182,7 @@
             this.resumeToolStripMenuItem,
             this.speedToolStripMenuItem,
             this.advanceOneTickToolStripMenuItem,
+            this.toolStripMenuItem2,
             this.reduceCPULoadToolStripMenuItem});
             this.simulationToolStripMenuItem.Name = "simulationToolStripMenuItem";
             this.simulationToolStripMenuItem.Size = new System.Drawing.Size(76, 20);
@@ -182,21 +191,21 @@
             // restartToolStripMenuItem
             // 
             this.restartToolStripMenuItem.Name = "restartToolStripMenuItem";
-            this.restartToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
+            this.restartToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.restartToolStripMenuItem.Text = "Restart";
             this.restartToolStripMenuItem.Click += new System.EventHandler(this.OnRestartClick);
             // 
             // pauseToolStripMenuItem
             // 
             this.pauseToolStripMenuItem.Name = "pauseToolStripMenuItem";
-            this.pauseToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
+            this.pauseToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.pauseToolStripMenuItem.Text = "Pause";
             this.pauseToolStripMenuItem.Click += new System.EventHandler(this.OnPauseClick);
             // 
             // resumeToolStripMenuItem
             // 
             this.resumeToolStripMenuItem.Name = "resumeToolStripMenuItem";
-            this.resumeToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
+            this.resumeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.resumeToolStripMenuItem.Text = "Resume";
             this.resumeToolStripMenuItem.Click += new System.EventHandler(this.OnResumeClick);
             // 
@@ -209,7 +218,7 @@
             // advanceOneTickToolStripMenuItem
             // 
             this.advanceOneTickToolStripMenuItem.Name = "advanceOneTickToolStripMenuItem";
-            this.advanceOneTickToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
+            this.advanceOneTickToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.advanceOneTickToolStripMenuItem.Text = "Advance one Tick";
             // 
             // toolsToolStripMenuItem
@@ -224,7 +233,7 @@
             // emitSoundToolStripMenuItem
             // 
             this.emitSoundToolStripMenuItem.Name = "emitSoundToolStripMenuItem";
-            this.emitSoundToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.emitSoundToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.emitSoundToolStripMenuItem.Text = "Emit Sound";
             this.emitSoundToolStripMenuItem.Click += new System.EventHandler(this.OnClickSoundEmit);
             // 
@@ -431,7 +440,7 @@
             // 
             this.tabPage2.Controls.Add(this.groupProps);
             this.tabPage2.Controls.Add(this.groupProcessors);
-            this.tabPage2.Controls.Add(this.button2);
+            this.tabPage2.Controls.Add(this.buttonRemoveGroup);
             this.tabPage2.Controls.Add(this.button1);
             this.tabPage2.Controls.Add(this.listProcessorGroups);
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
@@ -451,7 +460,7 @@
             this.groupProps.Location = new System.Drawing.Point(225, 6);
             this.groupProps.Name = "groupProps";
             this.groupProps.Size = new System.Drawing.Size(200, 145);
-            this.groupProps.TabIndex = 4;
+            this.groupProps.TabIndex = 3;
             this.groupProps.TabStop = false;
             this.groupProps.Text = "Properties";
             this.groupProps.Visible = false;
@@ -472,12 +481,13 @@
             0});
             this.inputMovementSpeed.Name = "inputMovementSpeed";
             this.inputMovementSpeed.Size = new System.Drawing.Size(75, 20);
-            this.inputMovementSpeed.TabIndex = 3;
+            this.inputMovementSpeed.TabIndex = 5;
             this.inputMovementSpeed.Value = new decimal(new int[] {
             1,
             0,
             0,
             0});
+            this.inputMovementSpeed.ValueChanged += new System.EventHandler(this.OnMovementSpeedChanged);
             // 
             // label7
             // 
@@ -507,45 +517,49 @@
             -2147483648});
             this.inputMovementGroup.Name = "inputMovementGroup";
             this.inputMovementGroup.Size = new System.Drawing.Size(75, 20);
-            this.inputMovementGroup.TabIndex = 0;
+            this.inputMovementGroup.TabIndex = 4;
             this.inputMovementGroup.Value = new decimal(new int[] {
             1,
             0,
             0,
             -2147483648});
+            this.inputMovementGroup.ValueChanged += new System.EventHandler(this.OnGroupIdChanged);
+            this.inputMovementGroup.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.OnKeyPressed);
             // 
             // groupProcessors
             // 
-            this.groupProcessors.Controls.Add(this.button3);
+            this.groupProcessors.Controls.Add(this.buttonRemoveProcessor);
             this.groupProcessors.Controls.Add(this.button4);
             this.groupProcessors.Controls.Add(this.groupParameter);
             this.groupProcessors.Controls.Add(this.listProcessors);
             this.groupProcessors.Location = new System.Drawing.Point(431, 6);
             this.groupProcessors.Name = "groupProcessors";
             this.groupProcessors.Size = new System.Drawing.Size(409, 145);
-            this.groupProcessors.TabIndex = 3;
+            this.groupProcessors.TabIndex = 6;
             this.groupProcessors.TabStop = false;
             this.groupProcessors.Text = "Processors";
             this.groupProcessors.Visible = false;
             // 
-            // button3
+            // buttonRemoveProcessor
             // 
-            this.button3.Enabled = false;
-            this.button3.Location = new System.Drawing.Point(114, 113);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(87, 23);
-            this.button3.TabIndex = 4;
-            this.button3.Text = "Remove";
-            this.button3.UseVisualStyleBackColor = true;
+            this.buttonRemoveProcessor.Enabled = false;
+            this.buttonRemoveProcessor.Location = new System.Drawing.Point(114, 113);
+            this.buttonRemoveProcessor.Name = "buttonRemoveProcessor";
+            this.buttonRemoveProcessor.Size = new System.Drawing.Size(87, 23);
+            this.buttonRemoveProcessor.TabIndex = 9;
+            this.buttonRemoveProcessor.Text = "Remove";
+            this.buttonRemoveProcessor.UseVisualStyleBackColor = true;
+            this.buttonRemoveProcessor.Click += new System.EventHandler(this.OnRemoveProcessorClick);
             // 
             // button4
             // 
             this.button4.Location = new System.Drawing.Point(9, 113);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(99, 23);
-            this.button4.TabIndex = 3;
+            this.button4.TabIndex = 8;
             this.button4.Text = "Add Processor";
             this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.OnAddProcessorClick);
             // 
             // groupParameter
             // 
@@ -556,7 +570,7 @@
             this.groupParameter.Location = new System.Drawing.Point(207, 14);
             this.groupParameter.Name = "groupParameter";
             this.groupParameter.Size = new System.Drawing.Size(200, 125);
-            this.groupParameter.TabIndex = 1;
+            this.groupParameter.TabIndex = 10;
             this.groupParameter.TabStop = false;
             this.groupParameter.Text = "Parameters";
             this.groupParameter.Visible = false;
@@ -577,12 +591,13 @@
             0});
             this.inputProcessorPower.Name = "inputProcessorPower";
             this.inputProcessorPower.Size = new System.Drawing.Size(75, 20);
-            this.inputProcessorPower.TabIndex = 11;
+            this.inputProcessorPower.TabIndex = 12;
             this.inputProcessorPower.Value = new decimal(new int[] {
             1,
             0,
             0,
             0});
+            this.inputProcessorPower.ValueChanged += new System.EventHandler(this.OnPowerValueChanged);
             // 
             // label8
             // 
@@ -617,7 +632,8 @@
             0});
             this.inputProcessorDistance.Name = "inputProcessorDistance";
             this.inputProcessorDistance.Size = new System.Drawing.Size(75, 20);
-            this.inputProcessorDistance.TabIndex = 8;
+            this.inputProcessorDistance.TabIndex = 11;
+            this.inputProcessorDistance.ValueChanged += new System.EventHandler(this.OnDistanceValueChanged);
             // 
             // listProcessors
             // 
@@ -625,18 +641,19 @@
             this.listProcessors.Location = new System.Drawing.Point(10, 19);
             this.listProcessors.Name = "listProcessors";
             this.listProcessors.Size = new System.Drawing.Size(190, 82);
-            this.listProcessors.TabIndex = 0;
+            this.listProcessors.TabIndex = 7;
             this.listProcessors.SelectedIndexChanged += new System.EventHandler(this.OnProcessorSelectionChanged);
             // 
-            // button2
+            // buttonRemoveGroup
             // 
-            this.button2.Enabled = false;
-            this.button2.Location = new System.Drawing.Point(112, 128);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(108, 23);
-            this.button2.TabIndex = 2;
-            this.button2.Text = "Remove";
-            this.button2.UseVisualStyleBackColor = true;
+            this.buttonRemoveGroup.Enabled = false;
+            this.buttonRemoveGroup.Location = new System.Drawing.Point(112, 128);
+            this.buttonRemoveGroup.Name = "buttonRemoveGroup";
+            this.buttonRemoveGroup.Size = new System.Drawing.Size(108, 23);
+            this.buttonRemoveGroup.TabIndex = 2;
+            this.buttonRemoveGroup.Text = "Remove";
+            this.buttonRemoveGroup.UseVisualStyleBackColor = true;
+            this.buttonRemoveGroup.Click += new System.EventHandler(this.OnRemoveGroupClick);
             // 
             // button1
             // 
@@ -646,6 +663,7 @@
             this.button1.TabIndex = 1;
             this.button1.Text = "Add Group";
             this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.OnAddGroupClick);
             // 
             // listProcessorGroups
             // 
@@ -670,6 +688,29 @@
             this.reduceCPULoadToolStripMenuItem.Text = "Reduce CPU Load";
             this.reduceCPULoadToolStripMenuItem.Click += new System.EventHandler(this.OnReduceCPULoadClick);
             // 
+            // exitToolStripMenuItem
+            // 
+            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.exitToolStripMenuItem.Text = "Exit";
+            // 
+            // toolStripMenuItem1
+            // 
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(177, 6);
+            // 
+            // loadConfigurationToolStripMenuItem
+            // 
+            this.loadConfigurationToolStripMenuItem.Name = "loadConfigurationToolStripMenuItem";
+            this.loadConfigurationToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.loadConfigurationToolStripMenuItem.Text = "Load configuration";
+            this.loadConfigurationToolStripMenuItem.Click += new System.EventHandler(this.loadConfigurationToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem2
+            // 
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(177, 6);
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -677,6 +718,7 @@
             this.ClientSize = new System.Drawing.Size(856, 717);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.menuStrip1);
+            this.DoubleBuffered = true;
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "FormMain";
             this.Text = "WalkerSim";
@@ -745,7 +787,7 @@
         private System.Windows.Forms.CheckBox inputStartGrouped;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.ListBox listProcessorGroups;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button buttonRemoveGroup;
         private System.Windows.Forms.GroupBox groupProcessors;
         private System.Windows.Forms.ListBox listProcessors;
         private System.Windows.Forms.GroupBox groupProps;
@@ -758,13 +800,17 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.NumericUpDown inputProcessorDistance;
-        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button buttonRemoveProcessor;
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.ComboBox inputWorld;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.ToolStripMenuItem speedToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem killToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem reduceCPULoadToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem loadConfigurationToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
     }
 }
 

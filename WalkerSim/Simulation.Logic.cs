@@ -42,10 +42,18 @@ namespace WalkerSim
         {
             _processors.Clear();
 
+            if (_state.GroupCount == 0)
+            {
+                return;
+            }
+
             // Zero init the list based on group count.
             for (int i = 0; i < _state.GroupCount; i++)
             {
-                _processors.Add(new MovementProcessor());
+                _processors.Add(new MovementProcessor()
+                {
+                    Entries = new List<Processor>()
+                });
             }
 
             foreach (var processorGroup in _state.Config.Processors)
@@ -209,7 +217,7 @@ namespace WalkerSim
             _nearby.Clear();
             QueryCells(agent.Position, agent.Index, maxNeighborDistance, _nearby);
 
-            var curVel = Vector3.Zero;
+            var curVel = agent.Velocity * 0.9f;
 
             var processorGroup = _processors[agent.Group];
             for (int i = 0; i < processorGroup.Entries.Count; i++)

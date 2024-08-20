@@ -16,7 +16,10 @@ namespace WalkerSim.Viewer
         static readonly Vector3 WorldMins = new Vector3(-(WorldSizeX * 0.5f), -(WorldSizeY * 0.5f), 0);
         static readonly Vector3 WorldMaxs = new Vector3(WorldSizeX * 0.5f, WorldSizeY * 0.5f, 256);
 
-        static WalkerSim.Config CurrentConfig = new Config();
+        static WalkerSim.Config CurrentConfig = Config.GetDefault();
+
+        private int _selectedGroup = -1;
+        private int _selectedProcessor = -1;
 
         Simulation simulation = Simulation.Instance;
         Random prng = new Random(1);
@@ -59,8 +62,6 @@ namespace WalkerSim.Viewer
             SetupLimits();
             SetupChoices();
             LoadDefaultConfiguration();
-            UpdateConfigFields();
-            //StartSimulation();
         }
 
         private void SetupSpeedModifiers()
@@ -137,7 +138,19 @@ namespace WalkerSim.Viewer
 
         private void LoadDefaultConfiguration()
         {
-            CurrentConfig = Config.LoadFromFile("WalkerSim.xml");
+            LoadConfiguration("WalkerSim.xml");
+        }
+
+        private void LoadConfiguration(string file)
+        {
+            var loadedConfig = Config.LoadFromFile(file);
+            if (loadedConfig == null)
+            {
+                MessageBox.Show("Failed to load the configuration file", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            CurrentConfig = loadedConfig;
+            UpdateConfigFields();
         }
 
         private void UpdateConfigFields()
@@ -163,7 +176,7 @@ namespace WalkerSim.Viewer
             listProcessorGroups.Items.Clear();
 
             var groups = CurrentConfig.Processors;
-            for (int i = 0; i < groups.Length; i++)
+            for (int i = 0; i < groups.Count; i++)
             {
                 listProcessorGroups.Items.Add("Group #" + i);
             }
@@ -354,7 +367,6 @@ namespace WalkerSim.Viewer
 
                 Tool.Active.DrawPreview(simCanvas, gr, simPos);
             }
-
         }
 
         private void RenderSimulation()
@@ -378,7 +390,13 @@ namespace WalkerSim.Viewer
         private void OnGroupSelection(object sender, EventArgs e)
         {
             var groupIdx = listProcessorGroups.SelectedIndex;
+            if (_selectedGroup == groupIdx)
+            {
+                return;
+            }
+            _selectedGroup = groupIdx;
 
+            buttonRemoveGroup.Enabled = groupIdx != -1;
             groupProps.Visible = groupIdx != -1;
             groupProcessors.Visible = groupIdx != -1;
             groupParameter.Visible = false;
@@ -398,6 +416,8 @@ namespace WalkerSim.Viewer
             {
                 listProcessors.Items.Add(processor.Type);
             }
+
+            buttonRemoveProcessor.Enabled = false;
         }
 
         private void OnProcessorSelectionChanged(object sender, EventArgs e)
@@ -409,7 +429,15 @@ namespace WalkerSim.Viewer
             }
 
             var processorIdx = listProcessors.SelectedIndex;
+            if (processorIdx == _selectedProcessor)
+            {
+                return;
+            }
+            _selectedProcessor = -1;
+
             groupParameter.Visible = processorIdx != -1;
+            buttonRemoveProcessor.Enabled = processorIdx != -1;
+
             if (processorIdx == -1)
             {
                 return;
@@ -485,6 +513,198 @@ namespace WalkerSim.Viewer
         {
             CurrentConfig.ReduceCPULoad = !CurrentConfig.ReduceCPULoad;
             reduceCPULoadToolStripMenuItem.Checked = CurrentConfig.ReduceCPULoad;
+        }
+
+        private void loadConfigurationToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var browseFileDlg = new OpenFileDialog();
+            browseFileDlg.Filter = "Config File (WalkerSim.xml)|WalkerSim.xml|All files (*.*)|*.*";
+            browseFileDlg.RestoreDirectory = true;
+            browseFileDlg.InitialDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            browseFileDlg.Title = "Load configuration";
+            if (browseFileDlg.ShowDialog() == DialogResult.OK)
+            {
+                LoadConfiguration(browseFileDlg.FileName);
+            }
+        }
+
+        private void OnAddGroupClick(object sender, EventArgs e)
+        {
+            if (CurrentConfig == null)
+                return;
+
+            var groups = CurrentConfig.Processors;
+            var newGroup = new Config.MovementProcessors();
+            var idx = groups.Count;
+            groups.Add(newGroup);
+
+            listProcessorGroups.Items.Add("Group #" + idx);
+
+            simulation.ReloadConfig(CurrentConfig);
+        }
+
+        private void OnRemoveGroupClick(object sender, EventArgs e)
+        {
+            if (CurrentConfig == null)
+                return;
+
+            var groupIdx = listProcessorGroups.SelectedIndex;
+            if (groupIdx == -1)
+            {
+                return;
+            }
+
+            var groups = CurrentConfig.Processors;
+            groups.RemoveAt(groupIdx);
+            listProcessorGroups.Items.RemoveAt(groupIdx);
+
+            if (groupIdx > 0)
+            {
+                listProcessorGroups.SelectedIndex = groupIdx - 1;
+            }
+
+            simulation.ReloadConfig(CurrentConfig);
+        }
+
+        private Config.MovementProcessors GetSelectedGroupEntry()
+        {
+            var groupIdx = listProcessorGroups.SelectedIndex;
+            if (groupIdx == -1)
+            {
+                return null;
+            }
+
+            var groups = CurrentConfig.Processors;
+
+            return groups[groupIdx];
+        }
+
+        private void OnGroupIdChanged(object sender, EventArgs e)
+        {
+            var group = GetSelectedGroupEntry();
+            if (group == null)
+            {
+                return;
+            }
+
+            group.Group = (int)inputMovementGroup.Value;
+
+            simulation.ReloadConfig(CurrentConfig);
+        }
+
+        private void OnMovementSpeedChanged(object sender, EventArgs e)
+        {
+            var group = GetSelectedGroupEntry();
+            if (group == null)
+            {
+                return;
+            }
+
+            group.SpeedScale = (float)inputMovementSpeed.Value;
+
+            simulation.ReloadConfig(CurrentConfig);
+        }
+
+        private void OnAddProcessorClick(object sender, EventArgs e)
+        {
+            var group = GetSelectedGroupEntry();
+            if (group == null)
+            {
+                return;
+            }
+
+            var processorSelectDlg = new FormProcessorSelection();
+
+            var res = processorSelectDlg.ShowDialog();
+            if (res != DialogResult.OK)
+            {
+                return;
+            }
+
+            var processor = new Config.MovementProcessor();
+            processor.Type = processorSelectDlg.Choice;
+
+            var newIdx = group.Entries.Count;
+
+            group.Entries.Add(processor);
+
+            listProcessors.Items.Add(processor.Type);
+            listProcessors.SelectedIndex = newIdx;
+
+            simulation.ReloadConfig(CurrentConfig);
+        }
+
+        private void OnRemoveProcessorClick(object sender, EventArgs e)
+        {
+            var group = GetSelectedGroupEntry();
+            if (group == null)
+            {
+                return;
+            }
+
+            var processorIdx = listProcessors.SelectedIndex;
+            if (processorIdx == -1)
+            {
+                return;
+            }
+
+            group.Entries.RemoveAt(processorIdx);
+            listProcessors.Items.RemoveAt(processorIdx);
+
+            if (processorIdx > 0)
+            {
+                listProcessors.SelectedIndex = processorIdx - 1;
+            }
+
+            simulation.ReloadConfig(CurrentConfig);
+        }
+
+        private Config.MovementProcessor GetProcessorEntry()
+        {
+            var group = GetSelectedGroupEntry();
+            if (group == null)
+            {
+                return null;
+            }
+
+            var processorIdx = listProcessors.SelectedIndex;
+            if (processorIdx == -1)
+            {
+                return null;
+            }
+
+            return group.Entries[processorIdx];
+        }
+
+        private void OnDistanceValueChanged(object sender, EventArgs e)
+        {
+            var entry = GetProcessorEntry();
+            if (entry == null)
+            {
+                return;
+            }
+            entry.Distance = (float)inputProcessorDistance.Value;
+
+            simulation.ReloadConfig(CurrentConfig);
+        }
+
+        private void OnPowerValueChanged(object sender, EventArgs e)
+        {
+            var entry = GetProcessorEntry();
+            if (entry == null)
+            {
+                return;
+            }
+            entry.Power = (float)inputProcessorPower.Value;
+
+            simulation.ReloadConfig(CurrentConfig);
+        }
+
+        private void OnKeyPressed(object sender, KeyPressEventArgs e)
+        {
+            // Eliminate the ding sound.
+            if (e.KeyChar == '\r')
+                e.Handled = true;
         }
     }
 }
