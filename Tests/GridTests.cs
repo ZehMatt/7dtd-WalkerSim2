@@ -52,7 +52,7 @@ namespace WalkerSim.Tests
             for (int i = 0; i < 10; i++)
             {
                 var centerPos = GetRandomPos(prng);
-                sim.UpdatePlayer(0, centerPos);
+                sim.UpdatePlayer(0, centerPos, true);
 
                 // Put all agents around the player.
                 SetAgentsAroundPos(sim, centerPos, 60);

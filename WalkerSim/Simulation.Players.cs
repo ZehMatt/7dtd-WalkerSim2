@@ -38,11 +38,12 @@ namespace WalkerSim
             }
         }
 
-        public void UpdatePlayer(int entityId, Vector3 newPos)
+        public void UpdatePlayer(int entityId, Vector3 newPos, bool isAlive)
         {
             if (_state.Players.TryGetValue(entityId, out var player))
             {
                 player.Position = newPos;
+                player.IsAlive = isAlive;
             }
         }
     }

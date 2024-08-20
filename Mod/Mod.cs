@@ -136,9 +136,12 @@ namespace WalkerSim
             {
                 Logging.Out("Advancing simulation for {0} ticks...", config.TicksToAdvanceOnStartup);
 
-                simulation.FastAdvance(config.TicksToAdvanceOnStartup);
+                var elapsed = Utils.Measure(() =>
+                {
+                    simulation.FastAdvance(config.TicksToAdvanceOnStartup);
+                });
 
-                Logging.Out("... done.");
+                Logging.Out("... done, took {0}ms.", elapsed.TotalMilliseconds);
             }
 
             simulation.Start();
@@ -157,7 +160,7 @@ namespace WalkerSim
                 var pos = player.GetPosition();
 
                 // NOTE: Unity uses Y for vertical axis, we don't, screw that.
-                simulation.UpdatePlayer(entityId, VectorUtils.ToSim(pos));
+                simulation.UpdatePlayer(entityId, VectorUtils.ToSim(pos), player.IsAlive());
             }
         }
 
@@ -197,7 +200,7 @@ namespace WalkerSim
                 if (IsEntityDead(entity, agent.EntityId))
                 {
                     // Mark as dead so it will be sweeped.
-                    simulation.MarkAgentDead(agent.EntityId);
+                    simulation.MarkAgentDead(agent);
                 }
                 else
                 {
@@ -339,7 +342,6 @@ namespace WalkerSim
             }
 
             var simulation = Simulation.Instance;
-
             var entityId = _entity.entityId;
 
             simulation.EntityKilled(entityId);

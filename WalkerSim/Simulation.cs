@@ -125,15 +125,9 @@ namespace WalkerSim
 
         public void EntityKilled(int entityId)
         {
-            if (_state.Players.TryGetValue(entityId, out Player ply))
-            {
-                ply.IsAlive = false;
-                return;
-            }
-
             if (_state.Active.TryGetValue(entityId, out var agent))
             {
-                MarkAgentDead(entityId);
+                MarkAgentDead(agent);
             }
         }
 

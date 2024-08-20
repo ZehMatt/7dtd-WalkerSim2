@@ -29,6 +29,9 @@ namespace WalkerSim
                 if (player.EntityId == -1)
                     continue;
 
+                if (player.IsAlive == false)
+                    continue;
+
                 var playerPos = player.Position;
 
                 // Don't activate them when they are in the inner radius.

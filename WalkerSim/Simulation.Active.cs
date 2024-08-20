@@ -48,32 +48,30 @@ namespace WalkerSim
             }
         }
 
-        public void MarkAgentDead(int entityId)
+        public void MarkAgentDead(Agent agent)
         {
-            if (_state.Active.TryGetValue(entityId, out var agent))
-            {
-                agent.ResetSpawnData();
+            agent.ResetSpawnData();
 
-                if (_state.Config.RespawnPosition == Config.WorldLocation.None)
-                {
-                    // No respawn, dead for good.
-                    agent.CurrentState = Agent.State.Dead;
-                }
-                else
-                {
-                    // Mark to be respawned.
-                    agent.CurrentState = Agent.State.Respawning;
-                }
+            if (_state.Config.RespawnPosition == Config.WorldLocation.None)
+            {
+                // No respawn, dead for good.
+                agent.CurrentState = Agent.State.Dead;
+            }
+            else
+            {
+                // Mark to be respawned.
+                agent.CurrentState = Agent.State.Respawning;
             }
         }
 
         private bool IsInsidePlayerMaxView(Vector3 pos)
         {
+            // NOTE: We do not check if the player is alive here, the game plays a death animation
+            // and zombies will eat on the player so despawning them the moment the player is killed
+            // is not wanted. If the player respawns it will update the position and despawn as usual.
+
             foreach (var ply in _state.Players)
             {
-                if (!ply.Value.IsAlive)
-                    continue;
-
                 var dist = Vector3.Distance(pos, ply.Value.Position);
 
                 // We add a little offset to avoid constant spawn-despawning.
