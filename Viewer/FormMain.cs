@@ -53,6 +53,7 @@ namespace WalkerSim.Viewer
                 simulation.Stop();
             };
 
+            SetupSpeedModifiers();
             SetupDrawingContext();
             SetupWorlds();
             SetupLimits();
@@ -60,6 +61,30 @@ namespace WalkerSim.Viewer
             LoadDefaultConfiguration();
             UpdateConfigFields();
             //StartSimulation();
+        }
+
+        private void SetupSpeedModifiers()
+        {
+            speedToolStripMenuItem.DropDownItems.Clear();
+
+            int speed = 1;
+            for (int i = 0; i < 9; i++)
+            {
+                var item = speedToolStripMenuItem.DropDownItems.Add(String.Format("{0}x", speed)) as ToolStripMenuItem;
+                item.Checked = i == 0;
+
+                var newSpeed = speed;
+                item.Click += (sender, arg) =>
+                {
+                    foreach (ToolStripMenuItem other in speedToolStripMenuItem.DropDownItems)
+                    {
+                        other.Checked = false;
+                    }
+                    simulation.TimeScale = (float)newSpeed;
+                    item.Checked = true;
+                };
+                speed <<= 1;
+            }
         }
 
         private void SetupDrawingContext()
@@ -119,6 +144,8 @@ namespace WalkerSim.Viewer
         {
             if (CurrentConfig == null)
                 return;
+
+            reduceCPULoadToolStripMenuItem.Checked = CurrentConfig.ReduceCPULoad;
 
             inputRandomSeed.Value = CurrentConfig.RandomSeed;
             inputMaxAgents.Value = CurrentConfig.MaxAgents;
@@ -429,45 +456,6 @@ namespace WalkerSim.Viewer
             RenderSimulation();
         }
 
-        private void OnTimeScale1Click(object sender, EventArgs e)
-        {
-            simulation.TimeScale = 1.0f;
-        }
-
-        private void OnTimeScale2Click(object sender, EventArgs e)
-        {
-            simulation.TimeScale = 2.0f;
-        }
-
-        private void OnTimeScale4Click(object sender, EventArgs e)
-        {
-            simulation.TimeScale = 4.0f;
-        }
-
-        private void OnTimeScale8Click(object sender, EventArgs e)
-        {
-            simulation.TimeScale = 8.0f;
-        }
-        private void OnTimeScale16Click(object sender, EventArgs e)
-        {
-            simulation.TimeScale = 16.0f;
-        }
-
-        private void OnTimeScale32Click(object sender, EventArgs e)
-        {
-            simulation.TimeScale = 32.0f;
-        }
-
-        private void OnTimeScale64Click(object sender, EventArgs e)
-        {
-            simulation.TimeScale = 64.0f;
-        }
-
-        private void OnTimeScale128Click(object sender, EventArgs e)
-        {
-            simulation.TimeScale = 128.0f;
-        }
-
         private void OnSimCanvasClick(object sender, MouseEventArgs e)
         {
             var simulation = Simulation.Instance;
@@ -491,6 +479,12 @@ namespace WalkerSim.Viewer
 
             Tool.Active = null;
             simCanvas.Cursor = Cursors.Default;
+        }
+
+        private void OnReduceCPULoadClick(object sender, EventArgs e)
+        {
+            CurrentConfig.ReduceCPULoad = !CurrentConfig.ReduceCPULoad;
+            reduceCPULoadToolStripMenuItem.Checked = CurrentConfig.ReduceCPULoad;
         }
     }
 }
