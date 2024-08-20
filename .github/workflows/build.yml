@@ -96,12 +96,22 @@ jobs:
         echo .pdb > exclude.txt
         xcopy /I /Y /F ".\Build\Release\*" ".\artifact\Mods\WalkerSim2\" /EXCLUDE:exclude.txt
         del exclude.txt
+
     - name: Publish artifacts
       uses: actions/upload-artifact@v4
       with:
         name: WalkerSim2-${{ env.BUILD_VERSION }}
         path: |
           ./artifact/**/*
+
+    - name: Prepare release
+      run: |
+        $zipFileName = "WalkerSim2-${{ env.BUILD_VERSION }}.zip"
+        $sourceDirectory = ".\artifact"
+        Compress-Archive -Path $sourceDirectory\* -DestinationPath $zipFileName
+        echo "Created $zipFileName"
+      id: prepare-release
+      shell: powershell
 
     - name: Release
       uses: softprops/action-gh-release@v2
@@ -111,4 +121,4 @@ jobs:
         tag_name: ${{ env.BUILD_VERSION }}
         make_latest: true
         files: |
-          ./artifact/**/*
+          WalkerSim2-${{ env.BUILD_VERSION }}.zip
