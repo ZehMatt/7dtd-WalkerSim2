@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 
 namespace WalkerSim
 {
@@ -134,6 +135,7 @@ namespace WalkerSim
             }
 
             var agents = _state.Agents;
+            var numUpdates = 0;
 
             while (tickWatch.Elapsed.TotalSeconds < TickRate)
             {
@@ -150,6 +152,14 @@ namespace WalkerSim
                 else if (agent.CurrentState == Agent.State.Respawning)
                 {
                     RespawnAgent(agent);
+                }
+
+                if (_state.Config.ReduceCPULoad)
+                {
+                    if (++numUpdates % 100 == 0)
+                    {
+                        Thread.Sleep(1);
+                    }
                 }
             }
 
@@ -465,7 +475,7 @@ namespace WalkerSim
         public void ApplyMovement(Agent agent, float deltaTime, float power)
         {
             // Cap the deltaTime
-            deltaTime = System.Math.Min(deltaTime, 5.0f);
+            deltaTime = System.Math.Min(deltaTime, 10.0f);
 
             // Keep the Z axis clean.
             agent.Position.Z = 0;

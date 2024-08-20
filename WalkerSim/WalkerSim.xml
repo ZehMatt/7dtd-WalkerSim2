@@ -7,16 +7,16 @@
   <RandomSeed>1337</RandomSeed>
 
   <!-- Maximum amount of agents to simulate, it will never exceed the number -->
-  <MaxAgents>5000</MaxAgents>
+  <MaxAgents>15000</MaxAgents>
 
   <!-- Agents will be assigned to a group, this specifies how many members a group will have -->
-  <GroupSize>100</GroupSize>
+  <GroupSize>1000</GroupSize>
   
   <!-- In case a new simulation starts this is the amount of ticks it will advance in one go -->
   <TicksToAdvanceOnStartup>100</TicksToAdvanceOnStartup>
 
   <!-- This will put agents of the same group closer together at initial start of the simulation -->
-  <StartAgentsGrouped>true</StartAgentsGrouped>
+  <StartAgentsGrouped>false</StartAgentsGrouped>
 
   <!-- The position of where agents are placed on the initial start of the simulation
        Choices:
@@ -35,7 +35,7 @@
           RandomPOI: Random POI position.
           Mixed: Selects a random choice from above for each agent excluding 'None'.
   -->
-  <AgentRespawnPosition>Mixed</AgentRespawnPosition>
+  <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>
 
   <!-- The option specifies if the simulation should be paused when no players are on the server -->
   <PauseWithoutPlayers>true</PauseWithoutPlayers>

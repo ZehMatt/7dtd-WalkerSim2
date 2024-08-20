@@ -11,7 +11,6 @@ namespace WalkerSim
         public float TimeScale = 1.0f;
         public readonly float TickRate = 1f / 40f;
 
-        private float _accumulator = 0f;
         private int _ticks = 0;
 
         private bool _initialized = false;
@@ -110,7 +109,6 @@ namespace WalkerSim
             SetupProcessors();
 
             _initialized = true;
-            _accumulator = 0.0f;
         }
 
         public void SetPaused(bool paused)
@@ -135,10 +133,7 @@ namespace WalkerSim
 
             if (_state.Active.TryGetValue(entityId, out var agent))
             {
-                agent.EntityId = -1;
-                agent.Health = -1;
-                agent.EntityClassId = -1;
-                agent.CurrentState = Agent.State.Dead;
+                MarkAgentDead(entityId);
             }
         }
 
@@ -271,7 +266,7 @@ namespace WalkerSim
             var config = _state.Config;
 
             // Give each agent 2 meters distance to each other.
-            var maxDistance = (float)_state.Config.GroupSize * 2.0f;
+            var maxDistance = Math.Clamp((float)_state.Config.GroupSize * 2.0f, 10.0f, 500.0f);
 
             if (config.StartAgentsGrouped)
             {
@@ -341,26 +336,7 @@ namespace WalkerSim
                     continue;
                 }
 
-                float deltaTime = (float)sw.Elapsed.TotalSeconds;
-                sw.Restart();
-
-                if (deltaTime > 0.1f)
-                {
-                    deltaTime = 0.1f;
-                }
-
-                _accumulator += deltaTime * TimeScale;
-
-                if (_accumulator < TickRate)
-                {
-                    Thread.Sleep(2);
-                }
-
-                while (_accumulator > TickRate && _running)
-                {
-                    Tick();
-                    _accumulator -= TickRate;
-                }
+                Tick();
 
                 if (!_running)
                     break;

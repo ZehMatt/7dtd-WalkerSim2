@@ -80,6 +80,9 @@ namespace WalkerSim
         [XmlElement("GroupSize")]
         public int GroupSize = 200;
 
+        [XmlElement("ReduceCPULoad")]
+        public bool ReduceCPULoad = false;
+
         [XmlElement("AgentStartPosition")]
         public WorldLocation StartPosition = WorldLocation.RandomLocation;
 
