@@ -42,7 +42,7 @@ namespace WalkerSim.Tests
         {
             var prng = new Random(1);
 
-            var config = new WalkerSim.Config();
+            var config = Config.GetDefault();
             config.MaxAgents = 20;
 
             var sim = new Simulation();
