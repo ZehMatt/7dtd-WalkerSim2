@@ -1,5 +1,7 @@
 name: Build
 on: [push, pull_request]
+permissions:
+  contents: write
 jobs:
   Build:
     name: Build
@@ -13,20 +15,32 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Set SHA12 environment variable
+    - name: Setup build info (Linux)
       env:
         COMMIT_SHA: ${{ github.sha }}
-      run: echo "COMMIT_SHA12=${COMMIT_SHA:0:12}" >> $GITHUB_ENV
+        BRANCH_NAME: ${{ github.ref_name }}
+      run: |
+        if [[ "${BRANCH_NAME}" == release/* ]]; then
+          VERSION=${BRANCH_NAME#release/}
+          echo "BUILD_VERSION=$VERSION" >> $GITHUB_ENV
+        else
+          echo "BUILD_VERSION=${COMMIT_SHA:0:12}" >> $GITHUB_ENV
+        fi
       shell: bash
       if: runner.os == 'Linux'
 
-    - name: Set SHA12 environment variable (Windows)
+    - name: Setup build info (Windows)
       env:
         COMMIT_SHA: ${{ github.sha }}
+        BRANCH_NAME: ${{ github.ref_name }}
       run: |
-        $sha12 = $env:COMMIT_SHA.Substring(0,12)
-        echo "SHA12: $sha12"
-        echo "COMMIT_SHA12=$sha12" >> $env:GITHUB_ENV
+          if ($env:BRANCH_NAME -like 'release/*') {
+            $version = $env:BRANCH_NAME -replace 'release/', ''
+            echo "BUILD_VERSION=$version" >> $env:GITHUB_ENV
+          } else {
+            $sha12 = $env:COMMIT_SHA.Substring(0,12)
+            echo "BUILD_VERSION=$sha12" >> $env:GITHUB_ENV
+          }
       shell: powershell
       if: runner.os == 'Windows'
 
@@ -79,12 +93,22 @@ jobs:
         mkdir artifact
         mkdir artifact/Mods
         mkdir artifact/Mods/WalkerSim2
-        xcopy /I /Y /F ".\Build\Release\*" ".\artifact\Mods\WalkerSim2\"
-
+        echo .pdb > exclude.txt
+        xcopy /I /Y /F ".\Build\Release\*" ".\artifact\Mods\WalkerSim2\" /EXCLUDE:exclude.txt
+        del exclude.txt
     - name: Publish artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: WalkerSim2-${{ env.COMMIT_SHA12 }}
+        name: WalkerSim2-${{ env.BUILD_VERSION }}
         path: |
           ./artifact/**/*
-          !./artifact/**/*.pdb
+
+    - name: Release
+      uses: softprops/action-gh-release@v2
+      if: startsWith(github.ref, 'refs/heads/release/')
+      with:
+        name: ${{ env.BUILD_VERSION }}
+        tag_name: ${{ env.BUILD_VERSION }}
+        make_latest: true
+        files: |
+          ./artifact/**/*
