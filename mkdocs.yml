@@ -1,0 +1,46 @@
+site_name: WalkerSim 2
+docs_dir: Docs
+site_dir: DocsBuild
+nav:
+    - Home: index.md
+theme: 
+    name: material
+    logo: logo.png
+    palette:
+        scheme: slate
+        primary: black
+    highlightjs: true
+    hljs_languages:
+        - cmake
+        - cpp
+        - toml
+    features:
+        - navigation.instant
+        - navigation.instant.progress
+        - navigation.tabs.sticky
+        - navigation.sections
+        - toc.integrate
+        - navigation.top
+        - navigation.footer
+        - navigation.expand
+        - navigation.indexes
+        - navigation.path
+        - navigation.tracking
+        - search.suggest
+        - search.highlight
+        - content.code.copy
+        - content.code.annotate
+plugins:
+    - offline
+    - search:
+        lang: en
+markdown_extensions:
+    - pymdownx.highlight:
+        anchor_linenums: true
+    - pymdownx.superfences 
+    - admonition
+    - pymdownx.details
+    - attr_list
+    - md_in_html
+extra:
+    generator: false
