@@ -3,6 +3,11 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://zeh.matt/WalkerSimSchema WalkerSimSchema.xsd">
 
+    <!-- Debug Options, be careful what you activate here to avoid console spam. -->
+    <DebugOptions>
+        <LogSpawnDespawn>true</LogSpawnDespawn>
+    </DebugOptions>
+    
     <!-- Random seed for the random number generator -->
     <RandomSeed>1337</RandomSeed>
 
@@ -95,9 +100,5 @@
         <Processor Type="Wind" Power="0.007" />
         <Processor Type="WorldEvents" Power="0.05" />
     </MovementProcessors>
-
-    <DebugOptions>
-        <LogSpawnDespawn>true</LogSpawnDespawn>
-    </DebugOptions>
 
 </WalkerSim>

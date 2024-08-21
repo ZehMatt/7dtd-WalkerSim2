@@ -162,6 +162,7 @@
     <xs:element name="WalkerSim">
         <xs:complexType>
             <xs:sequence>
+                <xs:element ref="DebugOptions" maxOccurs="1" />
                 <xs:element name="RandomSeed" type="xs:int">
                     <xs:annotation>
                         <xs:documentation>Random seed for the random number generator</xs:documentation>
@@ -212,7 +213,6 @@
                     </xs:annotation>
                 </xs:element>
                 <xs:element ref="MovementProcessors" maxOccurs="unbounded"/>
-                <xs:element ref="DebugOptions" maxOccurs="1" />
             </xs:sequence>
         </xs:complexType>
     </xs:element>

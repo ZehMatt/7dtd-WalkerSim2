@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Xml.Serialization;
 
 namespace WalkerSim
@@ -68,9 +67,12 @@ namespace WalkerSim
 
         public class DebugOptions
         {
-            [XmlAttribute("LogSpawnDespawn")]
-            public bool LogSpawnDespawn = false;
+            [XmlElement("LogSpawnDespawn")]
+            public bool LogSpawnDespawn;
         }
+
+        [XmlElement("DebugOptions")]
+        public DebugOptions Debug;
 
         [XmlElement("RandomSeed")]
         public int RandomSeed = 1337;
@@ -104,14 +106,6 @@ namespace WalkerSim
 
         [XmlElement("MovementProcessors")]
         public List<MovementProcessors> Processors;
-
-        [XmlElement("DebugOptions")]
-        public DebugOptions Debug;
-
-        private static bool IsProcessorGroupUsed(Config config, int group)
-        {
-            return config.Processors.Any(x => x.Group == group);
-        }
 
         private static void SanitizeConfig(Config config)
         {
@@ -210,7 +204,8 @@ namespace WalkerSim
                             },
                         }
                     },
-                }
+                },
+                Debug = new DebugOptions(),
             };
             return conf;
         }
