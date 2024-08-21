@@ -66,6 +66,12 @@ namespace WalkerSim
             public List<MovementProcessor> Entries = new List<MovementProcessor>();
         }
 
+        public class DebugOptions
+        {
+            [XmlAttribute("LogSpawnDespawn")]
+            public bool LogSpawnDespawn = false;
+        }
+
         [XmlElement("RandomSeed")]
         public int RandomSeed = 1337;
 
@@ -98,6 +104,9 @@ namespace WalkerSim
 
         [XmlElement("MovementProcessors")]
         public List<MovementProcessors> Processors;
+
+        [XmlElement("DebugOptions")]
+        public DebugOptions Debug;
 
         private static bool IsProcessorGroupUsed(Config config, int group)
         {
