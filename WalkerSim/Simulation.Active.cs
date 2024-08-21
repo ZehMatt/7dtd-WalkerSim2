@@ -1,14 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace WalkerSim
 {
     internal partial class Simulation
     {
-        public delegate bool AgentDespawnHandler(Agent agent);
+        public delegate bool AgentDespawnHandler(Simulation simulation, Agent agent);
 
         private AgentDespawnHandler _agentDespawnHandler;
 
-        private List<int> _cleanUpList = new List<int>();
+        private DateTime _nextDespawn = DateTime.Now;
 
         public IReadOnlyDictionary<int, Agent> Active
         {
@@ -27,25 +28,6 @@ namespace WalkerSim
         {
             _state.Active.Add(entityId, agent);
             Logging.Debug("Added agent with entity id {0} to active list, list size {1}", entityId, _state.Active.Count);
-        }
-
-        private void RemoveInactiveAgents()
-        {
-            _cleanUpList.Clear();
-
-            foreach (var kv in _state.Active)
-            {
-                if (kv.Value.CurrentState != Agent.State.Active)
-                {
-                    _cleanUpList.Add(kv.Key);
-                }
-            }
-
-            foreach (var entityId in _cleanUpList)
-            {
-                Logging.Debug("Removed agent with entity id {0} from active list", entityId);
-                _state.Active.Remove(entityId);
-            }
         }
 
         public void MarkAgentDead(Agent agent)
@@ -69,7 +51,6 @@ namespace WalkerSim
             // NOTE: We do not check if the player is alive here, the game plays a death animation
             // and zombies will eat on the player so despawning them the moment the player is killed
             // is not wanted. If the player respawns it will update the position and despawn as usual.
-
             foreach (var ply in _state.Players)
             {
                 var dist = Vector3.Distance(pos, ply.Value.Position);
@@ -89,7 +70,17 @@ namespace WalkerSim
         private void CheckAgentDespawn()
         {
             if (_agentDespawnHandler == null)
+            {
                 return;
+            }
+
+            var now = DateTime.Now;
+            if (now < _nextDespawn)
+            {
+                return;
+            }
+
+            _nextDespawn = now.AddSeconds(Limits.SpawnDespawnDelay);
 
             foreach (var kv in _state.Active)
             {
@@ -102,10 +93,13 @@ namespace WalkerSim
                     continue;
 
                 // Handle the despawn.
-                _agentDespawnHandler(agent);
+                _agentDespawnHandler(this, agent);
 
                 // Activate in simulation.
                 agent.CurrentState = Agent.State.Wandering;
+
+                _state.Active.Remove(kv.Key);
+                break;
             }
         }
     }

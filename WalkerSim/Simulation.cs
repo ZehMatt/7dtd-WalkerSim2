@@ -363,7 +363,6 @@ namespace WalkerSim
 
             ProcessSpawnQueue();
             CheckAgentDespawn();
-            RemoveInactiveAgents();
         }
 
         public Vector3 RemapPosition2D(Vector3 pos, Vector3 min, Vector3 max)

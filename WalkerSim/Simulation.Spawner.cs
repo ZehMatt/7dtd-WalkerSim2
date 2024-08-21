@@ -5,7 +5,7 @@ namespace WalkerSim
 {
     internal partial class Simulation
     {
-        public delegate int AgentSpawnHandler(Agent agent);
+        public delegate int AgentSpawnHandler(Simulation simulation, Agent agent);
 
         private AgentSpawnHandler _agentSpawnHandler;
 
@@ -70,18 +70,18 @@ namespace WalkerSim
                 return;
             }
 
-            _nextSpawn = now.AddSeconds(0.1);
-
             Agent agent;
             if (!_pendingSpawns.TryDequeue(out agent))
             {
                 return;
             }
 
+            _nextSpawn = now.AddSeconds(Limits.SpawnDespawnDelay);
+
             int agentEntityId = -1;
             if (_agentSpawnHandler != null)
             {
-                agentEntityId = _agentSpawnHandler(agent);
+                agentEntityId = _agentSpawnHandler(this, agent);
             }
 
             if (agentEntityId != -1)

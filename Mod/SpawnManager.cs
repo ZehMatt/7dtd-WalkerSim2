@@ -110,7 +110,7 @@ namespace WalkerSim
             return -1;
         }
 
-        static public int SpawnAgent(Agent agent)
+        static public int SpawnAgent(Simulation simulation, Agent agent)
         {
             var world = GameManager.Instance.World;
             if (world == null)
@@ -150,7 +150,10 @@ namespace WalkerSim
                 return -1;
             }
 
-            Logging.Out("Spawning agent at {0}", worldPos);
+            if (simulation.Config.Debug.LogSpawnDespawn)
+            {
+                Logging.Out("Spawning agent at {0}", worldPos);
+            }
 
             // Use previously assigned entity class id.
             int entityClassId = agent.EntityClassId;
@@ -215,12 +218,15 @@ namespace WalkerSim
             agent.CurrentState = Agent.State.Active;
             agent.Health = spawnedAgent.Health;
 
-            Logging.Debug("Agent spawned at {0}, entity id {1}", worldPos, spawnedAgent.entityId);
+            if (simulation.Config.Debug.LogSpawnDespawn)
+            {
+                Logging.Out("Agent spawned at {0}, entity id {1}, class id {2}", worldPos, spawnedAgent.entityId, entityClassId);
+            }
 
             return spawnedAgent.entityId;
         }
 
-        static public bool DespawnAgent(Agent agent)
+        static public bool DespawnAgent(Simulation simulation, Agent agent)
         {
             var world = GameManager.Instance.World;
             if (world == null)
@@ -231,7 +237,7 @@ namespace WalkerSim
             var entity = world.GetEntity(agent.EntityId) as EntityZombie;
             if (entity == null)
             {
-                Logging.Out("Entity not found: {0}", agent.EntityId);
+                Logging.Warn("Entity not found: {0}", agent.EntityId);
                 return false;
             }
 
@@ -246,7 +252,10 @@ namespace WalkerSim
 
             world.RemoveEntity(entity.entityId, EnumRemoveEntityReason.Despawned);
 
-            Logging.Out("Agent despawned, entity id: {0}", agent.EntityId);
+            if (simulation.Config.Debug.LogSpawnDespawn)
+            {
+                Logging.Out("Agent despawned, entity id: {0}", agent.EntityId);
+            }
 
             return true;
         }
