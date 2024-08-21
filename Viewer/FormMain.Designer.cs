@@ -38,7 +38,7 @@
             this.viewAgents = new System.Windows.Forms.ToolStripMenuItem();
             this.viewEvents = new System.Windows.Forms.ToolStripMenuItem();
             this.simulationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.restartToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.startToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pauseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resumeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.speedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -47,7 +47,7 @@
             this.emitSoundToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.simCanvas = new System.Windows.Forms.PictureBox();
-            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabSimulation = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.inputWorld = new System.Windows.Forms.ComboBox();
             this.label10 = new System.Windows.Forms.Label();
@@ -88,13 +88,20 @@
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.loadConfigurationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
+            this.stopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripSeparator();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.rtbLog = new System.Windows.Forms.RichTextBox();
+            this.contextLog = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.simCanvas)).BeginInit();
-            this.tabControl1.SuspendLayout();
+            this.tabSimulation.SuspendLayout();
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.inputGroupSize)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputMaxAgents)).BeginInit();
@@ -107,6 +114,8 @@
             this.groupParameter.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.inputProcessorPower)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputProcessorDistance)).BeginInit();
+            this.tabPage3.SuspendLayout();
+            this.contextLog.SuspendLayout();
             this.SuspendLayout();
             // 
             // updateTimer
@@ -177,7 +186,9 @@
             // simulationToolStripMenuItem
             // 
             this.simulationToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.restartToolStripMenuItem,
+            this.startToolStripMenuItem,
+            this.stopToolStripMenuItem,
+            this.toolStripMenuItem3,
             this.pauseToolStripMenuItem,
             this.resumeToolStripMenuItem,
             this.speedToolStripMenuItem,
@@ -188,38 +199,46 @@
             this.simulationToolStripMenuItem.Size = new System.Drawing.Size(76, 20);
             this.simulationToolStripMenuItem.Text = "Simulation";
             // 
-            // restartToolStripMenuItem
+            // startToolStripMenuItem
             // 
-            this.restartToolStripMenuItem.Name = "restartToolStripMenuItem";
-            this.restartToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.restartToolStripMenuItem.Text = "Restart";
-            this.restartToolStripMenuItem.Click += new System.EventHandler(this.OnRestartClick);
+            this.startToolStripMenuItem.Name = "startToolStripMenuItem";
+            this.startToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F5;
+            this.startToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
+            this.startToolStripMenuItem.Text = "Start";
+            this.startToolStripMenuItem.Click += new System.EventHandler(this.OnRestartClick);
             // 
             // pauseToolStripMenuItem
             // 
+            this.pauseToolStripMenuItem.Enabled = false;
             this.pauseToolStripMenuItem.Name = "pauseToolStripMenuItem";
-            this.pauseToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.pauseToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
+            | System.Windows.Forms.Keys.Pause)));
+            this.pauseToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
             this.pauseToolStripMenuItem.Text = "Pause";
             this.pauseToolStripMenuItem.Click += new System.EventHandler(this.OnPauseClick);
             // 
             // resumeToolStripMenuItem
             // 
+            this.resumeToolStripMenuItem.Enabled = false;
             this.resumeToolStripMenuItem.Name = "resumeToolStripMenuItem";
-            this.resumeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.resumeToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
             this.resumeToolStripMenuItem.Text = "Resume";
             this.resumeToolStripMenuItem.Click += new System.EventHandler(this.OnResumeClick);
             // 
             // speedToolStripMenuItem
             // 
             this.speedToolStripMenuItem.Name = "speedToolStripMenuItem";
-            this.speedToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.speedToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
             this.speedToolStripMenuItem.Text = "Speed";
             // 
             // advanceOneTickToolStripMenuItem
             // 
+            this.advanceOneTickToolStripMenuItem.Enabled = false;
             this.advanceOneTickToolStripMenuItem.Name = "advanceOneTickToolStripMenuItem";
-            this.advanceOneTickToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.advanceOneTickToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F10;
+            this.advanceOneTickToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
             this.advanceOneTickToolStripMenuItem.Text = "Advance one Tick";
+            this.advanceOneTickToolStripMenuItem.Click += new System.EventHandler(this.OnAdvanceTick);
             // 
             // toolsToolStripMenuItem
             // 
@@ -250,7 +269,7 @@
             // 
             // splitContainer1.Panel2
             // 
-            this.splitContainer1.Panel2.Controls.Add(this.tabControl1);
+            this.splitContainer1.Panel2.Controls.Add(this.tabSimulation);
             this.splitContainer1.Size = new System.Drawing.Size(856, 693);
             this.splitContainer1.SplitterDistance = 481;
             this.splitContainer1.TabIndex = 5;
@@ -267,16 +286,17 @@
             this.simCanvas.TabStop = false;
             this.simCanvas.MouseClick += new System.Windows.Forms.MouseEventHandler(this.OnSimCanvasClick);
             // 
-            // tabControl1
+            // tabSimulation
             // 
-            this.tabControl1.Controls.Add(this.tabPage1);
-            this.tabControl1.Controls.Add(this.tabPage2);
-            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tabControl1.Location = new System.Drawing.Point(0, 0);
-            this.tabControl1.Name = "tabControl1";
-            this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(856, 208);
-            this.tabControl1.TabIndex = 0;
+            this.tabSimulation.Controls.Add(this.tabPage1);
+            this.tabSimulation.Controls.Add(this.tabPage2);
+            this.tabSimulation.Controls.Add(this.tabPage3);
+            this.tabSimulation.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabSimulation.Location = new System.Drawing.Point(0, 0);
+            this.tabSimulation.Name = "tabSimulation";
+            this.tabSimulation.SelectedIndex = 0;
+            this.tabSimulation.Size = new System.Drawing.Size(856, 208);
+            this.tabSimulation.TabIndex = 0;
             // 
             // tabPage1
             // 
@@ -620,7 +640,7 @@
             // inputProcessorDistance
             // 
             this.inputProcessorDistance.Increment = new decimal(new int[] {
-            10,
+            5,
             0,
             0,
             0});
@@ -684,7 +704,7 @@
             // reduceCPULoadToolStripMenuItem
             // 
             this.reduceCPULoadToolStripMenuItem.Name = "reduceCPULoadToolStripMenuItem";
-            this.reduceCPULoadToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.reduceCPULoadToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
             this.reduceCPULoadToolStripMenuItem.Text = "Reduce CPU Load";
             this.reduceCPULoadToolStripMenuItem.Click += new System.EventHandler(this.OnReduceCPULoadClick);
             // 
@@ -709,7 +729,65 @@
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(177, 6);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(190, 6);
+            // 
+            // stopToolStripMenuItem
+            // 
+            this.stopToolStripMenuItem.Enabled = false;
+            this.stopToolStripMenuItem.Name = "stopToolStripMenuItem";
+            this.stopToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Shift | System.Windows.Forms.Keys.F5)));
+            this.stopToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
+            this.stopToolStripMenuItem.Text = "Stop";
+            this.stopToolStripMenuItem.Click += new System.EventHandler(this.OnStopClick);
+            // 
+            // toolStripMenuItem3
+            // 
+            this.toolStripMenuItem3.Name = "toolStripMenuItem3";
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(190, 6);
+            // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.rtbLog);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Size = new System.Drawing.Size(848, 182);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "Log";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // rtbLog
+            // 
+            this.rtbLog.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.rtbLog.ContextMenuStrip = this.contextLog;
+            this.rtbLog.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.rtbLog.Font = new System.Drawing.Font("Lucida Console", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rtbLog.Location = new System.Drawing.Point(0, 0);
+            this.rtbLog.Name = "rtbLog";
+            this.rtbLog.ReadOnly = true;
+            this.rtbLog.Size = new System.Drawing.Size(848, 182);
+            this.rtbLog.TabIndex = 0;
+            this.rtbLog.Text = "";
+            // 
+            // contextLog
+            // 
+            this.contextLog.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.clearToolStripMenuItem,
+            this.copyToolStripMenuItem});
+            this.contextLog.Name = "contextLog";
+            this.contextLog.Size = new System.Drawing.Size(103, 48);
+            // 
+            // clearToolStripMenuItem
+            // 
+            this.clearToolStripMenuItem.Name = "clearToolStripMenuItem";
+            this.clearToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.clearToolStripMenuItem.Text = "Clear";
+            this.clearToolStripMenuItem.Click += new System.EventHandler(this.OnLogClearClick);
+            // 
+            // copyToolStripMenuItem
+            // 
+            this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
+            this.copyToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.copyToolStripMenuItem.Text = "Copy";
             // 
             // FormMain
             // 
@@ -729,7 +807,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.simCanvas)).EndInit();
-            this.tabControl1.ResumeLayout(false);
+            this.tabSimulation.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.inputGroupSize)).EndInit();
@@ -745,6 +823,8 @@
             this.groupParameter.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.inputProcessorPower)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputProcessorDistance)).EndInit();
+            this.tabPage3.ResumeLayout(false);
+            this.contextLog.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -758,7 +838,7 @@
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem viewToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem simulationToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem restartToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem startToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem pauseToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem resumeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem advanceOneTickToolStripMenuItem;
@@ -769,7 +849,7 @@
         private System.Windows.Forms.ToolStripMenuItem viewEvents;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.PictureBox simCanvas;
-        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabControl tabSimulation;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.CheckBox inputPauseDuringBloodmoon;
@@ -811,6 +891,13 @@
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
+        private System.Windows.Forms.ToolStripMenuItem stopToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem3;
+        private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.RichTextBox rtbLog;
+        private System.Windows.Forms.ContextMenuStrip contextLog;
+        private System.Windows.Forms.ToolStripMenuItem clearToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
     }
 }
 

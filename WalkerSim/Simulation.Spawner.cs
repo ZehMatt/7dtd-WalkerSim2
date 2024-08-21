@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 
 namespace WalkerSim
 {
@@ -14,6 +13,8 @@ namespace WalkerSim
 
         private DateTime _nextSpawn = DateTime.Now;
 
+        private FixedBufferList<Agent> _nearPlayer = new FixedBufferList<Agent>(512);
+
         public void SetAgentSpawnHandler(AgentSpawnHandler handler)
         {
             _agentSpawnHandler = handler;
@@ -21,7 +22,6 @@ namespace WalkerSim
 
         private void CheckAgentSpawn()
         {
-            var nearby = new List<Agent>();
             foreach (var kv in _state.Players)
             {
                 var player = kv.Value;
@@ -37,11 +37,13 @@ namespace WalkerSim
                 // Don't activate them when they are in the inner radius.
                 var activationBorderSize = 4.0f;
 
-                nearby.Clear();
-                QueryCells(playerPos, -1, player.ViewRadius, nearby);
+                _nearPlayer.Clear();
+                QueryCells(playerPos, -1, player.ViewRadius, _nearPlayer);
 
-                foreach (var agent in nearby)
+                for (int i = 0; i < _nearPlayer.Count; i++)
                 {
+                    var agent = _nearPlayer[i];
+
                     if (agent.CurrentState != Agent.State.Wandering)
                         continue;
 

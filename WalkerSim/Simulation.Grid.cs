@@ -69,7 +69,7 @@ namespace WalkerSim
             }
         }
 
-        private void QueryCell(Vector3 pos, int cellX, int cellY, int excludeIndex, float maxDist, List<Agent> res)
+        private void QueryCell(Vector3 pos, int cellX, int cellY, int excludeIndex, float maxDist, FixedBufferList<Agent> res)
         {
             var cellIndex = cellX * CellCountY + cellY;
             if (cellIndex < 0 || cellIndex >= grid.Length)
@@ -92,15 +92,18 @@ namespace WalkerSim
                 if (distance < maxDistSqr)
                 {
                     res.Add(other);
+
+                    if (res.Full)
+                        return;
                 }
             }
         }
 
-        public List<Agent> QueryCells(Vector3 pos, int excludeIndex, float maxDistance, List<Agent> res = null)
+        public FixedBufferList<Agent> QueryCells(Vector3 pos, int excludeIndex, float maxDistance, FixedBufferList<Agent> res = null)
         {
             if (res == null)
             {
-                res = new List<Agent>();
+                res = new FixedBufferList<Agent>(Limits.MaxQuerySize);
             }
 
             var worldMins = _state.WorldMins;
@@ -116,12 +119,18 @@ namespace WalkerSim
             // Calculate the number of cells to search in each direction based on maxDistance
             int cellRadius = (int)(maxDistance / CellSize) + 1;
 
+            if (res.Full)
+                return res;
+
             // Iterate over all cells in the bounding box defined by maxDistance
             for (int x = -cellRadius; x <= cellRadius; x++)
             {
                 for (int y = -cellRadius; y <= cellRadius; y++)
                 {
                     QueryCell(pos, cellX + x, cellY + y, excludeIndex, maxDistance, res);
+
+                    if (res.Full)
+                        return res;
                 }
             }
 

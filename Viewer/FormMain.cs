@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -20,6 +21,10 @@ namespace WalkerSim.Viewer
 
         private int _selectedGroup = -1;
         private int _selectedProcessor = -1;
+        private bool _updatingConfig = false;
+
+        private List<Config.WorldLocation> _startPositions = new List<Config.WorldLocation>();
+        private List<Config.WorldLocation> _respawnPositions = new List<Config.WorldLocation>();
 
         Simulation simulation = Simulation.Instance;
         Random prng = new Random(1);
@@ -56,12 +61,79 @@ namespace WalkerSim.Viewer
                 simulation.Stop();
             };
 
+            SetupLogging();
+            SetupConfigChangeHandlers();
             SetupSpeedModifiers();
             SetupDrawingContext();
             SetupWorlds();
             SetupLimits();
             SetupChoices();
             LoadDefaultConfiguration();
+            ScrollWheelHack();
+        }
+
+        private void LogMsg(string text, Color color, bool addNewLine = true)
+        {
+            rtbLog.SuspendLayout();
+            rtbLog.SelectionColor = color;
+            rtbLog.AppendText(addNewLine
+                ? $"{text}{Environment.NewLine}"
+                : text);
+            rtbLog.ScrollToCaret();
+            rtbLog.ResumeLayout();
+        }
+
+        private void LogInfo(string msg)
+        {
+            LogMsg(msg, Color.Black, true);
+        }
+
+        private void LogWrn(string msg)
+        {
+            LogMsg(msg, Color.Goldenrod, true);
+            tabSimulation.SelectTab(2); // Switch to log.
+        }
+
+        private void LogErr(string msg)
+        {
+            LogMsg(msg, Color.DarkRed, true);
+            tabSimulation.SelectTab(2); // Switch to log.
+        }
+
+        private void SetupLogging()
+        {
+            Logging.Prefixes = Logging.Prefix.Level | Logging.Prefix.Timestamp;
+
+            Logging.SetHandler(Logging.Level.Info, LogInfo);
+            Logging.SetHandler(Logging.Level.Warning, LogWrn);
+            Logging.SetHandler(Logging.Level.Error, LogErr);
+
+            Logging.Info("Initialized logging.");
+        }
+
+        // Fixes the increment being wrong when using the mouse wheel.
+        private void ScrollHandlerFunction(object sender, MouseEventArgs e)
+        {
+            NumericUpDown control = (NumericUpDown)sender;
+            ((HandledMouseEventArgs)e).Handled = true;
+            decimal value = control.Value + ((e.Delta > 0) ? control.Increment : -control.Increment);
+
+            // More ugly hacks to keep the caret at the same position.
+            var txt = control.Controls[1] as TextBox;
+            var sel = txt.SelectionStart;
+            var selLen = txt.SelectionLength;
+            control.Value = System.Math.Max(control.Minimum, System.Math.Min(value, control.Maximum));
+            txt.SelectionStart = sel;
+            txt.SelectionLength = selLen;
+        }
+
+        private void ScrollWheelHack()
+        {
+            inputMaxAgents.MouseWheel += ScrollHandlerFunction;
+            inputRandomSeed.MouseWheel += ScrollHandlerFunction;
+            inputGroupSize.MouseWheel += ScrollHandlerFunction;
+            inputProcessorDistance.MouseWheel += ScrollHandlerFunction;
+            inputProcessorPower.MouseWheel += ScrollHandlerFunction;
         }
 
         private void SetupSpeedModifiers()
@@ -127,12 +199,16 @@ namespace WalkerSim.Viewer
 
                 var name = Utils.GetWorldLocationString(choice);
                 inputStartPosition.Items.Add(name);
+
+                _startPositions.Add(choice);
             }
 
             foreach (var choice in startChoices)
             {
                 var name = Utils.GetWorldLocationString(choice);
                 inputRespawnPosition.Items.Add(name);
+
+                _respawnPositions.Add(choice);
             }
         }
 
@@ -149,14 +225,55 @@ namespace WalkerSim.Viewer
                 MessageBox.Show("Failed to load the configuration file", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+
             CurrentConfig = loadedConfig;
             UpdateConfigFields();
+        }
+
+        private void SetConfigValues()
+        {
+            if (CurrentConfig == null || _updatingConfig)
+            {
+                return;
+            }
+            CurrentConfig.RandomSeed = (int)inputRandomSeed.Value;
+            CurrentConfig.MaxAgents = (int)inputMaxAgents.Value;
+            CurrentConfig.GroupSize = (int)inputGroupSize.Value;
+            CurrentConfig.StartAgentsGrouped = inputStartGrouped.Checked;
+            CurrentConfig.PauseDuringBloodmoon = inputPauseDuringBloodmoon.Checked;
+            CurrentConfig.PauseWithoutPlayers = inputPausePlayerless.Checked;
+
+            var startChoice = inputStartPosition.SelectedIndex;
+            if (startChoice != -1)
+            {
+                CurrentConfig.StartPosition = _startPositions[startChoice];
+            }
+
+            var respawnChoice = inputRespawnPosition.SelectedIndex;
+            if (respawnChoice != -1)
+            {
+                CurrentConfig.RespawnPosition = _respawnPositions[respawnChoice];
+            }
+        }
+
+        private void SetupConfigChangeHandlers()
+        {
+            inputRandomSeed.ValueChanged += (sender, arg) => SetConfigValues();
+            inputMaxAgents.ValueChanged += (sender, arg) => SetConfigValues();
+            inputGroupSize.ValueChanged += (sender, arg) => SetConfigValues();
+            inputStartGrouped.CheckedChanged += (sender, arg) => SetConfigValues();
+            inputPauseDuringBloodmoon.CheckedChanged += (sender, arg) => SetConfigValues();
+            inputPausePlayerless.CheckedChanged += (sender, arg) => SetConfigValues();
+            inputStartPosition.SelectedIndexChanged += (sender, arg) => SetConfigValues();
+            inputRespawnPosition.SelectedIndexChanged += (sender, arg) => SetConfigValues();
         }
 
         private void UpdateConfigFields()
         {
             if (CurrentConfig == null)
                 return;
+
+            _updatingConfig = true;
 
             reduceCPULoadToolStripMenuItem.Checked = CurrentConfig.ReduceCPULoad;
 
@@ -180,9 +297,11 @@ namespace WalkerSim.Viewer
             {
                 listProcessorGroups.Items.Add("Group #" + i);
             }
+
+            _updatingConfig = false;
         }
 
-        private void RestartSimulation()
+        private void StartSimulation()
         {
             simulation.Reset(WorldMins, WorldMaxs, CurrentConfig);
 
@@ -195,6 +314,12 @@ namespace WalkerSim.Viewer
 
             simulation.Start();
             updateTimer.Start();
+        }
+
+        private void StopSimulation()
+        {
+            simulation.Stop();
+            updateTimer.Stop();
         }
 
         private void OnTick(object sender, EventArgs e)
@@ -455,6 +580,7 @@ namespace WalkerSim.Viewer
             simulation.SetPaused(true);
             pauseToolStripMenuItem.Enabled = false;
             resumeToolStripMenuItem.Enabled = true;
+            advanceOneTickToolStripMenuItem.Enabled = true;
         }
 
         private void OnResumeClick(object sender, EventArgs e)
@@ -462,11 +588,35 @@ namespace WalkerSim.Viewer
             simulation.SetPaused(false);
             pauseToolStripMenuItem.Enabled = true;
             resumeToolStripMenuItem.Enabled = false;
+            advanceOneTickToolStripMenuItem.Enabled = false;
         }
 
         private void OnRestartClick(object sender, EventArgs e)
         {
-            RestartSimulation();
+            inputRandomSeed.Enabled = false;
+            inputMaxAgents.Enabled = false;
+            inputGroupSize.Enabled = false;
+            inputStartGrouped.Enabled = false;
+            pauseToolStripMenuItem.Enabled = true;
+            startToolStripMenuItem.Enabled = false;
+            stopToolStripMenuItem.Enabled = true;
+
+            StartSimulation();
+        }
+
+        private void OnStopClick(object sender, EventArgs e)
+        {
+            StopSimulation();
+
+            inputRandomSeed.Enabled = true;
+            inputMaxAgents.Enabled = true;
+            inputGroupSize.Enabled = true;
+            inputStartGrouped.Enabled = true;
+            pauseToolStripMenuItem.Enabled = false;
+            resumeToolStripMenuItem.Enabled = false;
+            stopToolStripMenuItem.Enabled = false;
+            startToolStripMenuItem.Enabled = true;
+            advanceOneTickToolStripMenuItem.Enabled = false;
         }
 
         private void OnWorldSelectionChanged(object sender, EventArgs e)
@@ -705,6 +855,16 @@ namespace WalkerSim.Viewer
             // Eliminate the ding sound.
             if (e.KeyChar == '\r')
                 e.Handled = true;
+        }
+
+        private void OnAdvanceTick(object sender, EventArgs e)
+        {
+            simulation.Tick();
+        }
+
+        private void OnLogClearClick(object sender, EventArgs e)
+        {
+            rtbLog.Clear();
         }
     }
 }

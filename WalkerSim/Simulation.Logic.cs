@@ -13,10 +13,10 @@ namespace WalkerSim
         private Stopwatch tickWatch = new Stopwatch();
 
         // Singleton instances to avoid GCing.
-        private List<Agent> _nearby = new List<Agent>();
+        private FixedBufferList<Agent> _nearby = new FixedBufferList<Agent>(Limits.MaxQuerySize);
         private List<EventData> _events = new List<EventData>();
 
-        private delegate Vector3 MovementProcessorDelegate(State state, Agent agent, List<EventData> events, List<Agent> nearby, float distance, float power);
+        private delegate Vector3 MovementProcessorDelegate(State state, Agent agent, List<EventData> events, FixedBufferList<Agent> nearby, float distance, float power);
 
         class MovementProcessor
         {
@@ -104,15 +104,26 @@ namespace WalkerSim
                     // Fill all.
                     for (int i = 0; i < _processors.Count; i++)
                     {
-                        _processors[i].Entries = processors;
-                        _processors[i].SpeedScale = processorGroup.SpeedScale;
+                        var group = _processors[i];
+                        group.Entries = processors;
+                        group.SpeedScale = processorGroup.SpeedScale;
                     }
                 }
                 else
                 {
                     // Override.
-                    _processors[processorGroup.Group].Entries = processors;
-                    _processors[processorGroup.Group].SpeedScale = processorGroup.SpeedScale;
+                    if (processorGroup.Group >= _processors.Count)
+                    {
+                        Logging.Warn("Processor group specifies a group index that doesn't exist, index = {0}, total groups = {1}.",
+                            processorGroup.Group,
+                            _state.GroupCount);
+                    }
+                    else
+                    {
+                        var group = _processors[processorGroup.Group];
+                        group.Entries = processors;
+                        group.SpeedScale = processorGroup.SpeedScale;
+                    }
                 }
             }
 
@@ -282,7 +293,7 @@ namespace WalkerSim
             return averageTickTime;
         }
 
-        private static Vector3 Flock(State state, Agent agent, List<EventData> events, List<Agent> nearby, float distance, float power)
+        private static Vector3 Flock(State state, Agent agent, List<EventData> events, FixedBufferList<Agent> nearby, float distance, float power)
         {
             var distanceSqr = distance;
             // point toward the center of the flock (mean flock boid position)
@@ -305,7 +316,7 @@ namespace WalkerSim
             return center * power;
         }
 
-        private static Vector3 Align(State state, Agent agent, List<EventData> events, List<Agent> nearby, float distance, float power)
+        private static Vector3 Align(State state, Agent agent, List<EventData> events, FixedBufferList<Agent> nearby, float distance, float power)
         {
             var distanceSqr = distance;
             // point toward the center of the flock (mean flock boid position)
@@ -331,7 +342,7 @@ namespace WalkerSim
             return delta * power;
         }
 
-        private static Vector3 Avoid(State state, Agent agent, List<EventData> events, List<Agent> nearby, float distance, float power)
+        private static Vector3 Avoid(State state, Agent agent, List<EventData> events, FixedBufferList<Agent> nearby, float distance, float power)
         {
             var distanceSqr = distance;
             // point away as boids get close
@@ -348,7 +359,7 @@ namespace WalkerSim
             return sumCloseness * power;
         }
 
-        private static Vector3 Group(State state, Agent agent, List<EventData> events, List<Agent> nearby, float distance, float power)
+        private static Vector3 Group(State state, Agent agent, List<EventData> events, FixedBufferList<Agent> nearby, float distance, float power)
         {
             var distanceSqr = distance;
             // point towards same group
@@ -370,7 +381,7 @@ namespace WalkerSim
             return sumCloseness * power;
         }
 
-        private static Vector3 GroupAvoid(State state, Agent agent, List<EventData> events, List<Agent> nearby, float distance, float power)
+        private static Vector3 GroupAvoid(State state, Agent agent, List<EventData> events, FixedBufferList<Agent> nearby, float distance, float power)
         {
             var groupCount = state.GroupCount;
             var distanceSqr = distance;
@@ -397,12 +408,12 @@ namespace WalkerSim
             return delta * power;
         }
 
-        private static Vector3 Wind(State state, Agent agent, List<EventData> events, List<Agent> nearby, float distance, float power)
+        private static Vector3 Wind(State state, Agent agent, List<EventData> events, FixedBufferList<Agent> nearby, float distance, float power)
         {
             return state.WindDir * power;
         }
 
-        private static Vector3 StickToRoads(State state, Agent agent, List<EventData> events, List<Agent> nearby, float distance, float power)
+        private static Vector3 StickToRoads(State state, Agent agent, List<EventData> events, FixedBufferList<Agent> nearby, float distance, float power)
         {
             // Remap the position to the roads bitmap.
             if (state.MapData == null)
@@ -447,7 +458,7 @@ namespace WalkerSim
             return Vector3.Zero;
         }
 
-        private Vector3 WorldEvents(State state, Agent agent, List<EventData> events, List<Agent> nearby, float distance, float power)
+        private Vector3 WorldEvents(State state, Agent agent, List<EventData> events, FixedBufferList<Agent> nearby, float distance, float power)
         {
             Vector3 sum = Vector3.Zero;
 

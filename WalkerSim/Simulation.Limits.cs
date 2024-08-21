@@ -6,6 +6,7 @@
         {
             public const int MinAgents = 1;
             public const int MaxAgents = 30000;
+            public const int MaxQuerySize = 128;
         }
     }
 }

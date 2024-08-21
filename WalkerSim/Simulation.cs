@@ -9,7 +9,10 @@ namespace WalkerSim
         public static Simulation Instance = new Simulation();
 
         public float TimeScale = 1.0f;
-        public readonly float TickRate = 1f / 40f;
+
+        public const int TicksPerSecond = 40;
+        public const float TickRate = 1f / TicksPerSecond;
+        public const int TickRateMs = 1000 / TicksPerSecond;
 
         private int _ticks = 0;
 
@@ -87,7 +90,7 @@ namespace WalkerSim
             Stop();
 
             _running = true;
-            _thread = new Thread(() => ThreadUpdate());
+            _thread = new Thread(ThreadUpdate);
             _thread.Start();
 
             Logging.Out("Started Simulation.");
@@ -342,6 +345,11 @@ namespace WalkerSim
 
                     CheckAgentSpawn();
                 }
+
+                if (!_running)
+                    break;
+
+                Thread.Sleep(TickRateMs);
             }
         }
 
