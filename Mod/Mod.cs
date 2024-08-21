@@ -389,7 +389,7 @@ namespace WalkerSim
                 return;
             }
 
-            simulation.AddNoiseEvent(VectorUtils.ToSim(position), sndInfo.Radius, sndInfo.DecayRate);
+            simulation.AddSoundEvent(VectorUtils.ToSim(position), sndInfo.Radius);
         }
     }
 }

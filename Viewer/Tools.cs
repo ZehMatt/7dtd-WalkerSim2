@@ -17,14 +17,13 @@ namespace WalkerSim.Viewer
 
     internal class SoundEventTool : ITool
     {
-        public float Radius = 350.0f;
-        public float Decay = 1.0f;
+        public float Radius = 700.0f;
 
         public void OnClick(Vector3 position)
         {
             var simulation = Simulation.Instance;
 
-            simulation.AddNoiseEvent(position, Radius, Decay);
+            simulation.AddSoundEvent(position, Radius);
         }
 
         public void DrawPreview(PictureBox canvas, Graphics graphics, Vector3 position)
@@ -52,7 +51,7 @@ namespace WalkerSim.Viewer
             var hitAgents = simulation.QueryCells(position, -1, Radius);
             foreach (var agent in hitAgents)
             {
-                agent.CurrentState = Agent.State.Respawning;
+                simulation.MarkAgentDead(agent);
             }
         }
 
