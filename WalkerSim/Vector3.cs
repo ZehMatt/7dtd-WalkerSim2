@@ -123,6 +123,16 @@ namespace WalkerSim
                 throw new Exception(string.Format("Nan Detected on {0}, Func: {1}, File: {2}, Line: {3}", "Z", callingMethod, callingFilePath, callingFileLineNumber));
         }
 
+        public static Vector3 Lerp(Vector3 start, Vector3 end, float t)
+        {
+            t = Math.Clamp(t, 0, 1); // Ensure t is within the [0, 1] range
+            return new Vector3(
+                start.X + (end.X - start.X) * t,
+                start.Y + (end.Y - start.Y) * t,
+                start.Z + (end.Z - start.Z) * t
+            );
+        }
+
         public override string ToString()
         {
             return string.Format("({0}, {1}, {2})", X, Y, Z);

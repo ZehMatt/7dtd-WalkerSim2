@@ -33,9 +33,6 @@ namespace WalkerSim
         {
             lock (_state)
             {
-                var mergeDistance = 250;
-                var mergeDistanceSqr = mergeDistance * mergeDistance;
-
                 // Check if we can merge with an existing event.
                 foreach (var ev in _state.Events)
                 {
@@ -44,31 +41,48 @@ namespace WalkerSim
                         continue;
                     }
 
-                    var dist = Vector3.DistanceSqr(ev.Position, data.Position);
-                    if (dist > mergeDistanceSqr)
+                    var dist = Vector3.Distance(ev.Position, data.Position);
+
+                    // If the new event is within the existing event's radius, no need to expand the radius
+                    if (dist <= ev.Radius)
                     {
-                        continue;
+                        ev.DecayRate = data.DecayRate;
+                        return;
                     }
 
-                    ev.Radius = data.Radius;
-                    ev.DecayRate = data.DecayRate;
-                    ev.Position = data.Position;
+                    // Check if the events are close enough to consider merging
+                    if (dist < (ev.Radius + data.Radius))
+                    {
+                        // Calculate the new radius so that both events are fully encapsulated
+                        float newRadius = ((dist / 2) + ev.Radius + data.Radius) / 2;
 
-                    return;
+                        // Only adjust the position if necessary, moving it towards the new event
+                        if (dist + data.Radius > ev.Radius)
+                        {
+                            float t = (newRadius - ev.Radius) / dist; // proportion to move towards the new event
+                            ev.Position = Vector3.Lerp(ev.Position, data.Position, t);
+                        }
+
+                        ev.Radius = newRadius;
+                        ev.DecayRate = data.DecayRate;
+                        ev.Position = (ev.Position + data.Position) * 0.5f;
+
+                        return;
+                    }
                 }
 
                 _state.Events.Add(data);
             }
         }
 
-        public void AddNoiseEvent(Vector3 pos, float radius, float decayRate)
+        public void AddSoundEvent(Vector3 pos, float radius)
         {
             var data = new EventData
             {
                 Type = EventType.Noise,
                 Position = pos,
                 Radius = radius,
-                DecayRate = decayRate,
+                DecayRate = Limits.SoundDecayRate,
             };
 
             AddEvent(data);
