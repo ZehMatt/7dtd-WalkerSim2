@@ -134,6 +134,8 @@ namespace WalkerSim.Viewer
             inputGroupSize.MouseWheel += ScrollHandlerFunction;
             inputProcessorDistance.MouseWheel += ScrollHandlerFunction;
             inputProcessorPower.MouseWheel += ScrollHandlerFunction;
+            inputMovementGroup.MouseWheel += ScrollHandlerFunction;
+            inputMovementSpeed.MouseWheel += ScrollHandlerFunction;
         }
 
         private void SetupSpeedModifiers()
@@ -326,21 +328,6 @@ namespace WalkerSim.Viewer
         {
             simulation.Update(updateTimer.Interval / 1000.0f);
 
-            // TODO: Add more UI controls for this.
-            var fakeGunshots = false;
-            if (fakeGunshots)
-            {
-                if (simulation.Events.Count < 3 && prng.NextDouble() < 0.01)
-                {
-                    var pos = new Vector3((float)(WorldMins.X + (WorldMaxs.X - WorldMins.X) * prng.NextDouble()),
-                                          (float)(WorldMins.Y + (WorldMaxs.Y - WorldMins.Y) * prng.NextDouble()),
-                                          0f);
-                    var radius = 500.0f;
-
-                    simulation.AddNoiseEvent(pos, radius, 2.0f);
-                }
-            }
-
             float updateRate = 1000f / simulation.GetAverageTickTime();
             this.Text = $"Ticks: {updateRate}/s";
 
@@ -442,6 +429,9 @@ namespace WalkerSim.Viewer
                 var agents = simulation.Agents;
                 foreach (var agent in agents)
                 {
+                    if (agent.CurrentState != Agent.State.Wandering)
+                        continue;
+
                     var imagePos = SimPosToBitmapPos(agent.Position);
 
                     var color = GroupColors[agent.Group % GroupColors.Length];
@@ -654,9 +644,6 @@ namespace WalkerSim.Viewer
             {
                 Tool.Active.OnClick(simPos);
             }
-
-            Tool.Active = null;
-            simCanvas.Cursor = Cursors.Default;
         }
 
         private void OnReduceCPULoadClick(object sender, EventArgs e)
@@ -850,13 +837,6 @@ namespace WalkerSim.Viewer
             simulation.ReloadConfig(CurrentConfig);
         }
 
-        private void OnKeyPressed(object sender, KeyPressEventArgs e)
-        {
-            // Eliminate the ding sound.
-            if (e.KeyChar == '\r')
-                e.Handled = true;
-        }
-
         private void OnAdvanceTick(object sender, EventArgs e)
         {
             simulation.Tick();
@@ -865,6 +845,20 @@ namespace WalkerSim.Viewer
         private void OnLogClearClick(object sender, EventArgs e)
         {
             rtbLog.Clear();
+        }
+
+        private void OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape)
+            {
+                Tool.Active = null;
+                simCanvas.Cursor = Cursors.Default;
+            }
+            else if (e.KeyCode == Keys.Enter)
+            {
+                // Remove the ding.
+                e.SuppressKeyPress = true;
+            }
         }
     }
 }

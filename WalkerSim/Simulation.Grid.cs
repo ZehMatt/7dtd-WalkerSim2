@@ -103,7 +103,8 @@ namespace WalkerSim
         {
             if (res == null)
             {
-                res = new FixedBufferList<Agent>(Limits.MaxQuerySize);
+                // This path is only used by the viewer.
+                res = new FixedBufferList<Agent>(1024);
             }
 
             var worldMins = _state.WorldMins;
