@@ -196,7 +196,6 @@ namespace WalkerSim
 
             // Garbage collect here, the PNGs are sometimes huge.
             GC.Collect();
-            GC.WaitForFullGCComplete();
 
             return res;
         }
