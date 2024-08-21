@@ -13,7 +13,11 @@ namespace WalkerSim.Console
                 " - pause\n" +
                 "   Pauses the simulation which also stops spawning and despawning.\n" +
                 " - resume\n" +
-                "   Resumes the simulation and also the spawning/despawning.";
+                "   Resumes the simulation and also the spawning/despawning." +
+                " - timescale <value>\n" +
+                "   Sets the timescale of the simulation, can be used to speed it up or slow it down.";
+            ;
+
         }
 
         private void ShowHelpText(string error)
@@ -29,7 +33,7 @@ namespace WalkerSim.Console
         {
             if (_params.Count == 0)
             {
-                ShowHelpText("No command was specified");
+                ShowHelpText("No command was specified.");
                 return;
             }
 
@@ -45,6 +49,25 @@ namespace WalkerSim.Console
             else if (cmd == "resume")
             {
                 Simulation.Instance.SetPaused(false);
+            }
+            else if (cmd == "timescale")
+            {
+                if (_params.Count < 2)
+                {
+                    ShowHelpText("Missing parameter for timescale.");
+                }
+                else
+                {
+                    if (float.TryParse(_params[1], out var timeScale))
+                    {
+                        Simulation.Instance.TimeScale = timeScale;
+                    }
+                    else
+                    {
+                        ShowHelpText("Invalid parameter for timescale, expected float value.");
+                    }
+                }
+
             }
             else
             {
