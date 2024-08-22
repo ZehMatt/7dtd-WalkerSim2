@@ -103,7 +103,7 @@ namespace WalkerSim
             lock (_state)
             {
                 _state.Config = config;
-                _state.PRNG = new System.Random(config.RandomSeed);
+                _state.PRNG = new WalkerSim.Random(config.RandomSeed);
                 _state.SlowIterator = 0;
 
                 _state.WorldMins = worldMins;

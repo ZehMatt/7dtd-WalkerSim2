@@ -6,22 +6,18 @@ namespace WalkerSim
     {
         const int CellSize = 96;
 
-        List<int>[] grid;
-        int CellCountX = 0;
-        int CellCountY = 0;
-        int TotalCells = 0;
-
         void SetupGrid()
         {
-            CellCountX = (int)System.Math.Ceiling(WorldSize.X / CellSize);
-            CellCountY = (int)System.Math.Ceiling(WorldSize.Y / CellSize);
+            var cellCountX = (int)System.Math.Ceiling(WorldSize.X / CellSize);
+            var cellCountY = (int)System.Math.Ceiling(WorldSize.Y / CellSize);
+            var totalCells = cellCountX * cellCountY;
 
-            TotalCells = CellCountX * CellCountY;
-            grid = new List<int>[TotalCells];
-            for (int i = 0; i < TotalCells; i++)
+            var grid = new List<int>[totalCells];
+            for (int i = 0; i < totalCells; i++)
             {
                 grid[i] = new List<int>();
             }
+            _state.Grid = grid;
         }
 
         int GetCellIndex(float x, float y)
@@ -36,7 +32,8 @@ namespace WalkerSim
             int cellX = (int)(remapX / CellSize);
             int cellY = (int)(remapY / CellSize);
 
-            return cellX * CellCountY + cellY;
+            var cellCountY = (int)System.Math.Ceiling(WorldSize.Y / CellSize);
+            return cellX * cellCountY + cellY;
         }
 
         int GetCellIndex(Vector3 pos)
@@ -46,6 +43,7 @@ namespace WalkerSim
 
         public void MoveInGrid(Agent agent)
         {
+            var grid = _state.Grid;
             var newCellIndex = GetCellIndex(agent.Position);
             if (newCellIndex != agent.CellIndex)
             {
@@ -58,8 +56,8 @@ namespace WalkerSim
 
                 if (newCellIndex < 0)
                     newCellIndex = 0;
-                if (newCellIndex >= TotalCells)
-                    newCellIndex = TotalCells - 1;
+                if (newCellIndex >= grid.Length)
+                    newCellIndex = grid.Length - 1;
 
                 // Add to new cell.
                 var newCellList = grid[newCellIndex];
@@ -71,7 +69,10 @@ namespace WalkerSim
 
         private void QueryCell(Vector3 pos, int cellX, int cellY, int excludeIndex, float maxDist, FixedBufferList<Agent> res)
         {
-            var cellIndex = cellX * CellCountY + cellY;
+            var grid = _state.Grid;
+
+            var cellCountY = (int)System.Math.Ceiling(WorldSize.Y / CellSize);
+            var cellIndex = cellX * cellCountY + cellY;
             if (cellIndex < 0 || cellIndex >= grid.Length)
                 return;
 

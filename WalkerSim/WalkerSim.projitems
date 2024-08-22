@@ -17,6 +17,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Logging.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MapData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Math.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Random.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Roads.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Active.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.cs" />
@@ -24,6 +25,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Grid.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Limits.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.LoadSave.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Logic.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Players.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Spawner.cs" />

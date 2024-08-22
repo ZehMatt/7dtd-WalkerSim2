@@ -6,10 +6,10 @@ namespace WalkerSim
     {
         public enum State
         {
+            Dead,
             Wandering,
             PendingSpawn,
             Active,
-            Dead,
             Respawning,
         }
 
@@ -17,12 +17,12 @@ namespace WalkerSim
         public int Group;
         public Vector3 Position;
         public Vector3 Velocity;
-        public int CellIndex;
-        public int EntityId;
-        public int EntityClassId;
-        public int Health;
-        public State CurrentState;
-        public DateTime LastUpdate;
+        public int CellIndex = -1;
+        public int EntityId = -1;
+        public int EntityClassId = -1;
+        public int Health = -1;
+        public State CurrentState = State.Dead;
+        public DateTime LastUpdate = DateTime.Now;
 
         public Agent()
         {
