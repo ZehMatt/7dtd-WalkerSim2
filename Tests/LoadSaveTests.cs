@@ -17,6 +17,11 @@ namespace WalkerSim.Tests
 
             var simA = new Simulation();
             simA.Reset(WorldMins, WorldMaxs, config);
+
+            // Add a few events.
+            simA.AddSoundEvent(new Vector3(-100, -100, 0), 653.212f);
+            simA.AddSoundEvent(new Vector3(700, 100, 0), 653.212f);
+            simA.AddSoundEvent(new Vector3(1700, 500, 0), 653.212f);
             simA.FastAdvance(100);
 
             var ms = new MemoryStream();
@@ -75,6 +80,35 @@ namespace WalkerSim.Tests
                 Assert.AreEqual(agentA.Position, agentB.Position);
                 Assert.AreEqual(agentA.Velocity, agentB.Velocity);
                 Assert.AreEqual(agentA.CurrentState, agentB.CurrentState);
+            }
+
+            // Compare Events.
+            Assert.AreEqual(simA.Events.Count, simB.Events.Count);
+            for (int i = 0; i < simA.Events.Count; i++)
+            {
+                var eventA = simA.Events[i];
+                var eventB = simB.Events[i];
+
+                Assert.AreEqual(eventA.Type, eventB.Type);
+                Assert.AreEqual(eventA.DecayRate, eventB.DecayRate);
+                Assert.AreEqual(eventA.Position, eventB.Position);
+                Assert.AreEqual(eventA.Radius, eventB.Radius);
+            }
+
+            // Query Agents at random positions validating the grid is correctly setup.
+            var prng = new System.Random(1333);
+            for (int i = 0; i < 100; i++)
+            {
+                var randomPos = Utils.GetRandomVector3(prng, simA.WorldMins, simA.WorldMaxs);
+
+                var queryA = simA.QueryCells(randomPos, -1, 500.0f);
+                var queryB = simA.QueryCells(randomPos, -1, 500.0f);
+
+                Assert.AreEqual(queryA.Count, queryB.Count);
+                for (int x = 0; x < queryA.Count; x++)
+                {
+                    Assert.AreEqual(queryA[x].Index, queryB[x].Index);
+                }
             }
         }
     }

@@ -148,10 +148,12 @@ namespace WalkerSim
                 return null;
             }
 
-            var img = Image.FromFile(splatPath);
-            ImageUtils.RemoveTransparency((Bitmap)img);
+            using (var img = Image.FromFile(splatPath))
+            {
+                ImageUtils.RemoveTransparency((Bitmap)img);
 
-            return Roads.LoadFromBitmap((Bitmap)img);
+                return Roads.LoadFromBitmap((Bitmap)img);
+            }
         }
 
         private static PrefabsData LoadPrefabs(string folderPath)

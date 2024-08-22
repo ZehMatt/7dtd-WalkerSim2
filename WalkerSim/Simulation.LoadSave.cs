@@ -48,6 +48,9 @@ namespace WalkerSim
                 Serialization.WriteVector3(writer, agent.Position);
                 Serialization.WriteVector3(writer, agent.Velocity);
                 Serialization.WriteInt32(writer, agent.CellIndex);
+                Serialization.WriteInt32(writer, agent.EntityId);
+                Serialization.WriteInt32(writer, agent.EntityClassId);
+                Serialization.WriteInt32(writer, agent.Health);
                 Serialization.WriteInt32(writer, (int)agent.CurrentState);
             }
         }
@@ -111,9 +114,9 @@ namespace WalkerSim
 
         private void LoadAgents(State state, BinaryReader reader)
         {
-            var agents = state.Agents;
+            var agents = new List<Agent>();
+            var active = new Dictionary<int, Agent>();
 
-            agents.Clear();
             var count = Serialization.ReadInt32(reader);
             for (int i = 0; i < count; i++)
             {
@@ -123,15 +126,27 @@ namespace WalkerSim
                 agent.Position = Serialization.ReadVector3(reader);
                 agent.Velocity = Serialization.ReadVector3(reader);
                 agent.CellIndex = Serialization.ReadInt32(reader);
+                agent.EntityId = Serialization.ReadInt32(reader);
+                agent.EntityClassId = Serialization.ReadInt32(reader);
+                agent.Health = Serialization.ReadInt32(reader);
                 agent.CurrentState = (Agent.State)Serialization.ReadInt32(reader);
                 agents.Add(agent);
+
+                if (agent.CurrentState == Agent.State.Active)
+                {
+                    active.Add(agent.EntityId, agent);
+                }
             }
+
+            state.Agents = agents;
+            state.Active = active;
         }
 
         private void LoadGrid(State state, BinaryReader reader)
         {
             var cellCount = Serialization.ReadInt32(reader);
             var grid = new List<int>[cellCount];
+
             for (var cellIdx = 0; cellIdx < cellCount; cellIdx++)
             {
                 var cell = new List<int>();
@@ -142,13 +157,13 @@ namespace WalkerSim
                 }
                 grid[cellIdx] = cell;
             }
+
             state.Grid = grid;
         }
 
         private void LoadEvents(State state, BinaryReader reader)
         {
-            var events = state.Events;
-            events.Clear();
+            var events = new List<EventData>();
 
             var count = Serialization.ReadInt32(reader);
             for (int i = 0; i < count; i++)
@@ -160,6 +175,8 @@ namespace WalkerSim
                 ev.DecayRate = Serialization.ReadSingle(reader);
                 events.Add(ev);
             }
+
+            state.Events = events;
         }
 
         public bool Save(Stream stream)
