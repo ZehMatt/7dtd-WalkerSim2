@@ -305,7 +305,8 @@ namespace WalkerSim.Viewer
 
         private void StartSimulation()
         {
-            simulation.Reset(WorldMins, WorldMaxs, CurrentConfig);
+            simulation.SetWorldSize(WorldMins, WorldMaxs);
+            simulation.Reset(CurrentConfig);
 
             GenerateColorTable();
 

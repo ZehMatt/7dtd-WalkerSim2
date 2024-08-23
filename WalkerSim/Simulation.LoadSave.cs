@@ -7,13 +7,31 @@ namespace WalkerSim
 {
     internal partial class Simulation
     {
+        private const uint SaveMagic = 0x4D534B57; // WKSM
+        private const uint SaveVersion = 1;
+
         private void SaveState(State state, BinaryWriter writer)
         {
+            SaveHeader(state, writer);
+            SaveInfo(state, writer);
             SaveConfig(state, writer);
             SavePRNG(state, writer);
             SaveAgents(state, writer);
             SaveGrid(state, writer);
             SaveEvents(state, writer);
+        }
+
+        private void SaveHeader(State state, BinaryWriter writer)
+        {
+            Serialization.WriteUInt32(writer, SaveMagic, false);
+            Serialization.WriteUInt32(writer, SaveVersion, false);
+        }
+
+        private void SaveInfo(State state, BinaryWriter writer)
+        {
+            Serialization.WriteVector3(writer, state.WorldMins);
+            Serialization.WriteVector3(writer, state.WorldMaxs);
+            Serialization.WriteInt32(writer, state.GroupCount);
         }
 
         private void SaveConfig(State state, BinaryWriter writer)
@@ -86,11 +104,32 @@ namespace WalkerSim
 
         private void LoadState(State state, BinaryReader reader)
         {
+            LoadHeader(state, reader);
+            LoadInfo(state, reader);
             LoadConfig(state, reader);
             LoadPRNG(state, reader);
             LoadAgents(state, reader);
             LoadGrid(state, reader);
             LoadEvents(state, reader);
+        }
+
+        private void LoadHeader(State state, BinaryReader reader)
+        {
+            var magic = Serialization.ReadUInt32(reader, false);
+            if (magic != SaveMagic)
+            {
+                throw new Exception("Invalid magic value, file is probably corrupted.");
+            }
+
+            // Version is unused, for now.
+            Serialization.ReadUInt32(reader, false);
+        }
+
+        private void LoadInfo(State state, BinaryReader reader)
+        {
+            state.WorldMins = Serialization.ReadVector3(reader);
+            state.WorldMaxs = Serialization.ReadVector3(reader);
+            state.GroupCount = Serialization.ReadInt32(reader);
         }
 
         private void LoadConfig(State state, BinaryReader reader)
@@ -199,7 +238,7 @@ namespace WalkerSim
         {
             try
             {
-                var fs = new FileStream(filePath, FileMode.CreateNew);
+                var fs = new FileStream(filePath, FileMode.Create);
                 return Save(fs);
             }
             catch (Exception ex)
@@ -217,6 +256,8 @@ namespace WalkerSim
                 var reader = new BinaryReader(stream, System.Text.Encoding.UTF8, true);
                 LoadState(state, reader);
                 _state = state;
+
+                SetupProcessors();
             }
             catch (Exception ex)
             {

@@ -1,5 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 
 namespace WalkerSim.Tests
 {
@@ -46,7 +45,8 @@ namespace WalkerSim.Tests
             config.MaxAgents = 20;
 
             var sim = new Simulation();
-            sim.Reset(WorldMins, WorldMaxs, config);
+            sim.SetWorldSize(WorldMins, WorldMaxs);
+            sim.Reset(config);
             sim.AddPlayer(0, Vector3.Zero, 96);
 
             for (int i = 0; i < 10; i++)

@@ -83,6 +83,10 @@ namespace WalkerSim
             {
                 agentEntityId = _agentSpawnHandler(this, agent);
             }
+            else
+            {
+                Logging.Warn("No spawn handler registered");
+            }
 
             if (agentEntityId != -1)
             {

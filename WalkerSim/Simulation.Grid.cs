@@ -20,6 +20,17 @@ namespace WalkerSim
             _state.Grid = grid;
         }
 
+        void UpdateGrid()
+        {
+            SetupGrid();
+            foreach (var agent in _state.Agents)
+            {
+                agent.CellIndex = GetCellIndex(agent.Position);
+                var cell = _state.Grid[agent.CellIndex];
+                cell.Add(agent.Index);
+            }
+        }
+
         int GetCellIndex(float x, float y)
         {
             var worldMins = _state.WorldMins;

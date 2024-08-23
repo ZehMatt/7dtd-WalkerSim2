@@ -9,28 +9,8 @@ namespace WalkerSim.Tests
         static Vector3 WorldMins = new Vector3(-5120, -5120, 0);
         static Vector3 WorldMaxs = new Vector3(5120, 5120, 255);
 
-        [TestMethod]
-        public void TestSaveLoad5k()
+        private void CompareSimulations(Simulation simA, Simulation simB)
         {
-            var config = Config.GetDefault();
-            config.MaxAgents = 5000;
-
-            var simA = new Simulation();
-            simA.Reset(WorldMins, WorldMaxs, config);
-
-            // Add a few events.
-            simA.AddSoundEvent(new Vector3(-100, -100, 0), 653.212f);
-            simA.AddSoundEvent(new Vector3(700, 100, 0), 653.212f);
-            simA.AddSoundEvent(new Vector3(1700, 500, 0), 653.212f);
-            simA.FastAdvance(100);
-
-            var ms = new MemoryStream();
-            Assert.IsTrue(simA.Save(ms));
-            ms.Position = 0;
-
-            var simB = new Simulation();
-            Assert.IsTrue(simB.Load(ms));
-
             // Compare Config.
             var configA = simA.Config;
             Assert.IsNotNull(configA);
@@ -110,6 +90,43 @@ namespace WalkerSim.Tests
                     Assert.AreEqual(queryA[x].Index, queryB[x].Index);
                 }
             }
+        }
+
+        [TestMethod]
+        public void TestSaveLoad5k()
+        {
+            var config = Config.GetDefault();
+            config.MaxAgents = 5000;
+
+            var simA = new Simulation();
+            simA.SetWorldSize(WorldMins, WorldMaxs);
+            simA.Reset(config);
+
+            // Add a few events.
+            simA.AddSoundEvent(new Vector3(-100, -100, 0), 653.212f);
+            simA.AddSoundEvent(new Vector3(700, 100, 0), 653.212f);
+            simA.AddSoundEvent(new Vector3(1700, 500, 0), 653.212f);
+            simA.FastAdvance(100);
+
+            var ms = new MemoryStream();
+            Assert.IsTrue(simA.Save(ms));
+            ms.Position = 0;
+
+            var simB = new Simulation();
+            Assert.IsTrue(simB.Load(ms));
+
+            // Compare current state of both.
+            CompareSimulations(simA, simB);
+
+            // Advance both 100 ticks.
+            for (int i = 0; i < 100; i++)
+            {
+                simA.Tick();
+                simB.Tick();
+            }
+
+            // Compare after advancing.
+            CompareSimulations(simA, simB);
         }
     }
 }

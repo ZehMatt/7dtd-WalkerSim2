@@ -17,6 +17,8 @@ namespace WalkerSim
             SimulationWindow.Init();
 
             // Setup hooks.
+            // TODO: Look into delaying this so clients can still use this with EAC when joining servers.
+            //       IsHost() is not reliable at this point of time.
             Hooks.Init();
 
             // Register for events.
@@ -34,6 +36,7 @@ namespace WalkerSim
 
         static void GameAwake()
         {
+            Logging.Out("GameAwake");
         }
 
         static Config LoadConfiguration()
@@ -65,44 +68,83 @@ namespace WalkerSim
             }
 
             Logging.Out("No config found, using defaults.");
-            return new Config();
+            return Config.GetDefault();
         }
 
-        static void InitializeSimWorld()
+        static string GetSimulationSaveFile()
+        {
+            var saveFilePath = GameIO.GetSaveGameDir();
+            return System.IO.Path.Combine(saveFilePath, "walkersim.bin");
+        }
+
+        static void InitializeSimulation()
         {
             var simulation = Simulation.Instance;
 
-            var world = GameManager.Instance.World;
-            world.GetWorldExtent(out Vector3i min, out Vector3i max);
-
-            var worldMins = new Vector3(min.x, min.x, min.y);
-            var worldMaxs = new Vector3(max.x, max.x, max.y);
-
-            var config = LoadConfiguration();
-            simulation.Reset(worldMins, worldMaxs, config);
-
-            Logging.Out("Initialized Simulation World, World Size: {0}, {1}; Agents: {2}", worldMins, worldMaxs, config.MaxAgents);
-        }
-
-        static void LoadMapData()
-        {
-            var simulation = Simulation.Instance;
-
-            // Get the path to the world directory.
-            string worldFolder = PathAbstractions.WorldsSearchPaths.GetLocation(GamePrefs.GetString(EnumGamePrefs.GameWorld)).FullPath;
-            Logging.Out("World Folder: {0}", worldFolder);
-
-            Logging.Out("Loading Map Data...");
-            var loaded = false;
-            var elapsed = Utils.Measure(() =>
+            // Load the map data
             {
-                loaded = simulation.LoadMapData(worldFolder);
-            });
+                string worldFolder = PathAbstractions.WorldsSearchPaths.GetLocation(GamePrefs.GetString(EnumGamePrefs.GameWorld)).FullPath;
+                Logging.Out("World Folder: {0}", worldFolder);
 
-            if (loaded)
-                Logging.Out("Map Data Loaded in {0}ms", elapsed.TotalMilliseconds);
-            else
-                Logging.Err("Failed to load map data");
+                Logging.Out("Loading Map Data...");
+                var loaded = false;
+                var elapsed = Utils.Measure(() =>
+                {
+                    loaded = simulation.LoadMapData(worldFolder);
+                });
+
+                if (loaded)
+                    Logging.Out("Map Data Loaded in {0}.", elapsed);
+                else
+                    Logging.Err("Failed to load map data");
+            }
+
+            // Set world size
+            {
+                var world = GameManager.Instance.World;
+                world.GetWorldExtent(out Vector3i min, out Vector3i max);
+
+                var worldMins = new Vector3(min.x, min.x, min.y);
+                var worldMaxs = new Vector3(max.x, max.x, max.y);
+
+                simulation.SetWorldSize(worldMins, worldMaxs);
+            }
+
+            // Load or create the state.
+            {
+                var simFile = GetSimulationSaveFile();
+                if (System.IO.File.Exists(simFile) && simulation.Load(simFile))
+                {
+                    Logging.Out("Using existing simulation from: {0}", simFile);
+                }
+                else
+                {
+                    Logging.Out("No previous simulation found, starting new.");
+
+                    var config = LoadConfiguration();
+                    simulation.Reset(config);
+
+                    // Advance the simulation by specified ticks.
+                    if (config.TicksToAdvanceOnStartup > 0)
+                    {
+                        Logging.Out("Advancing simulation for {0} ticks...", config.TicksToAdvanceOnStartup);
+
+                        var elapsed = Utils.Measure(() =>
+                        {
+                            simulation.FastAdvance(config.TicksToAdvanceOnStartup);
+                        });
+
+                        Logging.Out("... done, took {0}.", elapsed);
+                    }
+                }
+
+                simulation.EnableAutoSave(simFile, 60.0f);
+            }
+
+            Logging.Out("Initialized Simulation World, World Size: {0}, {1}; Agents: {2}",
+                simulation.WorldMins,
+                simulation.WorldMaxs,
+                simulation.Agents.Count);
         }
 
         static bool IsHost()
@@ -120,30 +162,14 @@ namespace WalkerSim
         {
             if (!IsHost())
             {
+                // If we are just a client we also avoid using hooks to not mess with EAC.
                 Logging.Out("WalkerSim disabled, not host.");
                 return;
             }
 
-            LoadMapData();
-
-            InitializeSimWorld();
+            InitializeSimulation();
 
             var simulation = Simulation.Instance;
-            var config = simulation.Config;
-
-            // Advance the simulation by specified ticks.
-            if (config.TicksToAdvanceOnStartup > 0)
-            {
-                Logging.Out("Advancing simulation for {0} ticks...", config.TicksToAdvanceOnStartup);
-
-                var elapsed = Utils.Measure(() =>
-                {
-                    simulation.FastAdvance(config.TicksToAdvanceOnStartup);
-                });
-
-                Logging.Out("... done, took {0}ms.", elapsed.TotalMilliseconds);
-            }
-
             simulation.Start();
         }
 
@@ -271,11 +297,6 @@ namespace WalkerSim
 
         static void GameShutdown()
         {
-            if (!IsHost())
-            {
-                return;
-            }
-
             var simulation = Simulation.Instance;
             simulation.Stop();
         }

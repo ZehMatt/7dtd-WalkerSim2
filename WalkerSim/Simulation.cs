@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 
@@ -22,6 +23,9 @@ namespace WalkerSim
         private bool _running = false;
         private bool _paused = false;
         private float _speedScale = 1.0f;
+        private DateTime _nextAutoSave = DateTime.MaxValue;
+        private string _autoSaveFile;
+        private float _autoSaveInterval = -1;
 
         private Vector3[] _groupStarts = new Vector3[0];
 
@@ -85,9 +89,23 @@ namespace WalkerSim
             _speedScale = oldScale;
         }
 
+        public void EnableAutoSave(string file, float interval)
+        {
+            _autoSaveFile = file;
+            _nextAutoSave = DateTime.Now.AddSeconds(interval);
+            _autoSaveInterval = interval;
+
+            Logging.Out("Enabled auto-save, interval: {0}s, file: '{1}'.", interval, file);
+        }
+
         public void Start()
         {
             Stop();
+
+            if (_autoSaveInterval != -1)
+            {
+                _nextAutoSave = DateTime.Now.AddSeconds(_autoSaveInterval);
+            }
 
             _running = true;
             _thread = new Thread(ThreadUpdate);
@@ -96,7 +114,18 @@ namespace WalkerSim
             Logging.Out("Started Simulation.");
         }
 
-        public void Reset(Vector3 worldMins, Vector3 worldMaxs, Config config)
+        public void SetWorldSize(Vector3 worldMins, Vector3 worldMaxs)
+        {
+            lock (_state)
+            {
+                _state.WorldMins = worldMins;
+                _state.WorldMaxs = worldMaxs;
+
+                UpdateGrid();
+            }
+        }
+
+        public void Reset(Config config)
         {
             Stop();
 
@@ -106,10 +135,6 @@ namespace WalkerSim
                 _state.PRNG = new WalkerSim.Random(config.RandomSeed);
                 _state.SlowIterator = 0;
 
-                _state.WorldMins = worldMins;
-                _state.WorldMaxs = worldMaxs;
-
-                SetupGrid();
                 Populate();
                 SetupProcessors();
 
@@ -344,6 +369,8 @@ namespace WalkerSim
                         break;
 
                     CheckAgentSpawn();
+
+                    CheckAutoSave();
                 }
 
                 if (!_running)
@@ -351,6 +378,22 @@ namespace WalkerSim
 
                 Thread.Sleep(TickRateMs);
             }
+        }
+
+        private void CheckAutoSave()
+        {
+            var now = DateTime.Now;
+            if (now < _nextAutoSave)
+                return;
+
+            var elapsedMs = Utils.Measure(() =>
+            {
+                Save(_autoSaveFile);
+            });
+
+            Logging.Out("Saved simulation in {0}.", elapsedMs);
+
+            _nextAutoSave = now.AddSeconds(_autoSaveInterval);
         }
 
         public void Update(float deltaTime)
