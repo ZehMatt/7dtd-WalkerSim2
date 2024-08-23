@@ -254,8 +254,10 @@ namespace WalkerSim
         {
             try
             {
-                var fs = new FileStream(filePath, FileMode.Create);
-                return Save(fs);
+                using (var fs = new FileStream(filePath, FileMode.Create))
+                {
+                    return Save(fs);
+                }
             }
             catch (Exception ex)
             {
@@ -289,8 +291,10 @@ namespace WalkerSim
         {
             try
             {
-                var fs = new FileStream(filePath, FileMode.Open);
-                return Load(fs);
+                using (var fs = new FileStream(filePath, FileMode.Open))
+                {
+                    return Load(fs);
+                }
             }
             catch (Exception ex)
             {
