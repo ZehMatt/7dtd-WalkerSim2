@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace WalkerSim
+﻿namespace WalkerSim
 {
     internal class Agent
     {
@@ -22,7 +20,7 @@ namespace WalkerSim
         public int EntityClassId = -1;
         public int Health = -1;
         public State CurrentState = State.Dead;
-        public DateTime LastUpdate = DateTime.Now;
+        public uint LastUpdateTick = 0;
 
         public Agent()
         {
@@ -36,7 +34,7 @@ namespace WalkerSim
             Velocity = Vector3.Zero;
             CellIndex = -1;
             CurrentState = State.Wandering;
-            LastUpdate = DateTime.Now;
+            LastUpdateTick = 0;
 
             ResetSpawnData();
         }

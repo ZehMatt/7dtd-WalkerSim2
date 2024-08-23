@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 
@@ -15,8 +14,6 @@ namespace WalkerSim
         public const float TickRate = 1f / TicksPerSecond;
         public const int TickRateMs = 1000 / TicksPerSecond;
 
-        private int _ticks = 0;
-
         private bool _initialized = false;
 
         private Thread _thread;
@@ -28,41 +25,6 @@ namespace WalkerSim
         private float _autoSaveInterval = -1;
 
         private Vector3[] _groupStarts = new Vector3[0];
-
-        public int GroupCount
-        {
-            get => _state.GroupCount;
-        }
-
-        public Config Config
-        {
-            get => _state.Config;
-        }
-
-        public MapData MapData
-        {
-            get => _state.MapData;
-        }
-
-        public IReadOnlyList<Agent> Agents
-        {
-            get => _state.Agents;
-        }
-
-        public Vector3 WorldSize
-        {
-            get => _state.WorldMaxs - _state.WorldMins;
-        }
-
-        public Vector3 WorldMins
-        {
-            get => _state.WorldMins;
-        }
-
-        public Vector3 WorldMaxs
-        {
-            get => _state.WorldMaxs;
-        }
 
         public void Stop()
         {
@@ -134,8 +96,10 @@ namespace WalkerSim
                 _state.Config = config;
                 _state.PRNG = new WalkerSim.Random(config.RandomSeed);
                 _state.SlowIterator = 0;
+                _state.Ticks = 0;
 
                 Populate();
+                SetupGrid();
                 SetupProcessors();
 
                 _initialized = true;
@@ -334,6 +298,7 @@ namespace WalkerSim
                 int groupIndex = index / config.GroupSize;
 
                 var agent = new Agent(index, groupIndex);
+                agent.LastUpdateTick = _state.Ticks;
                 agent.Position = GetStartLocation(index, groupIndex);
 
                 // Ensure the position is not out of bounds.
@@ -348,6 +313,10 @@ namespace WalkerSim
             }
         }
 
+        private void TickLocked()
+        {
+
+        }
         private void ThreadUpdate()
         {
             Stopwatch sw = new Stopwatch();
@@ -357,9 +326,11 @@ namespace WalkerSim
             {
                 if (_paused)
                 {
-                    Thread.Sleep(25);
+                    Thread.Sleep(TickRateMs);
                     continue;
                 }
+
+                sw.Restart();
 
                 lock (_state)
                 {
@@ -369,14 +340,23 @@ namespace WalkerSim
                         break;
 
                     CheckAgentSpawn();
-
                     CheckAutoSave();
                 }
+
+                sw.Stop();
+                var elapsedMs = tickWatch.Elapsed.TotalMilliseconds;
+
+                lastTickTimeMs = (float)elapsedMs;
+                averageTickTime += (float)elapsedMs;
+
+                if (_state.Ticks > 1)
+                    averageTickTime *= 0.5f;
 
                 if (!_running)
                     break;
 
-                Thread.Sleep(TickRateMs);
+                var sleepTime = Math.Clamp((int)(elapsedMs - TickRateMs), 0, TickRateMs);
+                Thread.Sleep(sleepTime);
             }
         }
 

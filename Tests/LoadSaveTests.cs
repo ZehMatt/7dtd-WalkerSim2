@@ -47,6 +47,20 @@ namespace WalkerSim.Tests
                 }
             }
 
+            // Compare State
+            Assert.AreEqual(simA.WorldMins, simB.WorldMins);
+            Assert.AreEqual(simA.WorldMaxs, simB.WorldMaxs);
+            Assert.AreEqual(simA.SlowIterator, simB.SlowIterator);
+            Assert.AreEqual(simA.WindDirection, simB.WindDirection);
+            Assert.AreEqual(simA.WindDirectionTarget, simB.WindDirectionTarget);
+            Assert.AreEqual(simA.WindTime, simB.WindTime);
+            Assert.AreEqual(simA.Ticks, simB.Ticks);
+            Assert.AreEqual(simA.TickNextWindChange, simB.TickNextWindChange);
+            Assert.AreEqual(simA.GroupCount, simB.GroupCount);
+            Assert.AreEqual(simA.MaxNeighbourDistance, simB.MaxNeighbourDistance);
+            Assert.AreEqual(simA.PRNG.State0, simB.PRNG.State0);
+            Assert.AreEqual(simA.PRNG.State1, simB.PRNG.State1);
+
             // Compare Agents.
             Assert.AreEqual(simA.Agents.Count, simB.Agents.Count);
             for (int i = 0; i < simA.Agents.Count; i++)
@@ -56,9 +70,10 @@ namespace WalkerSim.Tests
 
                 Assert.AreEqual(agentA.Index, agentB.Index);
                 Assert.AreEqual(agentA.Group, agentB.Group);
+                Assert.AreEqual(agentA.LastUpdateTick, agentB.LastUpdateTick);
                 Assert.AreEqual(agentA.CellIndex, agentB.CellIndex);
-                Assert.AreEqual(agentA.Position, agentB.Position);
                 Assert.AreEqual(agentA.Velocity, agentB.Velocity);
+                Assert.AreEqual(agentA.Position, agentB.Position);
                 Assert.AreEqual(agentA.CurrentState, agentB.CurrentState);
             }
 
@@ -101,32 +116,35 @@ namespace WalkerSim.Tests
             var simA = new Simulation();
             simA.SetWorldSize(WorldMins, WorldMaxs);
             simA.Reset(config);
+            simA.Deterministic = true;
 
             // Add a few events.
             simA.AddSoundEvent(new Vector3(-100, -100, 0), 653.212f);
             simA.AddSoundEvent(new Vector3(700, 100, 0), 653.212f);
             simA.AddSoundEvent(new Vector3(1700, 500, 0), 653.212f);
-            simA.FastAdvance(100);
+            simA.FastAdvance(20);
 
             var ms = new MemoryStream();
             Assert.IsTrue(simA.Save(ms));
             ms.Position = 0;
 
             var simB = new Simulation();
+            simB.Deterministic = true;
             Assert.IsTrue(simB.Load(ms));
 
             // Compare current state of both.
             CompareSimulations(simA, simB);
 
-            // Advance both 100 ticks.
-            for (int i = 0; i < 100; i++)
+            // Advance a few ticks.
+            for (int i = 0; i < 10; i++)
             {
                 simA.Tick();
                 simB.Tick();
+
+                // Compare after advancing.
+                CompareSimulations(simA, simB);
             }
 
-            // Compare after advancing.
-            CompareSimulations(simA, simB);
         }
     }
 }

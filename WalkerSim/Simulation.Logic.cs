@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
 
 namespace WalkerSim
 {
@@ -16,7 +15,10 @@ namespace WalkerSim
         private FixedBufferList<Agent> _nearby = new FixedBufferList<Agent>(Limits.MaxQuerySize);
         private List<EventData> _events = new List<EventData>();
 
-        private delegate Vector3 MovementProcessorDelegate(State state, Agent agent, List<EventData> events, FixedBufferList<Agent> nearby, float distance, float power);
+        // NOTE: This must be a prime number.
+        private const uint IteratorIncrement = 7;
+
+        private delegate Vector3 MovementProcessorDelegate(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power);
 
         class MovementProcessor
         {
@@ -33,10 +35,11 @@ namespace WalkerSim
 
         List<MovementProcessor> _processors = new List<MovementProcessor>();
 
-        public Vector3 WindDirection
-        {
-            get => _state.WindDir;
-        }
+        // If this is true then the simulation will be deterministic given it has equal configurations.
+        public bool Deterministic = false;
+
+        // If DeterministicLoop is set to true this will be the amount of how many agents it will update per tick.
+        private const int MaxUpdateCountPerTick = 2000;
 
         private void SetupProcessors()
         {
@@ -146,23 +149,19 @@ namespace WalkerSim
             UpdateWindDirection();
             UpdateEvents();
 
-            // We make a copy of the events to avoid locking/unlocking per agent.
-            lock (_state)
-            {
-                _events.Clear();
-                _events.AddRange(_state.Events);
-            }
-
             var agents = _state.Agents;
             var numUpdates = 0;
+            var maxUpdates = System.Math.Min(
+                System.Math.Min(MaxUpdateCountPerTick * TimeScale, agents.Count),
+                4000
+            );
 
-            while (tickWatch.Elapsed.TotalSeconds < TickRate)
+            while (true)
             {
                 var agentIndex = (int)(_state.SlowIterator % agents.Count);
                 var agent = agents[agentIndex];
 
-                // NOTE: We use a prime number here to have a better distribution of agents.
-                _state.SlowIterator += 193;
+                _state.SlowIterator += IteratorIncrement;
 
                 if (agent.CurrentState == Agent.State.Wandering)
                 {
@@ -173,13 +172,22 @@ namespace WalkerSim
                     RespawnAgent(agent);
                 }
 
-                if (_state.Config.ReduceCPULoad)
+                var exitLoop = false;
+                if (Deterministic)
                 {
-                    if (++numUpdates % 100 == 0)
-                    {
-                        Thread.Sleep(1);
-                    }
+                    exitLoop = numUpdates >= maxUpdates;
                 }
+                else
+                {
+                    exitLoop = tickWatch.Elapsed.TotalSeconds >= TickRate;
+                }
+
+                if (exitLoop)
+                {
+                    break;
+                }
+
+                numUpdates++;
             }
 
             // Update the grid, can't do this in parallel since it's not thread safe.
@@ -188,19 +196,7 @@ namespace WalkerSim
                 MoveInGrid(agents[i]);
             }
 
-            tickWatch.Stop();
-
-            double ticks = tickWatch.ElapsedTicks;
-            double seconds = ticks / Stopwatch.Frequency;
-            double milliseconds = (ticks / Stopwatch.Frequency) * 1000;
-
-            lastTickTimeMs = (float)milliseconds;
-            averageTickTime += (float)milliseconds;
-
-            if (_ticks > 1)
-                averageTickTime *= 0.5f;
-
-            _ticks++;
+            _state.Ticks++;
         }
 
         [Conditional("DEBUG")]
@@ -216,9 +212,9 @@ namespace WalkerSim
 
         private void UpdateAgent(Agent agent)
         {
-            var now = DateTime.Now;
-            var deltaTime = now - agent.LastUpdate;
-            agent.LastUpdate = now;
+            var ticksDelta = _state.Ticks - agent.LastUpdateTick;
+            var deltaTime = ticksDelta * TickRate;
+            agent.LastUpdateTick = _state.Ticks;
 
             // Sanity check, omitted for release builds.
             CheckPositionInBounds(agent.Position);
@@ -228,14 +224,14 @@ namespace WalkerSim
             _nearby.Clear();
             QueryCells(agent.Position, agent.Index, maxNeighborDistance, _nearby);
 
-            var curVel = agent.Velocity * 0.9f;
+            var curVel = agent.Velocity * 0.2f;
 
             var processorGroup = _processors[agent.Group];
             for (int i = 0; i < processorGroup.Entries.Count; i++)
             {
                 var processor = processorGroup.Entries[i];
 
-                var addVel = processor.Handler(_state, agent, _events, _nearby, processor.Distance, processor.Power);
+                var addVel = processor.Handler(_state, agent, _nearby, processor.Distance, processor.Power);
                 addVel.Validate();
 
                 curVel += addVel;
@@ -244,7 +240,7 @@ namespace WalkerSim
             curVel.Validate();
             agent.Velocity = curVel;
 
-            ApplyMovement(agent, (float)deltaTime.TotalSeconds * TimeScale, processorGroup.SpeedScale);
+            ApplyMovement(agent, deltaTime * TimeScale, processorGroup.SpeedScale);
 
             //BounceOffWalls(ref agent);
             Warp(agent);
@@ -262,7 +258,7 @@ namespace WalkerSim
         {
             var prng = _state.PRNG;
 
-            if (_ticks >= _state.TickNextWindChange)
+            if (_state.Ticks >= _state.TickNextWindChange)
             {
                 var windIncrement = 1.2f * TickRate;
 
@@ -273,7 +269,7 @@ namespace WalkerSim
                 _state.WindDirTarget.Y = (float)System.Math.Sin(_state.WindTime);
 
                 // Pick a random delay for the next change.
-                _state.TickNextWindChange = _ticks + prng.Next(400, 600);
+                _state.TickNextWindChange = _state.Ticks + (uint)prng.Next(400, 600);
             }
 
             // Approach the target direction.
@@ -293,7 +289,7 @@ namespace WalkerSim
             return averageTickTime;
         }
 
-        private static Vector3 Flock(State state, Agent agent, List<EventData> events, FixedBufferList<Agent> nearby, float distance, float power)
+        private static Vector3 Flock(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
         {
             var distanceSqr = distance;
             // point toward the center of the flock (mean flock boid position)
@@ -302,6 +298,9 @@ namespace WalkerSim
             for (int i = 0; i < nearby.Count; i++)
             {
                 var neighbor = nearby[i];
+                if (neighbor.Group != agent.Group)
+                    continue;
+
                 var dist = Vector3.Distance(agent.Position, neighbor.Position);
                 if (dist > distanceSqr)
                     continue;
@@ -316,7 +315,7 @@ namespace WalkerSim
             return center * power;
         }
 
-        private static Vector3 Align(State state, Agent agent, List<EventData> events, FixedBufferList<Agent> nearby, float distance, float power)
+        private static Vector3 Align(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
         {
             var distanceSqr = distance;
             // point toward the center of the flock (mean flock boid position)
@@ -325,6 +324,9 @@ namespace WalkerSim
             for (int i = 0; i < nearby.Count; i++)
             {
                 var neighbor = nearby[i];
+                if (neighbor.Group != agent.Group)
+                    continue;
+
                 var dist = Vector3.Distance(agent.Position, neighbor.Position);
                 if (dist > distanceSqr)
                     continue;
@@ -342,7 +344,7 @@ namespace WalkerSim
             return delta * power;
         }
 
-        private static Vector3 Avoid(State state, Agent agent, List<EventData> events, FixedBufferList<Agent> nearby, float distance, float power)
+        private static Vector3 Avoid(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
         {
             var distanceSqr = distance;
             // point away as boids get close
@@ -359,7 +361,7 @@ namespace WalkerSim
             return sumCloseness * power;
         }
 
-        private static Vector3 Group(State state, Agent agent, List<EventData> events, FixedBufferList<Agent> nearby, float distance, float power)
+        private static Vector3 Group(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
         {
             var distanceSqr = distance;
             // point towards same group
@@ -381,7 +383,7 @@ namespace WalkerSim
             return sumCloseness * power;
         }
 
-        private static Vector3 GroupAvoid(State state, Agent agent, List<EventData> events, FixedBufferList<Agent> nearby, float distance, float power)
+        private static Vector3 GroupAvoid(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
         {
             var groupCount = state.GroupCount;
             var distanceSqr = distance;
@@ -399,6 +401,9 @@ namespace WalkerSim
                     continue;
 
                 sum += neighbor.Position;
+
+                //var dir = Vector3.Normalize(agent.Position - neighbor.Position);
+                //return dir * power;
             }
 
             if (count == 0)
@@ -408,12 +413,12 @@ namespace WalkerSim
             return delta * power;
         }
 
-        private static Vector3 Wind(State state, Agent agent, List<EventData> events, FixedBufferList<Agent> nearby, float distance, float power)
+        private static Vector3 Wind(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
         {
             return state.WindDir * power;
         }
 
-        private static Vector3 StickToRoads(State state, Agent agent, List<EventData> events, FixedBufferList<Agent> nearby, float distance, float power)
+        private static Vector3 StickToRoads(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
         {
             // Remap the position to the roads bitmap.
             if (state.MapData == null)
@@ -458,8 +463,10 @@ namespace WalkerSim
             return Vector3.Zero;
         }
 
-        private Vector3 WorldEvents(State state, Agent agent, List<EventData> events, FixedBufferList<Agent> nearby, float distance, float power)
+        private Vector3 WorldEvents(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
         {
+            var events = _state.Events;
+
             Vector3 sum = Vector3.Zero;
 
             float n = 0;

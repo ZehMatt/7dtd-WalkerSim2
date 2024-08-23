@@ -92,21 +92,19 @@ namespace WalkerSim
         {
             var dt = TickRate * TimeScale;
 
-            lock (_state)
+            var events = _state.Events;
+            foreach (var ev in events)
             {
-                foreach (var ev in _state.Events)
+                if (ev.Type == EventType.Noise)
                 {
-                    if (ev.Type == EventType.Noise)
-                    {
-                        // Shrink the radius.
-                        var decay = ev.DecayRate * dt;
-                        ev.Radius = System.Math.Max(ev.Radius - decay, 0);
-                    }
+                    // Shrink the radius.
+                    var decay = ev.DecayRate * dt;
+                    ev.Radius = System.Math.Max(ev.Radius - decay, 0);
                 }
-
-                // Erase expired events.
-                _state.Events.RemoveAll(ev => ev.Radius <= 0);
             }
+
+            // Erase expired events.
+            events.RemoveAll(ev => ev.Radius <= 0);
         }
     }
 }

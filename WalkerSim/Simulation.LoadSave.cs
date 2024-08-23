@@ -31,7 +31,14 @@ namespace WalkerSim
         {
             Serialization.WriteVector3(writer, state.WorldMins);
             Serialization.WriteVector3(writer, state.WorldMaxs);
+            Serialization.WriteUInt32(writer, state.SlowIterator);
+            Serialization.WriteVector3(writer, state.WindDir);
+            Serialization.WriteVector3(writer, state.WindDirTarget);
+            Serialization.WriteSingle(writer, state.WindTime);
+            Serialization.WriteUInt32(writer, state.Ticks);
+            Serialization.WriteUInt32(writer, state.TickNextWindChange);
             Serialization.WriteInt32(writer, state.GroupCount);
+            Serialization.WriteSingle(writer, state.MaxNeighbourDistance);
         }
 
         private void SaveConfig(State state, BinaryWriter writer)
@@ -70,6 +77,7 @@ namespace WalkerSim
                 Serialization.WriteInt32(writer, agent.EntityClassId);
                 Serialization.WriteInt32(writer, agent.Health);
                 Serialization.WriteInt32(writer, (int)agent.CurrentState);
+                Serialization.WriteUInt32(writer, agent.LastUpdateTick);
             }
         }
 
@@ -129,7 +137,14 @@ namespace WalkerSim
         {
             state.WorldMins = Serialization.ReadVector3(reader);
             state.WorldMaxs = Serialization.ReadVector3(reader);
+            state.SlowIterator = Serialization.ReadUInt32(reader);
+            state.WindDir = Serialization.ReadVector3(reader);
+            state.WindDirTarget = Serialization.ReadVector3(reader);
+            state.WindTime = Serialization.ReadSingle(reader);
+            state.Ticks = Serialization.ReadUInt32(reader);
+            state.TickNextWindChange = Serialization.ReadUInt32(reader);
             state.GroupCount = Serialization.ReadInt32(reader);
+            state.MaxNeighbourDistance = Serialization.ReadSingle(reader);
         }
 
         private void LoadConfig(State state, BinaryReader reader)
@@ -169,6 +184,7 @@ namespace WalkerSim
                 agent.EntityClassId = Serialization.ReadInt32(reader);
                 agent.Health = Serialization.ReadInt32(reader);
                 agent.CurrentState = (Agent.State)Serialization.ReadInt32(reader);
+                agent.LastUpdateTick = Serialization.ReadUInt32(reader);
                 agents.Add(agent);
 
                 if (agent.CurrentState == Agent.State.Active)
@@ -255,6 +271,8 @@ namespace WalkerSim
                 var state = new State();
                 var reader = new BinaryReader(stream, System.Text.Encoding.UTF8, true);
                 LoadState(state, reader);
+
+                state.MapData = _state.MapData;
                 _state = state;
 
                 SetupProcessors();

@@ -61,6 +61,9 @@ namespace WalkerSim.Viewer
                 simulation.Stop();
             };
 
+            CurrentConfig = Config.GetDefault();
+            UpdateConfigFields();
+
             SetupLogging();
             SetupConfigChangeHandlers();
             SetupSpeedModifiers();
@@ -68,8 +71,11 @@ namespace WalkerSim.Viewer
             SetupWorlds();
             SetupLimits();
             SetupChoices();
-            LoadDefaultConfiguration();
             ScrollWheelHack();
+            //LoadDefaultConfiguration();
+
+            CurrentConfig = Config.GetDefault();
+            UpdateConfigFields();
         }
 
         private void LogMsg(string text, Color color, bool addNewLine = true)

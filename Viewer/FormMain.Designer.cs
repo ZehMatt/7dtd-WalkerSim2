@@ -461,9 +461,24 @@
             // inputGroupSize
             // 
             this.inputGroupSize.Location = new System.Drawing.Point(113, 90);
+            this.inputGroupSize.Maximum = new decimal(new int[] {
+            30000,
+            0,
+            0,
+            0});
+            this.inputGroupSize.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             this.inputGroupSize.Name = "inputGroupSize";
             this.inputGroupSize.Size = new System.Drawing.Size(120, 20);
             this.inputGroupSize.TabIndex = 32;
+            this.inputGroupSize.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             // 
             // label2
             // 
@@ -477,9 +492,24 @@
             // inputMaxAgents
             // 
             this.inputMaxAgents.Location = new System.Drawing.Point(113, 64);
+            this.inputMaxAgents.Maximum = new decimal(new int[] {
+            30000,
+            0,
+            0,
+            0});
+            this.inputMaxAgents.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             this.inputMaxAgents.Name = "inputMaxAgents";
             this.inputMaxAgents.Size = new System.Drawing.Size(120, 20);
             this.inputMaxAgents.TabIndex = 30;
+            this.inputMaxAgents.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             // 
             // label1
             // 
@@ -493,6 +523,11 @@
             // inputRandomSeed
             // 
             this.inputRandomSeed.Location = new System.Drawing.Point(113, 38);
+            this.inputRandomSeed.Maximum = new decimal(new int[] {
+            -1,
+            2147483647,
+            0,
+            0});
             this.inputRandomSeed.Name = "inputRandomSeed";
             this.inputRandomSeed.Size = new System.Drawing.Size(121, 20);
             this.inputRandomSeed.TabIndex = 28;
@@ -795,7 +830,6 @@
             this.ClientSize = new System.Drawing.Size(856, 717);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.menuStrip1);
-            this.DoubleBuffered = true;
             this.KeyPreview = true;
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "FormMain";

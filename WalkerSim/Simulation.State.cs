@@ -21,7 +21,8 @@ namespace WalkerSim
             public Vector3 WindDir = new Vector3(1, 0, 0);
             public Vector3 WindDirTarget = new Vector3(1, 0, 0);
             public float WindTime = 0;
-            public int TickNextWindChange = 0;
+            public uint Ticks = 0;
+            public uint TickNextWindChange = 0;
             public int GroupCount = 0;
             public float MaxNeighbourDistance = 0;
 
@@ -45,5 +46,80 @@ namespace WalkerSim
         }
 
         State _state = new State();
+
+        public WalkerSim.Random PRNG
+        {
+            get => _state.PRNG;
+        }
+
+        public int GroupCount
+        {
+            get => _state.GroupCount;
+        }
+
+        public Config Config
+        {
+            get => _state.Config;
+        }
+
+        public MapData MapData
+        {
+            get => _state.MapData;
+        }
+
+        public IReadOnlyList<Agent> Agents
+        {
+            get => _state.Agents;
+        }
+
+        public Vector3 WorldSize
+        {
+            get => _state.WorldMaxs - _state.WorldMins;
+        }
+
+        public Vector3 WorldMins
+        {
+            get => _state.WorldMins;
+        }
+
+        public Vector3 WorldMaxs
+        {
+            get => _state.WorldMaxs;
+        }
+
+        public uint Ticks
+        {
+            get => _state.Ticks;
+        }
+
+        public uint SlowIterator
+        {
+            get => _state.SlowIterator;
+        }
+
+        public uint TickNextWindChange
+        {
+            get => _state.TickNextWindChange;
+        }
+
+        public float WindTime
+        {
+            get => _state.WindTime;
+        }
+
+        public Vector3 WindDirection
+        {
+            get => _state.WindDir;
+        }
+
+        public Vector3 WindDirectionTarget
+        {
+            get => _state.WindDirTarget;
+        }
+
+        public float MaxNeighbourDistance
+        {
+            get => _state.MaxNeighbourDistance;
+        }
     }
 }

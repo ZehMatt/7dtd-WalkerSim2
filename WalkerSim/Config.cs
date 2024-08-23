@@ -148,6 +148,12 @@ namespace WalkerSim
         {
             var conf = new Config()
             {
+                RandomSeed = 1337,
+                MaxAgents = 6000,
+                GroupSize = 32,
+                StartPosition = WorldLocation.RandomPOI,
+                RespawnPosition = WorldLocation.RandomBorderLocation,
+                StartAgentsGrouped = true,
                 Processors = new List<MovementProcessors>
                 {
                     new MovementProcessors {
@@ -157,50 +163,50 @@ namespace WalkerSim
                             new MovementProcessor()
                             {
                                 Type = MovementProcessorType.Flock,
-                                Distance = 150f,
+                                Distance = 50f,
                                 Power = 0.003f,
                             },
                             new MovementProcessor()
                             {
                                 Type = MovementProcessorType.Align,
-                                Distance = 150f,
+                                Distance = 50f,
                                 Power = 0.001f,
                             },
                             new MovementProcessor()
                             {
                                 Type = MovementProcessorType.Avoid,
-                                Distance = 50f,
+                                Distance = 20f,
                                 Power = 0.002f,
                             },
                             new MovementProcessor()
                             {
                                 Type = MovementProcessorType.Group,
-                                Distance = 250f,
-                                Power = 0.0001f,
+                                Distance = 50f,
+                                Power = 0.001f,
                             },
                             new MovementProcessor()
                             {
                                 Type = MovementProcessorType.GroupAvoid,
                                 Distance = 150f,
-                                Power = 0.0001f,
+                                Power = 0.050f,
                             },
                             new MovementProcessor()
                             {
                                 Type = MovementProcessorType.Wind,
                                 Distance = 0f,
-                                Power = 0.05f,
+                                Power = 0.010f,
                             },
                             new MovementProcessor()
                             {
                                 Type = MovementProcessorType.StickToRoads,
                                 Distance = 0f,
-                                Power = 0.04f,
+                                Power = 0.025f,
                             },
                             new MovementProcessor()
                             {
                                 Type = MovementProcessorType.WorldEvents,
                                 Distance = 0f,
-                                Power = 0.05f,
+                                Power = 0.050f,
                             },
                         }
                     },
