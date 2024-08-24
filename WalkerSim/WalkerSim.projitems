@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Agent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ColorTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Config.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FixedBufferList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HeightMap.cs" />
@@ -28,6 +29,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Serialization.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Logic.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Players.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Simulation.Processors.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Spawner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.State.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />

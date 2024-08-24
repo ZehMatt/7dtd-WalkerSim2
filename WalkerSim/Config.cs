@@ -61,6 +61,9 @@ namespace WalkerSim
             [XmlAttribute("SpeedScale")]
             public float SpeedScale = 1.0f;
 
+            [XmlAttribute("Color")]
+            public string Color = "";
+
             [XmlElement("Processor")]
             public List<MovementProcessor> Entries = new List<MovementProcessor>();
         }
@@ -151,7 +154,7 @@ namespace WalkerSim
                 RandomSeed = 1337,
                 MaxAgents = 6000,
                 GroupSize = 32,
-                StartPosition = WorldLocation.RandomPOI,
+                StartPosition = WorldLocation.RandomLocation,
                 RespawnPosition = WorldLocation.RandomBorderLocation,
                 StartAgentsGrouped = true,
                 Processors = new List<MovementProcessors>

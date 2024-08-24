@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ColorTable.cs" />
+    <Compile Include="DrawingUtils.cs" />
     <Compile Include="FormMain.cs">
       <SubType>Form</SubType>
     </Compile>

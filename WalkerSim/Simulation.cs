@@ -313,10 +313,6 @@ namespace WalkerSim
             }
         }
 
-        private void TickLocked()
-        {
-
-        }
         private void ThreadUpdate()
         {
             Stopwatch sw = new Stopwatch();
@@ -408,6 +404,16 @@ namespace WalkerSim
 
                 SetupProcessors();
             }
+        }
+
+        public System.Drawing.Color GetGroupColor(int groupIndex)
+        {
+            if (groupIndex >= _processors.Count)
+            {
+                return ColorTable.GetColorForIndex(groupIndex);
+            }
+
+            return _processors[groupIndex].Color;
         }
     }
 }

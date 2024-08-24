@@ -40,5 +40,27 @@ namespace WalkerSim
             float y = Math.Remap(y0, 0f, 1f, mins.Y + borderSize, maxs.Y - borderSize);
             return new Vector3(x, y);
         }
+
+        public static System.Drawing.Color ParseColor(string color)
+        {
+            if (color == "")
+            {
+                return System.Drawing.Color.Transparent;
+            }
+            try
+            {
+                var res = (System.Drawing.Color)System.Drawing.ColorTranslator.FromHtml(color);
+                return res;
+            }
+            catch (Exception)
+            {
+                return System.Drawing.Color.Transparent;
+            }
+        }
+
+        public static string ColorToHexString(System.Drawing.Color color)
+        {
+            return System.Drawing.ColorTranslator.ToHtml(color);
+        }
     }
 }

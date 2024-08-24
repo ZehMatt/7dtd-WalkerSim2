@@ -74,6 +74,9 @@
             this.inputStartGrouped = new System.Windows.Forms.CheckBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.groupProps = new System.Windows.Forms.GroupBox();
+            this.boxGroupColor = new System.Windows.Forms.PictureBox();
+            this.buttonGroupColor = new System.Windows.Forms.Button();
+            this.label11 = new System.Windows.Forms.Label();
             this.inputMovementSpeed = new System.Windows.Forms.NumericUpDown();
             this.label7 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
@@ -95,6 +98,8 @@
             this.contextLog = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.colorPickerDlg = new System.Windows.Forms.ColorDialog();
+            this.buttonDuplicateGroup = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -108,6 +113,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.inputRandomSeed)).BeginInit();
             this.tabPage2.SuspendLayout();
             this.groupProps.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.boxGroupColor)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputMovementSpeed)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputMovementGroup)).BeginInit();
             this.groupProcessors.SuspendLayout();
@@ -544,6 +550,7 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.buttonDuplicateGroup);
             this.tabPage2.Controls.Add(this.groupProps);
             this.tabPage2.Controls.Add(this.groupProcessors);
             this.tabPage2.Controls.Add(this.buttonRemoveGroup);
@@ -559,6 +566,9 @@
             // 
             // groupProps
             // 
+            this.groupProps.Controls.Add(this.boxGroupColor);
+            this.groupProps.Controls.Add(this.buttonGroupColor);
+            this.groupProps.Controls.Add(this.label11);
             this.groupProps.Controls.Add(this.inputMovementSpeed);
             this.groupProps.Controls.Add(this.label7);
             this.groupProps.Controls.Add(this.label6);
@@ -570,6 +580,35 @@
             this.groupProps.TabStop = false;
             this.groupProps.Text = "Properties";
             this.groupProps.Visible = false;
+            // 
+            // boxGroupColor
+            // 
+            this.boxGroupColor.BackColor = System.Drawing.Color.Transparent;
+            this.boxGroupColor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.boxGroupColor.Location = new System.Drawing.Point(118, 72);
+            this.boxGroupColor.Name = "boxGroupColor";
+            this.boxGroupColor.Size = new System.Drawing.Size(52, 21);
+            this.boxGroupColor.TabIndex = 8;
+            this.boxGroupColor.TabStop = false;
+            // 
+            // buttonGroupColor
+            // 
+            this.buttonGroupColor.Location = new System.Drawing.Point(171, 71);
+            this.buttonGroupColor.Name = "buttonGroupColor";
+            this.buttonGroupColor.Size = new System.Drawing.Size(23, 23);
+            this.buttonGroupColor.TabIndex = 7;
+            this.buttonGroupColor.Text = "...";
+            this.buttonGroupColor.UseVisualStyleBackColor = true;
+            this.buttonGroupColor.Click += new System.EventHandler(this.OnGroupColorPickClick);
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(6, 73);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(63, 13);
+            this.label11.TabIndex = 6;
+            this.label11.Text = "Group Color";
             // 
             // inputMovementSpeed
             // 
@@ -752,9 +791,9 @@
             // buttonRemoveGroup
             // 
             this.buttonRemoveGroup.Enabled = false;
-            this.buttonRemoveGroup.Location = new System.Drawing.Point(112, 128);
+            this.buttonRemoveGroup.Location = new System.Drawing.Point(151, 128);
             this.buttonRemoveGroup.Name = "buttonRemoveGroup";
-            this.buttonRemoveGroup.Size = new System.Drawing.Size(108, 23);
+            this.buttonRemoveGroup.Size = new System.Drawing.Size(69, 23);
             this.buttonRemoveGroup.TabIndex = 2;
             this.buttonRemoveGroup.Text = "Remove";
             this.buttonRemoveGroup.UseVisualStyleBackColor = true;
@@ -764,7 +803,7 @@
             // 
             this.button1.Location = new System.Drawing.Point(7, 128);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(99, 23);
+            this.button1.Size = new System.Drawing.Size(70, 23);
             this.button1.TabIndex = 1;
             this.button1.Text = "Add Group";
             this.button1.UseVisualStyleBackColor = true;
@@ -823,6 +862,21 @@
             this.copyToolStripMenuItem.Size = new System.Drawing.Size(102, 22);
             this.copyToolStripMenuItem.Text = "Copy";
             // 
+            // colorPickerDlg
+            // 
+            this.colorPickerDlg.AnyColor = true;
+            // 
+            // buttonDuplicateGroup
+            // 
+            this.buttonDuplicateGroup.Enabled = false;
+            this.buttonDuplicateGroup.Location = new System.Drawing.Point(83, 128);
+            this.buttonDuplicateGroup.Name = "buttonDuplicateGroup";
+            this.buttonDuplicateGroup.Size = new System.Drawing.Size(62, 23);
+            this.buttonDuplicateGroup.TabIndex = 7;
+            this.buttonDuplicateGroup.Text = "Duplicate";
+            this.buttonDuplicateGroup.UseVisualStyleBackColor = true;
+            this.buttonDuplicateGroup.Click += new System.EventHandler(this.OnDuplicateGroupClick);
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -851,6 +905,7 @@
             this.tabPage2.ResumeLayout(false);
             this.groupProps.ResumeLayout(false);
             this.groupProps.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.boxGroupColor)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputMovementSpeed)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputMovementGroup)).EndInit();
             this.groupProcessors.ResumeLayout(false);
@@ -933,6 +988,11 @@
         private System.Windows.Forms.ContextMenuStrip contextLog;
         private System.Windows.Forms.ToolStripMenuItem clearToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.PictureBox boxGroupColor;
+        private System.Windows.Forms.Button buttonGroupColor;
+        private System.Windows.Forms.ColorDialog colorPickerDlg;
+        private System.Windows.Forms.Button buttonDuplicateGroup;
     }
 }
 

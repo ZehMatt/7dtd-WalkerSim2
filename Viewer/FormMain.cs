@@ -42,7 +42,7 @@ namespace WalkerSim.Viewer
 
             for (int i = 0; i < groupCount; i++)
             {
-                GroupColors[i] = new SolidBrush(ColorTable.GetColorForIndex(i));
+                GroupColors[i] = new SolidBrush(simulation.GetGroupColor(i));
             }
 
             PlayerColors = new Brush[64];
@@ -489,6 +489,9 @@ namespace WalkerSim.Viewer
 
                 Tool.Active.DrawPreview(simCanvas, gr, simPos);
             }
+
+            // Wind arrow.
+            DrawingUtils.DrawArrow(gr, simulation.WindDirection, new PointF(26, 26), 16, 6);
         }
 
         private void RenderSimulation()
@@ -519,6 +522,7 @@ namespace WalkerSim.Viewer
             _selectedGroup = groupIdx;
 
             buttonRemoveGroup.Enabled = groupIdx != -1;
+            buttonDuplicateGroup.Enabled = groupIdx != -1;
             groupProps.Visible = groupIdx != -1;
             groupProcessors.Visible = groupIdx != -1;
             groupParameter.Visible = false;
@@ -532,6 +536,14 @@ namespace WalkerSim.Viewer
 
             inputMovementGroup.Value = selectedGroup.Group;
             inputMovementSpeed.Value = (decimal)selectedGroup.SpeedScale;
+            if (selectedGroup.Color == "")
+            {
+                boxGroupColor.BackColor = System.Drawing.Color.Purple;
+            }
+            else
+            {
+                boxGroupColor.BackColor = Utils.ParseColor(selectedGroup.Color);
+            }
 
             listProcessors.Items.Clear();
             foreach (var processor in selectedGroup.Entries)
@@ -672,19 +684,29 @@ namespace WalkerSim.Viewer
             }
         }
 
+        private void ReconfigureSimulation()
+        {
+            simulation.ReloadConfig(CurrentConfig);
+            GenerateColorTable();
+        }
+
         private void OnAddGroupClick(object sender, EventArgs e)
         {
             if (CurrentConfig == null)
                 return;
 
             var groups = CurrentConfig.Processors;
-            var newGroup = new Config.MovementProcessors();
             var idx = groups.Count;
+
+            var newGroup = new Config.MovementProcessors()
+            {
+                Color = Utils.ColorToHexString(ColorTable.GetColorForIndex(idx))
+            };
             groups.Add(newGroup);
 
             listProcessorGroups.Items.Add("Group #" + idx);
 
-            simulation.ReloadConfig(CurrentConfig);
+            ReconfigureSimulation();
         }
 
         private void OnRemoveGroupClick(object sender, EventArgs e)
@@ -707,7 +729,7 @@ namespace WalkerSim.Viewer
                 listProcessorGroups.SelectedIndex = groupIdx - 1;
             }
 
-            simulation.ReloadConfig(CurrentConfig);
+            ReconfigureSimulation();
         }
 
         private Config.MovementProcessors GetSelectedGroupEntry()
@@ -719,7 +741,6 @@ namespace WalkerSim.Viewer
             }
 
             var groups = CurrentConfig.Processors;
-
             return groups[groupIdx];
         }
 
@@ -733,7 +754,7 @@ namespace WalkerSim.Viewer
 
             group.Group = (int)inputMovementGroup.Value;
 
-            simulation.ReloadConfig(CurrentConfig);
+            ReconfigureSimulation();
         }
 
         private void OnMovementSpeedChanged(object sender, EventArgs e)
@@ -746,7 +767,7 @@ namespace WalkerSim.Viewer
 
             group.SpeedScale = (float)inputMovementSpeed.Value;
 
-            simulation.ReloadConfig(CurrentConfig);
+            ReconfigureSimulation();
         }
 
         private void OnAddProcessorClick(object sender, EventArgs e)
@@ -775,7 +796,7 @@ namespace WalkerSim.Viewer
             listProcessors.Items.Add(processor.Type);
             listProcessors.SelectedIndex = newIdx;
 
-            simulation.ReloadConfig(CurrentConfig);
+            ReconfigureSimulation();
         }
 
         private void OnRemoveProcessorClick(object sender, EventArgs e)
@@ -800,7 +821,7 @@ namespace WalkerSim.Viewer
                 listProcessors.SelectedIndex = processorIdx - 1;
             }
 
-            simulation.ReloadConfig(CurrentConfig);
+            ReconfigureSimulation();
         }
 
         private Config.MovementProcessor GetProcessorEntry()
@@ -829,7 +850,7 @@ namespace WalkerSim.Viewer
             }
             entry.Distance = (float)inputProcessorDistance.Value;
 
-            simulation.ReloadConfig(CurrentConfig);
+            ReconfigureSimulation();
         }
 
         private void OnPowerValueChanged(object sender, EventArgs e)
@@ -841,7 +862,7 @@ namespace WalkerSim.Viewer
             }
             entry.Power = (float)inputProcessorPower.Value;
 
-            simulation.ReloadConfig(CurrentConfig);
+            ReconfigureSimulation();
         }
 
         private void OnAdvanceTick(object sender, EventArgs e)
@@ -866,6 +887,57 @@ namespace WalkerSim.Viewer
                 // Remove the ding.
                 e.SuppressKeyPress = true;
             }
+        }
+
+        private void OnGroupColorPickClick(object sender, EventArgs e)
+        {
+            var selectedGroup = GetSelectedGroupEntry();
+            if (selectedGroup == null)
+            {
+                return;
+            }
+
+            if (selectedGroup.Color == "")
+            {
+                colorPickerDlg.Color = System.Drawing.Color.Purple;
+            }
+            else
+            {
+                colorPickerDlg.Color = Utils.ParseColor(selectedGroup.Color);
+            }
+
+            if (colorPickerDlg.ShowDialog() == DialogResult.OK)
+            {
+                boxGroupColor.BackColor = colorPickerDlg.Color;
+                selectedGroup.Color = Utils.ColorToHexString(boxGroupColor.BackColor);
+
+                ReconfigureSimulation();
+            }
+        }
+
+        private void OnDuplicateGroupClick(object sender, EventArgs e)
+        {
+            var selectedGroup = GetSelectedGroupEntry();
+            if (selectedGroup == null)
+            {
+                return;
+            }
+
+            var groups = CurrentConfig.Processors;
+            var idx = groups.Count;
+
+            var newGroup = new Config.MovementProcessors()
+            {
+                Group = selectedGroup.Group,
+                SpeedScale = selectedGroup.SpeedScale,
+                Color = selectedGroup.Color,
+                Entries = new List<Config.MovementProcessor>(selectedGroup.Entries),
+            };
+            groups.Add(newGroup);
+
+            listProcessorGroups.Items.Add("Group #" + idx);
+
+            ReconfigureSimulation();
         }
     }
 }

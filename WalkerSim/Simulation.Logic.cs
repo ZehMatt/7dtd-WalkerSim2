@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace WalkerSim
@@ -18,129 +17,12 @@ namespace WalkerSim
         // NOTE: This must be a prime number.
         private const uint IteratorIncrement = 7;
 
-        private delegate Vector3 MovementProcessorDelegate(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power);
-
-        class MovementProcessor
-        {
-            public List<Processor> Entries;
-            public float SpeedScale = 1.0f;
-        }
-
-        class Processor
-        {
-            public MovementProcessorDelegate Handler;
-            public float Distance;
-            public float Power;
-        }
-
-        List<MovementProcessor> _processors = new List<MovementProcessor>();
-
         // If this is true then the simulation will be deterministic given it has equal configurations.
         public bool Deterministic = false;
 
         // If DeterministicLoop is set to true this will be the amount of how many agents it will update per tick.
         private const int MaxUpdateCountPerTick = 2000;
 
-        private void SetupProcessors()
-        {
-            _processors.Clear();
-
-            if (_state.GroupCount == 0)
-            {
-                return;
-            }
-
-            // Zero init the list based on group count.
-            for (int i = 0; i < _state.GroupCount; i++)
-            {
-                _processors.Add(new MovementProcessor()
-                {
-                    Entries = new List<Processor>()
-                });
-            }
-
-            foreach (var processorGroup in _state.Config.Processors)
-            {
-                var processors = new List<Processor>();
-                foreach (var processor in processorGroup.Entries)
-                {
-                    var entry = new Processor();
-                    entry.Distance = processor.Distance;
-                    entry.Power = processor.Power;
-                    switch (processor.Type)
-                    {
-                        case Config.MovementProcessorType.Flock:
-                            entry.Handler = Flock;
-                            break;
-                        case Config.MovementProcessorType.Align:
-                            entry.Handler = Align;
-                            break;
-                        case Config.MovementProcessorType.Avoid:
-                            entry.Handler = Avoid;
-                            break;
-                        case Config.MovementProcessorType.Group:
-                            entry.Handler = Group;
-                            break;
-                        case Config.MovementProcessorType.GroupAvoid:
-                            entry.Handler = GroupAvoid;
-                            break;
-                        case Config.MovementProcessorType.Wind:
-                            entry.Handler = Wind;
-                            break;
-                        case Config.MovementProcessorType.StickToRoads:
-                            entry.Handler = StickToRoads;
-                            break;
-                        case Config.MovementProcessorType.WorldEvents:
-                            entry.Handler = WorldEvents;
-                            break;
-                        case Config.MovementProcessorType.Invalid:
-                            throw new InvalidOperationException("Invalid movement processor type");
-                        default:
-                            throw new InvalidOperationException("Unhandled movement processor type: " + processor.Type.ToString());
-
-                    }
-                    processors.Add(entry);
-                }
-
-                if (processorGroup.Group == -1)
-                {
-                    // Fill all.
-                    for (int i = 0; i < _processors.Count; i++)
-                    {
-                        var group = _processors[i];
-                        group.Entries = processors;
-                        group.SpeedScale = processorGroup.SpeedScale;
-                    }
-                }
-                else
-                {
-                    // Override.
-                    if (processorGroup.Group >= _processors.Count)
-                    {
-                        Logging.Warn("Processor group specifies a group index that doesn't exist, index = {0}, total groups = {1}.",
-                            processorGroup.Group,
-                            _state.GroupCount);
-                    }
-                    else
-                    {
-                        var group = _processors[processorGroup.Group];
-                        group.Entries = processors;
-                        group.SpeedScale = processorGroup.SpeedScale;
-                    }
-                }
-            }
-
-            // Find the maximum query distance.
-            _state.MaxNeighbourDistance = 0.0f;
-
-            foreach (var processorList in _processors)
-            {
-                foreach (var processor in processorList.Entries)
-                {
-                    _state.MaxNeighbourDistance = System.Math.Max(_state.MaxNeighbourDistance, processor.Distance);
-                }
-            }
-        }
 
         public void Tick()
         {
@@ -265,18 +147,18 @@ namespace WalkerSim
                 _state.WindTime += windIncrement;
 
                 // Pick new direction.
-                _state.WindDirTarget.X = (float)System.Math.Cos(_state.WindTime);
-                _state.WindDirTarget.Y = (float)System.Math.Sin(_state.WindTime);
+                _state.WindDirTarget.X = (float)System.Math.Cos(prng.NextDouble() * _state.WindTime);
+                _state.WindDirTarget.Y = (float)System.Math.Sin(prng.NextDouble() * _state.WindTime);
 
                 // Pick a random delay for the next change.
-                _state.TickNextWindChange = _state.Ticks + (uint)prng.Next(400, 600);
+                _state.TickNextWindChange = _state.Ticks + (uint)prng.Next(20, 50);
             }
 
             // Approach the target direction.
             var delta = _state.WindDirTarget - _state.WindDir;
             var windChangeSpeed = 1.0f;
 
-            _state.WindDir += (delta * windChangeSpeed) * TickRate;
+            _state.WindDir = Vector3.Normalize(_state.WindDir + ((delta * windChangeSpeed) * TickRate));
         }
 
         public float GetTickTime()
@@ -287,215 +169,6 @@ namespace WalkerSim
         public float GetAverageTickTime()
         {
             return averageTickTime;
-        }
-
-        private static Vector3 Flock(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
-        {
-            var distanceSqr = distance;
-            // point toward the center of the flock (mean flock boid position)
-            var mean = Vector3.Zero;
-            var count = 0;
-            for (int i = 0; i < nearby.Count; i++)
-            {
-                var neighbor = nearby[i];
-                if (neighbor.Group != agent.Group)
-                    continue;
-
-                var dist = Vector3.Distance(agent.Position, neighbor.Position);
-                if (dist > distanceSqr)
-                    continue;
-                mean += neighbor.Position;
-            }
-            if (count == 0)
-                return Vector3.Zero;
-
-            mean /= count;
-
-            var center = mean - agent.Position;
-            return center * power;
-        }
-
-        private static Vector3 Align(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
-        {
-            var distanceSqr = distance;
-            // point toward the center of the flock (mean flock boid position)
-            var meanVel = Vector3.Zero;
-            var count = 0;
-            for (int i = 0; i < nearby.Count; i++)
-            {
-                var neighbor = nearby[i];
-                if (neighbor.Group != agent.Group)
-                    continue;
-
-                var dist = Vector3.Distance(agent.Position, neighbor.Position);
-                if (dist > distanceSqr)
-                    continue;
-
-                meanVel += neighbor.Velocity;
-                count++;
-            }
-
-            if (count == 0)
-                return Vector3.Zero;
-
-            meanVel /= count;
-
-            var delta = meanVel - agent.Velocity;
-            return delta * power;
-        }
-
-        private static Vector3 Avoid(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
-        {
-            var distanceSqr = distance;
-            // point away as boids get close
-            var sumCloseness = Vector3.Zero;
-            for (int i = 0; i < nearby.Count; i++)
-            {
-                var neighbor = nearby[i];
-                var dist = Vector3.Distance(agent.Position, neighbor.Position);
-                if (dist > distanceSqr)
-                    continue;
-                var closeness = distanceSqr - agent.GetDistance(neighbor);
-                sumCloseness += (agent.Position - neighbor.Position) * closeness;
-            }
-            return sumCloseness * power;
-        }
-
-        private static Vector3 Group(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
-        {
-            var distanceSqr = distance;
-            // point towards same group
-            var sumCloseness = Vector3.Zero;
-            for (int i = 0; i < nearby.Count; i++)
-            {
-                var neighbor = nearby[i];
-                var distanceAway = Vector3.Distance(agent.Position, neighbor.Position);
-                if (distanceAway > distanceSqr)
-                    continue;
-
-                float closeness = System.Math.Min(10.0f, distanceSqr - distanceAway);
-                if (neighbor.Group == agent.Group)
-                {
-                    sumCloseness += (neighbor.Position - agent.Position) * closeness;
-                }
-            }
-
-            return sumCloseness * power;
-        }
-
-        private static Vector3 GroupAvoid(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
-        {
-            var groupCount = state.GroupCount;
-            var distanceSqr = distance;
-
-            var sum = Vector3.Zero;
-            var count = 0;
-            for (int i = 0; i < nearby.Count; i++)
-            {
-                var neighbor = nearby[i];
-                if (neighbor.Group == agent.Group)
-                    continue;
-
-                var distanceAway = Vector3.Distance(agent.Position, neighbor.Position);
-                if (distanceAway > distanceSqr)
-                    continue;
-
-                sum += neighbor.Position;
-
-                //var dir = Vector3.Normalize(agent.Position - neighbor.Position);
-                //return dir * power;
-            }
-
-            if (count == 0)
-                return Vector3.Zero;
-
-            var delta = (sum / count) - agent.Position;
-            return delta * power;
-        }
-
-        private static Vector3 Wind(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
-        {
-            return state.WindDir * power;
-        }
-
-        private static Vector3 StickToRoads(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
-        {
-            // Remap the position to the roads bitmap.
-            if (state.MapData == null)
-            {
-                return Vector3.Zero;
-            }
-
-            var roads = state.MapData.Roads;
-            if (roads == null)
-            {
-                return Vector3.Zero;
-            }
-
-            var pos = agent.Position;
-            var worldMins = state.WorldMins;
-            var worldMaxs = state.WorldMaxs;
-
-            var x = Math.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, roads.Width);
-            var y = Math.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, roads.Height);
-
-            int ix = (int)x;
-            int iy = (int)y;
-
-            var closest = roads.GetClosestRoad(ix, iy);
-            if (closest.Type == RoadType.None)
-            {
-                return Vector3.Zero;
-            }
-
-            float dx = (float)(closest.X - ix);
-            float dy = (float)(closest.Y - iy);
-
-            if (closest.Type == RoadType.Asphalt)
-            {
-                return new Vector3(dx * 0.75f, dy * 0.75f) * power;
-            }
-            else if (closest.Type == RoadType.Offroad)
-            {
-                return new Vector3(dx * 0.5f, dy * 0.5f) * power;
-            }
-
-            return Vector3.Zero;
-        }
-
-        private Vector3 WorldEvents(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
-        {
-            var events = _state.Events;
-
-            Vector3 sum = Vector3.Zero;
-
-            float n = 0;
-            for (int i = 0; i < events.Count; i++)
-            {
-                var ev = events[i];
-                if (ev.Type == EventType.Noise)
-                {
-                    var dist = Vector3.Distance(agent.Position, ev.Position);
-                    if (dist > ev.Radius)
-                    {
-                        continue;
-                    }
-
-                    var delta = ev.Position - agent.Position;
-                    delta.Z = 0;
-
-                    var closeness = 1.0f - ((dist * 0.7f) / ev.Radius);
-                    sum += delta * closeness;
-                    n++;
-                }
-            }
-
-            if (n > 0)
-            {
-                sum /= n;
-            }
-
-            return sum * power;
         }
 
         public void ApplyMovement(Agent agent, float deltaTime, float power)
