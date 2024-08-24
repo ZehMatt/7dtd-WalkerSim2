@@ -7,6 +7,10 @@ namespace WalkerSim
 {
     internal partial class Simulation
     {
+        private DateTime _nextAutoSave = DateTime.MaxValue;
+        private string _autoSaveFile;
+        private float _autoSaveInterval = -1;
+
         private const uint SaveMagic = 0x4D534B57; // WKSM
         private const uint SaveVersion = 1;
 
@@ -76,7 +80,14 @@ namespace WalkerSim
                 Serialization.WriteInt32(writer, agent.EntityId);
                 Serialization.WriteInt32(writer, agent.EntityClassId);
                 Serialization.WriteInt32(writer, agent.Health);
-                Serialization.WriteInt32(writer, (int)agent.CurrentState);
+
+                // NOTE: Ensure the state isn't some intermediate one.
+                var agentState = agent.CurrentState;
+                if (agentState == Agent.State.PendingSpawn)
+                {
+                    agentState = Agent.State.Wandering;
+                }
+                Serialization.WriteInt32(writer, (int)agentState);
                 Serialization.WriteUInt32(writer, agent.LastUpdateTick);
             }
         }
@@ -110,18 +121,27 @@ namespace WalkerSim
             }
         }
 
-        private void LoadState(State state, BinaryReader reader)
+        private bool LoadState(State state, BinaryReader reader)
         {
-            LoadHeader(state, reader);
-            LoadInfo(state, reader);
-            LoadConfig(state, reader);
-            LoadPRNG(state, reader);
-            LoadAgents(state, reader);
-            LoadGrid(state, reader);
-            LoadEvents(state, reader);
+            if (!LoadHeader(state, reader))
+                return false;
+            if (!LoadInfo(state, reader))
+                return false;
+            if (!LoadConfig(state, reader))
+                return false;
+            if (!LoadPRNG(state, reader))
+                return false;
+            if (!LoadAgents(state, reader))
+                return false;
+            if (!LoadGrid(state, reader))
+                return false;
+            if (!LoadEvents(state, reader))
+                return false;
+
+            return true;
         }
 
-        private void LoadHeader(State state, BinaryReader reader)
+        private bool LoadHeader(State state, BinaryReader reader)
         {
             var magic = Serialization.ReadUInt32(reader, false);
             if (magic != SaveMagic)
@@ -129,11 +149,12 @@ namespace WalkerSim
                 throw new Exception("Invalid magic value, file is probably corrupted.");
             }
 
-            // Version is unused, for now.
-            Serialization.ReadUInt32(reader, false);
+            state.Version = Serialization.ReadUInt32(reader, false);
+
+            return true;
         }
 
-        private void LoadInfo(State state, BinaryReader reader)
+        private bool LoadInfo(State state, BinaryReader reader)
         {
             state.WorldMins = Serialization.ReadVector3(reader);
             state.WorldMaxs = Serialization.ReadVector3(reader);
@@ -145,9 +166,11 @@ namespace WalkerSim
             state.TickNextWindChange = Serialization.ReadUInt32(reader);
             state.GroupCount = Serialization.ReadInt32(reader);
             state.MaxNeighbourDistance = Serialization.ReadSingle(reader);
+
+            return true;
         }
 
-        private void LoadConfig(State state, BinaryReader reader)
+        private bool LoadConfig(State state, BinaryReader reader)
         {
             var configXml = Serialization.ReadStringUTF8(reader);
 
@@ -157,16 +180,20 @@ namespace WalkerSim
             var config = (Config)configSerializer.Deserialize(textReader);
 
             state.Config = config;
+
+            return true;
         }
 
-        private void LoadPRNG(State State, BinaryReader reader)
+        private bool LoadPRNG(State State, BinaryReader reader)
         {
             var state0 = Serialization.ReadUInt32(reader);
             var state1 = Serialization.ReadUInt32(reader);
             State.PRNG = new WalkerSim.Random(state0, state1);
+
+            return true;
         }
 
-        private void LoadAgents(State state, BinaryReader reader)
+        private bool LoadAgents(State state, BinaryReader reader)
         {
             var agents = new List<Agent>();
             var active = new Dictionary<int, Agent>();
@@ -195,9 +222,11 @@ namespace WalkerSim
 
             state.Agents = agents;
             state.Active = active;
+
+            return true;
         }
 
-        private void LoadGrid(State state, BinaryReader reader)
+        private bool LoadGrid(State state, BinaryReader reader)
         {
             var cellCount = Serialization.ReadInt32(reader);
             var grid = new List<int>[cellCount];
@@ -214,9 +243,11 @@ namespace WalkerSim
             }
 
             state.Grid = grid;
+
+            return true;
         }
 
-        private void LoadEvents(State state, BinaryReader reader)
+        private bool LoadEvents(State state, BinaryReader reader)
         {
             var events = new List<EventData>();
 
@@ -232,6 +263,8 @@ namespace WalkerSim
             }
 
             state.Events = events;
+
+            return true;
         }
 
         public bool Save(Stream stream)
@@ -239,7 +272,10 @@ namespace WalkerSim
             try
             {
                 var writer = new BinaryWriter(stream, System.Text.Encoding.UTF8, true);
-                SaveState(_state, writer);
+                lock (_state)
+                {
+                    SaveState(_state, writer);
+                }
             }
             catch (Exception ex)
             {
@@ -272,7 +308,10 @@ namespace WalkerSim
             {
                 var state = new State();
                 var reader = new BinaryReader(stream, System.Text.Encoding.UTF8, true);
-                LoadState(state, reader);
+                if (!LoadState(state, reader))
+                {
+                    return false;
+                }
 
                 state.MapData = _state.MapData;
                 _state = state;
@@ -301,6 +340,39 @@ namespace WalkerSim
                 Logging.Err("Exception trying to load file '{0}', error: {1}", filePath, ex.Message);
                 return false;
             }
+        }
+
+        public void EnableAutoSave(string file, float interval)
+        {
+            _autoSaveFile = file;
+            _nextAutoSave = DateTime.Now.AddSeconds(interval);
+            _autoSaveInterval = interval;
+
+            Logging.Out("Enabled auto-save, interval: {0}s, file: '{1}'.", interval, file);
+        }
+
+        public void AutoSave()
+        {
+            if (_autoSaveFile == null)
+                return;
+
+            var elapsedMs = Utils.Measure(() =>
+            {
+                Save(_autoSaveFile);
+            });
+
+            Logging.Out("Saved simulation in {0}.", elapsedMs);
+        }
+
+        private void CheckAutoSave()
+        {
+            var now = DateTime.Now;
+            if (now < _nextAutoSave)
+                return;
+
+            AutoSave();
+
+            _nextAutoSave = now.AddSeconds(_autoSaveInterval);
         }
     }
 }

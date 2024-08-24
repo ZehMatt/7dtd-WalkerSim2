@@ -4,7 +4,7 @@ namespace WalkerSim
 {
     public class WalkerSimMod : IModApi
     {
-        static DateTime lastUpdate = DateTime.Now;
+        static DateTime _lastUpdate = DateTime.Now;
 
         void IModApi.InitMod(Mod _modInstance)
         {
@@ -170,6 +170,11 @@ namespace WalkerSim
             InitializeSimulation();
 
             var simulation = Simulation.Instance;
+
+            // Simulation will be resumed in GameUpdate, there are a couple conditions such as 
+            // the requirement to have players before its resumed.
+            simulation.SetPaused(true);
+
             simulation.Start();
         }
 
@@ -194,13 +199,13 @@ namespace WalkerSim
         {
             if (entity == null)
             {
-                Logging.Out("Entity not found: {0}", entityId);
+                Logging.Debug("Entity not found: {0}", entityId);
                 return true;
             }
 
             if (!entity.IsAlive())
             {
-                Logging.Out("Entity dead: {0}", entityId);
+                Logging.Debug("Entity dead: {0}", entityId);
                 return true;
             }
 
@@ -241,9 +246,9 @@ namespace WalkerSim
         static void UpdateSimulation()
         {
             var now = DateTime.Now;
-            var diff = now - lastUpdate;
+            var diff = now - _lastUpdate;
 
-            lastUpdate = now;
+            _lastUpdate = now;
 
             var simulation = Simulation.Instance;
             simulation.GameUpdate((float)diff.TotalSeconds);
@@ -265,7 +270,7 @@ namespace WalkerSim
                 return;
 
             var isPaused = GameManager.Instance.IsPaused();
-            if (simulation.Config.PauseWithoutPlayers && world.Players.Count == 0)
+            if (simulation.Config.PauseWithoutPlayers && simulation.PlayerCount == 0)
             {
                 isPaused = true;
             }
@@ -298,6 +303,7 @@ namespace WalkerSim
         static void GameShutdown()
         {
             var simulation = Simulation.Instance;
+            simulation.AutoSave();
             simulation.Stop();
         }
 

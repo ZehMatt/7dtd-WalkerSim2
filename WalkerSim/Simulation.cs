@@ -18,9 +18,6 @@ namespace WalkerSim
         private bool _running = false;
         private bool _paused = false;
         private float _speedScale = 1.0f;
-        private DateTime _nextAutoSave = DateTime.MaxValue;
-        private string _autoSaveFile;
-        private float _autoSaveInterval = -1;
 
         private Vector3[] _groupStarts = new Vector3[0];
 
@@ -47,15 +44,6 @@ namespace WalkerSim
                 Tick();
             }
             _speedScale = oldScale;
-        }
-
-        public void EnableAutoSave(string file, float interval)
-        {
-            _autoSaveFile = file;
-            _nextAutoSave = DateTime.Now.AddSeconds(interval);
-            _autoSaveInterval = interval;
-
-            Logging.Out("Enabled auto-save, interval: {0}s, file: '{1}'.", interval, file);
         }
 
         public void Start()
@@ -350,22 +338,6 @@ namespace WalkerSim
                 var sleepTime = Math.Clamp((int)(elapsedMs - TickRateMs), 0, TickRateMs);
                 Thread.Sleep(sleepTime);
             }
-        }
-
-        private void CheckAutoSave()
-        {
-            var now = DateTime.Now;
-            if (now < _nextAutoSave)
-                return;
-
-            var elapsedMs = Utils.Measure(() =>
-            {
-                Save(_autoSaveFile);
-            });
-
-            Logging.Out("Saved simulation in {0}.", elapsedMs);
-
-            _nextAutoSave = now.AddSeconds(_autoSaveInterval);
         }
 
         // Called from the main thread, this should be invoked from GameUpdate.

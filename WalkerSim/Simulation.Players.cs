@@ -17,6 +17,11 @@ namespace WalkerSim
             get => _state.Players;
         }
 
+        public int PlayerCount
+        {
+            get => _state.Players.Count;
+        }
+
         public void AddPlayer(int entityId, Vector3 pos, int viewRadius)
         {
             Player player = new Player();
