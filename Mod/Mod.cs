@@ -246,7 +246,7 @@ namespace WalkerSim
             lastUpdate = now;
 
             var simulation = Simulation.Instance;
-            simulation.Update((float)diff.TotalSeconds);
+            simulation.GameUpdate((float)diff.TotalSeconds);
         }
 
         static void GameUpdate()

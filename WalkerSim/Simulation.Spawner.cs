@@ -22,6 +22,9 @@ namespace WalkerSim
 
         private void CheckAgentSpawn()
         {
+            // Don't activate them when they are in the inner radius.
+            var activationBorderSize = 4.0f;
+
             foreach (var kv in _state.Players)
             {
                 var player = kv.Value;
@@ -33,9 +36,6 @@ namespace WalkerSim
                     continue;
 
                 var playerPos = player.Position;
-
-                // Don't activate them when they are in the inner radius.
-                var activationBorderSize = 4.0f;
 
                 _nearPlayer.Clear();
                 QueryCells(playerPos, -1, player.ViewRadius, _nearPlayer);

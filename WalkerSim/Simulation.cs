@@ -14,8 +14,6 @@ namespace WalkerSim
         public const float TickRate = 1f / TicksPerSecond;
         public const int TickRateMs = 1000 / TicksPerSecond;
 
-        private bool _initialized = false;
-
         private Thread _thread;
         private bool _running = false;
         private bool _paused = false;
@@ -101,8 +99,6 @@ namespace WalkerSim
                 Populate();
                 SetupGrid();
                 SetupProcessors();
-
-                _initialized = true;
             }
         }
 
@@ -372,13 +368,13 @@ namespace WalkerSim
             _nextAutoSave = now.AddSeconds(_autoSaveInterval);
         }
 
-        public void Update(float deltaTime)
+        // Called from the main thread, this should be invoked from GameUpdate.
+        public void GameUpdate(float deltaTime)
         {
-            if (!_initialized)
+            if (!_running || _paused)
+            {
                 return;
-
-            if (!_running)
-                return;
+            }
 
             ProcessSpawnQueue();
             CheckAgentDespawn();

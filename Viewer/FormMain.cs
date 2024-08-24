@@ -333,7 +333,7 @@ namespace WalkerSim.Viewer
 
         private void OnTick(object sender, EventArgs e)
         {
-            simulation.Update(updateTimer.Interval / 1000.0f);
+            simulation.GameUpdate(updateTimer.Interval / 1000.0f);
 
             float updateRate = 1000f / simulation.GetAverageTickTime();
             this.Text = $"Ticks: {updateRate}/s";
