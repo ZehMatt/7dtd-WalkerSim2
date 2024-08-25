@@ -8,14 +8,16 @@ namespace WalkerSim.Console
         {
             return "Usage: walkersim <command>.\n" +
                 "List of commands:\n" +
-                " - show\n" +
-                "   Opens a new window with the simulation rendering, works only in singleplayer games.\n" +
-                " - pause\n" +
-                "   Pauses the simulation which also stops spawning and despawning.\n" +
-                " - resume\n" +
-                "   Resumes the simulation and also the spawning/despawning." +
-                " - timescale <value>\n" +
-                "   Sets the timescale of the simulation, can be used to speed it up or slow it down.";
+                " -> show\n" +
+                "    Opens a new window with the simulation rendering, works only in singleplayer games.\n" +
+                " -> pause\n" +
+                "    Pauses the simulation which also stops spawning and despawning.\n" +
+                " -> resume\n" +
+                "    Resumes the simulation and also the spawning/despawning." +
+                " -> restart\n" +
+                "    Reloads the configuration and restarts the simulation." +
+                " -> timescale <value>\n" +
+                "    Sets the timescale of the simulation, can be used to speed it up or slow it down.";
             ;
 
         }
@@ -37,6 +39,8 @@ namespace WalkerSim.Console
                 return;
             }
 
+            var simulation = Simulation.Instance;
+
             string cmd = _params[0].ToLower();
             if (cmd == "show")
             {
@@ -44,11 +48,11 @@ namespace WalkerSim.Console
             }
             else if (cmd == "pause")
             {
-                Simulation.Instance.SetPaused(true);
+                simulation.SetPaused(true);
             }
             else if (cmd == "resume")
             {
-                Simulation.Instance.SetPaused(false);
+                simulation.SetPaused(false);
             }
             else if (cmd == "timescale")
             {
@@ -60,7 +64,7 @@ namespace WalkerSim.Console
                 {
                     if (float.TryParse(_params[1], out var timeScale))
                     {
-                        Simulation.Instance.TimeScale = timeScale;
+                        simulation.TimeScale = timeScale;
                     }
                     else
                     {
@@ -68,6 +72,10 @@ namespace WalkerSim.Console
                     }
                 }
 
+            }
+            else if (cmd == "restart")
+            {
+                WalkerSimMod.RestartSimulation();
             }
             else
             {

@@ -39,7 +39,7 @@ namespace WalkerSim
             Logging.Out("GameAwake");
         }
 
-        static Config LoadConfiguration()
+        internal static Config LoadConfiguration()
         {
             var worldFolder = PathAbstractions.WorldsSearchPaths.GetLocation(GamePrefs.GetString(EnumGamePrefs.GameWorld)).FullPath;
             Logging.Out("World Folder: {0}", worldFolder);
@@ -75,6 +75,34 @@ namespace WalkerSim
         {
             var saveFilePath = GameIO.GetSaveGameDir();
             return System.IO.Path.Combine(saveFilePath, "walkersim.bin");
+        }
+
+        static void ResetSimulation()
+        {
+            var simulation = Simulation.Instance;
+
+            var config = LoadConfiguration();
+            simulation.Reset(config);
+
+            // Advance the simulation by specified ticks.
+            Logging.Out("Advancing simulation for {0} ticks...", Simulation.Limits.TicksToAdvanceOnStartup);
+
+            var elapsed = Utils.Measure(() =>
+            {
+                simulation.FastAdvance(Simulation.Limits.TicksToAdvanceOnStartup);
+            });
+
+            Logging.Out("... done, took {0}.", elapsed);
+        }
+
+        internal static void RestartSimulation()
+        {
+            Logging.Out("Restarting simulation...");
+
+            ResetSimulation();
+
+            var simulation = Simulation.Instance;
+            simulation.Start();
         }
 
         static void InitializeSimulation()
@@ -113,6 +141,7 @@ namespace WalkerSim
             // Load or create the state.
             {
                 var simFile = GetSimulationSaveFile();
+
                 if (System.IO.File.Exists(simFile) && simulation.Load(simFile))
                 {
                     Logging.Out("Using existing simulation from: {0}", simFile);
@@ -120,19 +149,7 @@ namespace WalkerSim
                 else
                 {
                     Logging.Out("No previous simulation found, starting new.");
-
-                    var config = LoadConfiguration();
-                    simulation.Reset(config);
-
-                    // Advance the simulation by specified ticks.
-                    Logging.Out("Advancing simulation for {0} ticks...", Simulation.Limits.TicksToAdvanceOnStartup);
-
-                    var elapsed = Utils.Measure(() =>
-                    {
-                        simulation.FastAdvance(Simulation.Limits.TicksToAdvanceOnStartup);
-                    });
-
-                    Logging.Out("... done, took {0}.", elapsed);
+                    ResetSimulation();
                 }
 
                 simulation.EnableAutoSave(simFile, 60.0f);
@@ -142,6 +159,12 @@ namespace WalkerSim
                 simulation.WorldMins,
                 simulation.WorldMaxs,
                 simulation.Agents.Count);
+
+            // Simulation will be resumed in GameUpdate, there are a couple conditions such as 
+            // the requirement to have players before its resumed.
+            simulation.SetPaused(true);
+
+            simulation.Start();
         }
 
         static bool IsHost()
@@ -165,14 +188,6 @@ namespace WalkerSim
             }
 
             InitializeSimulation();
-
-            var simulation = Simulation.Instance;
-
-            // Simulation will be resumed in GameUpdate, there are a couple conditions such as 
-            // the requirement to have players before its resumed.
-            simulation.SetPaused(true);
-
-            simulation.Start();
         }
 
         static void UpdatePlayerPositions()
