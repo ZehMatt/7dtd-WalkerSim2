@@ -19,7 +19,6 @@ namespace WalkerSim.Tests
 
             Assert.AreEqual(configA.RandomSeed, configB.RandomSeed);
             Assert.AreEqual(configA.MaxAgents, configB.MaxAgents);
-            Assert.AreEqual(configA.TicksToAdvanceOnStartup, configB.TicksToAdvanceOnStartup);
             Assert.AreEqual(configA.StartAgentsGrouped, configB.StartAgentsGrouped);
             Assert.AreEqual(configA.GroupSize, configB.GroupSize);
             Assert.AreEqual(configA.StartPosition, configB.StartPosition);

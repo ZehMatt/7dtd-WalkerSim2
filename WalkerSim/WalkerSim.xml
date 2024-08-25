@@ -4,13 +4,11 @@
         <LogSpawnDespawn>false</LogSpawnDespawn>
     </DebugOptions>
     <RandomSeed>1337</RandomSeed>
-    <MaxAgents>6000</MaxAgents>
-    <TicksToAdvanceOnStartup>100</TicksToAdvanceOnStartup>
+    <MaxAgents>10000</MaxAgents>
     <StartAgentsGrouped>true</StartAgentsGrouped>
     <GroupSize>100</GroupSize>
     <AgentStartPosition>RandomLocation</AgentStartPosition>
     <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>
-    <PauseWithoutPlayers>true</PauseWithoutPlayers>
     <PauseDuringBloodmoon>true</PauseDuringBloodmoon>
     <MovementProcessors Group="-1" SpeedScale="1" Color="#80FF80">
         <Processor Type="FlockAnyGroup" Distance="50" Power="0.0001" />

@@ -188,7 +188,7 @@ namespace WalkerSim
             UpdateColors();
 
             nextUpdate = DateTime.Now;
-            nextUpdate = nextUpdate.AddMilliseconds(1000 / 30);
+            nextUpdate = nextUpdate.AddSeconds(1);
 
             RenderRoadsToTexture();
 

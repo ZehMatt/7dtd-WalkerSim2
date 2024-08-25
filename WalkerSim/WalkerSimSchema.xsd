@@ -2,7 +2,8 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            targetNamespace="http://zeh.matt/WalkerSimSchema"
            xmlns="http://zeh.matt/WalkerSimSchema"
-           elementFormDefault="qualified">
+           elementFormDefault="qualified"
+           vc:minVersion="1.1" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning">
 
     <xs:simpleType name="AgentPositionType">
         <xs:annotation>
@@ -179,11 +180,6 @@
                         <xs:documentation>Agents will be assigned to a group, this specifies how many members a group will have</xs:documentation>
                     </xs:annotation>
                 </xs:element>
-                <xs:element name="TicksToAdvanceOnStartup" type="xs:int" default="0">
-                    <xs:annotation>
-                        <xs:documentation>In case a new simulation starts this is the amount of ticks it will advance in one go</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
                 <xs:element name="StartAgentsGrouped" type="xs:boolean">
                     <xs:annotation>
                         <xs:documentation>This will put agents of the same group closer together at initial start of the simulation</xs:documentation>
@@ -201,11 +197,6 @@
                         <xs:documentation>
                             The position of where the agent will be placed when the in-game actor ceases to exist.
                         </xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:element name="PauseWithoutPlayers" type="xs:boolean">
-                    <xs:annotation>
-                        <xs:documentation>The option specifies if the simulation should be paused when no players are on the server</xs:documentation>
                     </xs:annotation>
                 </xs:element>
                 <xs:element name="PauseDuringBloodmoon" type="xs:boolean">

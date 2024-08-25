@@ -95,9 +95,6 @@ namespace WalkerSim
         [XmlElement("MaxAgents")]
         public int MaxAgents = 10000;
 
-        [XmlElement("TicksToAdvanceOnStartup")]
-        public int TicksToAdvanceOnStartup = 0;
-
         [XmlElement("StartAgentsGrouped")]
         public bool StartAgentsGrouped = true;
 

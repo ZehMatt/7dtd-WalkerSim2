@@ -125,17 +125,14 @@ namespace WalkerSim
                     simulation.Reset(config);
 
                     // Advance the simulation by specified ticks.
-                    if (config.TicksToAdvanceOnStartup > 0)
+                    Logging.Out("Advancing simulation for {0} ticks...", Simulation.Limits.TicksToAdvanceOnStartup);
+
+                    var elapsed = Utils.Measure(() =>
                     {
-                        Logging.Out("Advancing simulation for {0} ticks...", config.TicksToAdvanceOnStartup);
+                        simulation.FastAdvance(Simulation.Limits.TicksToAdvanceOnStartup);
+                    });
 
-                        var elapsed = Utils.Measure(() =>
-                        {
-                            simulation.FastAdvance(config.TicksToAdvanceOnStartup);
-                        });
-
-                        Logging.Out("... done, took {0}.", elapsed);
-                    }
+                    Logging.Out("... done, took {0}.", elapsed);
                 }
 
                 simulation.EnableAutoSave(simFile, 60.0f);
@@ -279,7 +276,7 @@ namespace WalkerSim
             // Check for pausing.
             {
                 var isPaused = GameManager.Instance.IsPaused();
-                if (simulation.Config.PauseWithoutPlayers && simulation.PlayerCount == 0)
+                if (simulation.PlayerCount == 0)
                 {
                     isPaused = true;
                 }

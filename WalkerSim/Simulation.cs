@@ -36,11 +36,11 @@ namespace WalkerSim
             Logging.Out("Simulation stopped.");
         }
 
-        public void FastAdvance(int numTicks)
+        public void FastAdvance(uint numTicks)
         {
             var oldScale = TimeScale;
             TimeScale = 512.0f;
-            for (int i = 0; i < numTicks; i++)
+            for (uint i = 0; i < numTicks; i++)
             {
                 Tick();
             }

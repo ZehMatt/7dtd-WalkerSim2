@@ -314,17 +314,14 @@ namespace WalkerSim.Viewer
 
             GenerateColorTable();
 
-            if (CurrentConfig.TicksToAdvanceOnStartup > 0)
+            Logging.Out("Advancing simulation for {0} ticks...", Simulation.Limits.TicksToAdvanceOnStartup);
+
+            var elapsed = Utils.Measure(() =>
             {
-                Logging.Out("Advancing simulation for {0} ticks...", CurrentConfig.TicksToAdvanceOnStartup);
+                simulation.FastAdvance(Simulation.Limits.TicksToAdvanceOnStartup);
+            });
 
-                var elapsed = Utils.Measure(() =>
-                {
-                    simulation.FastAdvance(CurrentConfig.TicksToAdvanceOnStartup);
-                });
-
-                Logging.Out("... done, took {0}.", elapsed);
-            }
+            Logging.Out("... done, took {0}.", elapsed);
 
             simulation.Start();
             updateTimer.Start();
