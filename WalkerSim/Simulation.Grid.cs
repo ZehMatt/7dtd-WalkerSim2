@@ -102,6 +102,14 @@ namespace WalkerSim
                 return;
             }
 
+            if (agent.CurrentState != Agent.State.Wandering)
+            {
+                // There is a potential race condition for active agents as the position gets updated from
+                // the main thread, this is in general fine as we skip querying active agents from the
+                // simulation thread, this is just annoying.
+                return;
+            }
+
             var correctCellIndex = GetCellIndex(agent.Position);
             if (agent.CellIndex != correctCellIndex)
             {
