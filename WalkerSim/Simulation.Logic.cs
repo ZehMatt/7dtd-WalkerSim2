@@ -177,7 +177,7 @@ namespace WalkerSim
         public void ApplyMovement(Agent agent, float deltaTime, float power)
         {
             // Cap the deltaTime
-            deltaTime = System.Math.Min(deltaTime, 10.0f);
+            deltaTime = System.Math.Min(deltaTime, TimeScale);
 
             // Keep the Z axis clean.
             agent.Position.Z = 0;

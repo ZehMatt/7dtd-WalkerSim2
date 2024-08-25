@@ -122,5 +122,10 @@ namespace WalkerSim
         {
             get => _state.MaxNeighbourDistance;
         }
+
+        public bool Running
+        {
+            get => _running;
+        }
     }
 }

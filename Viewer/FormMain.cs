@@ -318,7 +318,14 @@ namespace WalkerSim.Viewer
 
             if (CurrentConfig.TicksToAdvanceOnStartup > 0)
             {
-                simulation.FastAdvance(CurrentConfig.TicksToAdvanceOnStartup);
+                Logging.Out("Advancing simulation for {0} ticks...", CurrentConfig.TicksToAdvanceOnStartup);
+
+                var elapsed = Utils.Measure(() =>
+                {
+                    simulation.FastAdvance(CurrentConfig.TicksToAdvanceOnStartup);
+                });
+
+                Logging.Out("... done, took {0}.", elapsed);
             }
 
             simulation.Start();
@@ -329,6 +336,11 @@ namespace WalkerSim.Viewer
         {
             simulation.Stop();
             updateTimer.Stop();
+
+            startToolStripMenuItem.Enabled = true;
+            stopToolStripMenuItem.Enabled = false;
+            pauseToolStripMenuItem.Enabled = false;
+            resumeToolStripMenuItem.Enabled = false;
         }
 
         private void OnTick(object sender, EventArgs e)
@@ -681,6 +693,22 @@ namespace WalkerSim.Viewer
             browseFileDlg.Title = "Load configuration";
             if (browseFileDlg.ShowDialog() == DialogResult.OK)
             {
+                if (simulation.Running)
+                {
+                    var answer = MessageBox.Show("The simulation is currently running, in order to import the configuration it has to be stopped.\nDo you wish to stop the simulation?",
+                        "Simulation Running",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question
+                        );
+
+                    if (answer == DialogResult.No)
+                    {
+                        return;
+                    }
+
+                    StopSimulation();
+                }
+
                 LoadConfiguration(browseFileDlg.FileName);
             }
         }

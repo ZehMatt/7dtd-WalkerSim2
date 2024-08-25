@@ -16,8 +16,8 @@ namespace WalkerSim
 
         private Thread _thread;
         private bool _running = false;
+        private bool _shouldStop = false;
         private bool _paused = false;
-        private float _speedScale = 1.0f;
 
         private Vector3[] _groupStarts = new Vector3[0];
 
@@ -28,22 +28,23 @@ namespace WalkerSim
                 return;
             }
 
-            _running = false;
+            _shouldStop = true;
             _thread.Join();
             _thread = null;
+            _running = false;
 
             Logging.Out("Simulation stopped.");
         }
 
         public void FastAdvance(int numTicks)
         {
-            var oldScale = _speedScale;
-            _speedScale = 256.0f;
+            var oldScale = TimeScale;
+            TimeScale = 512.0f;
             for (int i = 0; i < numTicks; i++)
             {
                 Tick();
             }
-            _speedScale = oldScale;
+            TimeScale = oldScale;
         }
 
         public void Start()
@@ -56,6 +57,7 @@ namespace WalkerSim
             }
 
             _running = true;
+            _shouldStop = false;
             _thread = new Thread(ThreadUpdate);
             _thread.Start();
 
@@ -303,7 +305,7 @@ namespace WalkerSim
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
-            while (_running)
+            while (!_shouldStop)
             {
                 if (_paused)
                 {
@@ -317,7 +319,7 @@ namespace WalkerSim
                 {
                     Tick();
 
-                    if (!_running)
+                    if (_shouldStop)
                         break;
 
                     CheckAgentSpawn();
@@ -333,18 +335,21 @@ namespace WalkerSim
                 if (_state.Ticks > 1)
                     averageTickTime *= 0.5f;
 
-                if (!_running)
+                if (_shouldStop)
                     break;
 
                 var sleepTime = Math.Clamp((int)(elapsedMs - TickRateMs), 0, TickRateMs);
                 Thread.Sleep(sleepTime);
             }
+
+            _running = false;
+            _shouldStop = false;
         }
 
         // Called from the main thread, this should be invoked from GameUpdate.
         public void GameUpdate(float deltaTime)
         {
-            if (!_running || _paused)
+            if (!_running || _shouldStop || _paused)
             {
                 return;
             }
