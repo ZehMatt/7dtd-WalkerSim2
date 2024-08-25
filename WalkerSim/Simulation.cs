@@ -38,7 +38,7 @@ namespace WalkerSim
         public void FastAdvance(int numTicks)
         {
             var oldScale = _speedScale;
-            _speedScale = 1500.0f;
+            _speedScale = 256.0f;
             for (int i = 0; i < numTicks; i++)
             {
                 Tick();
@@ -82,6 +82,7 @@ namespace WalkerSim
                 _state.Config = config;
                 _state.PRNG = new WalkerSim.Random(config.RandomSeed);
                 _state.SlowIterator = 0;
+                _state.TickNextWindChange = 0;
                 _state.Ticks = 0;
 
                 SetupGrid();

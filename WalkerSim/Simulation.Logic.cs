@@ -149,16 +149,12 @@ namespace WalkerSim
 
             if (_state.Ticks >= _state.TickNextWindChange)
             {
-                var windIncrement = 1.2f * TickRate;
-
-                _state.WindTime += windIncrement;
-
                 // Pick new direction.
-                _state.WindDirTarget.X = (float)System.Math.Cos(prng.NextDouble() * _state.WindTime);
-                _state.WindDirTarget.Y = (float)System.Math.Sin(prng.NextDouble() * _state.WindTime);
+                _state.WindDirTarget.X = (float)System.Math.Cos(prng.NextDouble() * System.Math.PI * 2);
+                _state.WindDirTarget.Y = (float)System.Math.Sin(prng.NextDouble() * System.Math.PI * 2);
 
                 // Pick a random delay for the next change.
-                _state.TickNextWindChange = _state.Ticks + (uint)prng.Next(20, 50);
+                _state.TickNextWindChange = _state.Ticks + (uint)prng.Next(2000, 4000);
             }
 
             // Approach the target direction.
