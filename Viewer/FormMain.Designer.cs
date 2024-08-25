@@ -100,6 +100,7 @@
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorPickerDlg = new System.Windows.Forms.ColorDialog();
             this.buttonDuplicateGroup = new System.Windows.Forms.Button();
+            this.exportConfigurationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -146,6 +147,7 @@
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.loadConfigurationToolStripMenuItem,
+            this.exportConfigurationToolStripMenuItem,
             this.toolStripMenuItem1,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
@@ -155,8 +157,8 @@
             // loadConfigurationToolStripMenuItem
             // 
             this.loadConfigurationToolStripMenuItem.Name = "loadConfigurationToolStripMenuItem";
-            this.loadConfigurationToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
-            this.loadConfigurationToolStripMenuItem.Text = "Load configuration";
+            this.loadConfigurationToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.loadConfigurationToolStripMenuItem.Text = "Import Configuration";
             this.loadConfigurationToolStripMenuItem.Click += new System.EventHandler(this.loadConfigurationToolStripMenuItem_Click);
             // 
             // toolStripMenuItem1
@@ -877,6 +879,13 @@
             this.buttonDuplicateGroup.UseVisualStyleBackColor = true;
             this.buttonDuplicateGroup.Click += new System.EventHandler(this.OnDuplicateGroupClick);
             // 
+            // exportConfigurationToolStripMenuItem
+            // 
+            this.exportConfigurationToolStripMenuItem.Name = "exportConfigurationToolStripMenuItem";
+            this.exportConfigurationToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.exportConfigurationToolStripMenuItem.Text = "Export Configuration";
+            this.exportConfigurationToolStripMenuItem.Click += new System.EventHandler(this.OnExportConfigurationClick);
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -993,6 +1002,7 @@
         private System.Windows.Forms.Button buttonGroupColor;
         private System.Windows.Forms.ColorDialog colorPickerDlg;
         private System.Windows.Forms.Button buttonDuplicateGroup;
+        private System.Windows.Forms.ToolStripMenuItem exportConfigurationToolStripMenuItem;
     }
 }
 

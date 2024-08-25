@@ -386,6 +386,23 @@ namespace WalkerSim
                 return;
             }
 
+            if (noise.heatMapStrength == 0.0f)
+            {
+                return;
+            }
+
+#if true
+            // Log all variables from noise.
+            Logging.Info("Noise: {0}, Volume: {1}, Duration: {2}, MuffledWhenCrouched: {3}, HeatMapStrength: {4}, HeatMapWorldTimeToLive: {5}, volumeScale: {6}.",
+                               clipName,
+                               noise.volume,
+                               noise.duration,
+                               noise.muffledWhenCrouched,
+                               noise.heatMapStrength,
+                               noise.heatMapWorldTimeToLive,
+                               volumeScale);
+#endif
+
             if (instigator != null)
             {
                 if (instigator.IsIgnoredByAI())
@@ -395,28 +412,9 @@ namespace WalkerSim
             }
 
             var simulation = Simulation.Instance;
+            var distance = noise.volume * volumeScale * 3.8f;
 
-#if false
-            // Log all variables from noise.
-            Logging.Debug("Noise: {0}, Volume: {1}, Duration: {2}, MuffledWhenCrouched: {3}, HeatMapStrength: {4}, HeatMapWorldTimeToLive: {5}",
-                               clipName,
-                               noise.volume,
-                               noise.duration,
-                               noise.muffledWhenCrouched,
-                               noise.heatMapStrength,
-                               noise.heatMapWorldTimeToLive);
-#endif
-
-            var sndInfo = SoundInfo.GetSoundInfo(clipName);
-            if (sndInfo == null)
-            {
-#if false
-                Logging.Debug("Not SoundInfo for: {0}", clipName);
-#endif
-                return;
-            }
-
-            simulation.AddSoundEvent(VectorUtils.ToSim(position), sndInfo.Radius);
+            simulation.AddSoundEvent(VectorUtils.ToSim(position), distance, noise.duration * 20);
         }
     }
 }

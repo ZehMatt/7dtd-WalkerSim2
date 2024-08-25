@@ -62,6 +62,12 @@ namespace WalkerSim
                 {
                     // Remove from old cell.
                     var oldCellList = grid[agent.CellIndex];
+#if DEBUG
+                    if (!oldCellList.Contains(agent.Index))
+                    {
+                        throw new System.Exception("Bug");
+                    }
+#endif
                     oldCellList.Remove(agent.Index);
                 }
 
@@ -76,6 +82,37 @@ namespace WalkerSim
 
                 agent.CellIndex = newCellIndex;
             }
+#if DEBUG
+            else
+            {
+                // Confirm in cell.
+                var cell = grid[newCellIndex];
+                if (!cell.Contains(agent.Index))
+                {
+                    throw new System.Exception("Bug");
+                }
+            }
+#endif
+        }
+
+        private void ValidateAgentInCorrectCell(Agent agent)
+        {
+            if (agent.CellIndex == -1)
+            {
+                return;
+            }
+
+            var correctCellIndex = GetCellIndex(agent.Position);
+            if (agent.CellIndex != correctCellIndex)
+            {
+                throw new System.Exception("Bug");
+            }
+
+            var cell = _state.Grid[agent.CellIndex];
+            if (!cell.Contains(agent.Index))
+            {
+                throw new System.Exception("Bug");
+            }
         }
 
         private void QueryCell(Vector3 pos, int cellX, int cellY, int excludeIndex, float maxDist, FixedBufferList<Agent> res)
@@ -85,7 +122,9 @@ namespace WalkerSim
             var cellCountY = (int)System.Math.Ceiling(WorldSize.Y / CellSize);
             var cellIndex = cellX * cellCountY + cellY;
             if (cellIndex < 0 || cellIndex >= grid.Length)
+            {
                 return;
+            }
 
             var cell = grid[cellIndex];
             var maxDistSqr = maxDist * maxDist;
@@ -111,7 +150,7 @@ namespace WalkerSim
             }
         }
 
-        public FixedBufferList<Agent> QueryCells(Vector3 pos, int excludeIndex, float maxDistance, FixedBufferList<Agent> res = null)
+        private FixedBufferList<Agent> QueryCellsLockFree(Vector3 pos, int excludeIndex, float maxDistance, FixedBufferList<Agent> res = null)
         {
             if (res == null)
             {
@@ -148,6 +187,14 @@ namespace WalkerSim
             }
 
             return res;
+        }
+
+        public FixedBufferList<Agent> QueryCells(Vector3 pos, int excludeIndex, float maxDistance, FixedBufferList<Agent> res = null)
+        {
+            lock (_state)
+            {
+                return QueryCellsLockFree(pos, excludeIndex, maxDistance, res);
+            }
         }
     }
 }

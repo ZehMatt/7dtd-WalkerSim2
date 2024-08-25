@@ -61,42 +61,38 @@
           StickToRoads: Agents will steer towards close by roads.
     -->
     <MovementProcessors Group="-1" SpeedScale="1.0">
-        <Processor Type="Flock" Distance="150.0" Power="0.003" />
-        <Processor Type="Align" Distance="150.0" Power="0.001" />
-        <Processor Type="Avoid" Distance="50.0" Power="0.0015" />
-        <Processor Type="Group" Distance="50.0" Power="0.00025" />
-        <Processor Type="GroupAvoid" Distance="50.0" Power="0.04" />
+        <Processor Type="FlockSameGroup" Distance="150.0" Power="0.003" />
+        <Processor Type="AlignSameGroup" Distance="150.0" Power="0.001" />
+        <Processor Type="AvoidSameGroup" Distance="50.0" Power="0.0015" />
+        <Processor Type="AvoidOtherGroup" Distance="50.0" Power="0.04" />
         <Processor Type="Wind" Power="0.07" />
         <Processor Type="StickToRoads" Power="0.01" />
         <Processor Type="WorldEvents" Power="0.05" />
     </MovementProcessors>
 
     <MovementProcessors Group="0" SpeedScale="1.2">
-        <Processor Type="Flock" Distance="150.0" Power="0.003" />
-        <Processor Type="Align" Distance="150.0" Power="0.001" />
-        <Processor Type="Avoid" Distance="50.0" Power="0.0015" />
-        <Processor Type="Group" Distance="50.0" Power="0.002" />
-        <Processor Type="GroupAvoid" Distance="50.0" Power="0.08" />
+        <Processor Type="FlockSameGroup" Distance="150.0" Power="0.003" />
+        <Processor Type="AlignSameGroup" Distance="150.0" Power="0.001" />
+        <Processor Type="AvoidSameGroup" Distance="50.0" Power="0.0015" />
+        <Processor Type="AvoidOtherGroup" Distance="50.0" Power="0.08" />
         <Processor Type="Wind" Power="0.007" />
         <Processor Type="WorldEvents" Power="0.05" />
     </MovementProcessors>
 
     <MovementProcessors Group="1" SpeedScale="1.3">
-        <Processor Type="Flock" Distance="150.0" Power="0.003" />
-        <Processor Type="Align" Distance="150.0" Power="0.001" />
-        <Processor Type="Avoid" Distance="50.0" Power="0.0015" />
-        <Processor Type="Group" Distance="50.0" Power="0.002" />
-        <Processor Type="GroupAvoid" Distance="50.0" Power="0.8" />
+        <Processor Type="FlockSameGroup" Distance="150.0" Power="0.003" />
+        <Processor Type="AlignSameGroup" Distance="150.0" Power="0.001" />
+        <Processor Type="AvoidSameGroup" Distance="50.0" Power="0.0015" />
+        <Processor Type="AvoidOtherGroup" Distance="50.0" Power="0.8" />
         <Processor Type="Wind" Power="0.007" />
         <Processor Type="WorldEvents" Power="0.05" />
     </MovementProcessors>
 
     <MovementProcessors Group="2" SpeedScale="1.4">
-        <Processor Type="Flock" Distance="150.0" Power="0.003" />
-        <Processor Type="Align" Distance="150.0" Power="0.001" />
-        <Processor Type="Avoid" Distance="50.0" Power="0.0015" />
-        <Processor Type="Group" Distance="50.0" Power="0.002" />
-        <Processor Type="GroupAvoid" Distance="50.0" Power="0.8" />
+        <Processor Type="FlockSameGroup" Distance="150.0" Power="0.003" />
+        <Processor Type="AlignSameGroup" Distance="150.0" Power="0.001" />
+        <Processor Type="AvoidOtherGroup" Distance="50.0" Power="0.0015" />
+        <Processor Type="AvoidOtherGroup" Distance="50.0" Power="0.8" />
         <Processor Type="Wind" Power="0.007" />
         <Processor Type="WorldEvents" Power="0.05" />
     </MovementProcessors>

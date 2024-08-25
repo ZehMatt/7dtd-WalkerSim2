@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Xml.Serialization;
 
 namespace WalkerSim
 {
     [XmlRoot("WalkerSim", Namespace = "http://zeh.matt/WalkerSimSchema")]
+    [XmlTypeAttribute(AnonymousType = true, Namespace = "http://zeh.matt/WalkerSimSchema")]
     public class Config
     {
         public enum WorldLocation
@@ -23,18 +25,28 @@ namespace WalkerSim
         public enum MovementProcessorType
         {
             Invalid = 0,
-            [XmlEnum("Flock")]
-            Flock,
-            [XmlEnum("Align")]
-            Align,
-            [XmlEnum("Avoid")]
-            Avoid,
-            [XmlEnum("Group")]
-            Group,
-            [XmlEnum("GroupAvoid")]
-            GroupAvoid,
+            [XmlEnum("FlockAnyGroup")]
+            FlockAnyGroup,
+            [XmlEnum("AlignAnyGroup")]
+            AlignAnyGroup,
+            [XmlEnum("AvoidAnyGroup")]
+            AvoidAnyGroup,
+            [XmlEnum("FlockSameGroup")]
+            FlockSameGroup,
+            [XmlEnum("AlignSameGroup")]
+            AlignSameGroup,
+            [XmlEnum("AvoidSameGroup")]
+            AvoidSameGroup,
+            [XmlEnum("FlockOtherGroup")]
+            FlockOtherGroup,
+            [XmlEnum("AlignOtherGroup")]
+            AlignOtherGroup,
+            [XmlEnum("AvoidOtherGroup")]
+            AvoidOtherGroup,
             [XmlEnum("Wind")]
             Wind,
+            [XmlEnum("WindInverted")]
+            WindInverted,
             [XmlEnum("StickToRoads")]
             StickToRoads,
             [XmlEnum("WorldEvents")]
@@ -165,51 +177,39 @@ namespace WalkerSim
                         Entries = new List<MovementProcessor> {
                             new MovementProcessor()
                             {
-                                Type = MovementProcessorType.Flock,
+                                Type = MovementProcessorType.FlockAnyGroup,
                                 Distance = 50f,
-                                Power = 0.003f,
+                                Power = 0.0001f,
                             },
                             new MovementProcessor()
                             {
-                                Type = MovementProcessorType.Align,
+                                Type = MovementProcessorType.AlignAnyGroup,
                                 Distance = 50f,
-                                Power = 0.001f,
+                                Power = 0.0001f,
                             },
                             new MovementProcessor()
                             {
-                                Type = MovementProcessorType.Avoid,
-                                Distance = 20f,
-                                Power = 0.002f,
-                            },
-                            new MovementProcessor()
-                            {
-                                Type = MovementProcessorType.Group,
-                                Distance = 50f,
-                                Power = 0.001f,
-                            },
-                            new MovementProcessor()
-                            {
-                                Type = MovementProcessorType.GroupAvoid,
-                                Distance = 150f,
-                                Power = 0.050f,
+                                Type = MovementProcessorType.AvoidAnyGroup,
+                                Distance = 30f,
+                                Power = 0.0002f,
                             },
                             new MovementProcessor()
                             {
                                 Type = MovementProcessorType.Wind,
                                 Distance = 0f,
-                                Power = 0.010f,
+                                Power = 0.0001f,
                             },
                             new MovementProcessor()
                             {
                                 Type = MovementProcessorType.StickToRoads,
                                 Distance = 0f,
-                                Power = 0.025f,
+                                Power = 0.0025f,
                             },
                             new MovementProcessor()
                             {
                                 Type = MovementProcessorType.WorldEvents,
                                 Distance = 0f,
-                                Power = 0.050f,
+                                Power = 0.0050f,
                             },
                         }
                     },
@@ -217,6 +217,19 @@ namespace WalkerSim
                 Debug = new DebugOptions(),
             };
             return conf;
+        }
+
+        public void Export(TextWriter writer)
+        {
+            var serializer = new XmlSerializer(typeof(Config));
+            try
+            {
+                serializer.Serialize(writer, this);
+            }
+            catch (System.Exception)
+            {
+                throw;
+            }
         }
     }
 }

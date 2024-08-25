@@ -23,7 +23,7 @@ namespace WalkerSim.Viewer
         {
             var simulation = Simulation.Instance;
 
-            simulation.AddSoundEvent(position, Radius);
+            simulation.AddSoundEvent(position, Radius, 20.0f);
         }
 
         public void DrawPreview(PictureBox canvas, Graphics graphics, Vector3 position)
@@ -41,14 +41,16 @@ namespace WalkerSim.Viewer
 
     internal class KillTool : ITool
     {
-        public float Radius = 350.0f;
+        public float Radius = 650.0f;
         public float Decay = 1.0f;
 
         public void OnClick(Vector3 position)
         {
             var simulation = Simulation.Instance;
 
-            var hitAgents = simulation.QueryCells(position, -1, Radius);
+            var hitAgents = new FixedBufferList<Agent>(30000);
+            simulation.QueryCells(position, -1, Radius, hitAgents);
+
             foreach (var agent in hitAgents)
             {
                 simulation.MarkAgentDead(agent);

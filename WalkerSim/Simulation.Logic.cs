@@ -78,6 +78,13 @@ namespace WalkerSim
                 MoveInGrid(agents[i]);
             }
 
+#if DEBUG
+            for (int i = 0; i < agents.Count; i++)
+            {
+                ValidateAgentInCorrectCell(agents[i]);
+            }
+#endif
+
             _state.Ticks++;
         }
 
@@ -104,9 +111,9 @@ namespace WalkerSim
             float maxNeighborDistance = _state.MaxNeighbourDistance;
 
             _nearby.Clear();
-            QueryCells(agent.Position, agent.Index, maxNeighborDistance, _nearby);
+            QueryCellsLockFree(agent.Position, agent.Index, maxNeighborDistance, _nearby);
 
-            var curVel = agent.Velocity * 0.2f;
+            var curVel = agent.Velocity * 0.95f;
 
             var processorGroup = _processors[agent.Group];
             for (int i = 0; i < processorGroup.Entries.Count; i++)

@@ -85,7 +85,7 @@ namespace WalkerSim.Tests
                 var eventB = simB.Events[i];
 
                 Assert.AreEqual(eventA.Type, eventB.Type);
-                Assert.AreEqual(eventA.DecayRate, eventB.DecayRate);
+                Assert.AreEqual(eventA.Duration, eventB.Duration);
                 Assert.AreEqual(eventA.Position, eventB.Position);
                 Assert.AreEqual(eventA.Radius, eventB.Radius);
             }
@@ -119,9 +119,9 @@ namespace WalkerSim.Tests
             simA.Deterministic = true;
 
             // Add a few events.
-            simA.AddSoundEvent(new Vector3(-100, -100, 0), 653.212f);
-            simA.AddSoundEvent(new Vector3(700, 100, 0), 653.212f);
-            simA.AddSoundEvent(new Vector3(1700, 500, 0), 653.212f);
+            simA.AddSoundEvent(new Vector3(-100, -100, 0), 653.212f, 10.0f);
+            simA.AddSoundEvent(new Vector3(700, 100, 0), 653.212f, 10.0f);
+            simA.AddSoundEvent(new Vector3(1700, 500, 0), 653.212f, 10.0f);
             simA.FastAdvance(20);
 
             var ms = new MemoryStream();

@@ -117,7 +117,7 @@ namespace WalkerSim
                 Serialization.WriteInt32(writer, (int)ev.Type);
                 Serialization.WriteVector3(writer, ev.Position);
                 Serialization.WriteSingle(writer, ev.Radius);
-                Serialization.WriteSingle(writer, ev.DecayRate);
+                Serialization.WriteSingle(writer, ev.Duration);
             }
         }
 
@@ -258,7 +258,7 @@ namespace WalkerSim
                 ev.Type = (EventType)Serialization.ReadInt32(reader);
                 ev.Position = Serialization.ReadVector3(reader);
                 ev.Radius = Serialization.ReadSingle(reader);
-                ev.DecayRate = Serialization.ReadSingle(reader);
+                ev.Duration = Serialization.ReadSingle(reader);
                 events.Add(ev);
             }
 

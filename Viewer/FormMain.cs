@@ -191,7 +191,7 @@ namespace WalkerSim.Viewer
         {
             inputMaxAgents.Minimum = Simulation.Limits.MinAgents;
             inputMaxAgents.Maximum = Simulation.Limits.MaxAgents;
-            inputGroupSize.Minimum = 0;
+            inputGroupSize.Minimum = 1;
             inputGroupSize.Maximum = Simulation.Limits.MaxAgents;
             inputRandomSeed.Minimum = 1;
             inputRandomSeed.Maximum = UInt32.MaxValue;
@@ -420,7 +420,7 @@ namespace WalkerSim.Viewer
 
         private void RenderToBitmap()
         {
-            gr.Clear(System.Drawing.Color.Black);
+            gr.Clear(Color.Black);
 
             if (viewRoads.Checked)
             {
@@ -498,7 +498,7 @@ namespace WalkerSim.Viewer
         {
             RenderToBitmap();
 
-            simCanvas.Invalidate();
+            simCanvas.Refresh();
         }
 
         private void OnClickSoundEmit(object sender, EventArgs e)
@@ -931,13 +931,50 @@ namespace WalkerSim.Viewer
                 Group = selectedGroup.Group,
                 SpeedScale = selectedGroup.SpeedScale,
                 Color = selectedGroup.Color,
-                Entries = new List<Config.MovementProcessor>(selectedGroup.Entries),
+                Entries = new List<Config.MovementProcessor>(),
             };
+
+            foreach (var entry in selectedGroup.Entries)
+            {
+                var newEntry = new Config.MovementProcessor()
+                {
+                    Type = entry.Type,
+                    Distance = entry.Distance,
+                    Power = entry.Power,
+                };
+                newGroup.Entries.Add(newEntry);
+            }
+
             groups.Add(newGroup);
 
             listProcessorGroups.Items.Add("Group #" + idx);
 
             ReconfigureSimulation();
+        }
+
+        private void OnExportConfigurationClick(object sender, EventArgs e)
+        {
+            var browseFileDlg = new SaveFileDialog();
+            browseFileDlg.Filter = "Config File (WalkerSim.xml)|WalkerSim.xml|All files (*.*)|*.*";
+            browseFileDlg.DefaultExt = ".xml";
+            browseFileDlg.FileName = "WalkerSim.xml";
+            browseFileDlg.RestoreDirectory = true;
+            browseFileDlg.InitialDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            browseFileDlg.Title = "Export Configuration";
+            if (browseFileDlg.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    using (var writer = System.IO.File.CreateText(browseFileDlg.FileName))
+                    {
+                        simulation.Config.Export(writer);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logging.Exception(ex);
+                }
+            }
         }
     }
 }

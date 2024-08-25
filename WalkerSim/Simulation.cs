@@ -84,8 +84,8 @@ namespace WalkerSim
                 _state.SlowIterator = 0;
                 _state.Ticks = 0;
 
-                Populate();
                 SetupGrid();
+                Populate();
                 SetupProcessors();
             }
         }

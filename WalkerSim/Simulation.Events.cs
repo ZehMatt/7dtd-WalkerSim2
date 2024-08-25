@@ -14,7 +14,7 @@ namespace WalkerSim
             public EventType Type;
             public Vector3 Position;
             public float Radius;
-            public float DecayRate;
+            public float Duration;
         }
 
         public IReadOnlyList<EventData> Events
@@ -43,46 +43,27 @@ namespace WalkerSim
 
                     var dist = Vector3.Distance(ev.Position, data.Position);
 
-                    // If the new event is within the existing event's radius, no need to expand the radius
+                    // If the new event is within the existing event's radius we add to the duration.
                     if (dist <= ev.Radius)
                     {
-                        ev.DecayRate = data.DecayRate;
+                        ev.Duration += data.Duration;
                         return;
                     }
 
-                    // Check if the events are close enough to consider merging
-                    if (dist < (ev.Radius + data.Radius))
-                    {
-                        // Calculate the new radius so that both events are fully encapsulated
-                        float newRadius = ((dist / 2) + ev.Radius + data.Radius) / 2;
-
-                        // Only adjust the position if necessary, moving it towards the new event
-                        if (dist + data.Radius > ev.Radius)
-                        {
-                            float t = (newRadius - ev.Radius) / dist; // proportion to move towards the new event
-                            ev.Position = Vector3.Lerp(ev.Position, data.Position, t);
-                        }
-
-                        ev.Radius = newRadius;
-                        ev.DecayRate = data.DecayRate;
-                        ev.Position = (ev.Position + data.Position) * 0.5f;
-
-                        return;
-                    }
                 }
 
                 _state.Events.Add(data);
             }
         }
 
-        public void AddSoundEvent(Vector3 pos, float radius)
+        public void AddSoundEvent(Vector3 pos, float radius, float duration)
         {
             var data = new EventData
             {
                 Type = EventType.Noise,
                 Position = pos,
                 Radius = radius,
-                DecayRate = Limits.SoundDecayRate,
+                Duration = duration,
             };
 
             AddEvent(data);
@@ -95,16 +76,11 @@ namespace WalkerSim
             var events = _state.Events;
             foreach (var ev in events)
             {
-                if (ev.Type == EventType.Noise)
-                {
-                    // Shrink the radius.
-                    var decay = ev.DecayRate * dt;
-                    ev.Radius = System.Math.Max(ev.Radius - decay, 0);
-                }
+                ev.Duration -= dt;
             }
 
             // Erase expired events.
-            events.RemoveAll(ev => ev.Radius <= 0);
+            events.RemoveAll(ev => ev.Duration <= 0.0f);
         }
     }
 }

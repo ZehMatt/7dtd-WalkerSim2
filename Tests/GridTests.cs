@@ -42,7 +42,7 @@ namespace WalkerSim.Tests
             var prng = new Random(1);
 
             var config = Config.GetDefault();
-            config.MaxAgents = 20;
+            config.MaxAgents = 1020;
 
             var sim = new Simulation();
             sim.SetWorldSize(WorldMins, WorldMaxs);
@@ -55,9 +55,9 @@ namespace WalkerSim.Tests
                 sim.UpdatePlayer(0, centerPos, true);
 
                 // Put all agents around the player.
-                SetAgentsAroundPos(sim, centerPos, 60);
+                SetAgentsAroundPos(sim, centerPos, 360);
 
-                var agents = sim.QueryCells(centerPos, -1, 80);
+                var agents = sim.QueryCells(centerPos, -1, 380);
                 Assert.IsNotNull(agents);
 
                 Assert.AreEqual(sim.Agents.Count, agents.Count);
