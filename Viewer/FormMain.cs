@@ -249,7 +249,6 @@ namespace WalkerSim.Viewer
             CurrentConfig.GroupSize = (int)inputGroupSize.Value;
             CurrentConfig.StartAgentsGrouped = inputStartGrouped.Checked;
             CurrentConfig.PauseDuringBloodmoon = inputPauseDuringBloodmoon.Checked;
-            CurrentConfig.PauseWithoutPlayers = inputPausePlayerless.Checked;
 
             var startChoice = inputStartPosition.SelectedIndex;
             if (startChoice != -1)
@@ -271,7 +270,6 @@ namespace WalkerSim.Viewer
             inputGroupSize.ValueChanged += (sender, arg) => SetConfigValues();
             inputStartGrouped.CheckedChanged += (sender, arg) => SetConfigValues();
             inputPauseDuringBloodmoon.CheckedChanged += (sender, arg) => SetConfigValues();
-            inputPausePlayerless.CheckedChanged += (sender, arg) => SetConfigValues();
             inputStartPosition.SelectedIndexChanged += (sender, arg) => SetConfigValues();
             inputRespawnPosition.SelectedIndexChanged += (sender, arg) => SetConfigValues();
         }
@@ -287,7 +285,6 @@ namespace WalkerSim.Viewer
             inputMaxAgents.Value = CurrentConfig.MaxAgents;
             inputGroupSize.Value = CurrentConfig.GroupSize;
             inputStartGrouped.Checked = CurrentConfig.StartAgentsGrouped;
-            inputPausePlayerless.Checked = CurrentConfig.PauseWithoutPlayers;
             inputPauseDuringBloodmoon.Checked = CurrentConfig.PauseDuringBloodmoon;
 
             var spawnChoice = Utils.GetWorldLocationString(CurrentConfig.StartPosition);

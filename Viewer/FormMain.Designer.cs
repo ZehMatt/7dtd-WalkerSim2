@@ -59,7 +59,6 @@
             this.inputWorld = new System.Windows.Forms.ComboBox();
             this.label10 = new System.Windows.Forms.Label();
             this.inputPauseDuringBloodmoon = new System.Windows.Forms.CheckBox();
-            this.inputPausePlayerless = new System.Windows.Forms.CheckBox();
             this.inputRespawnPosition = new System.Windows.Forms.ComboBox();
             this.label5 = new System.Windows.Forms.Label();
             this.inputStartPosition = new System.Windows.Forms.ComboBox();
@@ -353,7 +352,6 @@
             this.tabPage1.Controls.Add(this.inputWorld);
             this.tabPage1.Controls.Add(this.label10);
             this.tabPage1.Controls.Add(this.inputPauseDuringBloodmoon);
-            this.tabPage1.Controls.Add(this.inputPausePlayerless);
             this.tabPage1.Controls.Add(this.inputRespawnPosition);
             this.tabPage1.Controls.Add(this.label5);
             this.tabPage1.Controls.Add(this.inputStartPosition);
@@ -395,22 +393,12 @@
             // inputPauseDuringBloodmoon
             // 
             this.inputPauseDuringBloodmoon.AutoSize = true;
-            this.inputPauseDuringBloodmoon.Location = new System.Drawing.Point(281, 62);
+            this.inputPauseDuringBloodmoon.Location = new System.Drawing.Point(281, 41);
             this.inputPauseDuringBloodmoon.Name = "inputPauseDuringBloodmoon";
             this.inputPauseDuringBloodmoon.Size = new System.Drawing.Size(144, 17);
             this.inputPauseDuringBloodmoon.TabIndex = 39;
             this.inputPauseDuringBloodmoon.Text = "Pause during Bloodmoon";
             this.inputPauseDuringBloodmoon.UseVisualStyleBackColor = true;
-            // 
-            // inputPausePlayerless
-            // 
-            this.inputPausePlayerless.AutoSize = true;
-            this.inputPausePlayerless.Location = new System.Drawing.Point(281, 39);
-            this.inputPausePlayerless.Name = "inputPausePlayerless";
-            this.inputPausePlayerless.Size = new System.Drawing.Size(130, 17);
-            this.inputPausePlayerless.TabIndex = 38;
-            this.inputPausePlayerless.Text = "Pause without Players";
-            this.inputPausePlayerless.UseVisualStyleBackColor = true;
             // 
             // inputRespawnPosition
             // 
@@ -936,7 +924,6 @@
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.CheckBox inputPauseDuringBloodmoon;
-        private System.Windows.Forms.CheckBox inputPausePlayerless;
         private System.Windows.Forms.ComboBox inputRespawnPosition;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.ComboBox inputStartPosition;
