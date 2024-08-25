@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace WalkerSim
 {
@@ -12,7 +11,6 @@ namespace WalkerSim
 
         // Singleton instances to avoid GCing.
         private FixedBufferList<Agent> _nearby = new FixedBufferList<Agent>(Limits.MaxQuerySize);
-        private List<EventData> _events = new List<EventData>();
 
         // NOTE: This must be a prime number.
         private const uint IteratorIncrement = 7;

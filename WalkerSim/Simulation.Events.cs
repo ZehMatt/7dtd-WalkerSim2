@@ -21,7 +21,7 @@ namespace WalkerSim
         {
             get
             {
-                lock (_state)
+                lock (_state.Events)
                 {
                     var copy = new List<EventData>(_state.Events);
                     return copy;
@@ -31,7 +31,8 @@ namespace WalkerSim
 
         private void AddEvent(EventData data)
         {
-            lock (_state)
+            var events = _state.Events;
+            lock (events)
             {
                 // Check if we can merge with an existing event.
                 foreach (var ev in _state.Events)
@@ -52,7 +53,7 @@ namespace WalkerSim
 
                 }
 
-                _state.Events.Add(data);
+                events.Add(data);
             }
         }
 
@@ -74,13 +75,20 @@ namespace WalkerSim
             var dt = TickRate * TimeScale;
 
             var events = _state.Events;
-            foreach (var ev in events)
-            {
-                ev.Duration -= dt;
-            }
 
-            // Erase expired events.
-            events.RemoveAll(ev => ev.Duration <= 0.0f);
+            lock (events)
+            {
+                foreach (var ev in events)
+                {
+                    ev.Duration -= dt;
+                }
+
+                // Erase expired events.
+                events.RemoveAll(ev => ev.Duration <= 0.0f);
+
+                // Make a copy after the update so the simulation can use this without locking for queries.
+                _state.EventsTemp = new List<EventData>(events);
+            }
         }
     }
 }

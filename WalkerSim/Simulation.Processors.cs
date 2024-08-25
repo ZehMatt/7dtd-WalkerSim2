@@ -445,7 +445,7 @@ namespace WalkerSim
 
         private static Vector3 WorldEvents(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
         {
-            var events = state.Events;
+            var events = state.EventsTemp;
 
             Vector3 sum = Vector3.Zero;
 

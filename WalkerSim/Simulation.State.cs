@@ -16,6 +16,7 @@ namespace WalkerSim
             public List<int>[] Grid = null;
             public ConcurrentDictionary<int, Player> Players = new ConcurrentDictionary<int, Player>();
             public List<EventData> Events = new List<EventData>();
+            public List<EventData> EventsTemp = new List<EventData>();
             public Dictionary<int, Agent> Active = new Dictionary<int, Agent>();
             public WalkerSim.Random PRNG;
             public uint SlowIterator = 0;
