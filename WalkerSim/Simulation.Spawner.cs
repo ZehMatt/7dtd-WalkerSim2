@@ -15,6 +15,8 @@ namespace WalkerSim
 
         private FixedBufferList<Agent> _nearPlayer = new FixedBufferList<Agent>(512);
 
+        private bool _allowAgentSpawn = true;
+
         public void SetAgentSpawnHandler(AgentSpawnHandler handler)
         {
             _agentSpawnHandler = handler;
@@ -22,6 +24,11 @@ namespace WalkerSim
 
         private void CheckAgentSpawn()
         {
+            if (_allowAgentSpawn == false)
+            {
+                return;
+            }
+
             // Don't activate them when they are in the inner radius.
             var activationBorderSize = 4.0f;
 
@@ -100,6 +107,23 @@ namespace WalkerSim
                 // Turn back to wandering, currently not possible to spawn.
                 agent.CurrentState = Agent.State.Wandering;
             }
+        }
+
+        public void SetEnableAgentSpawn(bool allowSpawn)
+        {
+            if (_allowAgentSpawn == allowSpawn)
+                return;
+
+            if (!allowSpawn)
+            {
+                Logging.Info("Agent spawning disabled.");
+            }
+            else
+            {
+                Logging.Info("Agent spawning enabled.");
+            }
+
+            _allowAgentSpawn = allowSpawn;
         }
     }
 }

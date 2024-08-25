@@ -269,23 +269,33 @@ namespace WalkerSim
             if (simulation == null)
                 return;
 
-            var isPaused = GameManager.Instance.IsPaused();
-            if (simulation.Config.PauseWithoutPlayers && simulation.PlayerCount == 0)
+            // Check for enemy spawning
             {
-                isPaused = true;
+                var allowEnemySpawn = GamePrefs.GetBool(EnumGamePrefs.EnemySpawnMode);
+
+                simulation.SetEnableAgentSpawn(allowEnemySpawn);
             }
 
-            // TODO: Validate if this is correct, there seems to be various ways to check this.
-            if (simulation.Config.PauseDuringBloodmoon && world.isEventBloodMoon)
+            // Check for pausing.
             {
-                isPaused = true;
-            }
+                var isPaused = GameManager.Instance.IsPaused();
+                if (simulation.Config.PauseWithoutPlayers && simulation.PlayerCount == 0)
+                {
+                    isPaused = true;
+                }
 
-            simulation.SetPaused(isPaused);
+                // TODO: Validate if this is correct, there seems to be various ways to check this.
+                if (simulation.Config.PauseDuringBloodmoon && world.isEventBloodMoon)
+                {
+                    isPaused = true;
+                }
 
-            if (isPaused)
-            {
-                return;
+                simulation.SetPaused(isPaused);
+
+                if (isPaused)
+                {
+                    return;
+                }
             }
 
             try
