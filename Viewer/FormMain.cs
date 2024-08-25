@@ -283,8 +283,6 @@ namespace WalkerSim.Viewer
 
             _updatingConfig = true;
 
-            reduceCPULoadToolStripMenuItem.Checked = CurrentConfig.ReduceCPULoad;
-
             inputRandomSeed.Value = CurrentConfig.RandomSeed;
             inputMaxAgents.Value = CurrentConfig.MaxAgents;
             inputGroupSize.Value = CurrentConfig.GroupSize;
@@ -675,12 +673,6 @@ namespace WalkerSim.Viewer
             {
                 Tool.Active.OnClick(simPos);
             }
-        }
-
-        private void OnReduceCPULoadClick(object sender, EventArgs e)
-        {
-            CurrentConfig.ReduceCPULoad = !CurrentConfig.ReduceCPULoad;
-            reduceCPULoadToolStripMenuItem.Checked = CurrentConfig.ReduceCPULoad;
         }
 
         private void loadConfigurationToolStripMenuItem_Click(object sender, EventArgs e)

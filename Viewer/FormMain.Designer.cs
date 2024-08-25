@@ -34,6 +34,7 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadConfigurationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exportConfigurationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -48,8 +49,6 @@
             this.resumeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.speedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.advanceOneTickToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
-            this.reduceCPULoadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.emitSoundToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.killToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -73,6 +72,7 @@
             this.inputRandomSeed = new System.Windows.Forms.NumericUpDown();
             this.inputStartGrouped = new System.Windows.Forms.CheckBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.buttonDuplicateGroup = new System.Windows.Forms.Button();
             this.groupProps = new System.Windows.Forms.GroupBox();
             this.boxGroupColor = new System.Windows.Forms.PictureBox();
             this.buttonGroupColor = new System.Windows.Forms.Button();
@@ -99,8 +99,6 @@
             this.clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorPickerDlg = new System.Windows.Forms.ColorDialog();
-            this.buttonDuplicateGroup = new System.Windows.Forms.Button();
-            this.exportConfigurationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -161,15 +159,22 @@
             this.loadConfigurationToolStripMenuItem.Text = "Import Configuration";
             this.loadConfigurationToolStripMenuItem.Click += new System.EventHandler(this.loadConfigurationToolStripMenuItem_Click);
             // 
+            // exportConfigurationToolStripMenuItem
+            // 
+            this.exportConfigurationToolStripMenuItem.Name = "exportConfigurationToolStripMenuItem";
+            this.exportConfigurationToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.exportConfigurationToolStripMenuItem.Text = "Export Configuration";
+            this.exportConfigurationToolStripMenuItem.Click += new System.EventHandler(this.OnExportConfigurationClick);
+            // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(172, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(184, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             // 
             // viewToolStripMenuItem
@@ -218,9 +223,7 @@
             this.pauseToolStripMenuItem,
             this.resumeToolStripMenuItem,
             this.speedToolStripMenuItem,
-            this.advanceOneTickToolStripMenuItem,
-            this.toolStripMenuItem2,
-            this.reduceCPULoadToolStripMenuItem});
+            this.advanceOneTickToolStripMenuItem});
             this.simulationToolStripMenuItem.Name = "simulationToolStripMenuItem";
             this.simulationToolStripMenuItem.Size = new System.Drawing.Size(76, 20);
             this.simulationToolStripMenuItem.Text = "Simulation";
@@ -279,18 +282,6 @@
             this.advanceOneTickToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
             this.advanceOneTickToolStripMenuItem.Text = "Advance one Tick";
             this.advanceOneTickToolStripMenuItem.Click += new System.EventHandler(this.OnAdvanceTick);
-            // 
-            // toolStripMenuItem2
-            // 
-            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(190, 6);
-            // 
-            // reduceCPULoadToolStripMenuItem
-            // 
-            this.reduceCPULoadToolStripMenuItem.Name = "reduceCPULoadToolStripMenuItem";
-            this.reduceCPULoadToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
-            this.reduceCPULoadToolStripMenuItem.Text = "Reduce CPU Load";
-            this.reduceCPULoadToolStripMenuItem.Click += new System.EventHandler(this.OnReduceCPULoadClick);
             // 
             // toolsToolStripMenuItem
             // 
@@ -565,6 +556,17 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Movement Processors";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // buttonDuplicateGroup
+            // 
+            this.buttonDuplicateGroup.Enabled = false;
+            this.buttonDuplicateGroup.Location = new System.Drawing.Point(83, 128);
+            this.buttonDuplicateGroup.Name = "buttonDuplicateGroup";
+            this.buttonDuplicateGroup.Size = new System.Drawing.Size(62, 23);
+            this.buttonDuplicateGroup.TabIndex = 7;
+            this.buttonDuplicateGroup.Text = "Duplicate";
+            this.buttonDuplicateGroup.UseVisualStyleBackColor = true;
+            this.buttonDuplicateGroup.Click += new System.EventHandler(this.OnDuplicateGroupClick);
             // 
             // groupProps
             // 
@@ -868,24 +870,6 @@
             // 
             this.colorPickerDlg.AnyColor = true;
             // 
-            // buttonDuplicateGroup
-            // 
-            this.buttonDuplicateGroup.Enabled = false;
-            this.buttonDuplicateGroup.Location = new System.Drawing.Point(83, 128);
-            this.buttonDuplicateGroup.Name = "buttonDuplicateGroup";
-            this.buttonDuplicateGroup.Size = new System.Drawing.Size(62, 23);
-            this.buttonDuplicateGroup.TabIndex = 7;
-            this.buttonDuplicateGroup.Text = "Duplicate";
-            this.buttonDuplicateGroup.UseVisualStyleBackColor = true;
-            this.buttonDuplicateGroup.Click += new System.EventHandler(this.OnDuplicateGroupClick);
-            // 
-            // exportConfigurationToolStripMenuItem
-            // 
-            this.exportConfigurationToolStripMenuItem.Name = "exportConfigurationToolStripMenuItem";
-            this.exportConfigurationToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
-            this.exportConfigurationToolStripMenuItem.Text = "Export Configuration";
-            this.exportConfigurationToolStripMenuItem.Click += new System.EventHandler(this.OnExportConfigurationClick);
-            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -985,11 +969,9 @@
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.ToolStripMenuItem speedToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem killToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem reduceCPULoadToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loadConfigurationToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
-        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
         private System.Windows.Forms.ToolStripMenuItem stopToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem3;
         private System.Windows.Forms.TabPage tabPage3;

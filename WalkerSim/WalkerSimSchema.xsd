@@ -162,7 +162,7 @@
 
     <xs:element name="WalkerSim">
         <xs:complexType>
-            <xs:sequence>
+            <xs:all>
                 <xs:element ref="DebugOptions" maxOccurs="1" />
                 <xs:element name="RandomSeed" type="xs:int">
                     <xs:annotation>
@@ -213,8 +213,8 @@
                         <xs:documentation>Specifies if the simulation should be paused during blood moons</xs:documentation>
                     </xs:annotation>
                 </xs:element>
-                <xs:element ref="MovementProcessors" maxOccurs="unbounded"/>
-            </xs:sequence>
+                <xs:element ref="MovementProcessors"/>
+            </xs:all>
         </xs:complexType>
     </xs:element>
 

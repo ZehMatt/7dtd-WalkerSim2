@@ -1,100 +1,42 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<WalkerSim xmlns="http://zeh.matt/WalkerSimSchema"
-           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://zeh.matt/WalkerSimSchema WalkerSimSchema.xsd">
-
-    <!-- Debug Options, be careful what you activate here to avoid console spam. -->
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WalkerSim xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://zeh.matt/WalkerSimSchema">
     <DebugOptions>
-        <LogSpawnDespawn>true</LogSpawnDespawn>
+        <LogSpawnDespawn>false</LogSpawnDespawn>
     </DebugOptions>
-    
-    <!-- Random seed for the random number generator -->
     <RandomSeed>1337</RandomSeed>
-
-    <!-- Maximum amount of agents to simulate, it will never exceed the number -->
-    <MaxAgents>15000</MaxAgents>
-
-    <!-- Agents will be assigned to a group, this specifies how many members a group will have -->
-    <GroupSize>1000</GroupSize>
-
-    <!-- In case a new simulation starts this is the amount of ticks it will advance in one go -->
+    <MaxAgents>6000</MaxAgents>
     <TicksToAdvanceOnStartup>100</TicksToAdvanceOnStartup>
-
-    <!-- This will put agents of the same group closer together at initial start of the simulation -->
-    <StartAgentsGrouped>false</StartAgentsGrouped>
-
-    <!-- The position of where agents are placed on the initial start of the simulation
-       Choices:
-          RandomBorderLocation: Random position near the border.
-          RandomLocation: Random position.
-          RandomPOI: Random POI position.
-          Mixed: Selects a random choice from above for each agent.
-    -->
+    <StartAgentsGrouped>true</StartAgentsGrouped>
+    <GroupSize>100</GroupSize>
     <AgentStartPosition>RandomLocation</AgentStartPosition>
-
-    <!-- The position of where the agent will be placed when the in-game actor ceases to exist.
-       Choices:
-          None: Will disable respawning which allows clearing all agents.
-          RandomBorderLocation: Random position near the border.
-          RandomLocation: Random position.
-          RandomPOI: Random POI position.
-          Mixed: Selects a random choice from above for each agent excluding 'None'.
-    -->
     <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>
-
-    <!-- The option specifies if the simulation should be paused when no players are on the server -->
     <PauseWithoutPlayers>true</PauseWithoutPlayers>
-
-    <!-- Specifies if the simulation should be paused during blood moons -->
     <PauseDuringBloodmoon>true</PauseDuringBloodmoon>
-
-    <!-- Processors are used to specify how the simulation runs, each processor typically has a Distance and Power,
-       The specified distance is used to query nearby agents and power specifies how strong it will influence the
-       movement direction. Not all processor types use the 'Distance' attribute.
-       Processor Types:
-          Flock: Keeps agents near other agents.
-          Align: Will align movement direction of the agent with nearby agents.
-          Avoid: Steers away from other agents.
-          Group: Agents will steer towards other agents who are in the same group.
-          GroupAvoid: Agents will steer away from other agents who are not a member of the same group.
-          Wind: Influences the movement direction by wind direction, the wind will change over time.
-          StickToRoads: Agents will steer towards close by roads.
-    -->
-    <MovementProcessors Group="-1" SpeedScale="1.0">
-        <Processor Type="FlockSameGroup" Distance="150.0" Power="0.003" />
-        <Processor Type="AlignSameGroup" Distance="150.0" Power="0.001" />
-        <Processor Type="AvoidSameGroup" Distance="50.0" Power="0.0015" />
-        <Processor Type="AvoidOtherGroup" Distance="50.0" Power="0.04" />
-        <Processor Type="Wind" Power="0.07" />
-        <Processor Type="StickToRoads" Power="0.01" />
-        <Processor Type="WorldEvents" Power="0.05" />
+    <MovementProcessors Group="-1" SpeedScale="1" Color="#80FF80">
+        <Processor Type="FlockAnyGroup" Distance="50" Power="0.0001" />
+        <Processor Type="AlignAnyGroup" Distance="50" Power="0.0001" />
+        <Processor Type="AvoidAnyGroup" Distance="30" Power="0.0002" />
+        <Processor Type="Wind" Distance="0" Power="0.0011" />
+        <Processor Type="StickToRoads" Distance="0" Power="0.0025" />
+        <Processor Type="WorldEvents" Distance="0" Power="0.005" />
+        <Processor Type="AvoidOtherGroup" Distance="140" Power="7E-05" />
     </MovementProcessors>
-
-    <MovementProcessors Group="0" SpeedScale="1.2">
-        <Processor Type="FlockSameGroup" Distance="150.0" Power="0.003" />
-        <Processor Type="AlignSameGroup" Distance="150.0" Power="0.001" />
-        <Processor Type="AvoidSameGroup" Distance="50.0" Power="0.0015" />
-        <Processor Type="AvoidOtherGroup" Distance="50.0" Power="0.08" />
-        <Processor Type="Wind" Power="0.007" />
-        <Processor Type="WorldEvents" Power="0.05" />
+    <MovementProcessors Group="-1" SpeedScale="1" Color="Red">
+        <Processor Type="FlockAnyGroup" Distance="50" Power="0.0001" />
+        <Processor Type="AlignAnyGroup" Distance="50" Power="0.0001" />
+        <Processor Type="AvoidAnyGroup" Distance="30" Power="0.0002" />
+        <Processor Type="Wind" Distance="0" Power="0.0001" />
+        <Processor Type="StickToRoads" Distance="0" Power="0.0025" />
+        <Processor Type="WorldEvents" Distance="0" Power="0.005" />
+        <Processor Type="AvoidOtherGroup" Distance="140" Power="7E-05" />
     </MovementProcessors>
-
-    <MovementProcessors Group="1" SpeedScale="1.3">
-        <Processor Type="FlockSameGroup" Distance="150.0" Power="0.003" />
-        <Processor Type="AlignSameGroup" Distance="150.0" Power="0.001" />
-        <Processor Type="AvoidSameGroup" Distance="50.0" Power="0.0015" />
-        <Processor Type="AvoidOtherGroup" Distance="50.0" Power="0.8" />
-        <Processor Type="Wind" Power="0.007" />
-        <Processor Type="WorldEvents" Power="0.05" />
+    <MovementProcessors Group="-1" SpeedScale="1" Color="#FF80FF">
+        <Processor Type="FlockAnyGroup" Distance="50" Power="0.0001" />
+        <Processor Type="AlignAnyGroup" Distance="50" Power="0.0001" />
+        <Processor Type="AvoidAnyGroup" Distance="30" Power="0.0002" />
+        <Processor Type="StickToRoads" Distance="0" Power="0.0025" />
+        <Processor Type="WorldEvents" Distance="0" Power="0.005" />
+        <Processor Type="AvoidOtherGroup" Distance="140" Power="7E-05" />
+        <Processor Type="WindInverted" Distance="0" Power="0" />
     </MovementProcessors>
-
-    <MovementProcessors Group="2" SpeedScale="1.4">
-        <Processor Type="FlockSameGroup" Distance="150.0" Power="0.003" />
-        <Processor Type="AlignSameGroup" Distance="150.0" Power="0.001" />
-        <Processor Type="AvoidOtherGroup" Distance="50.0" Power="0.0015" />
-        <Processor Type="AvoidOtherGroup" Distance="50.0" Power="0.8" />
-        <Processor Type="Wind" Power="0.007" />
-        <Processor Type="WorldEvents" Power="0.05" />
-    </MovementProcessors>
-
 </WalkerSim>
