@@ -79,7 +79,14 @@ namespace WalkerSim
 
         static void ResetSimulation()
         {
+            var world = GameManager.Instance.World;
             var simulation = Simulation.Instance;
+
+            // Remove all active zombies as they will have no connection with the simulation anymore.
+            foreach (var kv in simulation.Active)
+            {
+                world.RemoveEntity(kv.Key, EnumRemoveEntityReason.Despawned);
+            }
 
             var config = LoadConfiguration();
             simulation.Reset(config);
