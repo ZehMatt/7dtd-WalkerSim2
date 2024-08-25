@@ -674,7 +674,8 @@ namespace WalkerSim.Viewer
         private void loadConfigurationToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var browseFileDlg = new OpenFileDialog();
-            browseFileDlg.Filter = "Config File (WalkerSim.xml)|WalkerSim.xml|All files (*.*)|*.*";
+            browseFileDlg.Filter = "Config File (WalkerSim.xml)|*.xml|All files (*.*)|*.*";
+            browseFileDlg.FileName = "WalkerSim.xml";
             browseFileDlg.RestoreDirectory = true;
             browseFileDlg.InitialDirectory = AppDomain.CurrentDomain.BaseDirectory;
             browseFileDlg.Title = "Load configuration";
@@ -955,7 +956,7 @@ namespace WalkerSim.Viewer
         private void OnExportConfigurationClick(object sender, EventArgs e)
         {
             var browseFileDlg = new SaveFileDialog();
-            browseFileDlg.Filter = "Config File (WalkerSim.xml)|WalkerSim.xml|All files (*.*)|*.*";
+            browseFileDlg.Filter = "Config File (WalkerSim.xml)|*.xml|All files (*.*)|*.*";
             browseFileDlg.DefaultExt = ".xml";
             browseFileDlg.FileName = "WalkerSim.xml";
             browseFileDlg.RestoreDirectory = true;
