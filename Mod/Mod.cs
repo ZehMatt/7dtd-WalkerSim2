@@ -401,7 +401,7 @@ namespace WalkerSim
                 return;
             }
 
-#if true
+#if false
             // Log all variables from noise.
             Logging.Info("Noise: {0}, Volume: {1}, Duration: {2}, MuffledWhenCrouched: {3}, HeatMapStrength: {4}, HeatMapWorldTimeToLive: {5}, volumeScale: {6}.",
                                clipName,

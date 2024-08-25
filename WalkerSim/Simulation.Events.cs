@@ -47,7 +47,7 @@ namespace WalkerSim
                     // If the new event is within the existing event's radius we add to the duration.
                     if (dist <= ev.Radius)
                     {
-                        ev.Duration += data.Duration;
+                        ev.Duration = System.Math.Max(ev.Duration, data.Duration);
                         return;
                     }
 
