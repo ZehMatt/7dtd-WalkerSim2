@@ -49,6 +49,12 @@ namespace WalkerSim
             WindInverted,
             [XmlEnum("StickToRoads")]
             StickToRoads,
+            [XmlEnum("AvoidRoads")]
+            AvoidRoads,
+            [XmlEnum("StickToPOIs")]
+            StickToPOIs,
+            [XmlEnum("AvoidPOIs")]
+            AvoidPOIs,
             [XmlEnum("WorldEvents")]
             WorldEvents,
         }

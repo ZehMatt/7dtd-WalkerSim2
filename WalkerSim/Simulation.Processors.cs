@@ -35,6 +35,9 @@ namespace WalkerSim
             { Config.MovementProcessorType.Wind, Wind },
             { Config.MovementProcessorType.WindInverted, WindInverted },
             { Config.MovementProcessorType.StickToRoads, StickToRoads },
+            { Config.MovementProcessorType.AvoidRoads, AvoidRoads },
+            { Config.MovementProcessorType.StickToPOIs, StickToPOIs },
+            { Config.MovementProcessorType.AvoidPOIs, AvoidPOIs },
             { Config.MovementProcessorType.WorldEvents, WorldEvents },
         };
 
@@ -52,8 +55,15 @@ namespace WalkerSim
                 return;
             }
 
-            // Zero init the list based on group count.
             _processors.Clear();
+
+            if (_state.Config.Processors.Count == 0)
+            {
+                // Nothing to do.
+                return;
+            }
+
+            // Zero init the list based on group count.
             for (int i = 0; i < _state.GroupCount; i++)
             {
                 _processors.Add(null);
@@ -143,6 +153,9 @@ namespace WalkerSim
             for (int i = 0; i < _processors.Count; i++)
             {
                 var group = _processors[i];
+                if (group == null)
+                    continue;
+
                 if (group.Color == System.Drawing.Color.Transparent)
                 {
                     group.Color = ColorTable.GetColorForIndex(i);
@@ -154,6 +167,9 @@ namespace WalkerSim
 
             foreach (var processorList in _processors)
             {
+                if (processorList == null)
+                    continue;
+
                 foreach (var processor in processorList.Entries)
                 {
                     _state.MaxNeighbourDistance = System.Math.Max(_state.MaxNeighbourDistance, processor.Distance);
@@ -400,7 +416,6 @@ namespace WalkerSim
 
         private static Vector3 StickToRoads(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
         {
-            // Remap the position to the roads bitmap.
             if (state.MapData == null)
             {
                 return Vector3.Zero;
@@ -416,6 +431,7 @@ namespace WalkerSim
             var worldMins = state.WorldMins;
             var worldMaxs = state.WorldMaxs;
 
+            // Remap the position to the roads bitmap.
             var x = Math.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, roads.Width);
             var y = Math.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, roads.Height);
 
@@ -441,6 +457,116 @@ namespace WalkerSim
             }
 
             return Vector3.Zero;
+        }
+
+        private static Vector3 AvoidRoads(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
+        {
+            if (state.MapData == null)
+            {
+                return Vector3.Zero;
+            }
+
+            var roads = state.MapData.Roads;
+            if (roads == null)
+            {
+                return Vector3.Zero;
+            }
+
+            var pos = agent.Position;
+            var worldMins = state.WorldMins;
+            var worldMaxs = state.WorldMaxs;
+
+            // Remap the position to the roads bitmap.
+            var x = Math.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, roads.Width);
+            var y = Math.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, roads.Height);
+
+            int ix = (int)x;
+            int iy = (int)y;
+
+            var closest = roads.GetClosestRoad(ix, iy);
+            if (closest.Type == RoadType.None)
+            {
+                return Vector3.Zero;
+            }
+
+            float dx = (float)(ix - closest.X);
+            float dy = (float)(iy - closest.Y);
+
+            if (closest.Type == RoadType.Asphalt)
+            {
+                return new Vector3(dx * 0.75f, dy * 0.75f) * power;
+            }
+            else if (closest.Type == RoadType.Offroad)
+            {
+                return new Vector3(dx * 0.5f, dy * 0.5f) * power;
+            }
+
+            return Vector3.Zero;
+        }
+
+        private static Vector3 StickToPOIs(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
+        {
+            if (state.MapData == null)
+            {
+                return Vector3.Zero;
+            }
+
+            var prefabs = state.MapData.Prefabs;
+            var decos = prefabs.Decorations;
+
+            var closestIdx = -1;
+            var closestDist = float.MaxValue;
+            for (int i = 0; i < decos.Length; i++)
+            {
+                var deco = decos[i];
+                var dist = Vector3.DistanceSqr(agent.Position, deco.Position);
+                if (dist > distance)
+                {
+                    continue;
+                }
+
+                if (dist < closestDist)
+                {
+                    closestDist = dist;
+                    closestIdx = i;
+                }
+            }
+
+            if (closestIdx == -1)
+            {
+                return Vector3.Zero;
+            }
+
+            var direction = Vector3.Normalize(decos[closestIdx].Position - agent.Position);
+            return direction * power;
+        }
+
+
+        private static Vector3 AvoidPOIs(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
+        {
+            if (state.MapData == null)
+            {
+                return Vector3.Zero;
+            }
+
+            var prefabs = state.MapData.Prefabs;
+            var decos = prefabs.Decorations;
+
+            var sumCloseness = Vector3.Zero;
+            for (int i = 0; i < decos.Length; i++)
+            {
+                var deco = decos[i];
+                var dist = Vector3.DistanceSqr(agent.Position, deco.Position);
+                if (dist > distance)
+                {
+                    continue;
+                }
+
+                var closeness = distance - dist;
+                sumCloseness += (agent.Position - deco.Position) * closeness;
+            }
+
+            return sumCloseness * power;
         }
 
         private static Vector3 WorldEvents(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
