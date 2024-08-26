@@ -204,5 +204,69 @@ namespace WalkerSim
                 return QueryCellsLockFree(pos, excludeIndex, maxDistance, res);
             }
         }
+
+        private int QueryCellCount(Vector3 pos, int cellX, int cellY, float maxDist, int count, int maxCount)
+        {
+            var grid = _state.Grid;
+
+            var cellCountY = (int)System.Math.Ceiling(WorldSize.Y / CellSize);
+            var cellIndex = cellX * cellCountY + cellY;
+            if (cellIndex < 0 || cellIndex >= grid.Length)
+            {
+                return count;
+            }
+
+            var cell = grid[cellIndex];
+            var maxDistSqr = maxDist * maxDist;
+            for (int i = 0; i < cell.Count; i++)
+            {
+                var idx = cell[i];
+                var other = _state.Agents[idx];
+
+                if (other.CurrentState != Agent.State.Wandering)
+                    continue;
+
+                var distance = Vector3.DistanceSqr(pos, other.Position);
+                if (distance < maxDistSqr)
+                {
+                    count++;
+                    if (count >= maxCount)
+                        return count;
+                }
+            }
+
+            return count;
+        }
+
+        private int QueryNearbyCount(Vector3 pos, float maxDistance, int maxCount = 100)
+        {
+            var worldMins = _state.WorldMins;
+            var worldMaxs = _state.WorldMaxs;
+
+            // The grid uses 0, 0 as starting origin.
+            float remapX = Math.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, WorldSize.X);
+            float remapY = Math.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, WorldSize.Y);
+
+            int cellX = (int)(remapX / CellSize);
+            int cellY = (int)(remapY / CellSize);
+
+            // Calculate the number of cells to search in each direction based on maxDistance
+            int cellRadius = (int)(maxDistance / CellSize) + 1;
+
+            int count = 0;
+
+            // Iterate over all cells in the bounding box defined by maxDistance
+            for (int x = -cellRadius; x <= cellRadius; x++)
+            {
+                for (int y = -cellRadius; y <= cellRadius; y++)
+                {
+                    count = QueryCellCount(pos, cellX + x, cellY + y, maxDistance, count, maxCount);
+                    if (count >= maxCount)
+                        return count;
+                }
+            }
+
+            return count;
+        }
     }
 }

@@ -27,6 +27,7 @@ namespace WalkerSim
             public uint TickNextWindChange = 0;
             public int GroupCount = 0;
             public float MaxNeighbourDistance = 0;
+            public int[] AgentsNearPOICounter;
 
             public void Reset()
             {

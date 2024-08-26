@@ -609,6 +609,7 @@ namespace WalkerSim.Viewer
             inputRandomSeed.Enabled = false;
             inputMaxAgents.Enabled = false;
             inputGroupSize.Enabled = false;
+            inputWorld.Enabled = false;
             inputStartGrouped.Enabled = false;
             pauseToolStripMenuItem.Enabled = true;
             startToolStripMenuItem.Enabled = false;
@@ -624,6 +625,7 @@ namespace WalkerSim.Viewer
             inputRandomSeed.Enabled = true;
             inputMaxAgents.Enabled = true;
             inputGroupSize.Enabled = true;
+            inputWorld.Enabled = true;
             inputStartGrouped.Enabled = true;
             pauseToolStripMenuItem.Enabled = false;
             resumeToolStripMenuItem.Enabled = false;

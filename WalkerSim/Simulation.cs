@@ -115,9 +115,16 @@ namespace WalkerSim
 
         public bool LoadMapData(string directoryPath)
         {
-            _state.MapData = MapData.LoadFromFolder(directoryPath);
-            if (_state.MapData == null)
+            var mapData = MapData.LoadFromFolder(directoryPath);
+            if (mapData == null)
                 return false;
+
+            _state.MapData = mapData;
+
+            if (WorldSize != mapData.WorldSize)
+            {
+                SetWorldSize(mapData.WorldMins, mapData.WorldMaxs);
+            }
 
             return true;
         }

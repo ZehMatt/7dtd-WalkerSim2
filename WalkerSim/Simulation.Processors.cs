@@ -19,6 +19,7 @@ namespace WalkerSim
             public MovementProcessorDelegate Handler;
             public float Distance;
             public float Power;
+            public float DistanceSqr;
         }
 
         private readonly Dictionary<Config.MovementProcessorType, MovementProcessorDelegate> ProcessorTypeToDelegateMap = new Dictionary<Config.MovementProcessorType, MovementProcessorDelegate>()
@@ -81,6 +82,7 @@ namespace WalkerSim
                 {
                     var entry = new Processor();
                     entry.Distance = processor.Distance;
+                    entry.DistanceSqr = entry.Distance * entry.Distance;
                     entry.Power = processor.Power;
                     entry.Handler = GetProcessorDelegate(processor.Type);
 
@@ -177,9 +179,8 @@ namespace WalkerSim
             }
         }
 
-        private static Vector3 FlockAny(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
+        private static Vector3 FlockAny(State state, Agent agent, FixedBufferList<Agent> nearby, float distanceSqr, float power)
         {
-            var distanceSqr = distance;
             // point toward the center of the flock (mean flock boid position)
             var mean = Vector3.Zero;
             var count = 0;
@@ -187,7 +188,7 @@ namespace WalkerSim
             {
                 var neighbor = nearby[i];
 
-                var dist = Vector3.Distance(agent.Position, neighbor.Position);
+                var dist = Vector3.DistanceSqr(agent.Position, neighbor.Position);
                 if (dist > distanceSqr)
                     continue;
                 mean += neighbor.Position;
@@ -201,9 +202,8 @@ namespace WalkerSim
             return center * power;
         }
 
-        private static Vector3 FlockSame(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
+        private static Vector3 FlockSame(State state, Agent agent, FixedBufferList<Agent> nearby, float distanceSqr, float power)
         {
-            var distanceSqr = distance;
             // point toward the center of the flock (mean flock boid position)
             var mean = Vector3.Zero;
             var count = 0;
@@ -213,7 +213,7 @@ namespace WalkerSim
                 if (neighbor.Group != agent.Group)
                     continue;
 
-                var dist = Vector3.Distance(agent.Position, neighbor.Position);
+                var dist = Vector3.DistanceSqr(agent.Position, neighbor.Position);
                 if (dist > distanceSqr)
                     continue;
                 mean += neighbor.Position;
@@ -227,9 +227,8 @@ namespace WalkerSim
             return center * power;
         }
 
-        private static Vector3 FlockOther(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
+        private static Vector3 FlockOther(State state, Agent agent, FixedBufferList<Agent> nearby, float distanceSqr, float power)
         {
-            var distanceSqr = distance;
             // point toward the center of the flock (mean flock boid position)
             var mean = Vector3.Zero;
             var count = 0;
@@ -239,7 +238,7 @@ namespace WalkerSim
                 if (neighbor.Group == agent.Group)
                     continue;
 
-                var dist = Vector3.Distance(agent.Position, neighbor.Position);
+                var dist = Vector3.DistanceSqr(agent.Position, neighbor.Position);
                 if (dist > distanceSqr)
                     continue;
                 mean += neighbor.Position;
@@ -253,9 +252,8 @@ namespace WalkerSim
             return center * power;
         }
 
-        private static Vector3 AlignAny(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
+        private static Vector3 AlignAny(State state, Agent agent, FixedBufferList<Agent> nearby, float distanceSqr, float power)
         {
-            var distanceSqr = distance;
             // point toward the center of the flock (mean flock boid position)
             var meanVel = Vector3.Zero;
             var count = 0;
@@ -263,7 +261,7 @@ namespace WalkerSim
             {
                 var neighbor = nearby[i];
 
-                var dist = Vector3.Distance(agent.Position, neighbor.Position);
+                var dist = Vector3.DistanceSqr(agent.Position, neighbor.Position);
                 if (dist > distanceSqr)
                     continue;
 
@@ -281,9 +279,8 @@ namespace WalkerSim
         }
 
 
-        private static Vector3 AlignSame(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
+        private static Vector3 AlignSame(State state, Agent agent, FixedBufferList<Agent> nearby, float distanceSqr, float power)
         {
-            var distanceSqr = distance;
             // point toward the center of the flock (mean flock boid position)
             var meanVel = Vector3.Zero;
             var count = 0;
@@ -293,7 +290,7 @@ namespace WalkerSim
                 if (neighbor.Group != agent.Group)
                     continue;
 
-                var dist = Vector3.Distance(agent.Position, neighbor.Position);
+                var dist = Vector3.DistanceSqr(agent.Position, neighbor.Position);
                 if (dist > distanceSqr)
                     continue;
 
@@ -310,9 +307,8 @@ namespace WalkerSim
             return delta * power;
         }
 
-        private static Vector3 AlignOther(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
+        private static Vector3 AlignOther(State state, Agent agent, FixedBufferList<Agent> nearby, float distanceSqr, float power)
         {
-            var distanceSqr = distance;
             // point toward the center of the flock (mean flock boid position)
             var meanVel = Vector3.Zero;
             var count = 0;
@@ -322,7 +318,7 @@ namespace WalkerSim
                 if (neighbor.Group == agent.Group)
                     continue;
 
-                var dist = Vector3.Distance(agent.Position, neighbor.Position);
+                var dist = Vector3.DistanceSqr(agent.Position, neighbor.Position);
                 if (dist > distanceSqr)
                     continue;
 
@@ -339,20 +335,19 @@ namespace WalkerSim
             return delta * power;
         }
 
-        private static Vector3 AvoidAny(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
+        private static Vector3 AvoidAny(State state, Agent agent, FixedBufferList<Agent> nearby, float distanceSqr, float power)
         {
-            var distanceSqr = distance;
             // point away as boids get close
             var sumCloseness = Vector3.Zero;
             for (int i = 0; i < nearby.Count; i++)
             {
                 var neighbor = nearby[i];
 
-                var dist = Vector3.Distance(agent.Position, neighbor.Position);
+                var dist = Vector3.DistanceSqr(agent.Position, neighbor.Position);
                 if (dist > distanceSqr)
                     continue;
 
-                var closeness = distanceSqr - agent.GetDistance(neighbor);
+                var closeness = distanceSqr - dist;
                 sumCloseness += (agent.Position - neighbor.Position) * closeness;
             }
 
@@ -360,9 +355,8 @@ namespace WalkerSim
         }
 
 
-        private static Vector3 AvoidSame(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
+        private static Vector3 AvoidSame(State state, Agent agent, FixedBufferList<Agent> nearby, float distanceSqr, float power)
         {
-            var distanceSqr = distance;
             // point away as boids get close
             var sumCloseness = Vector3.Zero;
             for (int i = 0; i < nearby.Count; i++)
@@ -371,20 +365,19 @@ namespace WalkerSim
                 if (neighbor.Group != agent.Group)
                     continue;
 
-                var dist = Vector3.Distance(agent.Position, neighbor.Position);
+                var dist = Vector3.DistanceSqr(agent.Position, neighbor.Position);
                 if (dist > distanceSqr)
                     continue;
 
-                var closeness = distanceSqr - agent.GetDistance(neighbor);
+                var closeness = distanceSqr - dist;
                 sumCloseness += (agent.Position - neighbor.Position) * closeness;
             }
 
             return sumCloseness * power;
         }
 
-        private static Vector3 AvoidOther(State state, Agent agent, FixedBufferList<Agent> nearby, float distance, float power)
+        private static Vector3 AvoidOther(State state, Agent agent, FixedBufferList<Agent> nearby, float distanceSqr, float power)
         {
-            var distanceSqr = distance;
             // point away as boids get close
             var sumCloseness = Vector3.Zero;
             for (int i = 0; i < nearby.Count; i++)
@@ -393,11 +386,11 @@ namespace WalkerSim
                 if (neighbor.Group == agent.Group)
                     continue;
 
-                var dist = Vector3.Distance(agent.Position, neighbor.Position);
+                var dist = Vector3.DistanceSqr(agent.Position, neighbor.Position);
                 if (dist > distanceSqr)
                     continue;
 
-                var closeness = distanceSqr - agent.GetDistance(neighbor);
+                var closeness = distanceSqr - dist;
                 sumCloseness += (agent.Position - neighbor.Position) * closeness;
             }
 
@@ -519,11 +512,14 @@ namespace WalkerSim
             for (int i = 0; i < decos.Length; i++)
             {
                 var deco = decos[i];
-                var dist = Vector3.DistanceSqr(agent.Position, deco.Position);
-                if (dist > distance)
+
+                if (state.AgentsNearPOICounter != null)
                 {
-                    continue;
+                    if (state.AgentsNearPOICounter[i] >= 64)
+                        continue;
                 }
+
+                var dist = Vector3.DistanceSqr(agent.Position, deco.Position);
 
                 if (dist < closestDist)
                 {

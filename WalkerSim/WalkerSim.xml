@@ -1,40 +1,35 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <WalkerSim xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://zeh.matt/WalkerSimSchema">
-    <DebugOptions>
-        <LogSpawnDespawn>false</LogSpawnDespawn>
-    </DebugOptions>
-    <RandomSeed>1337</RandomSeed>
-    <MaxAgents>10000</MaxAgents>
-    <StartAgentsGrouped>true</StartAgentsGrouped>
-    <GroupSize>100</GroupSize>
-    <AgentStartPosition>RandomLocation</AgentStartPosition>
-    <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>
-    <PauseDuringBloodmoon>true</PauseDuringBloodmoon>
-    <MovementProcessors Group="-1" SpeedScale="1" Color="#80FF80">
-        <Processor Type="FlockAnyGroup" Distance="50" Power="0.0001" />
-        <Processor Type="AlignAnyGroup" Distance="50" Power="0.0001" />
-        <Processor Type="AvoidAnyGroup" Distance="30" Power="0.0002" />
-        <Processor Type="Wind" Distance="0" Power="0.0011" />
-        <Processor Type="StickToRoads" Distance="0" Power="0.0025" />
-        <Processor Type="WorldEvents" Distance="0" Power="0.005" />
-        <Processor Type="AvoidOtherGroup" Distance="140" Power="7E-05" />
-    </MovementProcessors>
-    <MovementProcessors Group="-1" SpeedScale="1" Color="Red">
-        <Processor Type="FlockAnyGroup" Distance="50" Power="0.0001" />
-        <Processor Type="AlignAnyGroup" Distance="50" Power="0.0001" />
-        <Processor Type="AvoidAnyGroup" Distance="30" Power="0.0002" />
-        <Processor Type="Wind" Distance="0" Power="0.0001" />
-        <Processor Type="StickToRoads" Distance="0" Power="0.0025" />
-        <Processor Type="WorldEvents" Distance="0" Power="0.005" />
-        <Processor Type="AvoidOtherGroup" Distance="140" Power="7E-05" />
-    </MovementProcessors>
-    <MovementProcessors Group="-1" SpeedScale="1" Color="#FF80FF">
-        <Processor Type="FlockAnyGroup" Distance="50" Power="0.0001" />
-        <Processor Type="AlignAnyGroup" Distance="50" Power="0.0001" />
-        <Processor Type="AvoidAnyGroup" Distance="30" Power="0.0002" />
-        <Processor Type="StickToRoads" Distance="0" Power="0.0025" />
-        <Processor Type="WorldEvents" Distance="0" Power="0.005" />
-        <Processor Type="AvoidOtherGroup" Distance="140" Power="7E-05" />
-        <Processor Type="WindInverted" Distance="0" Power="0" />
-    </MovementProcessors>
+  <DebugOptions>
+    <LogSpawnDespawn>false</LogSpawnDespawn>
+  </DebugOptions>
+  <RandomSeed>1337</RandomSeed>
+  <MaxAgents>6000</MaxAgents>
+  <StartAgentsGrouped>true</StartAgentsGrouped>
+  <GroupSize>64</GroupSize>
+  <AgentStartPosition>RandomLocation</AgentStartPosition>
+  <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>
+  <PauseWithoutPlayers>false</PauseWithoutPlayers>
+  <PauseDuringBloodmoon>false</PauseDuringBloodmoon>
+  <MovementProcessors Group="-1" SpeedScale="1" Color="#8000FF">
+    <Processor Type="StickToRoads" Distance="0" Power="0.3" />
+    <Processor Type="Wind" Distance="0" Power="0.6" />
+    <Processor Type="AvoidAnyGroup" Distance="30" Power="0.02" />
+  </MovementProcessors>
+  <MovementProcessors Group="-1" SpeedScale="1" Color="Red">
+    <Processor Type="StickToRoads" Distance="0" Power="0.05" />
+    <Processor Type="WindInverted" Distance="0" Power="0.1" />
+    <Processor Type="AvoidSameGroup" Distance="15" Power="0.15" />
+    <Processor Type="StickToPOIs" Distance="0" Power="0.001" />
+  </MovementProcessors>
+  <MovementProcessors Group="-1" SpeedScale="1" Color="#80FF00">
+    <Processor Type="StickToRoads" Distance="0" Power="0.1" />
+    <Processor Type="AvoidAnyGroup" Distance="15" Power="0.5" />
+    <Processor Type="StickToPOIs" Distance="0" Power="0.5" />
+  </MovementProcessors>
+  <MovementProcessors Group="-1" SpeedScale="1" Color="#80FFFF">
+    <Processor Type="Wind" Distance="0" Power="0.6" />
+    <Processor Type="AvoidAnyGroup" Distance="15" Power="0.2" />
+    <Processor Type="AvoidRoads" Distance="0" Power="0.005" />
+  </MovementProcessors>
 </WalkerSim>

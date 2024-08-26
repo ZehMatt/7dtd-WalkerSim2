@@ -71,7 +71,26 @@ namespace WalkerSim
             get => _prefabs;
         }
 
-        private static MapInfo ParseInfo(string path)
+        private Vector3 _worldSize;
+        private Vector3 _worldMins;
+        private Vector3 _worldMaxs;
+
+        public Vector3 WorldSize
+        {
+            get => _worldSize;
+        }
+
+        public Vector3 WorldMins
+        {
+            get => _worldMins;
+        }
+
+        public Vector3 WorldMaxs
+        {
+            get => _worldMaxs;
+        }
+
+        private static MapInfo LoadMapInfo(string path)
         {
             if (!System.IO.File.Exists(path))
             {
@@ -173,11 +192,31 @@ namespace WalkerSim
             }
         }
 
+        private static Vector3 GetWorldSize(string folderPath)
+        {
+            // The only way to tell at the moment is to use the file size of dtm.raw.
+            var dtmFile = System.IO.Path.Combine(folderPath, "dtm.raw");
+            try
+            {
+                var fileInfo = new System.IO.FileInfo(dtmFile);
+                var fileSize = fileInfo.Length;
+                var worldSize = System.Math.Sqrt(fileSize / 2);
+                return new Vector3((float)worldSize, (float)worldSize, 256);
+            }
+            catch (Exception ex)
+            {
+                Logging.Err("Failed to obtain file size of '{0}'.", dtmFile);
+                Logging.Exception(ex);
+                return Vector3.Zero;
+            }
+
+        }
+
         public static MapData LoadFromFolder(string folderPath)
         {
             // Parse map_info.xml         
             var mapInfoPath = System.IO.Path.Combine(folderPath, "map_info.xml");
-            var mapInfo = ParseInfo(mapInfoPath);
+            var mapInfo = LoadMapInfo(mapInfoPath);
 
             var roads = LoadRoadSplat(folderPath);
             if (roads == null)
@@ -191,10 +230,18 @@ namespace WalkerSim
                 return null;
             }
 
+            var worldSize = GetWorldSize(folderPath);
+            var sizeX = worldSize.X / 2;
+            var sizeY = worldSize.Y / 2;
+            var sizeZ = worldSize.Z;
+
             var res = new MapData();
             res._info = mapInfo;
             res._roads = roads;
             res._prefabs = prefabs;
+            res._worldSize = worldSize;
+            res._worldMins = new Vector3(-sizeX, -sizeY, 0);
+            res._worldMaxs = new Vector3(sizeX, sizeY, sizeZ);
 
             // Garbage collect here, the PNGs are sometimes huge.
             GC.Collect();

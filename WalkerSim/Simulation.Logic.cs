@@ -28,6 +28,7 @@ namespace WalkerSim
 
             UpdateWindDirection();
             UpdateEvents();
+            UpatePOICounter();
 
             var agents = _state.Agents;
             var numUpdates = 0;
@@ -86,6 +87,28 @@ namespace WalkerSim
             _state.Ticks++;
         }
 
+        private void UpatePOICounter()
+        {
+            if (_state.MapData == null)
+            {
+                return;
+            }
+
+            var prefabs = _state.MapData.Prefabs;
+            var decos = prefabs.Decorations;
+
+            if (_state.AgentsNearPOICounter == null || _state.AgentsNearPOICounter.Length != decos.Length)
+            {
+                _state.AgentsNearPOICounter = new int[decos.Length];
+            }
+
+            for (int i = 0; i < decos.Length; i++)
+            {
+                var deco = decos[i];
+                _state.AgentsNearPOICounter[i] = QueryNearbyCount(deco.Position, 64, 100);
+            }
+        }
+
         [Conditional("DEBUG")]
         private void CheckPositionInBounds(Vector3 pos)
         {
@@ -103,6 +126,12 @@ namespace WalkerSim
             var deltaTime = ticksDelta * TickRate;
             agent.LastUpdateTick = _state.Ticks;
 
+            // Might be cleared while its running.
+            if (_processors.Count == 0)
+            {
+                return;
+            }
+
             // Sanity check, omitted for release builds.
             CheckPositionInBounds(agent.Position);
 
@@ -111,25 +140,34 @@ namespace WalkerSim
             _nearby.Clear();
             QueryCellsLockFree(agent.Position, agent.Index, maxNeighborDistance, _nearby);
 
-            var curVel = agent.Velocity * 0.95f;
+            var curVel = agent.Velocity * 0.97f;
+
+            // Check if curVel is near zero.
+            if (System.Math.Abs(curVel.X) < 1e-6f)
+                curVel.X = 0;
+            if (System.Math.Abs(curVel.Y) < 1e-6f)
+                curVel.Y = 0;
 
             var processorGroup = _processors[agent.Group];
             for (int i = 0; i < processorGroup.Entries.Count; i++)
             {
                 var processor = processorGroup.Entries[i];
 
-                var addVel = processor.Handler(_state, agent, _nearby, processor.Distance, processor.Power);
+                var addVel = processor.Handler(_state, agent, _nearby, processor.DistanceSqr, processor.Power);
                 addVel.Validate();
 
                 curVel += addVel;
             }
+
+            // Clamp the velocity.
+            curVel.X = Math.Clamp(curVel.X, -2.0f, 2.0f);
+            curVel.Y = Math.Clamp(curVel.Y, -2.0f, 2.0f);
 
             curVel.Validate();
             agent.Velocity = curVel;
 
             ApplyMovement(agent, deltaTime * TimeScale, processorGroup.SpeedScale);
 
-            //BounceOffWalls(ref agent);
             Warp(agent);
         }
 
@@ -187,11 +225,11 @@ namespace WalkerSim
             var vel = agent.Velocity;
             vel.Validate();
 
-            var dir = Vector3.Normalize(vel);
+            //var dir = Vector3.Normalize(vel);
+            var dir = vel;
             pos += (dir * power) * deltaTime;
             pos.Validate();
 
-            agent.Velocity = vel;
             agent.Position = pos;
         }
 
