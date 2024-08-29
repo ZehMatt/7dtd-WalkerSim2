@@ -160,28 +160,41 @@ namespace WalkerSim
 
             var cellX = x / CellSize;
             var cellY = y / CellSize;
-            var cellIndex = cellY * _gridWidth + cellX;
-            var cell = _roadGrid[cellIndex];
 
             float closestDist = float.MaxValue;
-            if (cell.Points.Count == 0)
-            {
-                return closest;
-            }
 
-            for (int i = 0; i < cell.Points.Count; i++)
+            // Iterate through neighboring cells (3x3 grid)
+            for (int offsetY = -1; offsetY <= 1; offsetY++)
             {
-                var point = cell.Points[i];
-                if (point.X == x && point.Y == y)
+                for (int offsetX = -1; offsetX <= 1; offsetX++)
                 {
-                    continue;
-                }
+                    var neighborCellX = cellX + offsetX;
+                    var neighborCellY = cellY + offsetY;
 
-                var dist = Vector3.DistanceSqr(new Vector3(x, y), new Vector3(point.X, point.Y));
-                if (dist < closestDist)
-                {
-                    closestDist = dist;
-                    closest = point;
+                    // Ensure the neighboring cell is within grid bounds
+                    if (neighborCellX >= 0 && neighborCellX < _gridWidth &&
+                        neighborCellY >= 0 && neighborCellY < _gridHeight)
+                    {
+                        var cellIndex = neighborCellY * _gridWidth + neighborCellX;
+                        var cell = _roadGrid[cellIndex];
+
+                        // Check each point in the neighboring cell
+                        for (int i = 0; i < cell.Points.Count; i++)
+                        {
+                            var point = cell.Points[i];
+                            if (point.X == x && point.Y == y)
+                            {
+                                continue;
+                            }
+
+                            var dist = Vector3.DistanceSqr(new Vector3(x, y), new Vector3(point.X, point.Y));
+                            if (dist < closestDist)
+                            {
+                                closestDist = dist;
+                                closest = point;
+                            }
+                        }
+                    }
                 }
             }
 

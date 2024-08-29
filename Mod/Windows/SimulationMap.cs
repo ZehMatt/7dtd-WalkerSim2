@@ -132,7 +132,7 @@ namespace WalkerSim
                             continue;
 
                         var pos = simulation.RemapPosition2D(agent.Position, Vector3.Zero, kCanvas);
-                        var color = colors[agent.Group];
+                        //var color = colors[agent.Group];
 
                         if (agent.CurrentState == Agent.State.Active)
                         {
@@ -140,7 +140,7 @@ namespace WalkerSim
                         }
                         else
                         {
-                            Drawing.Primitives.DrawPixel(new UnityEngine.Vector2(pos.X, pos.Y), color);
+                            Drawing.Primitives.DrawPixel(new UnityEngine.Vector2(pos.X, pos.Y), UnityEngine.Color.green);
                         }
 
                     }

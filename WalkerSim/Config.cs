@@ -98,8 +98,8 @@ namespace WalkerSim
         [XmlElement("RandomSeed")]
         public int RandomSeed = 1337;
 
-        [XmlElement("MaxAgents")]
-        public int MaxAgents = 10000;
+        [XmlElement("PopulationDensity")]
+        public int PopulationDensity = 160;
 
         [XmlElement("StartAgentsGrouped")]
         public bool StartAgentsGrouped = true;
@@ -113,9 +113,6 @@ namespace WalkerSim
         [XmlElement("AgentRespawnPosition")]
         public WorldLocation RespawnPosition = WorldLocation.None;
 
-        [XmlElement("PauseWithoutPlayers")]
-        public bool PauseWithoutPlayers = false;
-
         [XmlElement("PauseDuringBloodmoon")]
         public bool PauseDuringBloodmoon = false;
 
@@ -124,16 +121,16 @@ namespace WalkerSim
 
         private static void SanitizeConfig(Config config)
         {
-            if (config.MaxAgents < Simulation.Limits.MinAgents ||
-                config.MaxAgents > Simulation.Limits.MaxAgents)
+            if (config.PopulationDensity < Simulation.Limits.MinDensity ||
+                config.PopulationDensity > Simulation.Limits.MaxDensity)
             {
-                Logging.Warn("Invalid value for MaxAgents (Min: {0}, Max: {1}), clamping.",
-                    Simulation.Limits.MinAgents,
-                    Simulation.Limits.MaxAgents);
+                Logging.Warn("Invalid value for PopulationDensity (Min: {0}, Max: {1}), clamping.",
+                    Simulation.Limits.MinDensity,
+                    Simulation.Limits.MaxDensity);
 
-                config.MaxAgents = Math.Clamp(config.MaxAgents,
-                    Simulation.Limits.MinAgents,
-                    Simulation.Limits.MaxAgents);
+                config.PopulationDensity = Math.Clamp(config.PopulationDensity,
+                    Simulation.Limits.MinDensity,
+                    Simulation.Limits.MaxDensity);
             }
         }
 
@@ -164,7 +161,7 @@ namespace WalkerSim
             var conf = new Config()
             {
                 RandomSeed = 1337,
-                MaxAgents = 6000,
+                PopulationDensity = 160,
                 GroupSize = 32,
                 StartPosition = WorldLocation.RandomLocation,
                 RespawnPosition = WorldLocation.RandomBorderLocation,

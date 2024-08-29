@@ -12,7 +12,7 @@ namespace WalkerSim
         private float _autoSaveInterval = -1;
 
         private const uint SaveMagic = 0x4D534B57; // WKSM
-        private const uint SaveVersion = 1;
+        private const uint SaveVersion = 2;
 
         private void SaveState(State state, BinaryWriter writer)
         {
@@ -150,6 +150,11 @@ namespace WalkerSim
             }
 
             state.Version = Serialization.ReadUInt32(reader, false);
+            if (state.Version != SaveVersion)
+            {
+                Logging.Info("Saved state is using a different version, skipping load.");
+                return false;
+            }
 
             return true;
         }

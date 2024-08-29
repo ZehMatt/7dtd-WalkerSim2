@@ -25,9 +25,7 @@ namespace WalkerSim
             SetupGrid();
             foreach (var agent in _state.Agents)
             {
-                agent.CellIndex = GetCellIndex(agent.Position);
-                var cell = _state.Grid[agent.CellIndex];
-                cell.Add(agent.Index);
+                agent.CellIndex = -1;
             }
         }
 

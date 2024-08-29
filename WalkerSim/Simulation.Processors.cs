@@ -99,7 +99,7 @@ namespace WalkerSim
                 if (processorGroup.Color == "")
                 {
                     // Assign a default color of purple.
-                    group.Color = System.Drawing.Color.Purple;
+                    group.Color = System.Drawing.Color.Magenta;
                 }
                 else
                 {

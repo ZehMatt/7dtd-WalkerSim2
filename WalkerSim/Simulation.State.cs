@@ -28,6 +28,8 @@ namespace WalkerSim
             public int GroupCount = 0;
             public float MaxNeighbourDistance = 0;
             public int[] AgentsNearPOICounter;
+            public bool FastForwardStart = false;
+            public int POIIterator = 0;
 
             public void Reset()
             {
@@ -45,6 +47,7 @@ namespace WalkerSim
                 WindTime = 0;
                 TickNextWindChange = 0;
                 GroupCount = 0;
+                FastForwardStart = true;
             }
         }
 

@@ -56,6 +56,7 @@
             this.simCanvas = new System.Windows.Forms.PictureBox();
             this.tabSimulation = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.lblMaxAgentsInfo = new System.Windows.Forms.Label();
             this.inputWorld = new System.Windows.Forms.ComboBox();
             this.label10 = new System.Windows.Forms.Label();
             this.inputPauseDuringBloodmoon = new System.Windows.Forms.CheckBox();
@@ -98,6 +99,8 @@
             this.clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorPickerDlg = new System.Windows.Forms.ColorDialog();
+            this.btRand = new System.Windows.Forms.Button();
+            this.toolTipGroupSize = new System.Windows.Forms.ToolTip(this.components);
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -308,6 +311,7 @@
             // splitContainer1
             // 
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer1.FixedPanel = System.Windows.Forms.FixedPanel.Panel2;
             this.splitContainer1.Location = new System.Drawing.Point(0, 24);
             this.splitContainer1.Name = "splitContainer1";
             this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
@@ -320,7 +324,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.tabSimulation);
             this.splitContainer1.Size = new System.Drawing.Size(856, 693);
-            this.splitContainer1.SplitterDistance = 481;
+            this.splitContainer1.SplitterDistance = 491;
             this.splitContainer1.TabIndex = 5;
             // 
             // simCanvas
@@ -329,7 +333,7 @@
             this.simCanvas.Dock = System.Windows.Forms.DockStyle.Fill;
             this.simCanvas.Location = new System.Drawing.Point(0, 0);
             this.simCanvas.Name = "simCanvas";
-            this.simCanvas.Size = new System.Drawing.Size(856, 481);
+            this.simCanvas.Size = new System.Drawing.Size(856, 491);
             this.simCanvas.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.simCanvas.TabIndex = 4;
             this.simCanvas.TabStop = false;
@@ -344,11 +348,13 @@
             this.tabSimulation.Location = new System.Drawing.Point(0, 0);
             this.tabSimulation.Name = "tabSimulation";
             this.tabSimulation.SelectedIndex = 0;
-            this.tabSimulation.Size = new System.Drawing.Size(856, 208);
+            this.tabSimulation.Size = new System.Drawing.Size(856, 198);
             this.tabSimulation.TabIndex = 0;
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.btRand);
+            this.tabPage1.Controls.Add(this.lblMaxAgentsInfo);
             this.tabPage1.Controls.Add(this.inputWorld);
             this.tabPage1.Controls.Add(this.label10);
             this.tabPage1.Controls.Add(this.inputPauseDuringBloodmoon);
@@ -366,10 +372,21 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(848, 182);
+            this.tabPage1.Size = new System.Drawing.Size(848, 172);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Base Parameters";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // lblMaxAgentsInfo
+            // 
+            this.lblMaxAgentsInfo.AutoSize = true;
+            this.lblMaxAgentsInfo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.lblMaxAgentsInfo.Location = new System.Drawing.Point(262, 66);
+            this.lblMaxAgentsInfo.Name = "lblMaxAgentsInfo";
+            this.lblMaxAgentsInfo.Size = new System.Drawing.Size(150, 13);
+            this.lblMaxAgentsInfo.TabIndex = 42;
+            this.lblMaxAgentsInfo.Text = "Recommended: 6000 or more.";
+            this.lblMaxAgentsInfo.Visible = false;
             // 
             // inputWorld
             // 
@@ -393,7 +410,7 @@
             // inputPauseDuringBloodmoon
             // 
             this.inputPauseDuringBloodmoon.AutoSize = true;
-            this.inputPauseDuringBloodmoon.Location = new System.Drawing.Point(281, 41);
+            this.inputPauseDuringBloodmoon.Location = new System.Drawing.Point(265, 39);
             this.inputPauseDuringBloodmoon.Name = "inputPauseDuringBloodmoon";
             this.inputPauseDuringBloodmoon.Size = new System.Drawing.Size(144, 17);
             this.inputPauseDuringBloodmoon.TabIndex = 39;
@@ -472,15 +489,15 @@
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(10, 66);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(63, 13);
+            this.label2.Size = new System.Drawing.Size(95, 13);
             this.label2.TabIndex = 31;
-            this.label2.Text = "Max Agents";
+            this.label2.Text = "Population Density";
             // 
             // inputMaxAgents
             // 
             this.inputMaxAgents.Location = new System.Drawing.Point(113, 64);
             this.inputMaxAgents.Maximum = new decimal(new int[] {
-            30000,
+            400,
             0,
             0,
             0});
@@ -493,7 +510,7 @@
             this.inputMaxAgents.Size = new System.Drawing.Size(120, 20);
             this.inputMaxAgents.TabIndex = 30;
             this.inputMaxAgents.Value = new decimal(new int[] {
-            1,
+            160,
             0,
             0,
             0});
@@ -516,13 +533,13 @@
             0,
             0});
             this.inputRandomSeed.Name = "inputRandomSeed";
-            this.inputRandomSeed.Size = new System.Drawing.Size(121, 20);
+            this.inputRandomSeed.Size = new System.Drawing.Size(100, 20);
             this.inputRandomSeed.TabIndex = 28;
             // 
             // inputStartGrouped
             // 
             this.inputStartGrouped.AutoSize = true;
-            this.inputStartGrouped.Location = new System.Drawing.Point(281, 17);
+            this.inputStartGrouped.Location = new System.Drawing.Point(265, 16);
             this.inputStartGrouped.Name = "inputStartGrouped";
             this.inputStartGrouped.Size = new System.Drawing.Size(128, 17);
             this.inputStartGrouped.TabIndex = 27;
@@ -540,7 +557,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(848, 182);
+            this.tabPage2.Size = new System.Drawing.Size(848, 172);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Movement Processors";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -815,7 +832,7 @@
             this.tabPage3.Controls.Add(this.rtbLog);
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(848, 182);
+            this.tabPage3.Size = new System.Drawing.Size(848, 172);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Log";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -829,7 +846,7 @@
             this.rtbLog.Location = new System.Drawing.Point(0, 0);
             this.rtbLog.Name = "rtbLog";
             this.rtbLog.ReadOnly = true;
-            this.rtbLog.Size = new System.Drawing.Size(848, 182);
+            this.rtbLog.Size = new System.Drawing.Size(848, 172);
             this.rtbLog.TabIndex = 0;
             this.rtbLog.Text = "";
             // 
@@ -857,6 +874,20 @@
             // colorPickerDlg
             // 
             this.colorPickerDlg.AnyColor = true;
+            // 
+            // btRand
+            // 
+            this.btRand.Location = new System.Drawing.Point(212, 37);
+            this.btRand.Name = "btRand";
+            this.btRand.Size = new System.Drawing.Size(22, 22);
+            this.btRand.TabIndex = 43;
+            this.btRand.Text = "R";
+            this.btRand.UseVisualStyleBackColor = true;
+            this.btRand.Click += new System.EventHandler(this.OnRandSeedClick);
+            // 
+            // toolTipGroupSize
+            // 
+            this.toolTipGroupSize.ToolTipTitle = "Hello World";
             // 
             // FormMain
             // 
@@ -972,6 +1003,9 @@
         private System.Windows.Forms.ColorDialog colorPickerDlg;
         private System.Windows.Forms.Button buttonDuplicateGroup;
         private System.Windows.Forms.ToolStripMenuItem exportConfigurationToolStripMenuItem;
+        private System.Windows.Forms.Label lblMaxAgentsInfo;
+        private System.Windows.Forms.Button btRand;
+        private System.Windows.Forms.ToolTip toolTipGroupSize;
     }
 }
 

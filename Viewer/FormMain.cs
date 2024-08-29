@@ -27,7 +27,7 @@ namespace WalkerSim.Viewer
         private List<Config.WorldLocation> _respawnPositions = new List<Config.WorldLocation>();
 
         Simulation simulation = Simulation.Instance;
-        Random prng = new Random(1);
+        Random prng;
         Bitmap bitmap;
         Bitmap roadBitmap;
         System.Drawing.Graphics gr;
@@ -37,7 +37,7 @@ namespace WalkerSim.Viewer
 
         void GenerateColorTable()
         {
-            var groupCount = CurrentConfig.MaxAgents / CurrentConfig.GroupSize;
+            var groupCount = simulation.Agents.Count / CurrentConfig.GroupSize;
             GroupColors = new Brush[groupCount];
 
             for (int i = 0; i < groupCount; i++)
@@ -72,38 +72,80 @@ namespace WalkerSim.Viewer
             SetupLimits();
             SetupChoices();
             ScrollWheelHack();
+            SetupToolTips();
             //LoadDefaultConfiguration();
 
             CurrentConfig = Config.GetDefault();
             UpdateConfigFields();
+
+            // Set world size to 6k as the default thing until the world is changed.
+            simulation.SetWorldSize(WorldMins, WorldMaxs);
+
+#if DEBUG
+            prng = new Random(1);
+#else
+            prng = new Random((int)DateTime.Now.Ticks);
+#endif
+
+            inputRandomSeed.Value = prng.Next();
         }
 
-        private void LogMsg(string text, Color color, bool addNewLine = true)
+        private void CreateToolTip(Control ctrl, string helpText)
         {
+            var tooltip = new System.Windows.Forms.ToolTip();
+            tooltip.SetToolTip(ctrl, helpText);
+            // Keep open for as long user is pointing at it.
+            tooltip.AutoPopDelay = 999999;
+        }
+
+        private void SetupToolTips()
+        {
+            CreateToolTip(inputWorld, "It is recommended to select the world you are creating the configuration for. If the configuration is used for another world the preview will not match.");
+            CreateToolTip(inputRandomSeed, "The simulation uses a random number generator, this will be the starting seed. This seed has no relation to any random seeds from the game.");
+            CreateToolTip(inputMaxAgents, "The amount of agents per square kilometer (km²), so the total amount is square kilometer multiplied by density.\nExample: 6k map with density of 150 will be: 6 x 6 x 150 = 5400.\n");
+            CreateToolTip(inputGroupSize, "This specifies how many members a group will have, the total amount of groups is Max Agents divided by Group Size.\n\nNOTE: Setting this to 1 is the same as not having groups.");
+            CreateToolTip(inputStartPosition, "Specifies the starting position of agents in the simulation.");
+            CreateToolTip(inputRespawnPosition, "Specifies the position of where agents will respawn when killed.\n\nNOTE: When specifying 'None' it will disable their respawn.");
+            CreateToolTip(inputStartGrouped, "If enabled the agents will start close to members of their own group, this means the starting position is per group, if disabled the starting position is per agent.");
+            CreateToolTip(inputPauseDuringBloodmoon, "If enabled the simulation will pause during blood moon which means no new in-game zombies will spawn and will be resumed afterwards, this does not affect blood moon spawns.");
+        }
+
+        private void LogMsg(string text, Color color, bool switchToLog)
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke((MethodInvoker)delegate
+                {
+                    LogMsg(text, color, switchToLog);
+                });
+                return;
+            }
+
             rtbLog.SuspendLayout();
             rtbLog.SelectionColor = color;
-            rtbLog.AppendText(addNewLine
-                ? $"{text}{Environment.NewLine}"
-                : text);
+            rtbLog.AppendText($"{text}{Environment.NewLine}");
             rtbLog.ScrollToCaret();
             rtbLog.ResumeLayout();
+
+            if (switchToLog)
+            {
+                tabSimulation.SelectTab(2); // Switch to log.
+            }
         }
 
         private void LogInfo(string msg)
         {
-            LogMsg(msg, Color.Black, true);
+            LogMsg(msg, Color.Black, false);
         }
 
         private void LogWrn(string msg)
         {
             LogMsg(msg, Color.Goldenrod, true);
-            tabSimulation.SelectTab(2); // Switch to log.
         }
 
         private void LogErr(string msg)
         {
             LogMsg(msg, Color.DarkRed, true);
-            tabSimulation.SelectTab(2); // Switch to log.
         }
 
         private void SetupLogging()
@@ -125,7 +167,7 @@ namespace WalkerSim.Viewer
             decimal value = control.Value + ((e.Delta > 0) ? control.Increment : -control.Increment);
 
             // More ugly hacks to keep the caret at the same position.
-            var txt = control.Controls[1] as TextBox;
+            var txt = control.Controls[1] as System.Windows.Forms.TextBox;
             var sel = txt.SelectionStart;
             var selLen = txt.SelectionLength;
             control.Value = System.Math.Max(control.Minimum, System.Math.Min(value, control.Maximum));
@@ -189,10 +231,10 @@ namespace WalkerSim.Viewer
 
         private void SetupLimits()
         {
-            inputMaxAgents.Minimum = Simulation.Limits.MinAgents;
-            inputMaxAgents.Maximum = Simulation.Limits.MaxAgents;
+            inputMaxAgents.Minimum = Simulation.Limits.MinDensity;
+            inputMaxAgents.Maximum = Simulation.Limits.MaxDensity;
             inputGroupSize.Minimum = 1;
-            inputGroupSize.Maximum = Simulation.Limits.MaxAgents;
+            inputGroupSize.Maximum = Simulation.Limits.MaxDensity;
             inputRandomSeed.Minimum = 1;
             inputRandomSeed.Maximum = UInt32.MaxValue;
         }
@@ -236,6 +278,7 @@ namespace WalkerSim.Viewer
 
             CurrentConfig = loadedConfig;
             UpdateConfigFields();
+            CheckMaxAgents();
         }
 
         private void SetConfigValues()
@@ -245,7 +288,7 @@ namespace WalkerSim.Viewer
                 return;
             }
             CurrentConfig.RandomSeed = (int)inputRandomSeed.Value;
-            CurrentConfig.MaxAgents = (int)inputMaxAgents.Value;
+            CurrentConfig.PopulationDensity = (int)inputMaxAgents.Value;
             CurrentConfig.GroupSize = (int)inputGroupSize.Value;
             CurrentConfig.StartAgentsGrouped = inputStartGrouped.Checked;
             CurrentConfig.PauseDuringBloodmoon = inputPauseDuringBloodmoon.Checked;
@@ -261,6 +304,8 @@ namespace WalkerSim.Viewer
             {
                 CurrentConfig.RespawnPosition = _respawnPositions[respawnChoice];
             }
+
+            CheckMaxAgents();
         }
 
         private void SetupConfigChangeHandlers()
@@ -282,7 +327,7 @@ namespace WalkerSim.Viewer
             _updatingConfig = true;
 
             inputRandomSeed.Value = CurrentConfig.RandomSeed;
-            inputMaxAgents.Value = CurrentConfig.MaxAgents;
+            inputMaxAgents.Value = CurrentConfig.PopulationDensity;
             inputGroupSize.Value = CurrentConfig.GroupSize;
             inputStartGrouped.Checked = CurrentConfig.StartAgentsGrouped;
             inputPauseDuringBloodmoon.Checked = CurrentConfig.PauseDuringBloodmoon;
@@ -306,19 +351,9 @@ namespace WalkerSim.Viewer
 
         private void StartSimulation()
         {
-            simulation.SetWorldSize(WorldMins, WorldMaxs);
             simulation.Reset(CurrentConfig);
 
             GenerateColorTable();
-
-            Logging.Out("Advancing simulation for {0} ticks...", Simulation.Limits.TicksToAdvanceOnStartup);
-
-            var elapsed = Utils.Measure(() =>
-            {
-                simulation.FastAdvance(Simulation.Limits.TicksToAdvanceOnStartup);
-            });
-
-            Logging.Out("... done, took {0}.", elapsed);
 
             simulation.Start();
             updateTimer.Start();
@@ -383,8 +418,8 @@ namespace WalkerSim.Viewer
             {
                 gr.Clear(System.Drawing.Color.Black);
 
-                var brushRed = new SolidBrush(Color.FromArgb(100, 255, 0, 0));
-                var brushGreen = new SolidBrush(Color.FromArgb(100, 0, 255, 0));
+                var brushMain = new SolidBrush(Color.FromArgb(100, 255, 255, 255));
+                var brushOffroad = new SolidBrush(Color.FromArgb(50, 255, 255, 255));
 
                 for (int y = 0; y < roads.Height; y++)
                 {
@@ -396,11 +431,11 @@ namespace WalkerSim.Viewer
 
                         if (roadType == RoadType.Asphalt)
                         {
-                            gr.FillRectangle(brushRed, x, y, 1, 1);
+                            gr.FillRectangle(brushMain, x, y, 1, 1);
                         }
                         else
                         {
-                            gr.FillRectangle(brushGreen, x, y, 1, 1);
+                            gr.FillRectangle(brushOffroad, x, y, 1, 1);
                         }
                     }
                 }
@@ -647,6 +682,22 @@ namespace WalkerSim.Viewer
 
             ClearRoadBitmap();
             RenderSimulation();
+
+            CheckMaxAgents();
+        }
+
+        private void CheckMaxAgents()
+        {
+            var mapData = simulation.MapData;
+            var maxAgents = inputMaxAgents.Value;
+
+            if (maxAgents < 140)
+            {
+                lblMaxAgentsInfo.Visible = true;
+                lblMaxAgentsInfo.Text = $"Recommended: 140 or more.";
+                lblMaxAgentsInfo.ForeColor = Color.OrangeRed;
+                inputMaxAgents.ForeColor = Color.OrangeRed;
+            }
         }
 
         private void OnSimCanvasClick(object sender, MouseEventArgs e)
@@ -992,6 +1043,11 @@ namespace WalkerSim.Viewer
                     Logging.Exception(ex);
                 }
             }
+        }
+
+        private void OnRandSeedClick(object sender, EventArgs e)
+        {
+            inputRandomSeed.Value = prng.Next();
         }
     }
 }

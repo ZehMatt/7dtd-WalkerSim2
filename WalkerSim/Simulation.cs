@@ -36,15 +36,15 @@ namespace WalkerSim
             Logging.Out("Simulation stopped.");
         }
 
-        public void FastAdvance(uint numTicks)
+        public void Advance(uint numTicks)
         {
-            var oldScale = TimeScale;
-            TimeScale = 512.0f;
+            if (_running)
+                throw new Exception("Can't advance the simulation while its running");
+
             for (uint i = 0; i < numTicks; i++)
             {
                 Tick();
             }
-            TimeScale = oldScale;
         }
 
         public void Start()
@@ -86,6 +86,7 @@ namespace WalkerSim
                 _state.SlowIterator = 0;
                 _state.TickNextWindChange = 0;
                 _state.Ticks = 0;
+                _state.POIIterator = 0;
 
                 SetupGrid();
                 Populate();
@@ -115,18 +116,21 @@ namespace WalkerSim
 
         public bool LoadMapData(string directoryPath)
         {
-            var mapData = MapData.LoadFromFolder(directoryPath);
-            if (mapData == null)
-                return false;
-
-            _state.MapData = mapData;
-
-            if (WorldSize != mapData.WorldSize)
+            lock (_state)
             {
-                SetWorldSize(mapData.WorldMins, mapData.WorldMaxs);
-            }
+                var mapData = MapData.LoadFromFolder(directoryPath);
+                if (mapData == null)
+                    return false;
 
-            return true;
+                _state.MapData = mapData;
+
+                if (WorldSize != mapData.WorldSize)
+                {
+                    SetWorldSize(mapData.WorldMins, mapData.WorldMaxs);
+                }
+
+                return true;
+            }
         }
 
         Vector3 GetRandomPosition()
@@ -191,11 +195,15 @@ namespace WalkerSim
                 // Can be null in viewer.
                 return GetRandomBorderPosition();
             }
+
             var prefabs = mapData.Prefabs;
             var decos = prefabs.Decorations;
-            var prng = _state.PRNG;
 
-            var selectedIdx = prng.Next(decos.Length);
+            //var prng = _state.PRNG;
+            //var selectedIdx = prng.Next(decos.Length);
+            var selectedIdx = _state.POIIterator % decos.Length;
+            _state.POIIterator += 7;
+
             return decos[selectedIdx].Position;
         }
 
@@ -275,8 +283,12 @@ namespace WalkerSim
 
             agents.Clear();
 
-            _state.GroupCount = config.MaxAgents / config.GroupSize;
-            if (config.MaxAgents % config.GroupSize != 0)
+            var sqrKm = (WorldSize.X / 1000.0f) * (WorldSize.Y / 1000.0f);
+            var maxAgents = (int)System.Math.Ceiling(sqrKm * config.PopulationDensity);
+            maxAgents = Math.Clamp(maxAgents, 1, Limits.MaxAgents);
+
+            _state.GroupCount = maxAgents / config.GroupSize;
+            if (maxAgents % config.GroupSize != 0)
             {
                 _state.GroupCount++;
             }
@@ -287,7 +299,7 @@ namespace WalkerSim
                 _groupStarts[i] = GetStartLocation();
             }
 
-            for (int index = 0; index < config.MaxAgents; index++)
+            for (int index = 0; index < maxAgents; index++)
             {
                 int groupIndex = index / config.GroupSize;
 
@@ -312,6 +324,21 @@ namespace WalkerSim
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
+            Logging.Out("Advancing simulation for {0} ticks...", Simulation.Limits.TicksToAdvanceOnStartup);
+
+            var elapsed = Utils.Measure(() =>
+            {
+                var oldTimeScale = TimeScale;
+                TimeScale = 64.0f;
+                for (uint num = 0u; num < Simulation.Limits.TicksToAdvanceOnStartup && !_shouldStop; num++)
+                {
+                    Tick();
+                }
+                TimeScale = oldTimeScale;
+            });
+
+            Logging.Out("... done, took {0}.", elapsed);
+
             while (!_shouldStop)
             {
                 if (_paused)
@@ -322,7 +349,6 @@ namespace WalkerSim
 
                 sw.Restart();
 
-                lock (_state)
                 {
                     Tick();
 

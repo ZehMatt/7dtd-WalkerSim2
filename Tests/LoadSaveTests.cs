@@ -18,12 +18,11 @@ namespace WalkerSim.Tests
             Assert.IsNotNull(configB);
 
             Assert.AreEqual(configA.RandomSeed, configB.RandomSeed);
-            Assert.AreEqual(configA.MaxAgents, configB.MaxAgents);
+            Assert.AreEqual(configA.PopulationDensity, configB.PopulationDensity);
             Assert.AreEqual(configA.StartAgentsGrouped, configB.StartAgentsGrouped);
             Assert.AreEqual(configA.GroupSize, configB.GroupSize);
             Assert.AreEqual(configA.StartPosition, configB.StartPosition);
             Assert.AreEqual(configA.RespawnPosition, configB.RespawnPosition);
-            Assert.AreEqual(configA.PauseWithoutPlayers, configB.PauseWithoutPlayers);
             Assert.AreEqual(configA.PauseDuringBloodmoon, configB.PauseDuringBloodmoon);
 
             Assert.AreEqual(configA.Processors.Count, configB.Processors.Count);
@@ -110,7 +109,7 @@ namespace WalkerSim.Tests
         public void TestSaveLoad5k()
         {
             var config = Config.GetDefault();
-            config.MaxAgents = 5000;
+            config.PopulationDensity = 150;
 
             var simA = new Simulation();
             simA.SetWorldSize(WorldMins, WorldMaxs);
@@ -121,7 +120,7 @@ namespace WalkerSim.Tests
             simA.AddSoundEvent(new Vector3(-100, -100, 0), 653.212f, 10.0f);
             simA.AddSoundEvent(new Vector3(700, 100, 0), 653.212f, 10.0f);
             simA.AddSoundEvent(new Vector3(1700, 500, 0), 653.212f, 10.0f);
-            simA.FastAdvance(20);
+            simA.Advance(20);
 
             var ms = new MemoryStream();
             Assert.IsTrue(simA.Save(ms));

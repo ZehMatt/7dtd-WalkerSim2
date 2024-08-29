@@ -26,56 +26,58 @@ namespace WalkerSim
         {
             tickWatch.Restart();
 
-            UpdateWindDirection();
-            UpdateEvents();
-            UpatePOICounter();
-
-            var agents = _state.Agents;
-            var numUpdates = 0;
-            var maxUpdates = System.Math.Min(
-                System.Math.Min(MaxUpdateCountPerTick * TimeScale, agents.Count),
-                4000
-            );
-
-            while (true)
+            lock (_state)
             {
-                var agentIndex = (int)(_state.SlowIterator % agents.Count);
-                var agent = agents[agentIndex];
+                UpdateWindDirection();
+                UpdateEvents();
+                UpatePOICounter();
 
-                _state.SlowIterator += IteratorIncrement;
+                var agents = _state.Agents;
+                var numUpdates = 0;
+                var maxUpdates = System.Math.Min(
+                    System.Math.Min(MaxUpdateCountPerTick * TimeScale, agents.Count),
+                    4000
+                );
 
-                if (agent.CurrentState == Agent.State.Wandering)
+                while (true)
                 {
-                    UpdateAgent(agent);
-                }
-                else if (agent.CurrentState == Agent.State.Respawning)
-                {
-                    RespawnAgent(agent);
+                    var agentIndex = (int)(_state.SlowIterator % agents.Count);
+                    var agent = agents[agentIndex];
+
+                    _state.SlowIterator += IteratorIncrement;
+
+                    if (agent.CurrentState == Agent.State.Wandering)
+                    {
+                        UpdateAgent(agent);
+                    }
+                    else if (agent.CurrentState == Agent.State.Respawning)
+                    {
+                        RespawnAgent(agent);
+                    }
+
+                    var exitLoop = false;
+                    if (Deterministic)
+                    {
+                        exitLoop = numUpdates >= maxUpdates;
+                    }
+                    else
+                    {
+                        exitLoop = tickWatch.Elapsed.TotalSeconds >= TickRate;
+                    }
+
+                    if (exitLoop)
+                    {
+                        break;
+                    }
+
+                    numUpdates++;
                 }
 
-                var exitLoop = false;
-                if (Deterministic)
+                // Update the grid, can't do this in parallel since it's not thread safe.
+                for (int i = 0; i < agents.Count; i++)
                 {
-                    exitLoop = numUpdates >= maxUpdates;
+                    MoveInGrid(agents[i]);
                 }
-                else
-                {
-                    exitLoop = tickWatch.Elapsed.TotalSeconds >= TickRate;
-                }
-
-                if (exitLoop)
-                {
-                    break;
-                }
-
-                numUpdates++;
-            }
-
-            // Update the grid, can't do this in parallel since it's not thread safe.
-            for (int i = 0; i < agents.Count; i++)
-            {
-                MoveInGrid(agents[i]);
-            }
 
 #if DEBUG
             for (int i = 0; i < agents.Count; i++)
@@ -84,7 +86,8 @@ namespace WalkerSim
             }
 #endif
 
-            _state.Ticks++;
+                _state.Ticks++;
+            }
         }
 
         private void UpatePOICounter()

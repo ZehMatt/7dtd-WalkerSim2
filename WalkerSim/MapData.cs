@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Xml.Serialization;
 
@@ -192,6 +193,30 @@ namespace WalkerSim
             }
         }
 
+        private static void MergePrefabs(PrefabsData prefabs)
+        {
+            var newList = new List<Decoration>(prefabs.Decorations);
+
+            for (int i = 0; i < newList.Count; i++)
+            {
+                var pos = newList[i].Position;
+
+                for (int j = i + 1; j < newList.Count;)
+                {
+                    var dist = Vector3.Distance(pos, newList[j].Position);
+                    if (dist > 150)
+                    {
+                        j++;
+                        continue;
+                    }
+
+                    newList.RemoveAt(j);
+                }
+            }
+
+            prefabs.Decorations = newList.ToArray();
+        }
+
         private static Vector3 GetWorldSize(string folderPath)
         {
             // The only way to tell at the moment is to use the file size of dtm.raw.
@@ -229,6 +254,8 @@ namespace WalkerSim
             {
                 return null;
             }
+
+            MergePrefabs(prefabs);
 
             var worldSize = GetWorldSize(folderPath);
             var sizeX = worldSize.X / 2;

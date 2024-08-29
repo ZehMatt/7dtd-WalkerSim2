@@ -42,7 +42,7 @@ namespace WalkerSim.Tests
             var prng = new Random(1);
 
             var config = Config.GetDefault();
-            config.MaxAgents = 1020;
+            config.PopulationDensity = 5;
 
             var sim = new Simulation();
             sim.SetWorldSize(WorldMins, WorldMaxs);

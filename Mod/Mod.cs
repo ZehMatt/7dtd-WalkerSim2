@@ -96,7 +96,7 @@ namespace WalkerSim
 
             var elapsed = Utils.Measure(() =>
             {
-                simulation.FastAdvance(Simulation.Limits.TicksToAdvanceOnStartup);
+                simulation.Advance(Simulation.Limits.TicksToAdvanceOnStartup);
             });
 
             Logging.Out("... done, took {0}.", elapsed);
