@@ -18,6 +18,7 @@ namespace WalkerSim
         {
             SaveHeader(state, writer);
             SaveInfo(state, writer);
+            SaveStats(state, writer);
             SaveConfig(state, writer);
             SavePRNG(state, writer);
             SaveAgents(state, writer);
@@ -43,6 +44,13 @@ namespace WalkerSim
             Serialization.WriteUInt32(writer, state.TickNextWindChange);
             Serialization.WriteInt32(writer, state.GroupCount);
             Serialization.WriteSingle(writer, state.MaxNeighbourDistance);
+        }
+
+        private void SaveStats(State state, BinaryWriter writer)
+        {
+            Serialization.WriteInt32(writer, state.SuccessfulSpawns);
+            Serialization.WriteInt32(writer, state.FailedSpawns);
+            Serialization.WriteInt32(writer, state.TotalDespawns);
         }
 
         private void SaveConfig(State state, BinaryWriter writer)
@@ -127,6 +135,8 @@ namespace WalkerSim
                 return false;
             if (!LoadInfo(state, reader))
                 return false;
+            if (!LoadStats(state, reader))
+                return false;
             if (!LoadConfig(state, reader))
                 return false;
             if (!LoadPRNG(state, reader))
@@ -171,6 +181,15 @@ namespace WalkerSim
             state.TickNextWindChange = Serialization.ReadUInt32(reader);
             state.GroupCount = Serialization.ReadInt32(reader);
             state.MaxNeighbourDistance = Serialization.ReadSingle(reader);
+
+            return true;
+        }
+
+        private bool LoadStats(State state, BinaryReader reader)
+        {
+            state.SuccessfulSpawns = Serialization.ReadInt32(reader);
+            state.FailedSpawns = Serialization.ReadInt32(reader);
+            state.TotalDespawns = Serialization.ReadInt32(reader);
 
             return true;
         }

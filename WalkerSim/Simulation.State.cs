@@ -30,6 +30,10 @@ namespace WalkerSim
             public int[] AgentsNearPOICounter;
             public bool FastForwardStart = false;
             public int POIIterator = 0;
+            // Statistics
+            public int FailedSpawns = 0;
+            public int SuccessfulSpawns = 0;
+            public int TotalDespawns = 0;
 
             public void Reset()
             {
@@ -61,6 +65,31 @@ namespace WalkerSim
         public int GroupCount
         {
             get => _state.GroupCount;
+        }
+
+        public int AgentCount
+        {
+            get => _state.Agents.Count;
+        }
+
+        public int ActiveCount
+        {
+            get => _state.Active.Count;
+        }
+
+        public int SuccessfulSpawns
+        {
+            get => _state.SuccessfulSpawns;
+        }
+
+        public int FailedSpawns
+        {
+            get => _state.FailedSpawns;
+        }
+
+        public int TotalDespawns
+        {
+            get => _state.TotalDespawns;
         }
 
         public Config Config

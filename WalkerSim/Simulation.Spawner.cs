@@ -101,11 +101,15 @@ namespace WalkerSim
                 agent.CurrentState = Agent.State.Active;
 
                 AddActiveAgent(agentEntityId, agent);
+
+                _state.SuccessfulSpawns++;
             }
             else
             {
                 // Turn back to wandering, currently not possible to spawn.
                 agent.CurrentState = Agent.State.Wandering;
+
+                _state.FailedSpawns++;
             }
         }
 

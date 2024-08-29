@@ -99,6 +99,8 @@ namespace WalkerSim
                 agent.CurrentState = Agent.State.Wandering;
 
                 _state.Active.Remove(kv.Key);
+                _state.TotalDespawns++;
+
                 break;
             }
         }
