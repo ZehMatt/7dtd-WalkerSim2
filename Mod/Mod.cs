@@ -90,16 +90,7 @@ namespace WalkerSim
 
             var config = LoadConfiguration();
             simulation.Reset(config);
-
-            // Advance the simulation by specified ticks.
-            Logging.Out("Advancing simulation for {0} ticks...", Simulation.Limits.TicksToAdvanceOnStartup);
-
-            var elapsed = Utils.Measure(() =>
-            {
-                simulation.Advance(Simulation.Limits.TicksToAdvanceOnStartup);
-            });
-
-            Logging.Out("... done, took {0}.", elapsed);
+            simulation.SetFastAdvanceAtStart(true);
         }
 
         internal static void RestartSimulation()
@@ -152,6 +143,7 @@ namespace WalkerSim
                 if (System.IO.File.Exists(simFile) && simulation.Load(simFile))
                 {
                     Logging.Out("Using existing simulation from: {0}", simFile);
+                    simulation.SetFastAdvanceAtStart(false);
                 }
                 else
                 {

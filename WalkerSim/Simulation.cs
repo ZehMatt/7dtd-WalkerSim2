@@ -18,6 +18,7 @@ namespace WalkerSim
         private bool _running = false;
         private bool _shouldStop = false;
         private bool _paused = false;
+        private bool _fastAdvanceAtStart = false;
 
         private Vector3[] _groupStarts = new Vector3[0];
 
@@ -32,6 +33,7 @@ namespace WalkerSim
             _thread.Join();
             _thread = null;
             _running = false;
+            _nextAutoSave = DateTime.MaxValue;
 
             Logging.Out("Simulation stopped.");
         }
@@ -104,6 +106,11 @@ namespace WalkerSim
                     Logging.Out("Resuming simulation.");
             }
             _paused = paused;
+        }
+
+        public void SetFastAdvanceAtStart(bool fastAdvance)
+        {
+            _fastAdvanceAtStart = fastAdvance;
         }
 
         public void EntityKilled(int entityId)
@@ -324,20 +331,23 @@ namespace WalkerSim
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
-            Logging.Out("Advancing simulation for {0} ticks...", Simulation.Limits.TicksToAdvanceOnStartup);
-
-            var elapsed = Utils.Measure(() =>
+            if (_fastAdvanceAtStart)
             {
-                var oldTimeScale = TimeScale;
-                TimeScale = 64.0f;
-                for (uint num = 0u; num < Simulation.Limits.TicksToAdvanceOnStartup && !_shouldStop; num++)
-                {
-                    Tick();
-                }
-                TimeScale = oldTimeScale;
-            });
+                Logging.Out("Advancing simulation for {0} ticks...", Simulation.Limits.TicksToAdvanceOnStartup);
 
-            Logging.Out("... done, took {0}.", elapsed);
+                var elapsed = Utils.Measure(() =>
+                {
+                    var oldTimeScale = TimeScale;
+                    TimeScale = 64.0f;
+                    for (uint num = 0u; num < Simulation.Limits.TicksToAdvanceOnStartup && !_shouldStop; num++)
+                    {
+                        Tick();
+                    }
+                    TimeScale = oldTimeScale;
+                });
+
+                Logging.Out("... done, took {0}.", elapsed);
+            }
 
             while (!_shouldStop)
             {
