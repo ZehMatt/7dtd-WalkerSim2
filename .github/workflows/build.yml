@@ -46,14 +46,14 @@ jobs:
 
     - name: Fetch DepotDownloader
       run: |
-        curl.exe -LO https://github.com/SteamRE/DepotDownloader/releases/download/DepotDownloader_2.5.0/depotdownloader-2.5.0.zip
+        curl.exe -LO https://github.com/SteamRE/DepotDownloader/releases/download/DepotDownloader_2.7.2/DepotDownloader-windows-x64.zip
         mkdir tools
-        tar -xf depotdownloader-2.5.0.zip -C tools
+        tar -xf DepotDownloader-windows-x64.zip -C tools
 
     - name: Fetch required binaries
       run: |
         mkdir temp
-        dotnet ./tools/DepotDownloader.dll -app 294420 -depot 294421 -filelist ./Binaries/required_files.txt -dir ./temp
+        .\tools\DepotDownloader.exe -app 294420 -depot 294421 -filelist ./Binaries/required_files.txt -dir ./temp
         for /F "delims=" %%f in (./Binaries/required_files.txt) do (
             set "file=%%f"
             setlocal enabledelayedexpansion
