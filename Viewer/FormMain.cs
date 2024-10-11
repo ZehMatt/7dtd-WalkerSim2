@@ -1049,5 +1049,10 @@ namespace WalkerSim.Viewer
         {
             inputRandomSeed.Value = prng.Next();
         }
+
+        private void OnClickExit(object sender, EventArgs e)
+        {
+            Close();
+        }
     }
 }

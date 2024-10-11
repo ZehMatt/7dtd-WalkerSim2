@@ -57,6 +57,7 @@
             this.simCanvas = new System.Windows.Forms.PictureBox();
             this.tabSimulation = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.btRand = new System.Windows.Forms.Button();
             this.lblMaxAgentsInfo = new System.Windows.Forms.Label();
             this.inputWorld = new System.Windows.Forms.ComboBox();
             this.label10 = new System.Windows.Forms.Label();
@@ -100,7 +101,6 @@
             this.clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorPickerDlg = new System.Windows.Forms.ColorDialog();
-            this.btRand = new System.Windows.Forms.Button();
             this.toolTipGroupSize = new System.Windows.Forms.ToolTip(this.components);
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -179,6 +179,7 @@
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
             this.exitToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
             this.exitToolStripMenuItem.Text = "Exit";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.OnClickExit);
             // 
             // viewToolStripMenuItem
             // 
@@ -378,15 +379,25 @@
             this.tabPage1.Text = "Base Parameters";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
+            // btRand
+            // 
+            this.btRand.Location = new System.Drawing.Point(212, 37);
+            this.btRand.Name = "btRand";
+            this.btRand.Size = new System.Drawing.Size(22, 22);
+            this.btRand.TabIndex = 43;
+            this.btRand.Text = "R";
+            this.btRand.UseVisualStyleBackColor = true;
+            this.btRand.Click += new System.EventHandler(this.OnRandSeedClick);
+            // 
             // lblMaxAgentsInfo
             // 
             this.lblMaxAgentsInfo.AutoSize = true;
             this.lblMaxAgentsInfo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
             this.lblMaxAgentsInfo.Location = new System.Drawing.Point(262, 66);
             this.lblMaxAgentsInfo.Name = "lblMaxAgentsInfo";
-            this.lblMaxAgentsInfo.Size = new System.Drawing.Size(150, 13);
+            this.lblMaxAgentsInfo.Size = new System.Drawing.Size(91, 13);
             this.lblMaxAgentsInfo.TabIndex = 42;
-            this.lblMaxAgentsInfo.Text = "Recommended: 6000 or more.";
+            this.lblMaxAgentsInfo.Text = "<Recommended>";
             this.lblMaxAgentsInfo.Visible = false;
             // 
             // inputWorld
@@ -876,16 +887,6 @@
             // 
             this.colorPickerDlg.AnyColor = true;
             // 
-            // btRand
-            // 
-            this.btRand.Location = new System.Drawing.Point(212, 37);
-            this.btRand.Name = "btRand";
-            this.btRand.Size = new System.Drawing.Size(22, 22);
-            this.btRand.TabIndex = 43;
-            this.btRand.Text = "R";
-            this.btRand.UseVisualStyleBackColor = true;
-            this.btRand.Click += new System.EventHandler(this.OnRandSeedClick);
-            // 
             // toolTipGroupSize
             // 
             this.toolTipGroupSize.ToolTipTitle = "Hello World";
@@ -897,6 +898,7 @@
             this.ClientSize = new System.Drawing.Size(856, 717);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.menuStrip1);
+            this.DoubleBuffered = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
             this.MainMenuStrip = this.menuStrip1;
