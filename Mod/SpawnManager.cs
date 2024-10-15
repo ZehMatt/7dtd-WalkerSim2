@@ -197,6 +197,13 @@ namespace WalkerSim
             spawnedAgent.SetSpawnerSource(EnumSpawnerSource.StaticSpawner);
             spawnedAgent.moveDirection = rot;
 
+            // Because some Mods use the entitygroups.xml to do normal NPCs, we have to check this first.
+            if (spawnedAgent is EntityEnemy)
+            {
+                var enemy = spawnedAgent as EntityEnemy;
+                enemy.IsHordeZombie = true;
+            }
+
             if (spawnedAgent is EntityZombie spawnedZombie)
             {
                 spawnedZombie.IsHordeZombie = true;
@@ -208,7 +215,7 @@ namespace WalkerSim
                 spawnedAgent.Health = agent.Health;
             }
 
-            var destPos = worldPos + (rot * 150);
+            var destPos = worldPos + (rot * 80);
             spawnedAgent.SetInvestigatePosition(destPos, 6000, false);
 
             world.SpawnEntityInWorld(spawnedAgent);
