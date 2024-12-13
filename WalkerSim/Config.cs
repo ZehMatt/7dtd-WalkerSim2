@@ -4,10 +4,26 @@ using System.Xml.Serialization;
 
 namespace WalkerSim
 {
-    [XmlRoot("WalkerSim", Namespace = "http://zeh.matt/WalkerSimSchema")]
-    [XmlTypeAttribute(AnonymousType = true, Namespace = "http://zeh.matt/WalkerSimSchema")]
+    [XmlRoot("WalkerSim", Namespace = "http://zeh.matt/WalkerSim", IsNullable = false)]
     public class Config
     {
+        [XmlNamespaceDeclarations]
+        public XmlSerializerNamespaces Xmlns { get; set; }
+
+        [XmlAttribute("schemaLocation", Namespace = "http://www.w3.org/2001/XMLSchema-instance")]
+        public string SchemaLocation { get; set; }
+
+        public Config()
+        {
+            Xmlns = new XmlSerializerNamespaces();
+            Xmlns.Add("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+            Xmlns.Add("xsd", "http://www.w3.org/2001/XMLSchema");
+
+            // Define the schema location
+            SchemaLocation = "http://zeh.matt/WalkerSim WalkerSimSchema.xsd";
+        }
+
+
         public enum WorldLocation
         {
             [XmlEnum("None")]

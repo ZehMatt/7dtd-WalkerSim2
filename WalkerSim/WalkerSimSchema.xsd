@@ -10,7 +10,7 @@
         <xs:complexType>
             <xs:sequence>
 
-                <xs:element name="DebugOptions">
+                <xs:element name="DebugOptions" minOccurs="0">
                     <xs:annotation>
                         <xs:documentation>Debug options for the simulation</xs:documentation>
                     </xs:annotation>
