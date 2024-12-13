@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace WalkerSim
 {
     public class WalkerSimMod : IModApi
     {
         static DateTime _lastUpdate = DateTime.Now;
+        static List<int> _playerEntities = new List<int>();
 
         void IModApi.InitMod(Mod _modInstance)
         {
@@ -26,9 +28,11 @@ namespace WalkerSim
             ModEvents.GameStartDone.RegisterHandler(GameStartDone);
             ModEvents.GameUpdate.RegisterHandler(GameUpdate);
             ModEvents.GameShutdown.RegisterHandler(GameShutdown);
-            ModEvents.PlayerSpawnedInWorld.RegisterHandler(PlayerSpawnedInWorld);
-            ModEvents.PlayerDisconnected.RegisterHandler(PlayerDisconnected);
             ModEvents.EntityKilled.RegisterHandler(EntityKilled);
+
+            // 1.2 broke PlayerSpawnedInWorld so we have to maintain the player list in a different way.
+            // ModEvents.PlayerSpawnedInWorld.RegisterHandler(PlayerSpawnedInWorld);
+            // ModEvents.PlayerDisconnected.RegisterHandler(PlayerDisconnected);
 
             Simulation.Instance.SetAgentSpawnHandler(SpawnManager.SpawnAgent);
             Simulation.Instance.SetAgentDespawnHandler(SpawnManager.DespawnAgent);
@@ -265,6 +269,38 @@ namespace WalkerSim
             simulation.GameUpdate((float)diff.TotalSeconds);
         }
 
+        static void MaintainPlayerList(Simulation simulation, World world)
+        {
+            var players = world.Players.list;
+
+            var maxViewDistance = GamePrefs.GetInt(EnumGamePrefs.ServerMaxAllowedViewDistance);
+            var viewRadius = (maxViewDistance * 16) / 2;
+
+            // Add new players.
+            foreach (var player in players)
+            {
+                var entityId = player.entityId;
+                var index = _playerEntities.IndexOf(entityId);
+                if (index == -1)
+                {
+                    _playerEntities.Add(entityId);
+                    simulation.AddPlayer(player.entityId, VectorUtils.ToSim(player.position), viewRadius);
+                }
+            }
+
+            // Remove players that have left.
+            for (int i = _playerEntities.Count - 1; i >= 0; i--)
+            {
+                var entityId = _playerEntities[i];
+                var index = players.FindIndex(p => p.entityId == entityId);
+                if (index == -1)
+                {
+                    _playerEntities.RemoveAt(i);
+                    simulation.RemovePlayer(entityId);
+                }
+            }
+        }
+
         static void GameUpdate()
         {
             if (!IsHost())
@@ -279,6 +315,10 @@ namespace WalkerSim
             var simulation = Simulation.Instance;
             if (simulation == null)
                 return;
+
+            // 1.2 broke PlayerSpawnedInWorld so we have to maintain the player list in a different way.
+            // Remove this at a later point in time.
+            MaintainPlayerList(simulation, world);
 
             // Check for enemy spawning
             {
