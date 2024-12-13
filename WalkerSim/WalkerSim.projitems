@@ -14,7 +14,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Config.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FixedBufferList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Grid.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)HeightMap.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ImageUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Logging.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MapData.cs" />
