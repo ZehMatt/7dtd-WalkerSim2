@@ -53,7 +53,7 @@ jobs:
     - name: Fetch required binaries
       run: |
         mkdir temp
-        .\tools\DepotDownloader.exe -app 294420 -depot 294422 -filelist ./Binaries/required_files.txt -dir ./temp
+        .\tools\DepotDownloader.exe -app 294420 -depot 294422 -manifest 6852366042385286885 -filelist ./Binaries/required_files.txt -dir ./temp
         for /F "delims=" %%f in (./Binaries/required_files.txt) do (
             set "file=%%f"
             setlocal enabledelayedexpansion
@@ -105,6 +105,7 @@ jobs:
           ./artifact/**/*
 
     - name: Prepare release
+      if: startsWith(github.ref, 'refs/heads/release/')
       run: |
         $zipFileName = "WalkerSim2-${{ env.BUILD_VERSION }}.zip"
         $sourceDirectory = ".\artifact"
@@ -120,5 +121,6 @@ jobs:
         name: ${{ env.BUILD_VERSION }}
         tag_name: ${{ env.BUILD_VERSION }}
         make_latest: true
+        generate_release_notes: false
         files: |
           WalkerSim2-${{ env.BUILD_VERSION }}.zip
