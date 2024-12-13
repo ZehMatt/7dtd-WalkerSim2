@@ -22,7 +22,7 @@ namespace WalkerSim
     [HarmonyPatch("SpawnUpdate")]
     class BiomeSpawnerHook
     {
-        static void Prefix(string _spawnerName, ref bool _isSpawnEnemy, ChunkAreaBiomeSpawnData _chunkBiomeSpawnData)
+        static void Prefix(string _spawnerName, ref bool _isSpawnEnemy, ChunkAreaBiomeSpawnData _spawnData)
         {
             if (!_isSpawnEnemy)
                 return;

@@ -86,23 +86,23 @@ namespace WalkerSim
                         continue;
                     }
 
-                    if (!EntityGroups.IsEnemyGroup(group.entityGroupRefName))
+                    if (!EntityGroups.IsEnemyGroup(group.entityGroupName))
                     {
                         continue;
                     }
 
-                    if (!EntityGroups.list.ContainsKey(group.entityGroupRefName))
+                    if (!EntityGroups.list.ContainsKey(group.entityGroupName))
                     {
-                        Logging.Err("Entity group not found: {0}", group.entityGroupRefName);
+                        Logging.Err("Entity group not found: {0}", group.entityGroupName);
                         continue;
                     }
 
                     int lastClassId = _lastClassId;
 
-                    int entityClassId = EntityGroups.GetRandomFromGroup(group.entityGroupRefName, ref lastClassId, gameRandom);
+                    int entityClassId = EntityGroups.GetRandomFromGroup(group.entityGroupName, ref lastClassId, gameRandom);
                     if (entityClassId != -1 && entityClassId != 0)
                     {
-                        Logging.Debug("Selected entity class id {0} : {1}", entityClassId, group.entityGroupRefName);
+                        Logging.Debug("Selected entity class id {0} : {1}", entityClassId, group.entityGroupName);
                         return entityClassId;
                     }
                 }
