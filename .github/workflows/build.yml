@@ -53,7 +53,7 @@ jobs:
     - name: Fetch required binaries
       run: |
         mkdir temp
-        .\tools\DepotDownloader.exe -app 294420 -depot 294422 -filelist ./Binaries/required_files.txt -dir ./temp
+        .\tools\DepotDownloader.exe -app 294420 -depot 294422 -manifest 6852366042385286885 -filelist ./Binaries/required_files.txt -dir ./temp
         for /F "delims=" %%f in (./Binaries/required_files.txt) do (
             set "file=%%f"
             setlocal enabledelayedexpansion
