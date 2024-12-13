@@ -105,6 +105,7 @@ jobs:
           ./artifact/**/*
 
     - name: Prepare release
+      if: startsWith(github.ref, 'refs/heads/release/')
       run: |
         $zipFileName = "WalkerSim2-${{ env.BUILD_VERSION }}.zip"
         $sourceDirectory = ".\artifact"
@@ -120,5 +121,6 @@ jobs:
         name: ${{ env.BUILD_VERSION }}
         tag_name: ${{ env.BUILD_VERSION }}
         make_latest: true
+        generate_release_notes: false
         files: |
           WalkerSim2-${{ env.BUILD_VERSION }}.zip
