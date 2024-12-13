@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://zeh.matt/WalkerSim" xmlns="http://zeh.matt/WalkerSim"
+    elementFormDefault="qualified">
+
+    <xs:element name="WalkerSim">
+        <xs:annotation>
+            <xs:documentation>Root element for the 2D Zombie Simulation</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+
+                <xs:element name="DebugOptions">
+                    <xs:annotation>
+                        <xs:documentation>Debug options for the simulation</xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="LogSpawnDespawn" type="xs:boolean">
+                                <xs:annotation>
+                                    <xs:documentation>Log whether entities are spawned or despawned</xs:documentation>
+                                </xs:annotation>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+
+                <xs:element name="RandomSeed" type="xs:integer">
+                    <xs:annotation>
+                        <xs:documentation>Seed for random number generation</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+
+                <xs:element name="PopulationDensity">
+                    <xs:annotation>
+                        <xs:documentation>Number of agents per square kilometer</xs:documentation>
+                    </xs:annotation>
+                    <xs:simpleType>
+                        <xs:restriction base="xs:integer">
+                            <xs:minInclusive value="1" />
+                            <xs:maxInclusive value="4000" />
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+
+                <xs:element name="StartAgentsGrouped" type="xs:boolean">
+                    <xs:annotation>
+                        <xs:documentation>Whether agents start grouped together</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+
+                <xs:element name="GroupSize">
+                    <xs:annotation>
+                        <xs:documentation>The total amount of groups will be total agents divided by
+                            this, movement processors can assign groups that will be affected
+                            starting at 0</xs:documentation>
+                    </xs:annotation>
+                    <xs:simpleType>
+                        <xs:restriction base="xs:integer">
+                            <xs:minInclusive value="1" />
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+
+                <xs:element name="AgentStartPosition" type="SpawnPosition">
+                    <xs:annotation>
+                        <xs:documentation>Starting position of agents</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+
+                <xs:element name="AgentRespawnPosition" type="RespawnPosition">
+                    <xs:annotation>
+                        <xs:documentation>Respawn position of agents (e.g., Border Location)</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+
+                <xs:element name="PauseDuringBloodmoon" type="xs:boolean">
+                    <xs:annotation>
+                        <xs:documentation>Whether the simulation pauses during specific events</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+
+                <xs:element name="MovementProcessors">
+                    <xs:annotation>
+                        <xs:documentation>Processors that determine agent movement behavior</xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:sequence>
+
+                            <xs:element name="ProcessorGroup" maxOccurs="unbounded">
+                                <xs:annotation>
+                                    <xs:documentation>A group of processors that will affect the
+                                        movement of the agents</xs:documentation>
+                                </xs:annotation>
+                                <xs:complexType>
+                                    <xs:sequence>
+
+                                        <xs:element name="Processor" maxOccurs="unbounded">
+                                            <xs:annotation>
+                                                <xs:documentation>Individual movement processor</xs:documentation>
+                                            </xs:annotation>
+                                            <xs:complexType>
+                                                <xs:attribute name="Type"
+                                                    type="MovementProcessorType"
+                                                    use="required">
+                                                    <xs:annotation>
+                                                        <xs:documentation>Type of the movement
+                                                            processor</xs:documentation>
+                                                    </xs:annotation>
+                                                </xs:attribute>
+                                                <xs:attribute name="Distance" type="xs:decimal"
+                                                    use="optional">
+                                                    <xs:annotation>
+                                                        <xs:documentation>Distance parameter for the
+                                                            processor, not all processor types use
+                                                            it</xs:documentation>
+                                                    </xs:annotation>
+                                                </xs:attribute>
+                                                <xs:attribute name="Power" type="xs:decimal"
+                                                    use="required">
+                                                    <xs:annotation>
+                                                        <xs:documentation>Power or strength
+                                                            parameter for the processor</xs:documentation>
+                                                    </xs:annotation>
+                                                </xs:attribute>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+
+                                    <xs:attribute name="Group" type="xs:integer" use="required">
+                                        <xs:annotation>
+                                            <xs:documentation>Index of the group it should affect,
+                                                -1 applies to all else</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="SpeedScale" type="xs:decimal" use="required">
+                                        <xs:annotation>
+                                            <xs:documentation>Scales the movement speed in the
+                                                simulation, 1.0 is normal speed, 2.0 would be twice
+                                                the speed</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="Color" type="xs:string" use="required">
+                                        <xs:annotation>
+                                            <xs:documentation>Visual representation color of the
+                                                group, only used for the Viewer</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                </xs:complexType>
+                            </xs:element>
+
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:simpleType name="SpawnPosition">
+        <xs:annotation>
+            <xs:documentation>Enumeration for agent starting positions</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="RandomBorderLocation">
+                <xs:annotation>
+                    <xs:documentation>Agents start at a random border location</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RandomLocation">
+                <xs:annotation>
+                    <xs:documentation>Agents start at a random location</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RandomPOI">
+                <xs:annotation>
+                    <xs:documentation>Agents start at a random point of interest</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Mixed">
+                <xs:annotation>
+                    <xs:documentation>Agents start at a mix of different locations</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="RespawnPosition">
+        <xs:annotation>
+            <xs:documentation>Enumeration for agent starting positions</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="None">
+                <xs:annotation>
+                    <xs:documentation>The agent will not respawn</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RandomBorderLocation">
+                <xs:annotation>
+                    <xs:documentation>Agents start at a random border location</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RandomLocation">
+                <xs:annotation>
+                    <xs:documentation>Agents start at a random location</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RandomPOI">
+                <xs:annotation>
+                    <xs:documentation>Agents start at a random point of interest</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Mixed">
+                <xs:annotation>
+                    <xs:documentation>Agents start at a mix of different locations</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="MovementProcessorType">
+        <xs:annotation>
+            <xs:documentation>Enumeration for movement processor types</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="FlockAnyGroup">
+                <xs:annotation>
+                    <xs:documentation>Agents flock with any group within the specified distance</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="AlignAnyGroup">
+                <xs:annotation>
+                    <xs:documentation>Agents align with any group within the specified distance</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="AvoidAnyGroup">
+                <xs:annotation>
+                    <xs:documentation>Agents avoid any group within the specified distance</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="FlockSameGroup">
+                <xs:annotation>
+                    <xs:documentation>Agents flock with their own group within the specified
+                        distance</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="AlignSameGroup">
+                <xs:annotation>
+                    <xs:documentation>Agents align with their own group within the specified
+                        distance</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="AvoidSameGroup">
+                <xs:annotation>
+                    <xs:documentation>Agents avoid their own group within the specified distance</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="FlockOtherGroup">
+                <xs:annotation>
+                    <xs:documentation>Agents flock with other groups within the specified distance</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="AlignOtherGroup">
+                <xs:annotation>
+                    <xs:documentation>Agents align with other groups within the specified distance</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="AvoidOtherGroup">
+                <xs:annotation>
+                    <xs:documentation>Agents avoid other groups within the specified distance</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Wind">
+                <xs:annotation>
+                    <xs:documentation>Agents are influenced by wind</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="WindInverted">
+                <xs:annotation>
+                    <xs:documentation>Agents are influenced by inverted wind</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="StickToRoads">
+                <xs:annotation>
+                    <xs:documentation>Agents stick to roads</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="AvoidRoads">
+                <xs:annotation>
+                    <xs:documentation>Agents avoid roads</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="StickToPOIs">
+                <xs:annotation>
+                    <xs:documentation>Agents stick to points of interest</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="AvoidPOIs">
+                <xs:annotation>
+                    <xs:documentation>Agents avoid points of interest</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="WorldEvents">
+                <xs:annotation>
+                    <xs:documentation>Agents react to world events</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

@@ -766,7 +766,7 @@ namespace WalkerSim.Viewer
             var groups = CurrentConfig.Processors;
             var idx = groups.Count;
 
-            var newGroup = new Config.MovementProcessors()
+            var newGroup = new Config.MovementProcessorGroup()
             {
                 Color = Utils.ColorToHexString(ColorTable.GetColorForIndex(idx))
             };
@@ -800,7 +800,7 @@ namespace WalkerSim.Viewer
             ReconfigureSimulation();
         }
 
-        private Config.MovementProcessors GetSelectedGroupEntry()
+        private Config.MovementProcessorGroup GetSelectedGroupEntry()
         {
             var groupIdx = listProcessorGroups.SelectedIndex;
             if (groupIdx == -1)
@@ -994,7 +994,7 @@ namespace WalkerSim.Viewer
             var groups = CurrentConfig.Processors;
             var idx = groups.Count;
 
-            var newGroup = new Config.MovementProcessors()
+            var newGroup = new Config.MovementProcessorGroup()
             {
                 Group = selectedGroup.Group,
                 SpeedScale = selectedGroup.SpeedScale,

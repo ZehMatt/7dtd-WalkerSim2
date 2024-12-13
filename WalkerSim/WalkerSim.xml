@@ -1,64 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
-<WalkerSim xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://zeh.matt/WalkerSimSchema">
-  <DebugOptions>
-    <LogSpawnDespawn>false</LogSpawnDespawn>
-  </DebugOptions>
-  <RandomSeed>1337</RandomSeed>
-  <PopulationDensity>160</PopulationDensity>
-  <StartAgentsGrouped>true</StartAgentsGrouped>
-  <GroupSize>24</GroupSize>
-  <AgentStartPosition>RandomPOI</AgentStartPosition>
-  <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>
-  <PauseDuringBloodmoon>true</PauseDuringBloodmoon>
-  <MovementProcessors Group="-1" SpeedScale="1" Color="#8000FF">
-    <Processor Type="StickToRoads" Distance="0" Power="0.2" />
-    <Processor Type="Wind" Distance="0" Power="0.15" />
-    <Processor Type="AvoidSameGroup" Distance="25" Power="0.015" />
-    <Processor Type="AvoidOtherGroup" Distance="35" Power="0.0001" />
-  </MovementProcessors>
-  <MovementProcessors Group="-1" SpeedScale="1" Color="Red">
-    <Processor Type="StickToRoads" Distance="0" Power="0.07" />
-    <Processor Type="WindInverted" Distance="0" Power="0.1" />
-    <Processor Type="AvoidSameGroup" Distance="30" Power="0.15" />
-    <Processor Type="StickToPOIs" Distance="0" Power="0.001" />
-    <Processor Type="FlockSameGroup" Distance="30" Power="0.01" />
-    <Processor Type="AlignSameGroup" Distance="30" Power="0.01" />
-  </MovementProcessors>
-  <MovementProcessors Group="-1" SpeedScale="1" Color="#80FF00">
-    <Processor Type="StickToRoads" Distance="0" Power="0.1" />
-    <Processor Type="StickToPOIs" Distance="0" Power="0.2" />
-    <Processor Type="AvoidSameGroup" Distance="60" Power="0.25" />
-  </MovementProcessors>
-  <MovementProcessors Group="-1" SpeedScale="1" Color="#80FF00">
-    <Processor Type="StickToRoads" Distance="0" Power="0.1" />
-    <Processor Type="StickToPOIs" Distance="0" Power="0.2" />
-    <Processor Type="AvoidSameGroup" Distance="60" Power="0.25" />
-  </MovementProcessors>
-  <MovementProcessors Group="-1" SpeedScale="1" Color="#80FFFF">
-    <Processor Type="Wind" Distance="0" Power="0.01" />
-    <Processor Type="AvoidRoads" Distance="0" Power="0.005" />
-    <Processor Type="AvoidSameGroup" Distance="15" Power="0.01" />
-    <Processor Type="AvoidOtherGroup" Distance="40" Power="0.001" />
-    <Processor Type="FlockOtherGroup" Distance="60" Power="0.1" />
-  </MovementProcessors>
-  <MovementProcessors Group="-1" SpeedScale="1" Color="#8000FF">
-    <Processor Type="StickToRoads" Distance="0" Power="0.2" />
-    <Processor Type="Wind" Distance="0" Power="0.15" />
-    <Processor Type="AvoidSameGroup" Distance="25" Power="0.015" />
-    <Processor Type="AvoidOtherGroup" Distance="35" Power="0.0001" />
-  </MovementProcessors>
-  <MovementProcessors Group="-1" SpeedScale="1" Color="#80FFFF">
-    <Processor Type="Wind" Distance="0" Power="0.01" />
-    <Processor Type="AvoidRoads" Distance="0" Power="0.005" />
-    <Processor Type="AvoidSameGroup" Distance="15" Power="0.01" />
-    <Processor Type="AvoidOtherGroup" Distance="40" Power="0.001" />
-    <Processor Type="FlockOtherGroup" Distance="60" Power="0.1" />
-  </MovementProcessors>
-  <MovementProcessors Group="-1" SpeedScale="1" Color="White">
-    <Processor Type="Wind" Distance="0" Power="0.01" />
-    <Processor Type="AvoidSameGroup" Distance="40" Power="0.01" />
-    <Processor Type="AvoidOtherGroup" Distance="40" Power="0.001" />
-    <Processor Type="FlockOtherGroup" Distance="60" Power="0.1" />
-    <Processor Type="AlignAnyGroup" Distance="60" Power="0.1" />
-  </MovementProcessors>
+<WalkerSim xmlns="http://zeh.matt/WalkerSim"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xsi:schemaLocation="http://zeh.matt/WalkerSim WalkerSimSchema.xsd">
+    <DebugOptions>
+        <LogSpawnDespawn>false</LogSpawnDespawn>
+    </DebugOptions>
+    <RandomSeed>1337</RandomSeed>
+    <PopulationDensity>160</PopulationDensity>
+    <StartAgentsGrouped>true</StartAgentsGrouped>
+    <GroupSize>24</GroupSize>
+    <AgentStartPosition>RandomPOI</AgentStartPosition>
+    <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>
+    <PauseDuringBloodmoon>true</PauseDuringBloodmoon>
+    <MovementProcessors>
+        <ProcessorGroup Group="-1" SpeedScale="1" Color="#8000FF">
+            <Processor Type="StickToRoads" Distance="0" Power="0.2" />
+            <Processor Type="Wind" Distance="0" Power="0.15" />
+            <Processor Type="AvoidSameGroup" Distance="25" Power="0.015" />
+            <Processor Type="AvoidOtherGroup" Distance="35" Power="0.0001" />
+        </ProcessorGroup>
+        <ProcessorGroup Group="-1" SpeedScale="1" Color="Red">
+            <Processor Type="StickToRoads" Distance="0" Power="0.07" />
+            <Processor Type="WindInverted" Distance="0" Power="0.1" />
+            <Processor Type="AvoidSameGroup" Distance="30" Power="0.15" />
+            <Processor Type="StickToPOIs" Distance="0" Power="0.001" />
+            <Processor Type="FlockSameGroup" Distance="30" Power="0.01" />
+            <Processor Type="AlignSameGroup" Distance="30" Power="0.01" />
+        </ProcessorGroup>
+        <ProcessorGroup Group="-1" SpeedScale="1" Color="#80FF00">
+            <Processor Type="StickToRoads" Distance="0" Power="0.1" />
+            <Processor Type="StickToPOIs" Distance="0" Power="0.2" />
+            <Processor Type="AvoidSameGroup" Distance="60" Power="0.25" />
+        </ProcessorGroup>
+        <ProcessorGroup Group="-1" SpeedScale="1" Color="#80FF00">
+            <Processor Type="StickToRoads" Distance="0" Power="0.1" />
+            <Processor Type="StickToPOIs" Distance="0" Power="0.2" />
+            <Processor Type="AvoidSameGroup" Distance="60" Power="0.25" />
+        </ProcessorGroup>
+        <ProcessorGroup Group="-1" SpeedScale="1" Color="#80FFFF">
+            <Processor Type="Wind" Distance="0" Power="0.01" />
+            <Processor Type="AvoidRoads" Distance="0" Power="0.005" />
+            <Processor Type="AvoidSameGroup" Distance="15" Power="0.01" />
+            <Processor Type="AvoidOtherGroup" Distance="40" Power="0.001" />
+            <Processor Type="FlockOtherGroup" Distance="60" Power="0.1" />
+        </ProcessorGroup>
+        <ProcessorGroup Group="-1" SpeedScale="1" Color="#8000FF">
+            <Processor Type="StickToRoads" Distance="0" Power="0.2" />
+            <Processor Type="Wind" Distance="0" Power="0.15" />
+            <Processor Type="AvoidSameGroup" Distance="25" Power="0.015" />
+            <Processor Type="AvoidOtherGroup" Distance="35" Power="0.0001" />
+        </ProcessorGroup>
+        <ProcessorGroup Group="-1" SpeedScale="1" Color="#80FFFF">
+            <Processor Type="Wind" Distance="0" Power="0.01" />
+            <Processor Type="AvoidRoads" Distance="0" Power="0.005" />
+            <Processor Type="AvoidSameGroup" Distance="15" Power="0.01" />
+            <Processor Type="AvoidOtherGroup" Distance="40" Power="0.001" />
+            <Processor Type="FlockOtherGroup" Distance="60" Power="0.1" />
+        </ProcessorGroup>
+        <ProcessorGroup Group="-1" SpeedScale="1" Color="White">
+            <Processor Type="Wind" Distance="0" Power="0.01" />
+            <Processor Type="AvoidSameGroup" Distance="40" Power="0.01" />
+            <Processor Type="AvoidOtherGroup" Distance="40" Power="0.001" />
+            <Processor Type="FlockOtherGroup" Distance="60" Power="0.1" />
+            <Processor Type="AlignAnyGroup" Distance="60" Power="0.1" />
+        </ProcessorGroup>
+    </MovementProcessors>
 </WalkerSim>

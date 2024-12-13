@@ -71,7 +71,8 @@ namespace WalkerSim
             public float Power = 0.0f;
         }
 
-        public class MovementProcessors
+        [XmlType("ProcessorGroup")]
+        public class MovementProcessorGroup
         {
             [XmlAttribute("Group")]
             public int Group = -1;
@@ -116,8 +117,8 @@ namespace WalkerSim
         [XmlElement("PauseDuringBloodmoon")]
         public bool PauseDuringBloodmoon = false;
 
-        [XmlElement("MovementProcessors")]
-        public List<MovementProcessors> Processors;
+        [XmlArray("MovementProcessors")]
+        public List<MovementProcessorGroup> Processors;
 
         private static void SanitizeConfig(Config config)
         {
@@ -166,9 +167,9 @@ namespace WalkerSim
                 StartPosition = WorldLocation.RandomLocation,
                 RespawnPosition = WorldLocation.RandomBorderLocation,
                 StartAgentsGrouped = true,
-                Processors = new List<MovementProcessors>
+                Processors = new List<MovementProcessorGroup>
                 {
-                    new MovementProcessors {
+                    new MovementProcessorGroup {
                         Group = -1,
                         SpeedScale = 1.0f,
                         Entries = new List<MovementProcessor> {
@@ -214,6 +215,26 @@ namespace WalkerSim
                 Debug = new DebugOptions(),
             };
             return conf;
+        }
+
+        public bool Compare(Config other)
+        {
+            // Not the most efficient way to compare but it avoids having to update logic for all changes.
+            string thisXml;
+            using (var writer = new StringWriter())
+            {
+                Export(writer);
+                thisXml = writer.ToString();
+            }
+
+            string otherXml;
+            using (var writer = new StringWriter())
+            {
+                other.Export(writer);
+                otherXml = writer.ToString();
+            }
+
+            return thisXml == otherXml;
         }
 
         public void Export(TextWriter writer)

@@ -106,6 +106,19 @@ namespace WalkerSim
             simulation.Start();
         }
 
+        static void CompareConfig()
+        {
+            var config = LoadConfiguration();
+            if (config == null)
+                return;
+
+            var simConfig = Simulation.Instance.Config;
+            if (!simConfig.Compare(config))
+            {
+                Logging.Out("Configuration on disk is different than the configuration in the saved state. In order to apply the changes the simulation must be restarted, this can be done using 'walkersim restart' in the console.");
+            }
+        }
+
         static void InitializeSimulation()
         {
             var simulation = Simulation.Instance;
@@ -147,6 +160,8 @@ namespace WalkerSim
                 {
                     Logging.Out("Using existing simulation from: {0}", simFile);
                     simulation.SetFastAdvanceAtStart(false);
+
+                    CompareConfig();
                 }
                 else
                 {
