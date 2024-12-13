@@ -51,5 +51,10 @@ namespace WalkerSim
                 player.IsAlive = isAlive;
             }
         }
+
+        public bool HasPlayer(int entityId)
+        {
+            return _state.Players.ContainsKey(entityId);
+        }
     }
 }

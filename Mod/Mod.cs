@@ -6,7 +6,6 @@ namespace WalkerSim
     public class WalkerSimMod : IModApi
     {
         static DateTime _lastUpdate = DateTime.Now;
-        static List<int> _playerEntities = new List<int>();
 
         void IModApi.InitMod(Mod _modInstance)
         {
@@ -280,22 +279,32 @@ namespace WalkerSim
             foreach (var player in players)
             {
                 var entityId = player.entityId;
-                var index = _playerEntities.IndexOf(entityId);
-                if (index == -1)
+                if (!simulation.HasPlayer(entityId))
                 {
-                    _playerEntities.Add(entityId);
                     simulation.AddPlayer(player.entityId, VectorUtils.ToSim(player.position), viewRadius);
                 }
             }
 
-            // Remove players that have left.
-            for (int i = _playerEntities.Count - 1; i >= 0; i--)
+            // Check who has gone missing.
+            List<int> missingPlayers = null;
+            foreach (var kv in simulation.Players)
             {
-                var entityId = _playerEntities[i];
-                var index = players.FindIndex(p => p.entityId == entityId);
-                if (index == -1)
+                var entityId = kv.Key;
+                if (players.FindIndex(p => p.entityId == entityId) == -1)
                 {
-                    _playerEntities.RemoveAt(i);
+                    if (missingPlayers == null)
+                    {
+                        missingPlayers = new List<int>();
+                    }
+                    missingPlayers.Add(entityId);
+                }
+            }
+
+            // Remove missing players.
+            if (missingPlayers != null)
+            {
+                foreach (var entityId in missingPlayers)
+                {
                     simulation.RemovePlayer(entityId);
                 }
             }

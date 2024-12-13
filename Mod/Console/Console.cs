@@ -39,6 +39,7 @@ namespace WalkerSim.Console
 
             Logging.Info("--- Simulation Statistics ---");
             Logging.Info("  World Size: {0}", sim.WorldSize);
+            Logging.Info("  Players: {0}", sim.PlayerCount);
             Logging.Info("  Total Agents: {0}", sim.Agents.Count);
             Logging.Info("  Total Groups: {0}", sim.GroupCount);
             Logging.Info("  Successful Spawns: {0}", sim.SuccessfulSpawns);
