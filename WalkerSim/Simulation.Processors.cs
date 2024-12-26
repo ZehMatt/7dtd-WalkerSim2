@@ -192,6 +192,7 @@ namespace WalkerSim
                 if (dist > distanceSqr)
                     continue;
                 mean += neighbor.Position;
+                count++;
             }
             if (count == 0)
                 return Vector3.Zero;
@@ -217,6 +218,7 @@ namespace WalkerSim
                 if (dist > distanceSqr)
                     continue;
                 mean += neighbor.Position;
+                count++;
             }
             if (count == 0)
                 return Vector3.Zero;
@@ -242,6 +244,7 @@ namespace WalkerSim
                 if (dist > distanceSqr)
                     continue;
                 mean += neighbor.Position;
+                count++;
             }
             if (count == 0)
                 return Vector3.Zero;

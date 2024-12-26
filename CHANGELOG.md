@@ -1,4 +1,5 @@
 # 0.9.3 (ongoing)
+- Fix: Flock processors always navigating towards the center.
 
 # 0.9.2
 - Fix: Support for version 1.2.
