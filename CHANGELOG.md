@@ -1,4 +1,4 @@
-# 0.9.3 (ongoing)
+# 0.9.3
 - Fix: Flock processors always navigating towards the center.
 
 # 0.9.2
