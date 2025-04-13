@@ -109,7 +109,7 @@ namespace WalkerSim
                 }
 
                 groupsEnabledMap.TryGetValue(chunk.Key, out groupsEnabledFlags);
-                Logging.Info("ChunkFlags generated: {0}", groupsEnabledFlags);
+                Logging.Debug("ChunkFlags generated: {0}", groupsEnabledFlags);
 
                 for (int i = 0; i < maxAttempts; i++)
                 {
