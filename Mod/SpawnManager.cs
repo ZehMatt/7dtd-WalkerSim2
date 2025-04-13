@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using static SleeperVolume;
 
 namespace WalkerSim
 {
@@ -70,8 +69,6 @@ namespace WalkerSim
             );
 
             var biomeData = world.Biomes.GetBiome(biomeId);
-
-
 
             if (BiomeSpawningClass.list.TryGetValue(biomeData.m_sBiomeName, out BiomeSpawnEntityGroupList biomeList))
             {
