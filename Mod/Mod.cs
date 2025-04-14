@@ -252,7 +252,7 @@ namespace WalkerSim
                 var agent = kv.Value;
                 if (agent.EntityId == -1)
                 {
-                    Logging.Debug("Agent has no entity id, skipping.");
+                    Logging.Debug("Agent has no entity id, skipping. Agent state: {0}", agent.CurrentState);
                     continue;
                 }
 

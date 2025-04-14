@@ -52,6 +52,7 @@ namespace WalkerSim
                     }
                     else if (agent.CurrentState == Agent.State.Respawning)
                     {
+                        Logging.Debug("agent being respawned");
                         RespawnAgent(agent);
                     }
 
