@@ -1,6 +1,7 @@
 # 0.9.4 (ongoing)
 - Fix: Zombie spawning now obeys tags of biome spawner
 - Fix: Zombies killed are removed from the active list, reducing excessive logging and correctly respawning zombies.
+
 # 0.9.3
 - Fix: Flock processors always navigating towards the center.
 
