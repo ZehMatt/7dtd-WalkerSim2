@@ -247,6 +247,9 @@ namespace WalkerSim
 
             var simulation = Simulation.Instance;
 
+            // Don't allocate unless there are actual dead agents.
+            List<Agent> deadAgents = null;
+
             foreach (var kv in simulation.Active)
             {
                 var agent = kv.Value;
@@ -260,7 +263,11 @@ namespace WalkerSim
                 if (IsEntityDead(entity, agent.EntityId))
                 {
                     // Mark as dead so it will be sweeped.
-                    simulation.MarkAgentDead(agent);
+                    if (deadAgents == null)
+                    {
+                        deadAgents = new List<Agent>();
+                    }
+                    deadAgents.Add(agent);
                 }
                 else
                 {
@@ -268,6 +275,15 @@ namespace WalkerSim
                     var newPos = entity.GetPosition();
                     agent.Position = VectorUtils.ToSim(newPos);
                     agent.Position.Validate();
+                }
+            }
+
+            // Remove dead agents.
+            if (deadAgents != null)
+            {
+                foreach (var agent in deadAgents)
+                {
+                    simulation.MarkAgentDead(agent);
                 }
             }
         }
