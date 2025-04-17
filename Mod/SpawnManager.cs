@@ -1,10 +1,15 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace WalkerSim
 {
     internal class SpawnManager
     {
         static int _lastClassId = -1;
+
+        static List<PrefabInstance> spawnPIs = new List<PrefabInstance>();
+
+        static Dictionary<long, int> groupsEnabledMap = new Dictionary<long, int>();
 
         static private bool CanSpawnZombie()
         {
@@ -50,14 +55,17 @@ namespace WalkerSim
         static private int GetEntityClassId(Chunk chunk, UnityEngine.Vector3 worldPos)
         {
             var world = GameManager.Instance.World;
+            int worldX = Mathf.FloorToInt(worldPos.x);
+            int worldZ = Mathf.FloorToInt(worldPos.z);
+
             if (world == null)
             {
                 return -1;
-            }
+            }   
 
             var biomeId = chunk.GetBiomeId(
-                World.toBlockXZ(Mathf.FloorToInt(worldPos.x)),
-                World.toBlockXZ(Mathf.FloorToInt(worldPos.z))
+                World.toBlockXZ(worldX),
+                World.toBlockXZ(worldZ)
             );
 
             var biomeData = world.Biomes.GetBiome(biomeId);
@@ -69,6 +77,40 @@ namespace WalkerSim
 
                 var maxAttempts = System.Math.Min(biomeList.list.Count, 10);
                 var lastPick = -1;
+
+                int groupsEnabledFlags = 0;
+
+                Logging.Debug("Are POIs checked for chunk? {0}", groupsEnabledMap.ContainsKey(chunk.Key));
+
+                // Only once per each chunk, check the tags of the POIs around that chunk
+                if (!groupsEnabledMap.ContainsKey(chunk.Key))
+                {
+                    FastTags<TagGroup.Poi> fastTags = FastTags<TagGroup.Poi>.none;
+                    Logging.Debug("About to get POIs");
+                    world.GetPOIsAtXZ(worldX + 16, worldX + 80 - 16, worldZ + 16, worldZ + 80 - 16, spawnPIs);
+                    Logging.Debug("Got {0} POIs", spawnPIs.Count);
+                    for (int j = 0; j < spawnPIs.Count; j++)
+                    {
+                        // build list of tags for POIs around chunk
+                        PrefabInstance prefabInstance = spawnPIs[j];
+                        fastTags |= prefabInstance.prefab.Tags;
+                    }
+                    bool isEmpty = fastTags.IsEmpty;
+                    for (int k = 0; k < biomeList.list.Count; k++)
+                    {
+                        // build bit mask for enabling groups. If the chunk tag list contains a value in the noTags set in the spawn group, disable it. If the chunk tag list has any tags, make sure the chunk has them too
+                        BiomeSpawnEntityGroupData biomeSpawnEntityGroupData = biomeList.list[k];
+                        if ((biomeSpawnEntityGroupData.POITags.IsEmpty || biomeSpawnEntityGroupData.POITags.Test_AnySet(fastTags)) && (isEmpty || biomeSpawnEntityGroupData.noPOITags.IsEmpty || !biomeSpawnEntityGroupData.noPOITags.Test_AnySet(fastTags)))
+                        {
+                            groupsEnabledFlags |= 1 << k;
+                        }
+                    }
+                    groupsEnabledMap.Add(chunk.Key, groupsEnabledFlags);
+                }
+
+                groupsEnabledMap.TryGetValue(chunk.Key, out groupsEnabledFlags);
+                Logging.Debug("ChunkFlags generated: {0}", groupsEnabledFlags);
+
                 for (int i = 0; i < maxAttempts; i++)
                 {
                     var randomPick = gameRandom.RandomRange(0, biomeList.list.Count);
@@ -81,7 +123,14 @@ namespace WalkerSim
                     lastPick = randomPick;
                     var group = biomeList.list[randomPick];
 
-                    if (group.daytime != eDaytime)
+                    // check the group enabled bit mask against the current pick
+                    if ((groupsEnabledFlags & (1 << randomPick)) == 0)
+                    {
+                        Logging.Debug("Group Disabled: {0}", group.entityGroupName);
+                        continue;
+                    }
+
+                    if (group.daytime != eDaytime && group.daytime != EDaytime.Any)
                     {
                         continue;
                     }

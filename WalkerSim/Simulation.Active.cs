@@ -32,6 +32,7 @@ namespace WalkerSim
 
         public void MarkAgentDead(Agent agent)
         {
+            _state.Active.Remove(agent.EntityId);
             agent.ResetSpawnData();
 
             if (_state.Config.RespawnPosition == Config.WorldLocation.None)
