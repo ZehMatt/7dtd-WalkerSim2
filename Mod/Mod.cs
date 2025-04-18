@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace WalkerSim
@@ -29,9 +29,8 @@ namespace WalkerSim
             ModEvents.GameShutdown.RegisterHandler(GameShutdown);
             ModEvents.EntityKilled.RegisterHandler(EntityKilled);
 
-            // 1.2 broke PlayerSpawnedInWorld so we have to maintain the player list in a different way.
-            // ModEvents.PlayerSpawnedInWorld.RegisterHandler(PlayerSpawnedInWorld);
-            // ModEvents.PlayerDisconnected.RegisterHandler(PlayerDisconnected);
+            ModEvents.PlayerSpawnedInWorld.RegisterHandler(PlayerSpawnedInWorld);
+            ModEvents.PlayerDisconnected.RegisterHandler(PlayerDisconnected);
 
             Simulation.Instance.SetAgentSpawnHandler(SpawnManager.SpawnAgent);
             Simulation.Instance.SetAgentDespawnHandler(SpawnManager.DespawnAgent);
@@ -299,48 +298,6 @@ namespace WalkerSim
             simulation.GameUpdate((float)diff.TotalSeconds);
         }
 
-        static void MaintainPlayerList(Simulation simulation, World world)
-        {
-            var players = world.Players.list;
-
-            var maxViewDistance = GamePrefs.GetInt(EnumGamePrefs.ServerMaxAllowedViewDistance);
-            var viewRadius = (maxViewDistance * 16) / 2;
-
-            // Add new players.
-            foreach (var player in players)
-            {
-                var entityId = player.entityId;
-                if (!simulation.HasPlayer(entityId))
-                {
-                    simulation.AddPlayer(player.entityId, VectorUtils.ToSim(player.position), viewRadius);
-                }
-            }
-
-            // Check who has gone missing.
-            List<int> missingPlayers = null;
-            foreach (var kv in simulation.Players)
-            {
-                var entityId = kv.Key;
-                if (players.FindIndex(p => p.entityId == entityId) == -1)
-                {
-                    if (missingPlayers == null)
-                    {
-                        missingPlayers = new List<int>();
-                    }
-                    missingPlayers.Add(entityId);
-                }
-            }
-
-            // Remove missing players.
-            if (missingPlayers != null)
-            {
-                foreach (var entityId in missingPlayers)
-                {
-                    simulation.RemovePlayer(entityId);
-                }
-            }
-        }
-
         static void GameUpdate()
         {
             if (!IsHost())
@@ -355,10 +312,6 @@ namespace WalkerSim
             var simulation = Simulation.Instance;
             if (simulation == null)
                 return;
-
-            // 1.2 broke PlayerSpawnedInWorld so we have to maintain the player list in a different way.
-            // Remove this at a later point in time.
-            MaintainPlayerList(simulation, world);
 
             // Check for enemy spawning
             {
@@ -432,8 +385,9 @@ namespace WalkerSim
             var maxViewDistance = GamePrefs.GetInt(EnumGamePrefs.ServerMaxAllowedViewDistance);
             var viewRadius = (maxViewDistance * 16) / 2;
 
-            Logging.Out("Max View Distance: {0}", maxViewDistance);
-            Logging.Out("View Radius: {0}", viewRadius);
+            Logging.Debug("Player Spawn: {0}", _respawnReason);
+            Logging.Debug("Max View Distance: {0}", maxViewDistance);
+            Logging.Debug("View Radius: {0}", viewRadius);
 
             switch (_respawnReason)
             {
@@ -442,7 +396,6 @@ namespace WalkerSim
                 case RespawnType.NewGame:
                 case RespawnType.LoadedGame:
                     var entityId = GetPlayerEntityId(_cInfo);
-                    // NOTE: Unity uses Y for vertical axis, we don't, screw that.
                     simulation.AddPlayer(entityId, VectorUtils.ToSim(_pos), viewRadius);
                     break;
             }
