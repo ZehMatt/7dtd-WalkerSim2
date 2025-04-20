@@ -437,6 +437,12 @@ namespace WalkerSim
                 return ColorTable.GetColorForIndex(groupIndex);
             }
 
+            var proc = _processors[groupIndex];
+            if (proc == null)
+            {
+                return ColorTable.GetColorForIndex(groupIndex);
+            }
+
             return _processors[groupIndex].Color;
         }
     }

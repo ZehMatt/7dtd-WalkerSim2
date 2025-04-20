@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -25,6 +25,7 @@ namespace WalkerSim.Viewer
 
         private List<Config.WorldLocation> _startPositions = new List<Config.WorldLocation>();
         private List<Config.WorldLocation> _respawnPositions = new List<Config.WorldLocation>();
+        private Dictionary<string, ToolTip> _toolTips = new Dictionary<string, ToolTip>();
 
         Simulation simulation = Simulation.Instance;
         Random prng;
@@ -76,10 +77,12 @@ namespace WalkerSim.Viewer
             //LoadDefaultConfiguration();
 
             CurrentConfig = Config.GetDefault();
-            UpdateConfigFields();
 
             // Set world size to 6k as the default thing until the world is changed.
             simulation.SetWorldSize(WorldMins, WorldMaxs);
+
+            UpdateConfigFields();
+            ReconfigureSimulation();
 
 #if DEBUG
             prng = new Random(1);
@@ -90,24 +93,42 @@ namespace WalkerSim.Viewer
             inputRandomSeed.Value = prng.Next();
         }
 
-        private void CreateToolTip(Control ctrl, string helpText)
+        private void SetToolTip(Control ctrl, string helpText)
         {
-            var tooltip = new System.Windows.Forms.ToolTip();
-            tooltip.SetToolTip(ctrl, helpText);
-            // Keep open for as long user is pointing at it.
-            tooltip.AutoPopDelay = 999999;
+            if (_toolTips.TryGetValue(ctrl.Name, out var tooltip))
+            {
+                if (helpText == null)
+                {
+                    tooltip.Dispose();
+                    _toolTips.Remove(ctrl.Name);
+                }
+                else
+                {
+                    tooltip.SetToolTip(ctrl, helpText);
+                }
+            }
+            else
+            {
+                var newTooltip = new System.Windows.Forms.ToolTip();
+                newTooltip.SetToolTip(ctrl, helpText);
+                // Keep open for as long user is pointing at it.
+                newTooltip.AutoPopDelay = 999999;
+
+                _toolTips.Add(ctrl.Name, newTooltip);
+            }
         }
 
         private void SetupToolTips()
         {
-            CreateToolTip(inputWorld, "It is recommended to select the world you are creating the configuration for. If the configuration is used for another world the preview will not match.");
-            CreateToolTip(inputRandomSeed, "The simulation uses a random number generator, this will be the starting seed. This seed has no relation to any random seeds from the game.");
-            CreateToolTip(inputMaxAgents, "The amount of agents per square kilometer (km²), so the total amount is square kilometer multiplied by density.\nExample: 6k map with density of 150 will be: 6 x 6 x 150 = 5400.\n");
-            CreateToolTip(inputGroupSize, "This specifies how many members a group will have, the total amount of groups is Max Agents divided by Group Size.\n\nNOTE: Setting this to 1 is the same as not having groups.");
-            CreateToolTip(inputStartPosition, "Specifies the starting position of agents in the simulation.");
-            CreateToolTip(inputRespawnPosition, "Specifies the position of where agents will respawn when killed.\n\nNOTE: When specifying 'None' it will disable their respawn.");
-            CreateToolTip(inputStartGrouped, "If enabled the agents will start close to members of their own group, this means the starting position is per group, if disabled the starting position is per agent.");
-            CreateToolTip(inputPauseDuringBloodmoon, "If enabled the simulation will pause during blood moon which means no new in-game zombies will spawn and will be resumed afterwards, this does not affect blood moon spawns.");
+            SetToolTip(inputWorld, "It is recommended to select the world you are creating the configuration for. If the configuration is used for another world the preview will not match.");
+            SetToolTip(inputRandomSeed, "The simulation uses a random number generator, this will be the starting seed. This seed has no relation to any random seeds from the game.");
+            SetToolTip(inputMaxAgents, "The amount of agents per square kilometer (km²), so the total amount is square kilometer multiplied by density.\nExample: 6k map with density of 150 will be: 6 x 6 x 150 = 5400.\n");
+            SetToolTip(inputGroupSize, "This specifies how many members a group will have, the total amount of groups is Max Agents divided by Group Size.\n\nNOTE: Setting this to 1 is the same as not having groups.");
+            SetToolTip(inputStartPosition, "Specifies the starting position of agents in the simulation.");
+            SetToolTip(inputRespawnPosition, "Specifies the position of where agents will respawn when killed.\n\nNOTE: When specifying 'None' it will disable their respawn.");
+            SetToolTip(inputStartGrouped, "If enabled the agents will start close to members of their own group, this means the starting position is per group, if disabled the starting position is per agent.");
+            SetToolTip(inputPauseDuringBloodmoon, "If enabled the simulation will pause during blood moon which means no new in-game zombies will spawn and will be resumed afterwards, this does not affect blood moon spawns.");
+            SetToolTip(inputMovementGroup, "This specifies the group that this processor will affect, if set to -1 then all groups will be affected.\n\nNOTE: This is the index of the group.");
         }
 
         private void LogMsg(string text, Color color, bool switchToLog)
@@ -591,6 +612,11 @@ namespace WalkerSim.Viewer
             }
 
             buttonRemoveProcessor.Enabled = false;
+
+            inputMovementGroup.Minimum = -1;
+            inputMovementGroup.Maximum = simulation.GroupCount - 1;
+
+            UpdateAffectedAgentsCount();
         }
 
         private void OnProcessorSelectionChanged(object sender, EventArgs e)
@@ -755,6 +781,7 @@ namespace WalkerSim.Viewer
         private void ReconfigureSimulation()
         {
             simulation.ReloadConfig(CurrentConfig);
+            simulation.Reset(CurrentConfig);
             GenerateColorTable();
         }
 
@@ -775,6 +802,7 @@ namespace WalkerSim.Viewer
             listProcessorGroups.Items.Add("Group #" + idx);
 
             ReconfigureSimulation();
+            UpdateAffectedAgentsCount();
         }
 
         private void OnRemoveGroupClick(object sender, EventArgs e)
@@ -823,6 +851,69 @@ namespace WalkerSim.Viewer
             group.Group = (int)inputMovementGroup.Value;
 
             ReconfigureSimulation();
+            UpdateAffectedAgentsCount();
+
+            if (group.Group != -1)
+            {
+                // See if there is another group with the same ID.
+                foreach (var proc in CurrentConfig.Processors)
+                {
+                    if (proc == group)
+                        continue;
+
+                    if (proc.Group == group.Group)
+                    {
+                        lblAffectedGroup.ForeColor = Color.Red;
+                        SetToolTip(lblAffectedGroup, "There is another group with the same index, if you want to influence non-specific groups set it to -1.");
+                    }
+                    else
+                    {
+                        lblAffectedGroup.ForeColor = Color.Black;
+                        SetToolTip(lblAffectedGroup, null);
+                    }
+                }
+            }
+            else
+            {
+                // Reset the color to default.
+                lblAffectedGroup.ForeColor = Color.Black;
+                SetToolTip(lblAffectedGroup, null);
+            }
+        }
+
+        private void UpdateAffectedAgentsCount()
+        {
+            var group = GetSelectedGroupEntry();
+            if (group == null)
+            {
+                return;
+            }
+
+            int affected = 0;
+            int anyCount = 0;
+            foreach (var agent in simulation.Agents)
+            {
+                if (agent.Group == group.Group || group.Group == -1)
+                {
+                    affected++;
+                }
+            }
+
+            if (group.Group == -1)
+            {
+                // Count the number of groups with -1
+                foreach (var grp in CurrentConfig.Processors)
+                {
+                    if (grp.Group == -1)
+                    {
+                        anyCount++;
+                    }
+                }
+
+                affected /= anyCount;
+            }
+
+            lblAffected.Text = $"Affected agents: {affected}";
         }
 
         private void OnMovementSpeedChanged(object sender, EventArgs e)

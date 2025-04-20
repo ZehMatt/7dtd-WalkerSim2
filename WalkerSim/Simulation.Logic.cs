@@ -85,10 +85,10 @@ namespace WalkerSim
                 }
 
 #if DEBUG
-            for (int i = 0; i < agents.Count; i++)
-            {
-                ValidateAgentInCorrectCell(agents[i]);
-            }
+                for (int i = 0; i < agents.Count; i++)
+                {
+                    ValidateAgentInCorrectCell(agents[i]);
+                }
 #endif
 
                 _state.Ticks++;
@@ -157,14 +157,17 @@ namespace WalkerSim
                 curVel.Y = 0;
 
             var processorGroup = _processors[agent.Group];
-            for (int i = 0; i < processorGroup.Entries.Count; i++)
+            if (processorGroup != null)
             {
-                var processor = processorGroup.Entries[i];
+                for (int i = 0; i < processorGroup.Entries.Count; i++)
+                {
+                    var processor = processorGroup.Entries[i];
 
-                var addVel = processor.Handler(_state, agent, _nearby, processor.DistanceSqr, processor.Power);
-                addVel.Validate();
+                    var addVel = processor.Handler(_state, agent, _nearby, processor.DistanceSqr, processor.Power);
+                    addVel.Validate();
 
-                curVel += addVel;
+                    curVel += addVel;
+                }
             }
 
             // Clamp the velocity.

@@ -1,4 +1,4 @@
-﻿namespace WalkerSim.Viewer
+namespace WalkerSim.Viewer
 {
     partial class FormMain
     {
@@ -81,7 +81,7 @@
             this.label11 = new System.Windows.Forms.Label();
             this.inputMovementSpeed = new System.Windows.Forms.NumericUpDown();
             this.label7 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
+            this.lblAffectedGroup = new System.Windows.Forms.Label();
             this.inputMovementGroup = new System.Windows.Forms.NumericUpDown();
             this.groupProcessors = new System.Windows.Forms.GroupBox();
             this.buttonRemoveProcessor = new System.Windows.Forms.Button();
@@ -102,6 +102,7 @@
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorPickerDlg = new System.Windows.Forms.ColorDialog();
             this.toolTipGroupSize = new System.Windows.Forms.ToolTip(this.components);
+            this.lblAffected = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -587,12 +588,13 @@
             // 
             // groupProps
             // 
+            this.groupProps.Controls.Add(this.lblAffected);
             this.groupProps.Controls.Add(this.boxGroupColor);
             this.groupProps.Controls.Add(this.buttonGroupColor);
             this.groupProps.Controls.Add(this.label11);
             this.groupProps.Controls.Add(this.inputMovementSpeed);
             this.groupProps.Controls.Add(this.label7);
-            this.groupProps.Controls.Add(this.label6);
+            this.groupProps.Controls.Add(this.lblAffectedGroup);
             this.groupProps.Controls.Add(this.inputMovementGroup);
             this.groupProps.Location = new System.Drawing.Point(225, 6);
             this.groupProps.Name = "groupProps";
@@ -664,14 +666,14 @@
             this.label7.TabIndex = 2;
             this.label7.Text = "Movement Speed";
             // 
-            // label6
+            // lblAffectedGroup
             // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(6, 22);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(79, 13);
-            this.label6.TabIndex = 1;
-            this.label6.Text = "Affected Group";
+            this.lblAffectedGroup.AutoSize = true;
+            this.lblAffectedGroup.Location = new System.Drawing.Point(6, 22);
+            this.lblAffectedGroup.Name = "lblAffectedGroup";
+            this.lblAffectedGroup.Size = new System.Drawing.Size(79, 13);
+            this.lblAffectedGroup.TabIndex = 1;
+            this.lblAffectedGroup.Text = "Affected Group";
             // 
             // inputMovementGroup
             // 
@@ -887,9 +889,14 @@
             // 
             this.colorPickerDlg.AnyColor = true;
             // 
-            // toolTipGroupSize
+            // lblAffected
             // 
-            this.toolTipGroupSize.ToolTipTitle = "Hello World";
+            this.lblAffected.AutoSize = true;
+            this.lblAffected.Location = new System.Drawing.Point(6, 99);
+            this.lblAffected.Name = "lblAffected";
+            this.lblAffected.Size = new System.Drawing.Size(95, 13);
+            this.lblAffected.TabIndex = 9;
+            this.lblAffected.Text = "Affected Agents: 0";
             // 
             // FormMain
             // 
@@ -978,7 +985,7 @@
         private System.Windows.Forms.GroupBox groupProps;
         private System.Windows.Forms.NumericUpDown inputMovementSpeed;
         private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Label lblAffectedGroup;
         private System.Windows.Forms.NumericUpDown inputMovementGroup;
         private System.Windows.Forms.GroupBox groupParameter;
         private System.Windows.Forms.NumericUpDown inputProcessorPower;
@@ -1010,6 +1017,7 @@
         private System.Windows.Forms.Label lblMaxAgentsInfo;
         private System.Windows.Forms.Button btRand;
         private System.Windows.Forms.ToolTip toolTipGroupSize;
+        private System.Windows.Forms.Label lblAffected;
     }
 }
 
