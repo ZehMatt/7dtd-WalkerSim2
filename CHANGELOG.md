@@ -1,6 +1,9 @@
 # 0.9.4 (ongoing)
 - Fix: Zombie spawning now obeys tags of biome spawner
 - Fix: Zombies killed are removed from the active list, reducing excessive logging and correctly respawning zombies.
+- Fix: Some agents were not updated depending on the population count.
+- Improve: Reduce memory footprint and better performance by limiting the spawn queue.
+- Improve: All players now have a chance to get zombie spawns, previously a single player could potentially exhaust the maximum allowed.
 
 # 0.9.3
 - Fix: Flock processors always navigating towards the center.
