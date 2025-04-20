@@ -7,7 +7,7 @@
         <LogSpawnDespawn>false</LogSpawnDespawn>
     </DebugOptions>
     <RandomSeed>1337</RandomSeed>
-    <PopulationDensity>160</PopulationDensity>
+    <PopulationDensity>200</PopulationDensity>
     <StartAgentsGrouped>true</StartAgentsGrouped>
     <GroupSize>24</GroupSize>
     <AgentStartPosition>RandomPOI</AgentStartPosition>
