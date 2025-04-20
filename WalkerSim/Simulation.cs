@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading;
 
@@ -21,6 +21,8 @@ namespace WalkerSim
         private bool _fastAdvanceAtStart = false;
 
         private Vector3[] _groupStarts = new Vector3[0];
+
+        private int _maxAllowedAliveAgents = 0;
 
         public void Stop()
         {
@@ -75,6 +77,11 @@ namespace WalkerSim
 
                 UpdateGrid();
             }
+        }
+
+        public void SetMaxAllowedAliveAgents(int maxAlive)
+        {
+            _maxAllowedAliveAgents = maxAlive;
         }
 
         public void Reset(Config config)

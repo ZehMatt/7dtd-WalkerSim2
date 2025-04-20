@@ -171,6 +171,16 @@ namespace WalkerSim
                 simulation.EnableAutoSave(simFile, 60.0f);
             }
 
+            {
+                // We only allow half of the max count to be spawned to give sleepers some room.
+                // TODO: Make this a configuration.
+                var maxAliveAllowed = GamePrefs.GetInt(EnumGamePrefs.MaxSpawnedZombies) / 2;
+
+                simulation.SetMaxAllowedAliveAgents(maxAliveAllowed);
+
+                Logging.Out("Max Allowed Alive Agents: {0}", maxAliveAllowed);
+            }
+
             Logging.Out("Initialized Simulation World, World Size: {0}, {1}; Agents: {2}",
                 simulation.WorldMins,
                 simulation.WorldMaxs,
