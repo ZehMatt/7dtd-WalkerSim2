@@ -61,6 +61,7 @@
     <Compile Include="FormProcessorSelection.Designer.cs">
       <DependentUpon>FormProcessorSelection.cs</DependentUpon>
     </Compile>
+    <Compile Include="GameLocator.cs" />
     <Compile Include="PictureBoxExtensions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

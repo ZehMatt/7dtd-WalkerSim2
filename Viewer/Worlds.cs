@@ -1,4 +1,3 @@
-﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,82 +13,48 @@ namespace WalkerSim.Viewer
             get => _worldFolders;
         }
 
-        private static string GetInstallPath64()
-        {
-            try
-            {
-                using (var view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64))
-                {
-                    using (var steamReg = view32.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 251570", false))
-                    {
-                        return steamReg.GetValue("InstallLocation") as string;
-                    }
-                }
-            }
-            catch (System.Exception)
-            {
-                return null;
-            }
-
-        }
-
-        private static string GetInstallPath32()
-        {
-            try
-            {
-                using (var view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
-                {
-                    using (var steamReg = view32.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 251570", false))
-                    {
-                        return steamReg.GetValue("InstallLocation") as string;
-                    }
-                }
-            }
-            catch (System.Exception)
-            {
-                return null;
-            }
-
-        }
-
-        private static string GetInstallPath()
-        {
-            var path = GetInstallPath64();
-            if (path == null)
-            {
-                path = GetInstallPath32();
-            }
-            return path;
-        }
-
         public static void FindWorlds()
         {
-            var installPath = GetInstallPath();
-            if (installPath == null || !Directory.Exists(installPath))
+            var installPaths = GameLocator.FindGamePaths();
+            foreach (var installPath in installPaths)
             {
-                // TODO: Add a few fall-backs here.
-                return;
-            }
-
-            // Enumerate the worlds from game.
-            var worldsPath = Path.Combine(installPath, "Data", "Worlds");
-            if (Directory.Exists(worldsPath))
-            {
-                foreach (var worldPath in Directory.EnumerateDirectories(worldsPath))
+                // Enumerate the worlds from game.
+                var worldsPath = Path.Combine(installPath, "Data", "Worlds");
+                if (Directory.Exists(worldsPath))
                 {
-                    _worldFolders.Add(worldPath);
+                    foreach (var worldPath in Directory.EnumerateDirectories(worldsPath))
+                    {
+                        _worldFolders.Add(worldPath);
+                    }
                 }
-            }
 
-            // Enumerate the generated worlds in %APPDATA%/7DaysToDie/GeneratedWorlds
-            var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            var pathToGeneratedWorlds = Path.Combine(appDataPath, "7DaysToDie", "GeneratedWorlds");
+                // Enumerate the generated worlds in %APPDATA%/7DaysToDie/GeneratedWorlds
+                var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                var pathToGeneratedWorlds = Path.Combine(appDataPath, "7DaysToDie", "GeneratedWorlds");
 
-            if (Directory.Exists(pathToGeneratedWorlds))
-            {
-                foreach (var worldPath in Directory.EnumerateDirectories(pathToGeneratedWorlds))
+                if (Directory.Exists(pathToGeneratedWorlds))
                 {
-                    _worldFolders.Add(worldPath);
+                    foreach (var worldPath in Directory.EnumerateDirectories(pathToGeneratedWorlds))
+                    {
+                        _worldFolders.Add(worldPath);
+                    }
+                }
+
+                // Enumerate from Mods folder.
+                var modsPath = Path.Combine(installPath, "Mods");
+                if (Directory.Exists(modsPath))
+                {
+                    foreach (var modPath in Directory.EnumerateDirectories(modsPath))
+                    {
+                        var worldPath = Path.Combine(modPath, "Worlds");
+                        if (Directory.Exists(worldPath))
+                        {
+                            foreach (var world in Directory.EnumerateDirectories(worldPath))
+                            {
+                                _worldFolders.Add(world);
+                            }
+                        }
+                    }
                 }
             }
 
