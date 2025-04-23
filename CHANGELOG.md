@@ -4,6 +4,7 @@
 - Fix: Some agents were not updated depending on the population count.
 - Improve: Reduce memory footprint and better performance by limiting the spawn queue.
 - Improve: All players now have a chance to get zombie spawns, previously a single player could potentially exhaust the maximum allowed.
+- Improve: Detection of where 7 Days to Die is installed, this is now obtained from Steam data.
 
 # 0.9.3
 - Fix: Flock processors always navigating towards the center.
