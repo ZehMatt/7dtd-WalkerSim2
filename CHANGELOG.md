@@ -1,4 +1,6 @@
-# 0.9.4 (ongoing)
+# 0.9.5 (ongoing)
+
+# 0.9.4
 - Fix: Zombie spawning now obeys tags of biome spawner
 - Fix: Zombies killed are removed from the active list, reducing excessive logging and correctly respawning zombies.
 - Fix: Some agents were not updated depending on the population count.
