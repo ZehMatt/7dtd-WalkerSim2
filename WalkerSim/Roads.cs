@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace WalkerSim
 {
@@ -20,7 +23,8 @@ namespace WalkerSim
         RoadType[] _data;
         int _width;
         int _height;
-
+        
+         readonly WalkerSim.Random PRNG = new WalkerSim.Random(1);
         public struct RoadPoint
         {
             public static RoadPoint Invalid = new RoadPoint()
@@ -162,7 +166,8 @@ namespace WalkerSim
             var cellY = y / CellSize;
 
             float closestDist = float.MaxValue;
-
+            var closestPoints = new List<RoadPoint>();
+            closestPoints.Add(closest);
             // Iterate through neighboring cells (3x3 grid)
             for (int offsetY = -1; offsetY <= 1; offsetY++)
             {
@@ -188,17 +193,23 @@ namespace WalkerSim
                             }
 
                             var dist = Vector3.DistanceSqr(new Vector3(x, y), new Vector3(point.X, point.Y));
-                            if (dist < closestDist)
+                            if (dist == closestDist)
+                            {
+                                closestPoints.Add(point);
+                            }
+                            else if (dist < closestDist)
                             {
                                 closestDist = dist;
-                                closest = point;
+                                closestPoints.Clear();
+                                closestPoints.Add(point);
                             }
                         }
                     }
                 }
             }
-
-            return closest;
+            
+             var p = PRNG.Next(closestPoints.Count);
+             return closestPoints[p];
         }
 
     }

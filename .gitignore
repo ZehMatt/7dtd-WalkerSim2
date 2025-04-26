@@ -17,3 +17,6 @@
 /Viewer/obj
 /Editor/obj
 /Editor/.vs
+Binaries/
+packages/
+Tests/obj/
