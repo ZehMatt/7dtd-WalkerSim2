@@ -2,13 +2,40 @@ site_name: WalkerSim 2
 docs_dir: Docs
 site_dir: DocsBuild
 nav:
-    - Home: index.md
+    - Overview: index.md
+    - Installation:
+        - Client:
+            - Windows: installation/client/windows.md
+            - Linux: installation/client/linux.md
+            - MacOS: installation/client/macos.md
+        - Server:
+            - Windows: installation/server/windows.md
+            - Linux: installation/server/linux.md
+            - MacOS: installation/server/macos.md
+    - Configuring the Simulation:
+        - Overview: configuring/index.md
+        - Editor: configuring/editor.md
+        - Configuration:
+            - Base Parameters: configuring/configuration/base.md
+            - Movement Processors: configuring/configuration/processors.md
+            - Grouping: configuring/configuration/grouping.md
+
 theme: 
     name: material
-    logo: logo.png
+    logo: assets/logo.png
     palette:
-        scheme: slate
+      - scheme: preference
         primary: black
+        accent: deep orange
+        toggle:
+          icon: material/toggle-switch-off-outline
+          name: Switch to dark mode
+      - scheme: slate
+        primary: black
+        accent: deep orange
+        toggle:
+          icon: material/toggle-switch
+          name: Switch to light mode
     highlightjs: true
     hljs_languages:
         - cmake
@@ -22,7 +49,6 @@ theme:
         - toc.integrate
         - navigation.top
         - navigation.footer
-        - navigation.expand
         - navigation.indexes
         - navigation.path
         - navigation.tracking
