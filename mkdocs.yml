@@ -11,7 +11,6 @@ nav:
         - Server:
             - Windows: installation/server/windows.md
             - Linux: installation/server/linux.md
-            - MacOS: installation/server/macos.md
     - Configuring the Simulation:
         - Overview: configuring/index.md
         - Editor: configuring/editor.md
@@ -22,7 +21,7 @@ nav:
 
 theme: 
     name: material
-    logo: assets/logo.png
+    logo: img/logo.png
     palette:
       - scheme: preference
         primary: black

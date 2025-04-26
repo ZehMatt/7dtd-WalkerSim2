@@ -25,7 +25,7 @@ Only when they come close to a player will they cross into the real game world a
 
 Below is a visual example of the simulation in action (sped up 16x for better demonstration):
 
-![Simulation Example](assets/simulation.gif)
+![Simulation Example](img/simulation.gif)
 
 ## Is this a server mod?
 

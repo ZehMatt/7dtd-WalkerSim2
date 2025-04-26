@@ -2,7 +2,7 @@
 
 The **WalkerSim Editor** provides a user-friendly interface for setting up and customizing the simulation. It enables you to test and visualize the simulation outside the game environment, allowing you to preview how your settings will perform before integrating them into gameplay.
 
-![WalkerSim Editor](../assets/editor-1.png)
+![WalkerSim Editor](../img/editor-1.png)
 
 ## Base Parameters
 
