@@ -1,3 +1,6 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/ZehMatt/zasm/blob/master/LICENSE)
+[![Discord](https://img.shields.io/discord/243577046616375297.svg?logo=discord&label=Discord)](https://discord.gg/9QGHS4wbFu)
+
 # WalkerSim 2
 
 WalkerSim transforms the way zombies and hordes behave in 7 Days to Die.  
