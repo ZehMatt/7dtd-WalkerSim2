@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace WalkerSim
 {
@@ -53,6 +53,11 @@ namespace WalkerSim
         public void MoveInGrid(Agent agent)
         {
             var grid = _state.Grid;
+            if (grid.Length == 0)
+            {
+                return;
+            }
+
             var newCellIndex = GetCellIndex(agent.Position);
             if (newCellIndex != agent.CellIndex)
             {

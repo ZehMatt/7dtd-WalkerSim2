@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 
 namespace WalkerSim
@@ -26,6 +26,20 @@ namespace WalkerSim
         {
             if (_allowAgentSpawn == false)
             {
+                return;
+            }
+
+            if (_pendingSpawns.Count >= _maxAllowedAliveAgents)
+            {
+                // We have reached the maximum amount of agents alive, do not spawn more.
+                Logging.Debug("Pending spawns count is {0}, not spawning more agents.", _pendingSpawns.Count);
+                return;
+            }
+
+            if (_state.Active.Count >= _maxAllowedAliveAgents)
+            {
+                // We have reached the maximum amount of agents alive, do not spawn more.
+                Logging.Debug("Active agents count is {0}, not spawning more agents.", _state.Active.Count);
                 return;
             }
 
@@ -65,8 +79,19 @@ namespace WalkerSim
 
                     agent.CurrentState = Agent.State.PendingSpawn;
                     _pendingSpawns.Enqueue(agent);
+
+                    // Bail out, in case there are more left in the activation border it will be handled next tick.
+                    // This also gives other players a chance to spawn agents.
+                    break;
                 }
             }
+
+#if DEBUG
+            if (_pendingSpawns.Count > 100)
+            {
+                Logging.Warn("Excessive amount of pending spawns: {0}", _pendingSpawns.Count);
+            }
+#endif
         }
 
         private void ProcessSpawnQueue()

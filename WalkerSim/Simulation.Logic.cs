@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 
 namespace WalkerSim
 {
@@ -11,9 +11,6 @@ namespace WalkerSim
 
         // Singleton instances to avoid GCing.
         private FixedBufferList<Agent> _nearby = new FixedBufferList<Agent>(Limits.MaxQuerySize);
-
-        // NOTE: This must be a prime number.
-        private const uint IteratorIncrement = 7;
 
         // If this is true then the simulation will be deterministic given it has equal configurations.
         public bool Deterministic = false;
@@ -39,12 +36,19 @@ namespace WalkerSim
                     4000
                 );
 
+                uint multiplier = 257;
+                if (agents.Count % 257 == 0)
+                {
+                    // Edge case, ensure we always have full coverage.
+                    multiplier = 263;
+                }
+
                 while (true)
                 {
                     var agentIndex = (int)(_state.SlowIterator % agents.Count);
                     var agent = agents[agentIndex];
 
-                    _state.SlowIterator += IteratorIncrement;
+                    _state.SlowIterator = (_state.SlowIterator * multiplier) + 1;
 
                     if (agent.CurrentState == Agent.State.Wandering)
                     {
@@ -81,10 +85,10 @@ namespace WalkerSim
                 }
 
 #if DEBUG
-            for (int i = 0; i < agents.Count; i++)
-            {
-                ValidateAgentInCorrectCell(agents[i]);
-            }
+                for (int i = 0; i < agents.Count; i++)
+                {
+                    ValidateAgentInCorrectCell(agents[i]);
+                }
 #endif
 
                 _state.Ticks++;
@@ -153,14 +157,17 @@ namespace WalkerSim
                 curVel.Y = 0;
 
             var processorGroup = _processors[agent.Group];
-            for (int i = 0; i < processorGroup.Entries.Count; i++)
+            if (processorGroup != null)
             {
-                var processor = processorGroup.Entries[i];
+                for (int i = 0; i < processorGroup.Entries.Count; i++)
+                {
+                    var processor = processorGroup.Entries[i];
 
-                var addVel = processor.Handler(_state, agent, _nearby, processor.DistanceSqr, processor.Power);
-                addVel.Validate();
+                    var addVel = processor.Handler(_state, agent, _nearby, processor.DistanceSqr, processor.Power);
+                    addVel.Validate();
 
-                curVel += addVel;
+                    curVel += addVel;
+                }
             }
 
             // Clamp the velocity.
