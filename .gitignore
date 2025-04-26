@@ -15,3 +15,5 @@
 /Binaries/LogLibrary.dll
 /Mod/obj
 /Viewer/obj
+/Editor/obj
+/Editor/.vs

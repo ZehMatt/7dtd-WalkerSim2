@@ -1,7 +1,7 @@
-﻿using System.Drawing;
+using System.Drawing;
 using System.Windows.Forms;
 
-namespace WalkerSim.Viewer
+namespace WalkerSim.Editor
 {
     internal interface ITool
     {

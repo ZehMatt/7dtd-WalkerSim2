@@ -1,4 +1,4 @@
-namespace WalkerSim.Viewer
+namespace WalkerSim.Editor
 {
     partial class FormMain
     {

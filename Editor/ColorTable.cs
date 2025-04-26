@@ -1,6 +1,6 @@
-﻿using System.Drawing;
+using System.Drawing;
 
-namespace WalkerSim.Viewer
+namespace WalkerSim.Editor
 {
     internal static class ColorTable
     {

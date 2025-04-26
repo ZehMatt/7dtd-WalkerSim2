@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.31911.260
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Viewer", "Viewer\Viewer.csproj", "{BAED52F2-7BC2-43B2-B097-0CC2D830FDF8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Editor", "Editor\Editor.csproj", "{BAED52F2-7BC2-43B2-B097-0CC2D830FDF8}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "WalkerSim", "WalkerSim\WalkerSim.shproj", "{8BD1723C-67B3-45A9-B177-FEB49F2407D8}"
 EndProject

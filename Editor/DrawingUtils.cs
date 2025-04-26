@@ -1,7 +1,7 @@
-﻿using System.Drawing;
+using System.Drawing;
 using System.Drawing.Drawing2D;
 
-namespace WalkerSim.Viewer
+namespace WalkerSim.Editor
 {
     internal static class DrawingUtils
     {

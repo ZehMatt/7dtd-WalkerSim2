@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace WalkerSim.Viewer
+namespace WalkerSim.Editor
 {
     public class GameLocator
     {

@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 
-namespace WalkerSim.Viewer
+namespace WalkerSim.Editor
 {
     internal static class Program
     {

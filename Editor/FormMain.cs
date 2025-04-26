@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace WalkerSim.Viewer
+namespace WalkerSim.Editor
 {
     public partial class FormMain : Form
     {

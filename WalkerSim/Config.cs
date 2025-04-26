@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
 
@@ -131,7 +131,7 @@ namespace WalkerSim
         public WorldLocation RespawnPosition = WorldLocation.None;
 
         [XmlElement("PauseDuringBloodmoon")]
-        public bool PauseDuringBloodmoon = false;
+        public bool PauseDuringBloodmoon = true;
 
         [XmlArray("MovementProcessors")]
         public List<MovementProcessorGroup> Processors;

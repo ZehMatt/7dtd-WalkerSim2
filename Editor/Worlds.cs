@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace WalkerSim.Viewer
+namespace WalkerSim.Editor
 {
     internal static class Worlds
     {
