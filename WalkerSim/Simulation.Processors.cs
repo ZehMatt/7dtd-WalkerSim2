@@ -434,7 +434,7 @@ namespace WalkerSim
             int ix = (int)x;
             int iy = (int)y;
 
-            var closest = roads.GetClosestRoad(ix, iy);
+            var closest = roads.GetClosestRoad(ix, iy, (int)agent.Velocity.X, (int)agent.Velocity.Y);
             if (closest.Type == RoadType.None)
             {
                 return Vector3.Zero;
@@ -479,7 +479,7 @@ namespace WalkerSim
             int ix = (int)x;
             int iy = (int)y;
 
-            var closest = roads.GetClosestRoad(ix, iy);
+            var closest = roads.GetClosestRoad(ix, iy, (int)agent.Velocity.X, (int)agent.Velocity.Y);
             if (closest.Type == RoadType.None)
             {
                 return Vector3.Zero;

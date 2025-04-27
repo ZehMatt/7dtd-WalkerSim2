@@ -32,7 +32,7 @@ namespace WalkerSim
             if (_pendingSpawns.Count >= _maxAllowedAliveAgents)
             {
                 // We have reached the maximum amount of agents alive, do not spawn more.
-                Logging.Debug("Pending spawns count is {0}, not spawning more agents.", _pendingSpawns.Count);
+                // Logging.Debug("Pending spawns count is {0}, not spawning more agents.", _pendingSpawns.Count);
                 return;
             }
 

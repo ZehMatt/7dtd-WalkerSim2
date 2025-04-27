@@ -197,14 +197,21 @@ namespace WalkerSim
 
         // Get the closest road point to the given bitmap coordinates, the search distance is limited to
         // 3x3 grid of cells.
-        public RoadPoint GetClosestRoad(int x, int y)
+        public RoadPoint GetClosestRoad(int x, int y, int dirX, int dirY)
         {
+            var bestChoice = RoadPoint.Invalid;
             var closest = RoadPoint.Invalid;
 
             var cellX = x / CellSize;
             var cellY = y / CellSize;
-
             float closestDist = float.MaxValue;
+            // Define a view cone angle (e.g., 90 degrees total, 45 degrees each side)
+            const float viewConeCosThreshold = 0.7071f; // cos(45°)
+
+            // Normalize direction vector
+            float dirLength = (float)System.Math.Sqrt(dirX * dirX + dirY * dirY);
+            float normDirX = dirLength > 0 ? dirX / dirLength : 0;
+            float normDirY = dirLength > 0 ? dirY / dirLength : 0;
 
             // Iterate through neighboring cells (3x3 grid)
             for (int offsetY = -1; offsetY <= 1; offsetY++)
@@ -229,15 +236,40 @@ namespace WalkerSim
                                 continue;
                             }
 
-                            var dist = Vector3.DistanceSqr(new Vector3(x, y), new Vector3(point.X, point.Y));
+                            // Vector from current position to road point
+                            float toPointX = point.X - x;
+                            float toPointY = point.Y - y;
+                            float toPointLength = (float)System.Math.Sqrt(toPointX * toPointX + toPointY * toPointY);
+                            if (toPointLength == 0)
+                                continue;
+
+                            var dist = toPointLength * toPointLength; // Use squared distance
                             if (dist < closestDist)
                             {
                                 closestDist = dist;
                                 closest = point;
+
+                                // Normalize vector to road point
+                                float normToPointX = toPointX / toPointLength;
+                                float normToPointY = toPointY / toPointLength;
+
+                                // Calculate dot product to check if point is within view cone
+                                float dot = normDirX * normToPointX + normDirY * normToPointY;
+                                if (dot >= viewConeCosThreshold) // Point is within view cone
+                                {
+                                    bestChoice = point;
+                                }
                             }
+
                         }
                     }
                 }
+            }
+
+            if (bestChoice.Type != RoadType.None)
+            {
+                // If we found a point within the view cone, return it
+                return bestChoice;
             }
 
             return closest;

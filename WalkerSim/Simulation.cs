@@ -24,6 +24,8 @@ namespace WalkerSim
 
         private int _maxAllowedAliveAgents = 0;
 
+        public bool EditorMode = false;
+
         public void Stop()
         {
             if (_thread == null)
@@ -336,7 +338,6 @@ namespace WalkerSim
         private void ThreadUpdate()
         {
             Stopwatch sw = new Stopwatch();
-            sw.Start();
 
             if (_fastAdvanceAtStart)
             {
@@ -356,16 +357,30 @@ namespace WalkerSim
                 Logging.Out("... done, took {0}.", elapsed);
             }
 
+            float accumulator = 0;
+
+            sw.Start();
+
             while (!_shouldStop)
             {
-                if (_paused)
-                {
-                    Thread.Sleep(TickRateMs);
-                    continue;
-                }
+                var timeElapsed = sw.Elapsed.TotalSeconds;
+                var elapsedMs = tickWatch.Elapsed.TotalMilliseconds;
+                var scaledDt = (float)(timeElapsed * TimeScale);
 
                 sw.Restart();
 
+                accumulator = System.Math.Min(accumulator + scaledDt, 2.0f);
+
+                if (accumulator < TickRate)
+                {
+                    if (_shouldStop)
+                        break;
+
+                    Thread.Sleep(1);
+                    continue;
+                }
+
+                while (accumulator >= TickRate)
                 {
                     Tick();
 
@@ -374,10 +389,13 @@ namespace WalkerSim
 
                     CheckAgentSpawn();
                     CheckAutoSave();
+
+                    accumulator -= TickRate;
                 }
 
-                sw.Stop();
-                var elapsedMs = tickWatch.Elapsed.TotalMilliseconds;
+
+                if (_shouldStop)
+                    break;
 
                 lastTickTimeMs = (float)elapsedMs;
                 averageTickTime += (float)elapsedMs;
@@ -387,9 +405,6 @@ namespace WalkerSim
 
                 if (_shouldStop)
                     break;
-
-                var sleepTime = Math.Clamp((int)(elapsedMs - TickRateMs), 0, TickRateMs);
-                Thread.Sleep(sleepTime);
             }
 
             _running = false;

@@ -79,6 +79,7 @@ namespace WalkerSim.Editor
 
             // Set world size to 6k as the default thing until the world is changed.
             simulation.SetWorldSize(WorldMins, WorldMaxs);
+            simulation.EditorMode = true;
 
             UpdateConfigFields();
             ReconfigureSimulation();
@@ -612,9 +613,13 @@ namespace WalkerSim.Editor
             var worldPath = Worlds.WorldFolders[worldIdx];
             simulation.LoadMapData(worldPath);
 
-            RenderSimulation();
-
             CheckMaxAgents();
+
+            ReconfigureSimulation();
+            simulation.Reset(CurrentConfig);
+            GenerateColorTable();
+
+            RenderSimulation();
         }
 
         private void CheckMaxAgents()
@@ -686,7 +691,6 @@ namespace WalkerSim.Editor
         private void ReconfigureSimulation()
         {
             simulation.ReloadConfig(CurrentConfig);
-            simulation.Reset(CurrentConfig);
             GenerateColorTable();
         }
 
