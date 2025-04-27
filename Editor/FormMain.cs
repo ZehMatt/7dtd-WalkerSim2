@@ -30,7 +30,6 @@ namespace WalkerSim.Editor
         Simulation simulation = Simulation.Instance;
         Random prng;
         Bitmap bitmap;
-        Bitmap roadBitmap;
         System.Drawing.Graphics gr;
 
         Brush[] GroupColors;
@@ -418,118 +417,25 @@ namespace WalkerSim.Editor
             return new Vector3(newX, newY);
         }
 
-        private Bitmap GetCachedRoadsBitmap()
-        {
-            if (roadBitmap != null)
-            {
-                return roadBitmap;
-            }
-
-            var mapData = simulation.MapData;
-            if (mapData == null)
-                return null;
-
-            var roads = mapData.Roads;
-            if (roads == null)
-                return null;
-
-            roadBitmap = new Bitmap(roads.Width, roads.Height);
-
-            using (var gr = System.Drawing.Graphics.FromImage(roadBitmap))
-            {
-                gr.Clear(System.Drawing.Color.Black);
-
-                var brushMain = new SolidBrush(Color.FromArgb(100, 255, 255, 255));
-                var brushOffroad = new SolidBrush(Color.FromArgb(50, 255, 255, 255));
-
-                for (int y = 0; y < roads.Height; y++)
-                {
-                    for (int x = 0; x < roads.Width; x++)
-                    {
-                        var roadType = roads.GetRoadType(x, y);
-                        if (roadType == RoadType.None)
-                            continue;
-
-                        if (roadType == RoadType.Asphalt)
-                        {
-                            gr.FillRectangle(brushMain, x, y, 1, 1);
-                        }
-                        else
-                        {
-                            gr.FillRectangle(brushOffroad, x, y, 1, 1);
-                        }
-                    }
-                }
-            }
-
-            // Scale the bitmap to the simulation size.
-            roadBitmap = new Bitmap(roadBitmap, ImageWidth, ImageHeight);
-
-            return roadBitmap;
-        }
-
-        private void ClearRoadBitmap()
-        {
-            if (roadBitmap == null)
-            {
-                return;
-            }
-            roadBitmap.Dispose();
-            roadBitmap = null;
-        }
-
         private void RenderToBitmap()
         {
             gr.Clear(Color.Black);
 
             if (viewRoads.Checked)
             {
-                var roadsBitmap = GetCachedRoadsBitmap();
-                if (roadsBitmap != null)
-                {
-                    gr.DrawImage(roadsBitmap, 0, 0);
-                }
+                Renderer.RenderRoads(gr, simulation);
             }
 
             if (viewAgents.Checked)
             {
-                var agents = simulation.Agents;
-                foreach (var agent in agents)
-                {
-                    if (agent.CurrentState != Agent.State.Wandering)
-                        continue;
-
-                    var imagePos = SimPosToBitmapPos(agent.Position);
-
-                    var color = GroupColors[agent.Group % GroupColors.Length];
-                    gr.FillRectangle(color, imagePos.X, imagePos.Y, 1f, 1f);
-                }
+                Renderer.RenderAgents(gr, simulation, GroupColors);
             }
 
-            var plyIdx = 0;
-            var worldSize = simulation.WorldSize;
-            foreach (var kv in simulation.Players)
-            {
-                var player = kv.Value;
-                var imagePos = SimPosToBitmapPos(player.Position);
-
-                var color = PlayerColors[plyIdx++ % PlayerColors.Length];
-                //gr.FillRectangle(color, imagePos.X, imagePos.Y, 1f, 1f);
-                gr.FillEllipse(color, imagePos.X - 2, imagePos.Y - 2, 4f, 4f);
-
-                var viewRadius = Math.Remap(player.ViewRadius, 0, worldSize.X, 0, ImageWidth);
-                gr.DrawEllipse(Pens.Blue, imagePos.X - viewRadius, imagePos.Y - viewRadius, viewRadius * 2, viewRadius * 2);
-            }
+            Renderer.RenderPlayers(gr, simulation, PlayerColors);
 
             if (viewEvents.Checked)
             {
-                foreach (var ev in simulation.Events)
-                {
-                    var imagePos = SimPosToBitmapPos(ev.Position);
-                    var radius = Math.Remap(ev.Radius, 0, worldSize.X, 0, ImageWidth);
-
-                    gr.DrawEllipse(Pens.Red, imagePos.X - radius, imagePos.Y - radius, radius * 2, radius * 2);
-                }
+                Renderer.RenderEvents(gr, simulation);
             }
 
             if (Tool.Active != null)
@@ -706,7 +612,6 @@ namespace WalkerSim.Editor
             var worldPath = Worlds.WorldFolders[worldIdx];
             simulation.LoadMapData(worldPath);
 
-            ClearRoadBitmap();
             RenderSimulation();
 
             CheckMaxAgents();

@@ -1,6 +1,5 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Xml.Serialization;
 
 namespace WalkerSim
@@ -168,12 +167,7 @@ namespace WalkerSim
                 return null;
             }
 
-            using (var img = Image.FromFile(splatPath))
-            {
-                ImageUtils.RemoveTransparency((Bitmap)img);
-
-                return Roads.LoadFromBitmap((Bitmap)img);
-            }
+            return Roads.LoadFromFile(splatPath);
         }
 
         private static PrefabsData LoadPrefabs(string folderPath)
