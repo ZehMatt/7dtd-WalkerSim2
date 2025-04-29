@@ -49,6 +49,12 @@
                     </xs:annotation>
                 </xs:element>
 
+                <xs:element name="FastForwardAtStart" type="xs:boolean">
+                    <xs:annotation>
+                        <xs:documentation>Fast forwards the simulation at a new start</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+
                 <xs:element name="GroupSize">
                     <xs:annotation>
                         <xs:documentation>The total amount of groups will be total agents divided by

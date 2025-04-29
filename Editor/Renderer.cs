@@ -134,5 +134,31 @@ namespace WalkerSim.Editor
 
         }
 
+        public static void RenderPrefabs(System.Drawing.Graphics gr, Simulation simulation)
+        {
+            var width = gr.VisibleClipBounds.Width;
+            var height = gr.VisibleClipBounds.Height;
+            var worldSize = simulation.WorldSize;
+
+            var mapData = simulation.MapData;
+            if (mapData == null)
+                return;
+
+            var pois = mapData.Prefabs.Decorations;
+
+            foreach (var poi in pois)
+            {
+                var imagePos = SimPosToBitmapPos(gr, simulation, poi.Position);
+
+                var sizeW = Math.Remap(poi.Bounds.X, 0, worldSize.X, 0, width);
+                var sizeH = Math.Remap(poi.Bounds.Y, 0, worldSize.Y, 0, height);
+
+                // Rectangle
+                var rect = new RectangleF(imagePos.X - sizeW / 2, imagePos.Y - sizeH / 2, sizeW, sizeH);
+
+                // Draw the rectangle
+                gr.DrawRectangle(Pens.Green, rect.X, rect.Y, rect.Width, rect.Height);
+            }
+        }
     }
 }

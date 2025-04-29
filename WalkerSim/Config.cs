@@ -121,6 +121,9 @@ namespace WalkerSim
         [XmlElement("StartAgentsGrouped")]
         public bool StartAgentsGrouped = true;
 
+        [XmlElement("FastForwardAtStart")]
+        public bool FastForwardAtStart = true;
+
         [XmlElement("GroupSize")]
         public int GroupSize = 200;
 

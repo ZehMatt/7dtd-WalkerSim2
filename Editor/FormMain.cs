@@ -91,6 +91,11 @@ namespace WalkerSim.Editor
 #endif
 
             inputRandomSeed.Value = prng.Next();
+
+            viewAgents.Click += (sender, e) => RenderSimulation();
+            viewRoads.Click += (sender, e) => RenderSimulation();
+            viewPrefabs.Click += (sender, e) => RenderSimulation();
+            viewEvents.Click += (sender, e) => RenderSimulation();
         }
 
         private void SetToolTip(Control ctrl, string helpText)
@@ -312,6 +317,7 @@ namespace WalkerSim.Editor
             CurrentConfig.PopulationDensity = (int)inputMaxAgents.Value;
             CurrentConfig.GroupSize = (int)inputGroupSize.Value;
             CurrentConfig.StartAgentsGrouped = inputStartGrouped.Checked;
+            CurrentConfig.FastForwardAtStart = inputFastForward.Checked;
             CurrentConfig.PauseDuringBloodmoon = inputPauseDuringBloodmoon.Checked;
 
             var startChoice = inputStartPosition.SelectedIndex;
@@ -335,6 +341,7 @@ namespace WalkerSim.Editor
             inputMaxAgents.ValueChanged += (sender, arg) => SetConfigValues();
             inputGroupSize.ValueChanged += (sender, arg) => SetConfigValues();
             inputStartGrouped.CheckedChanged += (sender, arg) => SetConfigValues();
+            inputFastForward.CheckedChanged += (sender, arg) => SetConfigValues();
             inputPauseDuringBloodmoon.CheckedChanged += (sender, arg) => SetConfigValues();
             inputStartPosition.SelectedIndexChanged += (sender, arg) => SetConfigValues();
             inputRespawnPosition.SelectedIndexChanged += (sender, arg) => SetConfigValues();
@@ -351,6 +358,7 @@ namespace WalkerSim.Editor
             inputMaxAgents.Value = CurrentConfig.PopulationDensity;
             inputGroupSize.Value = CurrentConfig.GroupSize;
             inputStartGrouped.Checked = CurrentConfig.StartAgentsGrouped;
+            inputFastForward.Checked = CurrentConfig.FastForwardAtStart;
             inputPauseDuringBloodmoon.Checked = CurrentConfig.PauseDuringBloodmoon;
 
             var spawnChoice = Utils.GetWorldLocationString(CurrentConfig.StartPosition);
@@ -375,8 +383,8 @@ namespace WalkerSim.Editor
             simulation.Reset(CurrentConfig);
 
             GenerateColorTable();
-
             simulation.Start();
+
             updateTimer.Start();
         }
 
@@ -425,6 +433,11 @@ namespace WalkerSim.Editor
             if (viewRoads.Checked)
             {
                 Renderer.RenderRoads(gr, simulation);
+            }
+
+            if (viewPrefabs.Checked)
+            {
+                Renderer.RenderPrefabs(gr, simulation);
             }
 
             if (viewAgents.Checked)

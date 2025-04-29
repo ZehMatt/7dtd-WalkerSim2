@@ -18,7 +18,7 @@ namespace WalkerSim
         private bool _running = false;
         private bool _shouldStop = false;
         private bool _paused = false;
-        private bool _fastAdvanceAtStart = false;
+        private bool _isFastAdvancing = false;
 
         private Vector3[] _groupStarts = new Vector3[0];
 
@@ -117,11 +117,6 @@ namespace WalkerSim
             _paused = paused;
         }
 
-        public void SetFastAdvanceAtStart(bool fastAdvance)
-        {
-            _fastAdvanceAtStart = fastAdvance;
-        }
-
         public void EntityKilled(int entityId)
         {
             if (_state.Active.TryGetValue(entityId, out var agent))
@@ -215,12 +210,22 @@ namespace WalkerSim
             var prefabs = mapData.Prefabs;
             var decos = prefabs.Decorations;
 
-            //var prng = _state.PRNG;
-            //var selectedIdx = prng.Next(decos.Length);
-            var selectedIdx = _state.POIIterator % decos.Length;
-            _state.POIIterator += 7;
+            var prng = _state.PRNG;
+            var selectedIdx = prng.Next(decos.Length);
 
-            return decos[selectedIdx].Position;
+            //var selectedIdx = _state.POIIterator % decos.Length;
+            //_state.POIIterator++;
+
+            var deco = decos[selectedIdx];
+
+            var bounds = deco.Bounds;
+            var pos = deco.Position;
+
+            var offset = new Vector3(
+                (float)prng.NextDouble() * bounds.X,
+                (float)prng.NextDouble() * bounds.Y);
+
+            return pos + offset;
         }
 
         Vector3 GetGroupPosition(int groupIndex)
@@ -339,20 +344,24 @@ namespace WalkerSim
         {
             Stopwatch sw = new Stopwatch();
 
-            if (_fastAdvanceAtStart)
+            if (_state.Config.FastForwardAtStart && _state.Ticks == 0)
             {
                 Logging.Out("Advancing simulation for {0} ticks...", Simulation.Limits.TicksToAdvanceOnStartup);
+
+                _isFastAdvancing = true;
 
                 var elapsed = Utils.Measure(() =>
                 {
                     var oldTimeScale = TimeScale;
-                    TimeScale = 64.0f;
+                    TimeScale = 128.0f;
                     for (uint num = 0u; num < Simulation.Limits.TicksToAdvanceOnStartup && !_shouldStop; num++)
                     {
                         Tick();
                     }
                     TimeScale = oldTimeScale;
                 });
+
+                _isFastAdvancing = false;
 
                 Logging.Out("... done, took {0}.", elapsed);
             }
@@ -368,6 +377,12 @@ namespace WalkerSim
                 var scaledDt = (float)(timeElapsed * TimeScale);
 
                 sw.Restart();
+
+                if (_paused)
+                {
+                    Thread.Sleep(1);
+                    continue;
+                }
 
                 accumulator = System.Math.Min(accumulator + scaledDt, 2.0f);
 

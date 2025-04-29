@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace WalkerSim
@@ -19,6 +20,10 @@ namespace WalkerSim
         // If DeterministicLoop is set to true this will be the amount of how many agents it will update per tick.
         private const uint MaxUpdateCountPerTick = 2000;
 
+        ThreadLocal<FixedBufferList<Agent>> QueryBuffer = new ThreadLocal<FixedBufferList<Agent>>(() =>
+        {
+            return new FixedBufferList<Agent>(Limits.MaxQuerySize);
+        });
 
         private void UpdateAgentLogic(Agent agent)
         {
@@ -138,17 +143,8 @@ namespace WalkerSim
 
             float maxNeighborDistance = _state.MaxNeighbourDistance;
 
-            FixedBufferList<Agent> nearby = _nearby;
-
-            if (EditorMode)
-            {
-                // This needs to be thread safe in the editor mode, this will hit the GC harder.
-                nearby = new FixedBufferList<Agent>(Limits.MaxQuerySize);
-            }
-            else
-            {
-                _nearby.Clear();
-            }
+            FixedBufferList<Agent> nearby = EditorMode ? QueryBuffer.Value : _nearby;
+            nearby.Clear();
 
             QueryCellsLockFree(agent.Position, agent.Index, maxNeighborDistance, nearby);
 
@@ -180,6 +176,11 @@ namespace WalkerSim
 
             curVel.Validate();
             agent.Velocity = curVel;
+
+            if (_isFastAdvancing)
+            {
+                deltaTime *= 2.0f;
+            }
 
             ApplyMovement(agent, deltaTime, processorGroup.SpeedScale);
 

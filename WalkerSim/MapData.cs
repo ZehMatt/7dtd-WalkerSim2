@@ -33,6 +33,9 @@ namespace WalkerSim
             [XmlIgnore]
             public Vector3 Position;
 
+            [XmlIgnore]
+            public Vector3 Bounds = new Vector3(64, 64);
+
             [XmlAttribute("position")]
             public string PositionString
             {
@@ -191,20 +194,49 @@ namespace WalkerSim
         {
             var newList = new List<Decoration>(prefabs.Decorations);
 
-            for (int i = 0; i < newList.Count; i++)
+            bool invalidated = true;
+            while (invalidated)
             {
-                var pos = newList[i].Position;
+                invalidated = false;
 
-                for (int j = i + 1; j < newList.Count;)
+                for (int i = 0; i < newList.Count; i++)
                 {
-                    var dist = Vector3.Distance(pos, newList[j].Position);
-                    if (dist > 150)
-                    {
-                        j++;
-                        continue;
-                    }
+                    Vector3 pos = newList[i].Position;
+                    // z is unused, this is 2D.
+                    Vector3 bounds = newList[i].Bounds;
 
-                    newList.RemoveAt(j);
+                    for (int j = i + 1; j < newList.Count;)
+                    {
+                        // Check for intersecting bounds.
+                        var other = newList[j];
+                        Vector3 otherPos = other.Position;
+                        Vector3 otherBounds = other.Bounds;
+
+                        // Check if bounds intersect in 2D (ignoring z).
+                        bool intersects = System.Math.Abs(pos.X - otherPos.X) < (bounds.X + otherBounds.X) / 2 &&
+                                        System.Math.Abs(pos.Y - otherPos.Y) < (bounds.Y + otherBounds.Y) / 2;
+
+                        if (intersects)
+                        {
+                            // Calculate new merged bounds
+                            float minX = System.Math.Min(pos.X - bounds.X / 2, otherPos.X - otherBounds.X / 2);
+                            float maxX = System.Math.Max(pos.X + bounds.X / 2, otherPos.X + otherBounds.X / 2);
+                            float minY = System.Math.Min(pos.Y - bounds.Y / 2, otherPos.Y - otherBounds.Y / 2);
+                            float maxY = System.Math.Max(pos.Y + bounds.Y / 2, otherPos.Y + otherBounds.Y / 2);
+
+                            // Update current decoration's position and bounds
+                            newList[i].Position = new Vector3((minX + maxX) / 2, (minY + maxY) / 2, pos.Z);
+                            newList[i].Bounds = new Vector3(maxX - minX, maxY - minY, bounds.Z);
+
+                            // Remove the other decoration
+                            newList.RemoveAt(j);
+                            invalidated = true;
+                        }
+                        else
+                        {
+                            j++;
+                        }
+                    }
                 }
             }
 

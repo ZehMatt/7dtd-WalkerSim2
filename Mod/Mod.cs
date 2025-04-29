@@ -92,7 +92,6 @@ namespace WalkerSim
 
             var config = LoadConfiguration();
             simulation.Reset(config);
-            simulation.SetFastAdvanceAtStart(true);
         }
 
         internal static void RestartSimulation()
@@ -158,8 +157,6 @@ namespace WalkerSim
                 if (System.IO.File.Exists(simFile) && simulation.Load(simFile))
                 {
                     Logging.Out("Using existing simulation from: {0}", simFile);
-                    simulation.SetFastAdvanceAtStart(false);
-
                     CompareConfig();
                 }
                 else

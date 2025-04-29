@@ -76,6 +76,7 @@ namespace WalkerSim.Editor
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.buttonDuplicateGroup = new System.Windows.Forms.Button();
             this.groupProps = new System.Windows.Forms.GroupBox();
+            this.lblAffected = new System.Windows.Forms.Label();
             this.boxGroupColor = new System.Windows.Forms.PictureBox();
             this.buttonGroupColor = new System.Windows.Forms.Button();
             this.label11 = new System.Windows.Forms.Label();
@@ -102,7 +103,8 @@ namespace WalkerSim.Editor
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorPickerDlg = new System.Windows.Forms.ColorDialog();
             this.toolTipGroupSize = new System.Windows.Forms.ToolTip(this.components);
-            this.lblAffected = new System.Windows.Forms.Label();
+            this.viewPrefabs = new System.Windows.Forms.ToolStripMenuItem();
+            this.inputFastForward = new System.Windows.Forms.CheckBox();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -187,7 +189,8 @@ namespace WalkerSim.Editor
             this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.viewRoads,
             this.viewAgents,
-            this.viewEvents});
+            this.viewEvents,
+            this.viewPrefabs});
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
             this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.viewToolStripMenuItem.Text = "View";
@@ -198,7 +201,7 @@ namespace WalkerSim.Editor
             this.viewRoads.CheckOnClick = true;
             this.viewRoads.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewRoads.Name = "viewRoads";
-            this.viewRoads.Size = new System.Drawing.Size(111, 22);
+            this.viewRoads.Size = new System.Drawing.Size(180, 22);
             this.viewRoads.Text = "Roads";
             // 
             // viewAgents
@@ -207,7 +210,7 @@ namespace WalkerSim.Editor
             this.viewAgents.CheckOnClick = true;
             this.viewAgents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewAgents.Name = "viewAgents";
-            this.viewAgents.Size = new System.Drawing.Size(111, 22);
+            this.viewAgents.Size = new System.Drawing.Size(180, 22);
             this.viewAgents.Text = "Agents";
             // 
             // viewEvents
@@ -216,7 +219,7 @@ namespace WalkerSim.Editor
             this.viewEvents.CheckOnClick = true;
             this.viewEvents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewEvents.Name = "viewEvents";
-            this.viewEvents.Size = new System.Drawing.Size(111, 22);
+            this.viewEvents.Size = new System.Drawing.Size(180, 22);
             this.viewEvents.Text = "Events";
             // 
             // simulationToolStripMenuItem
@@ -356,6 +359,7 @@ namespace WalkerSim.Editor
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.inputFastForward);
             this.tabPage1.Controls.Add(this.btRand);
             this.tabPage1.Controls.Add(this.lblMaxAgentsInfo);
             this.tabPage1.Controls.Add(this.inputWorld);
@@ -394,7 +398,7 @@ namespace WalkerSim.Editor
             // 
             this.lblMaxAgentsInfo.AutoSize = true;
             this.lblMaxAgentsInfo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
-            this.lblMaxAgentsInfo.Location = new System.Drawing.Point(262, 66);
+            this.lblMaxAgentsInfo.Location = new System.Drawing.Point(262, 94);
             this.lblMaxAgentsInfo.Name = "lblMaxAgentsInfo";
             this.lblMaxAgentsInfo.Size = new System.Drawing.Size(91, 13);
             this.lblMaxAgentsInfo.TabIndex = 42;
@@ -423,7 +427,7 @@ namespace WalkerSim.Editor
             // inputPauseDuringBloodmoon
             // 
             this.inputPauseDuringBloodmoon.AutoSize = true;
-            this.inputPauseDuringBloodmoon.Location = new System.Drawing.Point(265, 39);
+            this.inputPauseDuringBloodmoon.Location = new System.Drawing.Point(265, 41);
             this.inputPauseDuringBloodmoon.Name = "inputPauseDuringBloodmoon";
             this.inputPauseDuringBloodmoon.Size = new System.Drawing.Size(144, 17);
             this.inputPauseDuringBloodmoon.TabIndex = 39;
@@ -469,7 +473,7 @@ namespace WalkerSim.Editor
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(10, 92);
+            this.label3.Location = new System.Drawing.Point(10, 67);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(59, 13);
             this.label3.TabIndex = 33;
@@ -477,7 +481,7 @@ namespace WalkerSim.Editor
             // 
             // inputGroupSize
             // 
-            this.inputGroupSize.Location = new System.Drawing.Point(113, 90);
+            this.inputGroupSize.Location = new System.Drawing.Point(113, 65);
             this.inputGroupSize.Maximum = new decimal(new int[] {
             30000,
             0,
@@ -500,7 +504,7 @@ namespace WalkerSim.Editor
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(10, 66);
+            this.label2.Location = new System.Drawing.Point(11, 94);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(95, 13);
             this.label2.TabIndex = 31;
@@ -508,7 +512,7 @@ namespace WalkerSim.Editor
             // 
             // inputMaxAgents
             // 
-            this.inputMaxAgents.Location = new System.Drawing.Point(113, 64);
+            this.inputMaxAgents.Location = new System.Drawing.Point(113, 91);
             this.inputMaxAgents.Maximum = new decimal(new int[] {
             400,
             0,
@@ -603,6 +607,15 @@ namespace WalkerSim.Editor
             this.groupProps.TabStop = false;
             this.groupProps.Text = "Properties";
             this.groupProps.Visible = false;
+            // 
+            // lblAffected
+            // 
+            this.lblAffected.AutoSize = true;
+            this.lblAffected.Location = new System.Drawing.Point(6, 99);
+            this.lblAffected.Name = "lblAffected";
+            this.lblAffected.Size = new System.Drawing.Size(95, 13);
+            this.lblAffected.TabIndex = 9;
+            this.lblAffected.Text = "Affected Agents: 0";
             // 
             // boxGroupColor
             // 
@@ -889,14 +902,24 @@ namespace WalkerSim.Editor
             // 
             this.colorPickerDlg.AnyColor = true;
             // 
-            // lblAffected
+            // viewPrefabs
             // 
-            this.lblAffected.AutoSize = true;
-            this.lblAffected.Location = new System.Drawing.Point(6, 99);
-            this.lblAffected.Name = "lblAffected";
-            this.lblAffected.Size = new System.Drawing.Size(95, 13);
-            this.lblAffected.TabIndex = 9;
-            this.lblAffected.Text = "Affected Agents: 0";
+            this.viewPrefabs.Checked = true;
+            this.viewPrefabs.CheckOnClick = true;
+            this.viewPrefabs.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.viewPrefabs.Name = "viewPrefabs";
+            this.viewPrefabs.Size = new System.Drawing.Size(180, 22);
+            this.viewPrefabs.Text = "Prefabs";
+            // 
+            // inputFastForward
+            // 
+            this.inputFastForward.AutoSize = true;
+            this.inputFastForward.Location = new System.Drawing.Point(265, 67);
+            this.inputFastForward.Name = "inputFastForward";
+            this.inputFastForward.Size = new System.Drawing.Size(119, 17);
+            this.inputFastForward.TabIndex = 44;
+            this.inputFastForward.Text = "Fast forward at start";
+            this.inputFastForward.UseVisualStyleBackColor = true;
             // 
             // FormMain
             // 
@@ -1018,6 +1041,8 @@ namespace WalkerSim.Editor
         private System.Windows.Forms.Button btRand;
         private System.Windows.Forms.ToolTip toolTipGroupSize;
         private System.Windows.Forms.Label lblAffected;
+        private System.Windows.Forms.ToolStripMenuItem viewPrefabs;
+        private System.Windows.Forms.CheckBox inputFastForward;
     }
 }
 
