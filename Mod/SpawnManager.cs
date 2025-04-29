@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace WalkerSim
@@ -61,7 +61,7 @@ namespace WalkerSim
             if (world == null)
             {
                 return -1;
-            }   
+            }
 
             var biomeId = chunk.GetBiomeId(
                 World.toBlockXZ(worldX),
@@ -291,10 +291,10 @@ namespace WalkerSim
                 return false;
             }
 
-            var entity = world.GetEntity(agent.EntityId) as EntityZombie;
+            var entity = world.GetEntity(agent.EntityId) as EntityAlive;
             if (entity == null)
             {
-                Logging.Warn("Entity not found: {0}", agent.EntityId);
+                Logging.Warn("Entity not found: {0}, unable to despawn.", agent.EntityId);
                 return false;
             }
 

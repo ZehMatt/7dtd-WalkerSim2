@@ -2,6 +2,7 @@
 - Improve: Simulation is now fully deterministic.
 - Improve: Using faster speeds in the Editor will now remain accurate, uses multi-threading.
 - Fix: The editor no longer resets the simulation when changing parameters.
+- Fix: Enemy animals were not despawned.
 
 # 0.9.4
 - Fix: Zombie spawning now obeys tags of biome spawner
