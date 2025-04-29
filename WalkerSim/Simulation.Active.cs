@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace WalkerSim
@@ -92,6 +92,8 @@ namespace WalkerSim
                 var insidePlayerView = IsInsidePlayerMaxView(agent.Position);
                 if (insidePlayerView)
                     continue;
+
+                Logging.Debug("Agent {0} is outside player view, despawning {1}...", agent.Index, agent.EntityId);
 
                 // Handle the despawn.
                 _agentDespawnHandler(this, agent);

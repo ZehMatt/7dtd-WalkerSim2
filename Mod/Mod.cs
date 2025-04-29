@@ -237,13 +237,13 @@ namespace WalkerSim
         {
             if (entity == null)
             {
-                Logging.Debug("Entity not found: {0}", entityId);
+                Logging.Debug("Entity not found: {0}, can't update state.", entityId);
                 return true;
             }
 
             if (!entity.IsAlive())
             {
-                Logging.Debug("Entity dead: {0}", entityId);
+                Logging.Debug("Entity is dead: {0}", entityId);
                 return true;
             }
 
