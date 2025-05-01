@@ -92,12 +92,9 @@ namespace WalkerSim
 
             lock (_state)
             {
+                _state.SoftReset();
                 _state.Config = config;
                 _state.PRNG = new WalkerSim.Random(config.RandomSeed);
-                _state.SlowIterator = 0;
-                _state.TickNextWindChange = 0;
-                _state.Ticks = 0;
-                _state.POIIterator = 0;
 
                 SetupGrid();
                 Populate();
@@ -209,21 +206,43 @@ namespace WalkerSim
 
             var prefabs = mapData.Prefabs;
             var decos = prefabs.Decorations;
+            if (decos.Length == 0)
+            {
+                // No decorations, fallback to random border position.
+                return GetRandomBorderPosition();
+            }
 
             var prng = _state.PRNG;
-            var selectedIdx = prng.Next(decos.Length);
 
-            //var selectedIdx = _state.POIIterator % decos.Length;
-            //_state.POIIterator++;
+            // Weighted selection, the bigger the decoration, the more likely it is to be selected.
+            var totalArea = 0.0f;
+            foreach (var deco in decos)
+            {
+                totalArea += deco.Bounds.X * deco.Bounds.Y;
+            }
 
-            var deco = decos[selectedIdx];
+            var selectedArea = 0.0f;
+            var selectedDeco = decos[0];
+            var rand = (float)prng.NextDouble() * totalArea;
+            for (int i = 0; i < decos.Length; i++)
+            {
+                var deco = decos[i];
+                var area = deco.Bounds.X * deco.Bounds.Y;
+                selectedArea += area;
+                if (selectedArea >= rand)
+                {
+                    selectedDeco = deco;
+                    break;
+                }
+            }
 
-            var bounds = deco.Bounds;
-            var pos = deco.Position;
+            var bounds = selectedDeco.Bounds;
+            var pos = selectedDeco.Position;
 
             var offset = new Vector3(
-                (float)prng.NextDouble() * bounds.X,
-                (float)prng.NextDouble() * bounds.Y);
+                -(bounds.X / 2) + ((float)prng.NextDouble() * bounds.X),
+                -(bounds.Y / 2) + ((float)prng.NextDouble() * bounds.Y)
+                );
 
             return pos + offset;
         }
