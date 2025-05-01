@@ -160,8 +160,10 @@ namespace WalkerSim
             return -1;
         }
 
-        static public int SpawnAgent(Simulation simulation, Agent agent)
+        static public int SpawnAgent(Simulation simulation, Simulation.SpawnData spawnData)
         {
+            var agent = spawnData.Agent;
+
             var world = GameManager.Instance.World;
             if (world == null)
             {
@@ -265,9 +267,34 @@ namespace WalkerSim
                 spawnedAgent.Health = agent.Health;
             }
 
-            var destPos = worldPos + (rot * 80);
-            spawnedAgent.SetInvestigatePosition(destPos, 6000, false);
+            // Post spawn behavior.
+            if (spawnData.PostSpawnBehavior == Config.PostSpawnBehavior.Wander)
+            {
+                var destPos = worldPos + (rot * 80);
+                spawnedAgent.SetInvestigatePosition(destPos, 6000, false);
+                Logging.Debug("Spawned agent wandering to {0}", destPos);
+            }
+            else if (spawnData.PostSpawnBehavior == Config.PostSpawnBehavior.ChaseActivator)
+            {
+                var activator = world.GetEntity(spawnData.ActivatorEntityId) as EntityAlive;
+                if (activator != null)
+                {
+                    spawnedAgent.SetAttackTarget(activator, 6000);
+                    Logging.Debug("Spawned agent chasing activator {0}", spawnData.ActivatorEntityId);
+                }
+                else
+                {
+                    var destPos = worldPos + (rot * 80);
+                    spawnedAgent.SetInvestigatePosition(destPos, 6000, false);
+                    Logging.Debug("Spawned agent chasing activator {0} failed, using default position", spawnData.ActivatorEntityId);
+                }
+            }
+            else
+            {
+                Logging.Err("Unknown post spawn behavior: {0}", spawnData.PostSpawnBehavior);
+            }
 
+            // Spawn.
             world.SpawnEntityInWorld(spawnedAgent);
 
             // Update the agent data.

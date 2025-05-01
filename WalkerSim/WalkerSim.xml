@@ -13,14 +13,14 @@
   <PauseDuringBloodmoon>true</PauseDuringBloodmoon>
   <SpawnProtectionTime>300</SpawnProtectionTime>
   <MovementProcessors>
-    <ProcessorGroup Group="-1" SpeedScale="1" Color="Red">
+    <ProcessorGroup Group="-1" SpeedScale="1" Color="Red" PostSpawnBehavior="ChaseActivator">
       <Processor Type="StickToRoads" Distance="0" Power="0.01" />
       <Processor Type="Wind" Distance="0" Power="0.005" />
       <Processor Type="AvoidOtherGroup" Distance="20" Power="0.01" />
       <Processor Type="AvoidSameGroup" Distance="5" Power="0.01" />
       <Processor Type="WorldEvents" Distance="0" Power="0.6" />
     </ProcessorGroup>
-    <ProcessorGroup Group="-1" SpeedScale="1" Color="Blue">
+    <ProcessorGroup Group="-1" SpeedScale="1" Color="Blue" PostSpawnBehavior="ChaseActivator">
       <Processor Type="AvoidRoads" Distance="0" Power="0.01" />
       <Processor Type="AvoidAnyGroup" Distance="25" Power="0.01" />
       <Processor Type="Wind" Distance="0" Power="0.2" />
@@ -28,20 +28,20 @@
       <Processor Type="AvoidPOIs" Distance="50" Power="0.05" />
       <Processor Type="WorldEvents" Distance="0" Power="0.6" />
     </ProcessorGroup>
-    <ProcessorGroup Group="-1" SpeedScale="1" Color="Red">
+    <ProcessorGroup Group="-1" SpeedScale="1" Color="Red" PostSpawnBehavior="ChaseActivator">
       <Processor Type="StickToRoads" Distance="0" Power="0.01" />
       <Processor Type="Wind" Distance="0" Power="0.005" />
       <Processor Type="AvoidAnyGroup" Distance="5" Power="0.01" />
       <Processor Type="WorldEvents" Distance="0" Power="0.6" />
     </ProcessorGroup>
-    <ProcessorGroup Group="-1" SpeedScale="1" Color="Yellow">
+    <ProcessorGroup Group="-1" SpeedScale="1" Color="Yellow" PostSpawnBehavior="ChaseActivator">
       <Processor Type="StickToPOIs" Distance="0" Power="0.01" />
       <Processor Type="AvoidSameGroup" Distance="15" Power="0.01" />
       <Processor Type="Wind" Distance="0" Power="0.004" />
       <Processor Type="AvoidOtherGroup" Distance="30" Power="0.01" />
       <Processor Type="WorldEvents" Distance="0" Power="0.6" />
     </ProcessorGroup>
-    <ProcessorGroup Group="-1" SpeedScale="1" Color="Green">
+    <ProcessorGroup Group="-1" SpeedScale="1" Color="Green" PostSpawnBehavior="ChaseActivator">
       <Processor Type="FlockSameGroup" Distance="15" Power="0.01" />
       <Processor Type="WindInverted" Distance="0" Power="0.01" />
       <Processor Type="AlignSameGroup" Distance="5" Power="0.01" />

@@ -166,6 +166,15 @@
                                             </xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
+
+                                    <xs:attribute name="PostSpawnBehavior" type="PostSpawnBehavior" use="required">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                The behavior of the agent after its spawned in the game world
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+
                                     <xs:attribute name="Color" type="xs:string" use="required">
                                         <xs:annotation>
                                             <xs:documentation>
@@ -184,6 +193,24 @@
             </xs:sequence>
         </xs:complexType>
     </xs:element>
+
+    <xs:simpleType name="PostSpawnBehavior">
+        <xs:annotation>
+            <xs:documentation>Enumeration for behavior after agent is spawned</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Wander">
+                <xs:annotation>
+                    <xs:documentation>Spawned agent start wandering after spawn</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="ChaseActivator">
+                <xs:annotation>
+                    <xs:documentation>Spawned agent starts chasing the activator of the spawn</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
 
     <xs:simpleType name="SpawnPosition">
         <xs:annotation>

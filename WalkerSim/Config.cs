@@ -23,6 +23,14 @@ namespace WalkerSim
             SchemaLocation = "http://zeh.matt/WalkerSim WalkerSimSchema.xsd";
         }
 
+        public enum PostSpawnBehavior
+        {
+            [XmlEnum("Wander")]
+            Wander = 0,
+            [XmlEnum("ChaseActivator")]
+            ChaseActivator,
+        }
+
 
         public enum WorldLocation
         {
@@ -95,6 +103,9 @@ namespace WalkerSim
 
             [XmlAttribute("SpeedScale")]
             public float SpeedScale = 1.0f;
+
+            [XmlAttribute("PostSpawnBehavior")]
+            public PostSpawnBehavior PostSpawnBehavior = PostSpawnBehavior.Wander;
 
             [XmlAttribute("Color")]
             public string Color = "";
