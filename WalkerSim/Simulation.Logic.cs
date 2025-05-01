@@ -42,52 +42,62 @@ namespace WalkerSim
         {
             tickWatch.Restart();
 
-            lock (_state)
+            try
             {
-                UpdateWindDirection();
-                UpdateEvents();
-                UpatePOICounter();
-
-                var agents = _state.Agents;
-                var maxUpdates = MaxUpdateCountPerTick;
-
-                if (EditorMode)
+                lock (_state)
                 {
-                    // Update in parallel.
-                    Parallel.For(0, maxUpdates, i =>
+                    UpdateWindDirection();
+                    UpdateEvents();
+                    UpatePOICounter();
+
+                    var agents = _state.Agents;
+                    var maxUpdates = MaxUpdateCountPerTick;
+
+                    if (agents.Count > 0)
                     {
-                        var index = (int)((_state.SlowIterator + (uint)i) % agents.Count);
-                        var agent = _state.Agents[index];
-                        UpdateAgentLogic(agent);
-                    });
-                }
-                else
-                {
-                    // Update single threaded.
-                    for (int i = 0; i < maxUpdates; i++)
-                    {
-                        var index = (int)((_state.SlowIterator + (uint)i) % agents.Count);
-                        var agent = agents[index];
-                        UpdateAgentLogic(agent);
+                        if (EditorMode || _isFastAdvancing)
+                        {
+                            // Update in parallel.
+                            Parallel.For(0, maxUpdates, i =>
+                            {
+                                var index = (int)((_state.SlowIterator + (uint)i) % agents.Count);
+                                var agent = agents[index];
+                                UpdateAgentLogic(agent);
+                            });
+                        }
+                        else
+                        {
+                            // Update single threaded.
+                            for (int i = 0; i < maxUpdates; i++)
+                            {
+                                var index = (int)((_state.SlowIterator + (uint)i) % agents.Count);
+                                var agent = agents[index];
+                                UpdateAgentLogic(agent);
+                            }
+                        }
+
+                        _state.SlowIterator += maxUpdates;
+
+                        // Update the grid, can't do this in parallel since it's not thread safe.
+                        for (int i = 0; i < agents.Count; i++)
+                        {
+                            MoveInGrid(agents[i]);
+                        }
                     }
-                }
-
-                _state.SlowIterator += maxUpdates;
-
-                // Update the grid, can't do this in parallel since it's not thread safe.
-                for (int i = 0; i < agents.Count; i++)
-                {
-                    MoveInGrid(agents[i]);
-                }
 
 #if DEBUG
-                for (int i = 0; i < agents.Count; i++)
-                {
-                    ValidateAgentInCorrectCell(agents[i]);
-                }
+                    for (int i = 0; i < agents.Count; i++)
+                    {
+                        ValidateAgentInCorrectCell(agents[i]);
+                    }
 #endif
 
-                _state.Ticks++;
+                    _state.Ticks++;
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Logging.Exception(ex);
             }
 
             tickWatch.Stop();
@@ -143,7 +153,21 @@ namespace WalkerSim
 
             float maxNeighborDistance = _state.MaxNeighbourDistance;
 
-            FixedBufferList<Agent> nearby = EditorMode ? QueryBuffer.Value : _nearby;
+            // When single threaded we use the local buffer.
+            FixedBufferList<Agent> nearby = _nearby;
+
+            if (EditorMode)
+            {
+                // Use the thread local buffer for editor mode.
+                nearby = QueryBuffer.Value;
+            }
+            else if (_isFastAdvancing)
+            {
+                // It seems we can't use QueryBuffer for Unity/Mono, this doesn't seem to be working,
+                // and the instance is never set, allocate temporary one.
+                nearby = new FixedBufferList<Agent>(Limits.MaxQuerySize);
+            }
+
             nearby.Clear();
 
             QueryCellsLockFree(agent.Position, agent.Index, maxNeighborDistance, nearby);
