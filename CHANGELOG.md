@@ -1,11 +1,15 @@
 # 0.9.5 (ongoing)
+- Fix: The editor no longer resets the simulation when changing parameters.
+- Fix: Some zombies were not despawned when getting too far away.
+- Fix: Console help text was not correctly printed.
 - Improve: Simulation is now fully deterministic.
 - Improve: Using faster speeds in the Editor will now remain accurate, uses multi-threading.
-- Fix: The editor no longer resets the simulation when changing parameters.
-- Fix: Enemy animals were not despawned.
+- Improve: Default configuration has been updated for a more immersive experience.
+- Improve: Change random distribution of POI's, bigger POI's will be prefered now.
+- Feature: Added `SpawnProtectionTime`, this disables zombie spawning when entering a new game for the first time.
 
 # 0.9.4
-- Fix: Zombie spawning now obeys tags of biome spawner
+- Fix: Zombie spawning now obeys tags of biome spawner.
 - Fix: Zombies killed are removed from the active list, reducing excessive logging and correctly respawning zombies.
 - Fix: Some agents were not updated depending on the population count.
 - Improve: Reduce memory footprint and better performance by limiting the spawn queue.
