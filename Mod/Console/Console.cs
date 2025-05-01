@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace WalkerSim.Console
 {
@@ -13,9 +13,9 @@ namespace WalkerSim.Console
                 " -> pause\n" +
                 "    Pauses the simulation which also stops spawning and despawning.\n" +
                 " -> resume\n" +
-                "    Resumes the simulation and also the spawning/despawning." +
+                "    Resumes the simulation and also the spawning/despawning.\n" +
                 " -> restart\n" +
-                "    Reloads the configuration and restarts the simulation." +
+                "    Reloads the configuration and restarts the simulation.\n" +
                 " -> stats\n" +
                 "    Print out some statistics from the simulation.\n" +
                 " -> timescale <value>\n" +
