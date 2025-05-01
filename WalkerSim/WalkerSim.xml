@@ -11,7 +11,7 @@
   <AgentStartPosition>RandomPOI</AgentStartPosition>
   <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>
   <PauseDuringBloodmoon>true</PauseDuringBloodmoon>
-  <SpawnProtectionTime>180</SpawnProtectionTime>
+  <SpawnProtectionTime>300</SpawnProtectionTime>
   <MovementProcessors>
     <ProcessorGroup Group="-1" SpeedScale="1" Color="Red">
       <Processor Type="StickToRoads" Distance="0" Power="0.01" />

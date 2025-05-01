@@ -473,7 +473,7 @@ namespace WalkerSim.Editor
             this.inputSpawnProtectionTime.Size = new System.Drawing.Size(149, 20);
             this.inputSpawnProtectionTime.TabIndex = 45;
             this.inputSpawnProtectionTime.Value = new decimal(new int[] {
-            120,
+            300,
             0,
             0,
             0});
@@ -648,7 +648,7 @@ namespace WalkerSim.Editor
             this.inputGroupSize.Size = new System.Drawing.Size(149, 20);
             this.inputGroupSize.TabIndex = 32;
             this.inputGroupSize.Value = new decimal(new int[] {
-            1,
+            16,
             0,
             0,
             0});
@@ -1064,7 +1064,7 @@ namespace WalkerSim.Editor
             this.inputMaxAgents.Size = new System.Drawing.Size(149, 20);
             this.inputMaxAgents.TabIndex = 52;
             this.inputMaxAgents.Value = new decimal(new int[] {
-            160,
+            300,
             0,
             0,
             0});
