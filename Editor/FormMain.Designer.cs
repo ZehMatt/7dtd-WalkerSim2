@@ -80,9 +80,12 @@ namespace WalkerSim.Editor
             this.inputPauseDuringBloodmoon = new System.Windows.Forms.CheckBox();
             this.label14 = new System.Windows.Forms.Label();
             this.inputFastForward = new System.Windows.Forms.CheckBox();
+            this.inputMaxAgents = new System.Windows.Forms.NumericUpDown();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.buttonDuplicateGroup = new System.Windows.Forms.Button();
             this.groupProps = new System.Windows.Forms.GroupBox();
+            this.inputPostSpawnBehavior = new System.Windows.Forms.ComboBox();
+            this.label15 = new System.Windows.Forms.Label();
             this.lblAffected = new System.Windows.Forms.Label();
             this.boxGroupColor = new System.Windows.Forms.PictureBox();
             this.buttonGroupColor = new System.Windows.Forms.Button();
@@ -110,7 +113,6 @@ namespace WalkerSim.Editor
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorPickerDlg = new System.Windows.Forms.ColorDialog();
             this.toolTipGroupSize = new System.Windows.Forms.ToolTip(this.components);
-            this.inputMaxAgents = new System.Windows.Forms.NumericUpDown();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -124,6 +126,7 @@ namespace WalkerSim.Editor
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.inputRandomSeed)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputGroupSize)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.inputMaxAgents)).BeginInit();
             this.tabPage2.SuspendLayout();
             this.groupProps.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.boxGroupColor)).BeginInit();
@@ -135,7 +138,6 @@ namespace WalkerSim.Editor
             ((System.ComponentModel.ISupportInitialize)(this.inputProcessorDistance)).BeginInit();
             this.tabPage3.SuspendLayout();
             this.contextLog.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.inputMaxAgents)).BeginInit();
             this.SuspendLayout();
             // 
             // updateTimer
@@ -152,7 +154,7 @@ namespace WalkerSim.Editor
             this.toolsToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(909, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(900, 24);
             this.menuStrip1.TabIndex = 4;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -347,8 +349,8 @@ namespace WalkerSim.Editor
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.tabSimulation);
-            this.splitContainer1.Size = new System.Drawing.Size(909, 716);
-            this.splitContainer1.SplitterDistance = 517;
+            this.splitContainer1.Size = new System.Drawing.Size(900, 716);
+            this.splitContainer1.SplitterDistance = 519;
             this.splitContainer1.TabIndex = 5;
             // 
             // simCanvas
@@ -357,7 +359,7 @@ namespace WalkerSim.Editor
             this.simCanvas.Dock = System.Windows.Forms.DockStyle.Fill;
             this.simCanvas.Location = new System.Drawing.Point(0, 0);
             this.simCanvas.Name = "simCanvas";
-            this.simCanvas.Size = new System.Drawing.Size(909, 517);
+            this.simCanvas.Size = new System.Drawing.Size(900, 519);
             this.simCanvas.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.simCanvas.TabIndex = 4;
             this.simCanvas.TabStop = false;
@@ -372,7 +374,7 @@ namespace WalkerSim.Editor
             this.tabSimulation.Location = new System.Drawing.Point(0, 0);
             this.tabSimulation.Name = "tabSimulation";
             this.tabSimulation.SelectedIndex = 0;
-            this.tabSimulation.Size = new System.Drawing.Size(909, 195);
+            this.tabSimulation.Size = new System.Drawing.Size(900, 193);
             this.tabSimulation.TabIndex = 0;
             // 
             // tabPage1
@@ -381,7 +383,7 @@ namespace WalkerSim.Editor
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(901, 169);
+            this.tabPage1.Size = new System.Drawing.Size(892, 167);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Base Parameters";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -421,24 +423,24 @@ namespace WalkerSim.Editor
             this.tableLayoutPanel1.Location = new System.Drawing.Point(3, 3);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 7;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 5F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(895, 163);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(886, 161);
             this.tableLayoutPanel1.TabIndex = 47;
             // 
             // label13
             // 
             this.label13.AutoSize = true;
             this.label13.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label13.Location = new System.Drawing.Point(599, 50);
+            this.label13.Location = new System.Drawing.Point(591, 35);
             this.label13.Name = "label13";
             this.label13.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label13.Size = new System.Drawing.Size(143, 30);
+            this.label13.Size = new System.Drawing.Size(141, 30);
             this.label13.TabIndex = 50;
             this.label13.Text = "Pause during Bloodmoon";
             this.label13.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -447,17 +449,17 @@ namespace WalkerSim.Editor
             // 
             this.label12.AutoSize = true;
             this.label12.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label12.Location = new System.Drawing.Point(599, 20);
+            this.label12.Location = new System.Drawing.Point(591, 5);
             this.label12.Name = "label12";
             this.label12.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label12.Size = new System.Drawing.Size(143, 30);
+            this.label12.Size = new System.Drawing.Size(141, 30);
             this.label12.TabIndex = 49;
             this.label12.Text = "Start Agents Grouped";
             this.label12.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
             // inputSpawnProtectionTime
             // 
-            this.inputSpawnProtectionTime.Location = new System.Drawing.Point(149, 140);
+            this.inputSpawnProtectionTime.Location = new System.Drawing.Point(147, 125);
             this.inputSpawnProtectionTime.Margin = new System.Windows.Forms.Padding(0);
             this.inputSpawnProtectionTime.Maximum = new decimal(new int[] {
             400,
@@ -470,7 +472,7 @@ namespace WalkerSim.Editor
             0,
             0});
             this.inputSpawnProtectionTime.Name = "inputSpawnProtectionTime";
-            this.inputSpawnProtectionTime.Size = new System.Drawing.Size(149, 20);
+            this.inputSpawnProtectionTime.Size = new System.Drawing.Size(147, 20);
             this.inputSpawnProtectionTime.TabIndex = 45;
             this.inputSpawnProtectionTime.Value = new decimal(new int[] {
             300,
@@ -485,10 +487,10 @@ namespace WalkerSim.Editor
             this.panel1.AutoSize = true;
             this.panel1.Controls.Add(this.inputRandomSeed);
             this.panel1.Controls.Add(this.btRand);
-            this.panel1.Location = new System.Drawing.Point(149, 50);
+            this.panel1.Location = new System.Drawing.Point(147, 35);
             this.panel1.Margin = new System.Windows.Forms.Padding(0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(149, 20);
+            this.panel1.Size = new System.Drawing.Size(147, 20);
             this.panel1.TabIndex = 48;
             // 
             // inputRandomSeed
@@ -503,14 +505,14 @@ namespace WalkerSim.Editor
             0,
             0});
             this.inputRandomSeed.Name = "inputRandomSeed";
-            this.inputRandomSeed.Size = new System.Drawing.Size(124, 20);
+            this.inputRandomSeed.Size = new System.Drawing.Size(122, 20);
             this.inputRandomSeed.TabIndex = 28;
             // 
             // btRand
             // 
             this.btRand.AutoSize = true;
             this.btRand.Dock = System.Windows.Forms.DockStyle.Right;
-            this.btRand.Location = new System.Drawing.Point(124, 0);
+            this.btRand.Location = new System.Drawing.Point(122, 0);
             this.btRand.Margin = new System.Windows.Forms.Padding(0);
             this.btRand.Name = "btRand";
             this.btRand.Size = new System.Drawing.Size(25, 20);
@@ -524,21 +526,21 @@ namespace WalkerSim.Editor
             this.inputRespawnPosition.Dock = System.Windows.Forms.DockStyle.Fill;
             this.inputRespawnPosition.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.inputRespawnPosition.FormattingEnabled = true;
-            this.inputRespawnPosition.Location = new System.Drawing.Point(447, 50);
+            this.inputRespawnPosition.Location = new System.Drawing.Point(441, 35);
             this.inputRespawnPosition.Margin = new System.Windows.Forms.Padding(0);
             this.inputRespawnPosition.Name = "inputRespawnPosition";
-            this.inputRespawnPosition.Size = new System.Drawing.Size(149, 21);
+            this.inputRespawnPosition.Size = new System.Drawing.Size(147, 21);
             this.inputRespawnPosition.TabIndex = 37;
             // 
             // label6
             // 
             this.label6.AutoSize = true;
             this.label6.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label6.Location = new System.Drawing.Point(0, 140);
+            this.label6.Location = new System.Drawing.Point(0, 125);
             this.label6.Margin = new System.Windows.Forms.Padding(0);
             this.label6.Name = "label6";
             this.label6.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label6.Size = new System.Drawing.Size(149, 30);
+            this.label6.Size = new System.Drawing.Size(147, 30);
             this.label6.TabIndex = 46;
             this.label6.Text = "Spawn Protection Time";
             this.label6.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -547,10 +549,10 @@ namespace WalkerSim.Editor
             // 
             this.label5.AutoSize = true;
             this.label5.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label5.Location = new System.Drawing.Point(301, 50);
+            this.label5.Location = new System.Drawing.Point(297, 35);
             this.label5.Name = "label5";
             this.label5.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label5.Size = new System.Drawing.Size(143, 30);
+            this.label5.Size = new System.Drawing.Size(141, 30);
             this.label5.TabIndex = 36;
             this.label5.Text = "Respawn Position";
             this.label5.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -560,10 +562,10 @@ namespace WalkerSim.Editor
             this.inputWorld.Dock = System.Windows.Forms.DockStyle.Fill;
             this.inputWorld.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.inputWorld.FormattingEnabled = true;
-            this.inputWorld.Location = new System.Drawing.Point(149, 20);
+            this.inputWorld.Location = new System.Drawing.Point(147, 5);
             this.inputWorld.Margin = new System.Windows.Forms.Padding(0);
             this.inputWorld.Name = "inputWorld";
-            this.inputWorld.Size = new System.Drawing.Size(149, 21);
+            this.inputWorld.Size = new System.Drawing.Size(147, 21);
             this.inputWorld.TabIndex = 41;
             this.inputWorld.SelectedIndexChanged += new System.EventHandler(this.OnWorldSelectionChanged);
             // 
@@ -572,21 +574,21 @@ namespace WalkerSim.Editor
             this.inputStartPosition.Dock = System.Windows.Forms.DockStyle.Fill;
             this.inputStartPosition.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.inputStartPosition.FormattingEnabled = true;
-            this.inputStartPosition.Location = new System.Drawing.Point(447, 20);
+            this.inputStartPosition.Location = new System.Drawing.Point(441, 5);
             this.inputStartPosition.Margin = new System.Windows.Forms.Padding(0);
             this.inputStartPosition.Name = "inputStartPosition";
-            this.inputStartPosition.Size = new System.Drawing.Size(149, 21);
+            this.inputStartPosition.Size = new System.Drawing.Size(147, 21);
             this.inputStartPosition.TabIndex = 35;
             // 
             // label10
             // 
             this.label10.AutoSize = true;
             this.label10.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label10.Location = new System.Drawing.Point(0, 20);
+            this.label10.Location = new System.Drawing.Point(0, 5);
             this.label10.Margin = new System.Windows.Forms.Padding(0);
             this.label10.Name = "label10";
             this.label10.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label10.Size = new System.Drawing.Size(149, 30);
+            this.label10.Size = new System.Drawing.Size(147, 30);
             this.label10.TabIndex = 40;
             this.label10.Text = "World";
             this.label10.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -595,10 +597,10 @@ namespace WalkerSim.Editor
             // 
             this.label4.AutoSize = true;
             this.label4.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label4.Location = new System.Drawing.Point(301, 20);
+            this.label4.Location = new System.Drawing.Point(297, 5);
             this.label4.Name = "label4";
             this.label4.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label4.Size = new System.Drawing.Size(143, 30);
+            this.label4.Size = new System.Drawing.Size(141, 30);
             this.label4.TabIndex = 34;
             this.label4.Text = "Start Position";
             this.label4.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -607,11 +609,11 @@ namespace WalkerSim.Editor
             // 
             this.label1.AutoSize = true;
             this.label1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label1.Location = new System.Drawing.Point(0, 50);
+            this.label1.Location = new System.Drawing.Point(0, 35);
             this.label1.Margin = new System.Windows.Forms.Padding(0);
             this.label1.Name = "label1";
             this.label1.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label1.Size = new System.Drawing.Size(149, 30);
+            this.label1.Size = new System.Drawing.Size(147, 30);
             this.label1.TabIndex = 29;
             this.label1.Text = "Random Seed";
             this.label1.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -620,11 +622,11 @@ namespace WalkerSim.Editor
             // 
             this.label3.AutoSize = true;
             this.label3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label3.Location = new System.Drawing.Point(0, 80);
+            this.label3.Location = new System.Drawing.Point(0, 65);
             this.label3.Margin = new System.Windows.Forms.Padding(0);
             this.label3.Name = "label3";
             this.label3.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label3.Size = new System.Drawing.Size(149, 30);
+            this.label3.Size = new System.Drawing.Size(147, 30);
             this.label3.TabIndex = 33;
             this.label3.Text = "Group Size";
             this.label3.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -632,7 +634,7 @@ namespace WalkerSim.Editor
             // inputGroupSize
             // 
             this.inputGroupSize.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.inputGroupSize.Location = new System.Drawing.Point(149, 80);
+            this.inputGroupSize.Location = new System.Drawing.Point(147, 65);
             this.inputGroupSize.Margin = new System.Windows.Forms.Padding(0);
             this.inputGroupSize.Maximum = new decimal(new int[] {
             30000,
@@ -645,7 +647,7 @@ namespace WalkerSim.Editor
             0,
             0});
             this.inputGroupSize.Name = "inputGroupSize";
-            this.inputGroupSize.Size = new System.Drawing.Size(149, 20);
+            this.inputGroupSize.Size = new System.Drawing.Size(147, 20);
             this.inputGroupSize.TabIndex = 32;
             this.inputGroupSize.Value = new decimal(new int[] {
             16,
@@ -657,11 +659,11 @@ namespace WalkerSim.Editor
             // 
             this.label2.AutoSize = true;
             this.label2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label2.Location = new System.Drawing.Point(0, 110);
+            this.label2.Location = new System.Drawing.Point(0, 95);
             this.label2.Margin = new System.Windows.Forms.Padding(0);
             this.label2.Name = "label2";
             this.label2.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label2.Size = new System.Drawing.Size(149, 30);
+            this.label2.Size = new System.Drawing.Size(147, 30);
             this.label2.TabIndex = 31;
             this.label2.Text = "Population Density";
             this.label2.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -669,7 +671,7 @@ namespace WalkerSim.Editor
             // inputStartGrouped
             // 
             this.inputStartGrouped.AutoSize = true;
-            this.inputStartGrouped.Location = new System.Drawing.Point(748, 23);
+            this.inputStartGrouped.Location = new System.Drawing.Point(738, 8);
             this.inputStartGrouped.Name = "inputStartGrouped";
             this.inputStartGrouped.Size = new System.Drawing.Size(15, 14);
             this.inputStartGrouped.TabIndex = 27;
@@ -678,7 +680,7 @@ namespace WalkerSim.Editor
             // inputPauseDuringBloodmoon
             // 
             this.inputPauseDuringBloodmoon.AutoSize = true;
-            this.inputPauseDuringBloodmoon.Location = new System.Drawing.Point(748, 53);
+            this.inputPauseDuringBloodmoon.Location = new System.Drawing.Point(738, 38);
             this.inputPauseDuringBloodmoon.Name = "inputPauseDuringBloodmoon";
             this.inputPauseDuringBloodmoon.Size = new System.Drawing.Size(15, 14);
             this.inputPauseDuringBloodmoon.TabIndex = 39;
@@ -688,10 +690,10 @@ namespace WalkerSim.Editor
             // 
             this.label14.AutoSize = true;
             this.label14.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label14.Location = new System.Drawing.Point(599, 80);
+            this.label14.Location = new System.Drawing.Point(591, 65);
             this.label14.Name = "label14";
             this.label14.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label14.Size = new System.Drawing.Size(143, 30);
+            this.label14.Size = new System.Drawing.Size(141, 30);
             this.label14.TabIndex = 51;
             this.label14.Text = "Fast forward at start";
             this.label14.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -699,11 +701,36 @@ namespace WalkerSim.Editor
             // inputFastForward
             // 
             this.inputFastForward.AutoSize = true;
-            this.inputFastForward.Location = new System.Drawing.Point(748, 83);
+            this.inputFastForward.Location = new System.Drawing.Point(738, 68);
             this.inputFastForward.Name = "inputFastForward";
             this.inputFastForward.Size = new System.Drawing.Size(15, 14);
             this.inputFastForward.TabIndex = 44;
             this.inputFastForward.UseVisualStyleBackColor = true;
+            // 
+            // inputMaxAgents
+            // 
+            this.inputMaxAgents.AutoSize = true;
+            this.inputMaxAgents.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.inputMaxAgents.Location = new System.Drawing.Point(147, 95);
+            this.inputMaxAgents.Margin = new System.Windows.Forms.Padding(0);
+            this.inputMaxAgents.Maximum = new decimal(new int[] {
+            400,
+            0,
+            0,
+            0});
+            this.inputMaxAgents.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.inputMaxAgents.Name = "inputMaxAgents";
+            this.inputMaxAgents.Size = new System.Drawing.Size(147, 20);
+            this.inputMaxAgents.TabIndex = 52;
+            this.inputMaxAgents.Value = new decimal(new int[] {
+            300,
+            0,
+            0,
+            0});
             // 
             // tabPage2
             // 
@@ -716,7 +743,7 @@ namespace WalkerSim.Editor
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(901, 169);
+            this.tabPage2.Size = new System.Drawing.Size(892, 167);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Movement Processors";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -724,7 +751,7 @@ namespace WalkerSim.Editor
             // buttonDuplicateGroup
             // 
             this.buttonDuplicateGroup.Enabled = false;
-            this.buttonDuplicateGroup.Location = new System.Drawing.Point(83, 128);
+            this.buttonDuplicateGroup.Location = new System.Drawing.Point(83, 138);
             this.buttonDuplicateGroup.Name = "buttonDuplicateGroup";
             this.buttonDuplicateGroup.Size = new System.Drawing.Size(62, 23);
             this.buttonDuplicateGroup.TabIndex = 7;
@@ -734,6 +761,8 @@ namespace WalkerSim.Editor
             // 
             // groupProps
             // 
+            this.groupProps.Controls.Add(this.inputPostSpawnBehavior);
+            this.groupProps.Controls.Add(this.label15);
             this.groupProps.Controls.Add(this.lblAffected);
             this.groupProps.Controls.Add(this.boxGroupColor);
             this.groupProps.Controls.Add(this.buttonGroupColor);
@@ -744,16 +773,35 @@ namespace WalkerSim.Editor
             this.groupProps.Controls.Add(this.inputMovementGroup);
             this.groupProps.Location = new System.Drawing.Point(225, 6);
             this.groupProps.Name = "groupProps";
-            this.groupProps.Size = new System.Drawing.Size(200, 145);
+            this.groupProps.Size = new System.Drawing.Size(237, 155);
             this.groupProps.TabIndex = 3;
             this.groupProps.TabStop = false;
             this.groupProps.Text = "Properties";
             this.groupProps.Visible = false;
             // 
+            // inputPostSpawnBehavior
+            // 
+            this.inputPostSpawnBehavior.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.inputPostSpawnBehavior.FormattingEnabled = true;
+            this.inputPostSpawnBehavior.Location = new System.Drawing.Point(118, 101);
+            this.inputPostSpawnBehavior.Name = "inputPostSpawnBehavior";
+            this.inputPostSpawnBehavior.Size = new System.Drawing.Size(113, 21);
+            this.inputPostSpawnBehavior.TabIndex = 11;
+            this.inputPostSpawnBehavior.SelectedIndexChanged += new System.EventHandler(this.OnPostSpawnBehaviorSelectionChanged);
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(6, 104);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(109, 13);
+            this.label15.TabIndex = 10;
+            this.label15.Text = "Post Spawn Behavior";
+            // 
             // lblAffected
             // 
             this.lblAffected.AutoSize = true;
-            this.lblAffected.Location = new System.Drawing.Point(6, 99);
+            this.lblAffected.Location = new System.Drawing.Point(6, 129);
             this.lblAffected.Name = "lblAffected";
             this.lblAffected.Size = new System.Drawing.Size(95, 13);
             this.lblAffected.TabIndex = 9;
@@ -763,15 +811,15 @@ namespace WalkerSim.Editor
             // 
             this.boxGroupColor.BackColor = System.Drawing.Color.Transparent;
             this.boxGroupColor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.boxGroupColor.Location = new System.Drawing.Point(118, 72);
+            this.boxGroupColor.Location = new System.Drawing.Point(118, 74);
             this.boxGroupColor.Name = "boxGroupColor";
-            this.boxGroupColor.Size = new System.Drawing.Size(52, 21);
+            this.boxGroupColor.Size = new System.Drawing.Size(91, 21);
             this.boxGroupColor.TabIndex = 8;
             this.boxGroupColor.TabStop = false;
             // 
             // buttonGroupColor
             // 
-            this.buttonGroupColor.Location = new System.Drawing.Point(171, 71);
+            this.buttonGroupColor.Location = new System.Drawing.Point(208, 73);
             this.buttonGroupColor.Name = "buttonGroupColor";
             this.buttonGroupColor.Size = new System.Drawing.Size(23, 23);
             this.buttonGroupColor.TabIndex = 7;
@@ -782,7 +830,7 @@ namespace WalkerSim.Editor
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(6, 73);
+            this.label11.Location = new System.Drawing.Point(6, 78);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(63, 13);
             this.label11.TabIndex = 6;
@@ -796,14 +844,14 @@ namespace WalkerSim.Editor
             0,
             0,
             65536});
-            this.inputMovementSpeed.Location = new System.Drawing.Point(119, 45);
+            this.inputMovementSpeed.Location = new System.Drawing.Point(119, 47);
             this.inputMovementSpeed.Minimum = new decimal(new int[] {
             1,
             0,
             0,
             0});
             this.inputMovementSpeed.Name = "inputMovementSpeed";
-            this.inputMovementSpeed.Size = new System.Drawing.Size(75, 20);
+            this.inputMovementSpeed.Size = new System.Drawing.Size(112, 20);
             this.inputMovementSpeed.TabIndex = 5;
             this.inputMovementSpeed.Value = new decimal(new int[] {
             1,
@@ -815,7 +863,7 @@ namespace WalkerSim.Editor
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(6, 47);
+            this.label7.Location = new System.Drawing.Point(6, 49);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(91, 13);
             this.label7.TabIndex = 2;
@@ -824,7 +872,7 @@ namespace WalkerSim.Editor
             // lblAffectedGroup
             // 
             this.lblAffectedGroup.AutoSize = true;
-            this.lblAffectedGroup.Location = new System.Drawing.Point(6, 22);
+            this.lblAffectedGroup.Location = new System.Drawing.Point(6, 24);
             this.lblAffectedGroup.Name = "lblAffectedGroup";
             this.lblAffectedGroup.Size = new System.Drawing.Size(79, 13);
             this.lblAffectedGroup.TabIndex = 1;
@@ -832,14 +880,14 @@ namespace WalkerSim.Editor
             // 
             // inputMovementGroup
             // 
-            this.inputMovementGroup.Location = new System.Drawing.Point(119, 19);
+            this.inputMovementGroup.Location = new System.Drawing.Point(119, 21);
             this.inputMovementGroup.Minimum = new decimal(new int[] {
             1,
             0,
             0,
             -2147483648});
             this.inputMovementGroup.Name = "inputMovementGroup";
-            this.inputMovementGroup.Size = new System.Drawing.Size(75, 20);
+            this.inputMovementGroup.Size = new System.Drawing.Size(112, 20);
             this.inputMovementGroup.TabIndex = 4;
             this.inputMovementGroup.Value = new decimal(new int[] {
             1,
@@ -854,9 +902,9 @@ namespace WalkerSim.Editor
             this.groupProcessors.Controls.Add(this.button4);
             this.groupProcessors.Controls.Add(this.groupParameter);
             this.groupProcessors.Controls.Add(this.listProcessors);
-            this.groupProcessors.Location = new System.Drawing.Point(431, 6);
+            this.groupProcessors.Location = new System.Drawing.Point(468, 6);
             this.groupProcessors.Name = "groupProcessors";
-            this.groupProcessors.Size = new System.Drawing.Size(409, 145);
+            this.groupProcessors.Size = new System.Drawing.Size(415, 155);
             this.groupProcessors.TabIndex = 6;
             this.groupProcessors.TabStop = false;
             this.groupProcessors.Text = "Processors";
@@ -865,7 +913,7 @@ namespace WalkerSim.Editor
             // buttonRemoveProcessor
             // 
             this.buttonRemoveProcessor.Enabled = false;
-            this.buttonRemoveProcessor.Location = new System.Drawing.Point(114, 113);
+            this.buttonRemoveProcessor.Location = new System.Drawing.Point(114, 124);
             this.buttonRemoveProcessor.Name = "buttonRemoveProcessor";
             this.buttonRemoveProcessor.Size = new System.Drawing.Size(87, 23);
             this.buttonRemoveProcessor.TabIndex = 9;
@@ -875,7 +923,7 @@ namespace WalkerSim.Editor
             // 
             // button4
             // 
-            this.button4.Location = new System.Drawing.Point(9, 113);
+            this.button4.Location = new System.Drawing.Point(9, 124);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(99, 23);
             this.button4.TabIndex = 8;
@@ -891,7 +939,7 @@ namespace WalkerSim.Editor
             this.groupParameter.Controls.Add(this.inputProcessorDistance);
             this.groupParameter.Location = new System.Drawing.Point(207, 14);
             this.groupParameter.Name = "groupParameter";
-            this.groupParameter.Size = new System.Drawing.Size(200, 125);
+            this.groupParameter.Size = new System.Drawing.Size(200, 133);
             this.groupParameter.TabIndex = 10;
             this.groupParameter.TabStop = false;
             this.groupParameter.Text = "Parameters";
@@ -962,14 +1010,14 @@ namespace WalkerSim.Editor
             this.listProcessors.FormattingEnabled = true;
             this.listProcessors.Location = new System.Drawing.Point(10, 19);
             this.listProcessors.Name = "listProcessors";
-            this.listProcessors.Size = new System.Drawing.Size(190, 82);
+            this.listProcessors.Size = new System.Drawing.Size(190, 95);
             this.listProcessors.TabIndex = 7;
             this.listProcessors.SelectedIndexChanged += new System.EventHandler(this.OnProcessorSelectionChanged);
             // 
             // buttonRemoveGroup
             // 
             this.buttonRemoveGroup.Enabled = false;
-            this.buttonRemoveGroup.Location = new System.Drawing.Point(151, 128);
+            this.buttonRemoveGroup.Location = new System.Drawing.Point(151, 138);
             this.buttonRemoveGroup.Name = "buttonRemoveGroup";
             this.buttonRemoveGroup.Size = new System.Drawing.Size(69, 23);
             this.buttonRemoveGroup.TabIndex = 2;
@@ -979,7 +1027,7 @@ namespace WalkerSim.Editor
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(7, 128);
+            this.button1.Location = new System.Drawing.Point(8, 138);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(70, 23);
             this.button1.TabIndex = 1;
@@ -992,7 +1040,7 @@ namespace WalkerSim.Editor
             this.listProcessorGroups.FormattingEnabled = true;
             this.listProcessorGroups.Location = new System.Drawing.Point(8, 13);
             this.listProcessorGroups.Name = "listProcessorGroups";
-            this.listProcessorGroups.Size = new System.Drawing.Size(211, 108);
+            this.listProcessorGroups.Size = new System.Drawing.Size(211, 121);
             this.listProcessorGroups.TabIndex = 0;
             this.listProcessorGroups.SelectedIndexChanged += new System.EventHandler(this.OnGroupSelection);
             // 
@@ -1001,7 +1049,7 @@ namespace WalkerSim.Editor
             this.tabPage3.Controls.Add(this.rtbLog);
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(901, 158);
+            this.tabPage3.Size = new System.Drawing.Size(1047, 169);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Log";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -1015,7 +1063,7 @@ namespace WalkerSim.Editor
             this.rtbLog.Location = new System.Drawing.Point(0, 0);
             this.rtbLog.Name = "rtbLog";
             this.rtbLog.ReadOnly = true;
-            this.rtbLog.Size = new System.Drawing.Size(901, 158);
+            this.rtbLog.Size = new System.Drawing.Size(1047, 169);
             this.rtbLog.TabIndex = 0;
             this.rtbLog.Text = "";
             // 
@@ -1044,36 +1092,11 @@ namespace WalkerSim.Editor
             // 
             this.colorPickerDlg.AnyColor = true;
             // 
-            // inputMaxAgents
-            // 
-            this.inputMaxAgents.AutoSize = true;
-            this.inputMaxAgents.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.inputMaxAgents.Location = new System.Drawing.Point(149, 110);
-            this.inputMaxAgents.Margin = new System.Windows.Forms.Padding(0);
-            this.inputMaxAgents.Maximum = new decimal(new int[] {
-            400,
-            0,
-            0,
-            0});
-            this.inputMaxAgents.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.inputMaxAgents.Name = "inputMaxAgents";
-            this.inputMaxAgents.Size = new System.Drawing.Size(149, 20);
-            this.inputMaxAgents.TabIndex = 52;
-            this.inputMaxAgents.Value = new decimal(new int[] {
-            300,
-            0,
-            0,
-            0});
-            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(909, 740);
+            this.ClientSize = new System.Drawing.Size(900, 740);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.menuStrip1);
             this.DoubleBuffered = true;
@@ -1100,6 +1123,7 @@ namespace WalkerSim.Editor
             this.panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.inputRandomSeed)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputGroupSize)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.inputMaxAgents)).EndInit();
             this.tabPage2.ResumeLayout(false);
             this.groupProps.ResumeLayout(false);
             this.groupProps.PerformLayout();
@@ -1113,7 +1137,6 @@ namespace WalkerSim.Editor
             ((System.ComponentModel.ISupportInitialize)(this.inputProcessorDistance)).EndInit();
             this.tabPage3.ResumeLayout(false);
             this.contextLog.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.inputMaxAgents)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1202,6 +1225,8 @@ namespace WalkerSim.Editor
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.NumericUpDown inputMaxAgents;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.ComboBox inputPostSpawnBehavior;
     }
 }
 

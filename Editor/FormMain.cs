@@ -25,6 +25,8 @@ namespace WalkerSim.Editor
 
         private List<Config.WorldLocation> _startPositions = new List<Config.WorldLocation>();
         private List<Config.WorldLocation> _respawnPositions = new List<Config.WorldLocation>();
+        private List<Config.PostSpawnBehavior> _postSpawnBehaviors = new List<Config.PostSpawnBehavior>();
+
         private Dictionary<string, ToolTip> _toolTips = new Dictionary<string, ToolTip>();
 
         Simulation simulation = Simulation.Instance;
@@ -290,6 +292,15 @@ namespace WalkerSim.Editor
 
                 _respawnPositions.Add(choice);
             }
+
+            var postSpawnChoices = Enum.GetValues(typeof(Config.PostSpawnBehavior)).Cast<Config.PostSpawnBehavior>();
+            foreach (var choice in postSpawnChoices)
+            {
+                var name = Utils.GetPostSpawnBehaviorString(choice);
+                inputPostSpawnBehavior.Items.Add(name);
+
+                _postSpawnBehaviors.Add(choice);
+            }
         }
 
         private void LoadDefaultConfiguration()
@@ -351,6 +362,7 @@ namespace WalkerSim.Editor
             inputPauseDuringBloodmoon.CheckedChanged += (sender, arg) => SetConfigValues();
             inputStartPosition.SelectedIndexChanged += (sender, arg) => SetConfigValues();
             inputRespawnPosition.SelectedIndexChanged += (sender, arg) => SetConfigValues();
+            inputPostSpawnBehavior.SelectedIndexChanged += (sender, arg) => SetConfigValues();
         }
 
         private void UpdateConfigFields()
@@ -537,6 +549,8 @@ namespace WalkerSim.Editor
             {
                 listProcessors.Items.Add(processor.Type);
             }
+
+            inputPostSpawnBehavior.SelectedIndex = (int)CurrentConfig.Processors[groupIdx].PostSpawnBehavior;
 
             buttonRemoveProcessor.Enabled = false;
 
@@ -1002,6 +1016,23 @@ namespace WalkerSim.Editor
 
                 ReconfigureSimulation();
             }
+        }
+
+        private void OnPostSpawnBehaviorSelectionChanged(object sender, EventArgs e)
+        {
+            var selectedGroup = GetSelectedGroupEntry();
+            if (selectedGroup == null)
+            {
+                return;
+            }
+
+            var postSpawnChoice = inputPostSpawnBehavior.SelectedIndex;
+            if (postSpawnChoice != -1)
+            {
+                selectedGroup.PostSpawnBehavior = (Config.PostSpawnBehavior)postSpawnChoice;
+            }
+
+            ReconfigureSimulation();
         }
 
         private void OnDuplicateGroupClick(object sender, EventArgs e)

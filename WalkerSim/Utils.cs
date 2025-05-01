@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace WalkerSim
 {
@@ -26,6 +26,20 @@ namespace WalkerSim
                     return "Random POI";
                 case Config.WorldLocation.Mixed:
                     return "Mixed";
+                default:
+                    break;
+            }
+            throw new Exception("Invalid value");
+        }
+
+        public static string GetPostSpawnBehaviorString(Config.PostSpawnBehavior value)
+        {
+            switch (value)
+            {
+                case Config.PostSpawnBehavior.Wander:
+                    return "Wander";
+                case Config.PostSpawnBehavior.ChaseActivator:
+                    return "Chase Activator";
                 default:
                     break;
             }
