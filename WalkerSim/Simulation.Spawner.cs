@@ -15,6 +15,8 @@ namespace WalkerSim
 
         private FixedBufferList<Agent> _nearPlayer = new FixedBufferList<Agent>(512);
 
+        private DateTime _nextSpawnCheck = DateTime.Now;
+
         private bool _allowAgentSpawn = true;
 
         public void SetAgentSpawnHandler(AgentSpawnHandler handler)
@@ -28,6 +30,14 @@ namespace WalkerSim
             {
                 return;
             }
+
+            if (_nextSpawnCheck > DateTime.Now)
+            {
+                // We don't have to run this every tick/frame, agents typically don't move that fast.
+                return;
+            }
+
+            _nextSpawnCheck = DateTime.Now.AddMilliseconds(200);
 
             if (_pendingSpawns.Count >= _maxAllowedAliveAgents)
             {
@@ -55,6 +65,12 @@ namespace WalkerSim
 
                 if (player.IsAlive == false)
                     continue;
+
+                if (DateTime.Now < player.NextPossibleSpawnTime)
+                {
+                    //Logging.Debug("Player {0} is not alive long enough to spawn agents, skipping...", player.EntityId);
+                    continue;
+                }
 
                 var playerPos = player.Position;
 

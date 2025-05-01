@@ -136,6 +136,9 @@ namespace WalkerSim
         [XmlElement("PauseDuringBloodmoon")]
         public bool PauseDuringBloodmoon = true;
 
+        [XmlElement("SpawnProtectionTime")]
+        public int SpawnProtectionTime = 120;
+
         [XmlArray("MovementProcessors")]
         public List<MovementProcessorGroup> Processors;
 

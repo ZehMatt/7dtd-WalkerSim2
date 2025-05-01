@@ -396,6 +396,20 @@ namespace WalkerSim
             Logging.Debug("Max View Distance: {0}", maxViewDistance);
             Logging.Debug("View Radius: {0}", viewRadius);
 
+            int spawnDelay = 0;
+            switch (_respawnReason)
+            {
+                case RespawnType.JoinMultiplayer:
+                case RespawnType.EnterMultiplayer:
+                case RespawnType.LoadedGame:
+                case RespawnType.Died:
+                    spawnDelay = 30;
+                    break;
+                case RespawnType.NewGame:
+                    spawnDelay = simulation.Config.SpawnProtectionTime;
+                    break;
+            }
+
             switch (_respawnReason)
             {
                 case RespawnType.JoinMultiplayer:
@@ -403,7 +417,10 @@ namespace WalkerSim
                 case RespawnType.NewGame:
                 case RespawnType.LoadedGame:
                     var entityId = GetPlayerEntityId(_cInfo);
-                    simulation.AddPlayer(entityId, VectorUtils.ToSim(_pos), viewRadius);
+                    simulation.AddPlayer(entityId, VectorUtils.ToSim(_pos), viewRadius, spawnDelay);
+                    break;
+                case RespawnType.Died:
+                    simulation.NotifyPlayerSpawned(GetPlayerEntityId(_cInfo), spawnDelay);
                     break;
             }
         }

@@ -134,6 +134,7 @@ namespace WalkerSim.Editor
             SetToolTip(inputStartGrouped, "If enabled the agents will start close to members of their own group, this means the starting position is per group, if disabled the starting position is per agent.");
             SetToolTip(inputPauseDuringBloodmoon, "If enabled the simulation will pause during blood moon which means no new in-game zombies will spawn and will be resumed afterwards, this does not affect blood moon spawns.");
             SetToolTip(inputMovementGroup, "This specifies the group that this processor will affect, if set to -1 then all groups will be affected.\n\nNOTE: This is the index of the group.");
+            SetToolTip(inputSpawnProtectionTime, "The amount of seconds the player requires to be alive before any agents will spawn.\n\nNOTE: This only applies to starting a new game and spawning for the first time.");
         }
 
         private void LogMsg(string text, Color color, bool switchToLog)
@@ -210,6 +211,7 @@ namespace WalkerSim.Editor
             inputProcessorPower.MouseWheel += ScrollHandlerFunction;
             inputMovementGroup.MouseWheel += ScrollHandlerFunction;
             inputMovementSpeed.MouseWheel += ScrollHandlerFunction;
+            inputSpawnProtectionTime.MouseWheel += ScrollHandlerFunction;
         }
 
         private void SetupSpeedModifiers()
@@ -263,6 +265,8 @@ namespace WalkerSim.Editor
             inputGroupSize.Maximum = Simulation.Limits.MaxDensity;
             inputRandomSeed.Minimum = 1;
             inputRandomSeed.Maximum = UInt32.MaxValue;
+            inputSpawnProtectionTime.Minimum = 0;
+            inputSpawnProtectionTime.Maximum = 1200;
         }
 
         private void SetupChoices()
@@ -316,6 +320,7 @@ namespace WalkerSim.Editor
             CurrentConfig.RandomSeed = (int)inputRandomSeed.Value;
             CurrentConfig.PopulationDensity = (int)inputMaxAgents.Value;
             CurrentConfig.GroupSize = (int)inputGroupSize.Value;
+            CurrentConfig.SpawnProtectionTime = (int)inputSpawnProtectionTime.Value;
             CurrentConfig.StartAgentsGrouped = inputStartGrouped.Checked;
             CurrentConfig.FastForwardAtStart = inputFastForward.Checked;
             CurrentConfig.PauseDuringBloodmoon = inputPauseDuringBloodmoon.Checked;
@@ -340,6 +345,7 @@ namespace WalkerSim.Editor
             inputRandomSeed.ValueChanged += (sender, arg) => SetConfigValues();
             inputMaxAgents.ValueChanged += (sender, arg) => SetConfigValues();
             inputGroupSize.ValueChanged += (sender, arg) => SetConfigValues();
+            inputSpawnProtectionTime.ValueChanged += (sender, arg) => SetConfigValues();
             inputStartGrouped.CheckedChanged += (sender, arg) => SetConfigValues();
             inputFastForward.CheckedChanged += (sender, arg) => SetConfigValues();
             inputPauseDuringBloodmoon.CheckedChanged += (sender, arg) => SetConfigValues();
@@ -360,6 +366,7 @@ namespace WalkerSim.Editor
             inputStartGrouped.Checked = CurrentConfig.StartAgentsGrouped;
             inputFastForward.Checked = CurrentConfig.FastForwardAtStart;
             inputPauseDuringBloodmoon.Checked = CurrentConfig.PauseDuringBloodmoon;
+            inputSpawnProtectionTime.Value = CurrentConfig.SpawnProtectionTime;
 
             var spawnChoice = Utils.GetWorldLocationString(CurrentConfig.StartPosition);
             inputStartPosition.SelectedItem = spawnChoice;
@@ -640,13 +647,14 @@ namespace WalkerSim.Editor
             var mapData = simulation.MapData;
             var maxAgents = inputMaxAgents.Value;
 
-            if (maxAgents < 140)
-            {
-                lblMaxAgentsInfo.Visible = true;
-                lblMaxAgentsInfo.Text = $"Recommended: 140 or more.";
-                lblMaxAgentsInfo.ForeColor = Color.OrangeRed;
-                inputMaxAgents.ForeColor = Color.OrangeRed;
-            }
+            var colorRed = 255 - (System.Math.Min((int)maxAgents, 180) / 180.0) * 255;
+            var colorGreen = maxAgents <= 30
+                ? (System.Math.Min((int)maxAgents, 30) / 30.0) * 128  // Green ramps up to 128 for orange
+                : 180 - ((System.Math.Min((int)maxAgents, 180) - 30) / 110.0) * 128; // Green ramps down to 0
+            var colorBlue = 0; // No blue to keep warm tones
+            inputMaxAgents.ForeColor = Color.FromArgb((int)colorRed, (int)colorGreen, (int)colorBlue);
+
+            Invalidate();
         }
 
         private void OnSimCanvasClick(object sender, MouseEventArgs e)
