@@ -7,6 +7,7 @@
 - Improve: Default configuration has been updated for a more immersive experience.
 - Improve: Change random distribution of POI's, bigger POI's will be prefered now.
 - Feature: Added `SpawnProtectionTime`, this disables zombie spawning when entering a new game for the first time.
+- Feature: Added `PostSpawnBehavior` which controls what agents will do once spawned in-game, right now limited to `Wander` and `ChaseActivator`.
 
 # 0.9.4
 - Fix: Zombie spawning now obeys tags of biome spawner.
