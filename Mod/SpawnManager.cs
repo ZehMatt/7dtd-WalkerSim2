@@ -5,11 +5,16 @@ namespace WalkerSim
 {
     internal class SpawnManager
     {
-        static int _lastClassId = -1;
+        struct BiomeEntitySpawnData
+        {
+            public int entityClassId;
+            public float prob;
+        }
 
-        static List<PrefabInstance> spawnPIs = new List<PrefabInstance>();
+        static Dictionary<long, List<BiomeEntitySpawnData>> _spawnDataNight = new Dictionary<long, List<BiomeEntitySpawnData>>();
+        static Dictionary<long, List<BiomeEntitySpawnData>> _spawnDataDay = new Dictionary<long, List<BiomeEntitySpawnData>>();
 
-        static Dictionary<long, int> groupsEnabledMap = new Dictionary<long, int>();
+        static HashSet<int> _spawnedClassIds = new HashSet<int>();
 
         static private bool CanSpawnZombie()
         {
@@ -52,42 +57,85 @@ namespace WalkerSim
             return true;
         }
 
+        static List<BiomeEntitySpawnData> GetBiomeEntityClasses(long chunkKey)
+        {
+            var world = GameManager.Instance.World;
+            if (world.IsDaytime())
+            {
+                if (_spawnDataDay.TryGetValue(chunkKey, out var spawnList))
+                {
+                    return spawnList;
+                }
+            }
+            else
+            {
+                if (_spawnDataNight.TryGetValue(chunkKey, out var spawnList))
+                {
+                    return spawnList;
+                }
+            }
+            return null;
+        }
+
+        static void DeduplicateSpawnList(List<BiomeEntitySpawnData> list)
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                var entry = list[i];
+                for (int j = i + 1; j < list.Count; j++)
+                {
+                    if (entry.entityClassId == list[j].entityClassId)
+                    {
+                        entry.prob = System.Math.Max(entry.prob, list[j].prob);
+                        list.RemoveAt(j);
+                        j--;
+                    }
+                }
+            }
+        }
+
         static private int GetEntityClassId(Chunk chunk, UnityEngine.Vector3 worldPos)
         {
             var world = GameManager.Instance.World;
-            int worldX = Mathf.FloorToInt(worldPos.x);
-            int worldZ = Mathf.FloorToInt(worldPos.z);
 
             if (world == null)
             {
                 return -1;
             }
 
-            var biomeId = chunk.GetBiomeId(
-                World.toBlockXZ(worldX),
-                World.toBlockXZ(worldZ)
-            );
-
-            var biomeData = world.Biomes.GetBiome(biomeId);
-
-            if (BiomeSpawningClass.list.TryGetValue(biomeData.m_sBiomeName, out BiomeSpawnEntityGroupList biomeList))
+            List<BiomeEntitySpawnData> spawnList = GetBiomeEntityClasses(chunk.Key);
+            if (spawnList == null)
             {
-                EDaytime eDaytime = world.IsDaytime() ? EDaytime.Day : EDaytime.Night;
-                GameRandom gameRandom = world.GetGameRandom();
+                int worldX = Mathf.FloorToInt(worldPos.x);
+                int worldZ = Mathf.FloorToInt(worldPos.z);
 
-                var maxAttempts = System.Math.Min(biomeList.list.Count, 10);
-                var lastPick = -1;
+                var biomeId = chunk.GetBiomeId(
+                    World.toBlockXZ(worldX),
+                    World.toBlockXZ(worldZ)
+                );
 
+                var biomeData = world.Biomes.GetBiome(biomeId);
+                if (biomeData == null)
+                {
+                    Logging.Debug("Biome data is null for id {0}", biomeId);
+                    return -1;
+                }
+
+                if (!BiomeSpawningClass.list.TryGetValue(biomeData.m_sBiomeName, out BiomeSpawnEntityGroupList biomeList))
+                {
+                    Logging.Debug("Biome data not found for id {0}", biomeId);
+                    return -1;
+                }
+
+                // Get bit mask for enabled groups, we cache this to avoid doing it multiple times.
                 int groupsEnabledFlags = 0;
-
-                Logging.Debug("Are POIs checked for chunk? {0}", groupsEnabledMap.ContainsKey(chunk.Key));
-
-                // Only once per each chunk, check the tags of the POIs around that chunk
-                if (!groupsEnabledMap.ContainsKey(chunk.Key))
                 {
                     FastTags<TagGroup.Poi> fastTags = FastTags<TagGroup.Poi>.none;
                     Logging.Debug("About to get POIs");
+
+                    List<PrefabInstance> spawnPIs = new List<PrefabInstance>();
                     world.GetPOIsAtXZ(worldX + 16, worldX + 80 - 16, worldZ + 16, worldZ + 80 - 16, spawnPIs);
+
                     Logging.Debug("Got {0} POIs", spawnPIs.Count);
                     for (int j = 0; j < spawnPIs.Count; j++)
                     {
@@ -95,6 +143,7 @@ namespace WalkerSim
                         PrefabInstance prefabInstance = spawnPIs[j];
                         fastTags |= prefabInstance.prefab.Tags;
                     }
+
                     bool isEmpty = fastTags.IsEmpty;
                     for (int k = 0; k < biomeList.list.Count; k++)
                     {
@@ -105,59 +154,121 @@ namespace WalkerSim
                             groupsEnabledFlags |= 1 << k;
                         }
                     }
-                    groupsEnabledMap.Add(chunk.Key, groupsEnabledFlags);
+
+                    Logging.Debug("ChunkFlags generated: {0}", groupsEnabledFlags);
                 }
 
-                groupsEnabledMap.TryGetValue(chunk.Key, out groupsEnabledFlags);
-                Logging.Debug("ChunkFlags generated: {0}", groupsEnabledFlags);
+                // Gather all possible groups.
+                var entityClassesDay = new List<BiomeEntitySpawnData>();
+                var entityClassesNight = new List<BiomeEntitySpawnData>();
 
-                for (int i = 0; i < maxAttempts; i++)
+                // Extract possible groups from the bit mask.
+                for (int i = 0; i < biomeList.list.Count; i++)
                 {
-                    var randomPick = gameRandom.RandomRange(0, biomeList.list.Count);
-                    if (randomPick == lastPick)
+                    var group = biomeList.list[i];
+
+                    if ((groupsEnabledFlags & (1 << i)) == 0)
                     {
-                        i--;
+                        // This group is not enabled for this chunk.
                         continue;
                     }
 
-                    lastPick = randomPick;
-                    var group = biomeList.list[randomPick];
-
-                    // check the group enabled bit mask against the current pick
-                    if ((groupsEnabledFlags & (1 << randomPick)) == 0)
+                    if (EntityGroups.list.TryGetValue(group.entityGroupName, out var data))
                     {
-                        Logging.Debug("Group Disabled: {0}", group.entityGroupName);
-                        continue;
+                        foreach (var entry in data)
+                        {
+                            if (group.daytime == EDaytime.Day || group.daytime == EDaytime.Any)
+                            {
+                                entityClassesDay.Add(new BiomeEntitySpawnData
+                                {
+                                    entityClassId = entry.entityClassId,
+                                    prob = entry.prob
+                                });
+                            }
+                            if (group.daytime == EDaytime.Night || group.daytime == EDaytime.Any)
+                            {
+                                entityClassesNight.Add(new BiomeEntitySpawnData
+                                {
+                                    entityClassId = entry.entityClassId,
+                                    prob = entry.prob
+                                });
+                            }
+                        }
                     }
+                }
 
-                    if (group.daytime != eDaytime && group.daytime != EDaytime.Any)
+                // Sort the spawn lists by entity class id.
+                entityClassesDay.Sort((a, b) => a.entityClassId.CompareTo(b.entityClassId));
+                entityClassesNight.Sort((a, b) => a.entityClassId.CompareTo(b.entityClassId));
+
+                // De-duplicate the spawn lists with identical entity class ids, select highest probability.
+                DeduplicateSpawnList(entityClassesDay);
+                DeduplicateSpawnList(entityClassesNight);
+
+                // Cache the spawn data for this chunk.
+                _spawnDataDay[chunk.Key] = entityClassesDay;
+                _spawnDataNight[chunk.Key] = entityClassesNight;
+
+                Logging.Debug("Spawn list for chunk {0} (Day: {1}, Night: {2})", chunk.Key, entityClassesDay.Count, entityClassesNight.Count);
+
+                spawnList = world.IsDaytime() ? entityClassesDay : entityClassesNight;
+            }
+
+            // Penalty of duplicate entity classes already spawned.
+            var duplicateClassProbScale = 0.10f;
+
+            // Calculate the total probability.
+            float totalProb = 0;
+            for (int i = 0; i < spawnList.Count; i++)
+            {
+                var entry = spawnList[i];
+                var prob = entry.prob;
+                if (_spawnedClassIds.Contains(entry.entityClassId))
+                {
+                    // Significantly reduce the probability of spawning an already spawned entity.
+                    prob *= duplicateClassProbScale;
+                }
+                totalProb += prob;
+            }
+
+            // Select a random class id, it also attempts to avoid spawning duplicates.
+            var selectedClassId = -1;
+            for (int attempt = 0; attempt < 3; attempt++)
+            {
+                var rand = Simulation.Instance.PRNG;
+                var randomValue = rand.NextSingle() * totalProb;
+
+                for (int i = 0; i < spawnList.Count; i++)
+                {
+                    var entry = spawnList[i];
+                    var prob = entry.prob;
+
+                    if (_spawnedClassIds.Contains(entry.entityClassId))
                     {
-                        continue;
+                        // Significantly reduce the probability of spawning an already spawned entity.
+                        prob *= duplicateClassProbScale;
                     }
+                    randomValue -= prob;
 
-                    if (!EntityGroups.IsEnemyGroup(group.entityGroupName))
+                    if (randomValue <= 0)
                     {
-                        continue;
+                        selectedClassId = entry.entityClassId;
+                        break;
                     }
+                }
 
-                    if (!EntityGroups.list.ContainsKey(group.entityGroupName))
-                    {
-                        Logging.Err("Entity group not found: {0}", group.entityGroupName);
-                        continue;
-                    }
-
-                    int lastClassId = _lastClassId;
-
-                    int entityClassId = EntityGroups.GetRandomFromGroup(group.entityGroupName, ref lastClassId, gameRandom);
-                    if (entityClassId != -1 && entityClassId != 0)
-                    {
-                        Logging.Debug("Selected entity class id {0} : {1}", entityClassId, group.entityGroupName);
-                        return entityClassId;
-                    }
+                if (!_spawnedClassIds.Contains(selectedClassId))
+                {
+                    Logging.Debug("Selected entity class id {0} from {1} attempts", selectedClassId, attempt + 1);
+                    break;
+                }
+                else
+                {
+                    Logging.Debug("Selected entity class id {0} is a duplicate, retrying...", selectedClassId);
                 }
             }
 
-            return -1;
+            return selectedClassId;
         }
 
         static public int SpawnAgent(Simulation simulation, Simulation.SpawnData spawnData)
@@ -241,9 +352,6 @@ namespace WalkerSim
                 return -1;
             }
 
-            // Only update last class id if we successfully spawned the agent.
-            _lastClassId = entityClassId;
-
             spawnedAgent.bIsChunkObserver = true;
             spawnedAgent.SetSpawnerSource(EnumSpawnerSource.StaticSpawner);
             spawnedAgent.moveDirection = rot;
@@ -308,6 +416,14 @@ namespace WalkerSim
                 Logging.Out("Agent spawned at {0}, entity id {1}, class id {2}", worldPos, spawnedAgent.entityId, entityClassId);
             }
 
+            _spawnedClassIds.Add(entityClassId);
+
+            if (_spawnedClassIds.Count > GamePrefs.GetInt(EnumGamePrefs.MaxSpawnedZombies))
+            {
+                // This is a potential bug, we should not have this many spawned class ids.
+                Logging.Warn("Potential bug, spawned class ids count is {0}", _spawnedClassIds.Count);
+            }
+
             return spawnedAgent.entityId;
         }
 
@@ -326,6 +442,8 @@ namespace WalkerSim
                 return false;
             }
 
+            _spawnedClassIds.Remove(entity.entityClass);
+
             // Retain current state.
             agent.Health = entity.Health;
 
@@ -343,6 +461,80 @@ namespace WalkerSim
             }
 
             return true;
+        }
+
+        private static bool IsEntityDead(Entity entity, int entityId)
+        {
+            if (entity == null)
+            {
+                Logging.Debug("Entity not found: {0}, can't update state.", entityId);
+                return true;
+            }
+
+            if (!entity.IsAlive())
+            {
+                Logging.Debug("Entity is dead: {0}", entityId);
+                return true;
+            }
+
+            return false;
+        }
+
+        public static void UpdateActiveAgents()
+        {
+            var world = GameManager.Instance.World;
+
+            var simulation = Simulation.Instance;
+
+            // Don't allocate unless there are actual dead agents.
+            List<Agent> deadAgents = null;
+
+            foreach (var kv in simulation.Active)
+            {
+                var agent = kv.Value;
+                if (agent.EntityId == -1)
+                {
+                    Logging.Debug("Agent has no entity id, skipping. Agent state: {0}", agent.CurrentState);
+                    continue;
+                }
+
+                var entity = world.GetEntity(agent.EntityId);
+                if (IsEntityDead(entity, agent.EntityId))
+                {
+                    // Mark as dead so it will be sweeped.
+                    if (deadAgents == null)
+                    {
+                        deadAgents = new List<Agent>();
+                    }
+                    deadAgents.Add(agent);
+                }
+                else
+                {
+                    // Update position.
+                    var newPos = entity.GetPosition();
+                    agent.Position = VectorUtils.ToSim(newPos);
+                    agent.Position.Validate();
+                }
+            }
+
+            // Remove dead agents.
+            if (deadAgents != null)
+            {
+                foreach (var agent in deadAgents)
+                {
+                    // NOTE: Needs to be cleared before marking dead as that resets all data.
+                    _spawnedClassIds.Remove(agent.EntityClassId);
+
+                    simulation.MarkAgentDead(agent);
+                }
+            }
+        }
+
+        public static void ClearCache()
+        {
+            _spawnDataDay.Clear();
+            _spawnDataNight.Clear();
+            _spawnedClassIds.Clear();
         }
     }
 }
