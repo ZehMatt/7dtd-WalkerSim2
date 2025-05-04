@@ -76,5 +76,16 @@ namespace WalkerSim
         {
             return System.Drawing.ColorTranslator.ToHtml(color);
         }
+
+        public static bool IsDebugMode()
+        {
+            // Check if the DEBUG constant is defined
+#if DEBUG
+            return true;
+#else
+            return false;
+#endif
+        }
+
     }
 }

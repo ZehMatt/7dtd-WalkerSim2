@@ -27,7 +27,10 @@ namespace WalkerSim
         private void AddActiveAgent(int entityId, Agent agent)
         {
             _state.Active.Add(entityId, agent);
-            Logging.Debug("Added agent with entity id {0} to active list, list size {1}", entityId, _state.Active.Count);
+            if (EditorMode || Utils.IsDebugMode())
+            {
+                Logging.Info("Added agent with entity id {0} to active list, list size {1}", entityId, _state.Active.Count);
+            }
         }
 
         public void MarkAgentDead(Agent agent)
@@ -88,7 +91,10 @@ namespace WalkerSim
                 if (insidePlayerView)
                     continue;
 
-                Logging.Debug("Agent {0} is outside player view, despawning {1}...", agent.Index, agent.EntityId);
+                if (EditorMode || Utils.IsDebugMode())
+                {
+                    Logging.Info("Agent {0} is outside player view, despawning {1}...", agent.Index, agent.EntityId);
+                }
 
                 // Handle the despawn.
                 if (_agentDespawnHandler != null)
@@ -98,6 +104,7 @@ namespace WalkerSim
 
                 // Activate in simulation.
                 agent.CurrentState = Agent.State.Wandering;
+                agent.EntityId = -1;
 
                 _state.Active.Remove(kv.Key);
                 _state.TotalDespawns++;
