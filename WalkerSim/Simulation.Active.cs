@@ -70,11 +70,6 @@ namespace WalkerSim
 
         private void CheckAgentDespawn()
         {
-            if (_agentDespawnHandler == null)
-            {
-                return;
-            }
-
             var now = DateTime.Now;
             if (now < _nextDespawn)
             {
@@ -96,7 +91,10 @@ namespace WalkerSim
                 Logging.Debug("Agent {0} is outside player view, despawning {1}...", agent.Index, agent.EntityId);
 
                 // Handle the despawn.
-                _agentDespawnHandler(this, agent);
+                if (_agentDespawnHandler != null)
+                {
+                    _agentDespawnHandler(this, agent);
+                }
 
                 // Activate in simulation.
                 agent.CurrentState = Agent.State.Wandering;

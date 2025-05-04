@@ -464,12 +464,20 @@ namespace WalkerSim.Editor
                 Renderer.RenderAgents(gr, simulation, GroupColors);
             }
 
+            if (viewActiveAgents.Checked)
+            {
+                Renderer.RenderActiveAgents(gr, simulation, GroupColors);
+            }
+
             Renderer.RenderPlayers(gr, simulation, PlayerColors);
 
             if (viewEvents.Checked)
             {
                 Renderer.RenderEvents(gr, simulation);
             }
+
+            // Wind arrow.
+            DrawingUtils.DrawArrow(gr, simulation.WindDirection, new PointF(26, 26), 16, 6);
 
             if (Tool.Active != null)
             {
@@ -488,9 +496,6 @@ namespace WalkerSim.Editor
 
                 Tool.Active.DrawPreview(simCanvas, gr, simPos);
             }
-
-            // Wind arrow.
-            DrawingUtils.DrawArrow(gr, simulation.WindDirection, new PointF(26, 26), 16, 6);
         }
 
         private void RenderSimulation()
@@ -498,17 +503,6 @@ namespace WalkerSim.Editor
             RenderToBitmap();
 
             simCanvas.Refresh();
-        }
-
-        private void OnClickSoundEmit(object sender, EventArgs e)
-        {
-            Tool.Active = new SoundEventTool();
-            simCanvas.Cursor = Cursors.Cross;
-        }
-        private void OnClickKill(object sender, EventArgs e)
-        {
-            Tool.Active = new KillTool();
-            simCanvas.Cursor = Cursors.Cross;
         }
 
         private void OnGroupSelection(object sender, EventArgs e)
@@ -689,8 +683,18 @@ namespace WalkerSim.Editor
 
             if (Tool.Active != null)
             {
-                Tool.Active.OnClick(simPos);
+                var nextState = Tool.Active.OnClick(simPos);
+                if (nextState == NextToolState.Stop)
+                {
+                    Tool.Active = null;
+                    simCanvas.Cursor = Cursors.Default;
+                }
             }
+        }
+
+        private void OnSimCanvasMouseMove(object sender, MouseEventArgs e)
+        {
+            RenderSimulation();
         }
 
         private void loadConfigurationToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1105,6 +1109,28 @@ namespace WalkerSim.Editor
         private void OnClickExit(object sender, EventArgs e)
         {
             Close();
+        }
+
+        private void OnClickSoundEmit(object sender, EventArgs e)
+        {
+            Tool.Active = new SoundEventTool();
+            simCanvas.Cursor = Cursors.Cross;
+        }
+        private void OnClickKill(object sender, EventArgs e)
+        {
+            Tool.Active = new KillTool();
+            simCanvas.Cursor = Cursors.Cross;
+        }
+        private void OnAddPlayerClick(object sender, EventArgs e)
+        {
+            Tool.Active = new AddPlayerTool();
+            simCanvas.Cursor = Cursors.Cross;
+        }
+
+        private void OnSetPlayerPosClick(object sender, EventArgs e)
+        {
+            Tool.Active = new SetPlayerPositionTool();
+            simCanvas.Cursor = Cursors.Cross;
         }
     }
 }

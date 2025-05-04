@@ -113,6 +113,10 @@ namespace WalkerSim.Editor
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorPickerDlg = new System.Windows.Forms.ColorDialog();
             this.toolTipGroupSize = new System.Windows.Forms.ToolTip(this.components);
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.addPlayerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.setPlayerPositionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewActiveAgents = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -200,6 +204,7 @@ namespace WalkerSim.Editor
             this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.viewRoads,
             this.viewAgents,
+            this.viewActiveAgents,
             this.viewEvents,
             this.viewPrefabs});
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
@@ -212,7 +217,7 @@ namespace WalkerSim.Editor
             this.viewRoads.CheckOnClick = true;
             this.viewRoads.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewRoads.Name = "viewRoads";
-            this.viewRoads.Size = new System.Drawing.Size(113, 22);
+            this.viewRoads.Size = new System.Drawing.Size(180, 22);
             this.viewRoads.Text = "Roads";
             // 
             // viewAgents
@@ -221,8 +226,8 @@ namespace WalkerSim.Editor
             this.viewAgents.CheckOnClick = true;
             this.viewAgents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewAgents.Name = "viewAgents";
-            this.viewAgents.Size = new System.Drawing.Size(113, 22);
-            this.viewAgents.Text = "Agents";
+            this.viewAgents.Size = new System.Drawing.Size(180, 22);
+            this.viewAgents.Text = "Inactive Agents";
             // 
             // viewEvents
             // 
@@ -230,16 +235,14 @@ namespace WalkerSim.Editor
             this.viewEvents.CheckOnClick = true;
             this.viewEvents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewEvents.Name = "viewEvents";
-            this.viewEvents.Size = new System.Drawing.Size(113, 22);
+            this.viewEvents.Size = new System.Drawing.Size(180, 22);
             this.viewEvents.Text = "Events";
             // 
             // viewPrefabs
             // 
-            this.viewPrefabs.Checked = true;
             this.viewPrefabs.CheckOnClick = true;
-            this.viewPrefabs.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewPrefabs.Name = "viewPrefabs";
-            this.viewPrefabs.Size = new System.Drawing.Size(113, 22);
+            this.viewPrefabs.Size = new System.Drawing.Size(180, 22);
             this.viewPrefabs.Text = "Prefabs";
             // 
             // simulationToolStripMenuItem
@@ -315,7 +318,10 @@ namespace WalkerSim.Editor
             // 
             this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.emitSoundToolStripMenuItem,
-            this.killToolStripMenuItem});
+            this.killToolStripMenuItem,
+            this.toolStripSeparator1,
+            this.addPlayerToolStripMenuItem,
+            this.setPlayerPositionToolStripMenuItem});
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
             this.toolsToolStripMenuItem.Size = new System.Drawing.Size(46, 20);
             this.toolsToolStripMenuItem.Text = "Tools";
@@ -323,14 +329,14 @@ namespace WalkerSim.Editor
             // emitSoundToolStripMenuItem
             // 
             this.emitSoundToolStripMenuItem.Name = "emitSoundToolStripMenuItem";
-            this.emitSoundToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.emitSoundToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.emitSoundToolStripMenuItem.Text = "Emit Sound";
             this.emitSoundToolStripMenuItem.Click += new System.EventHandler(this.OnClickSoundEmit);
             // 
             // killToolStripMenuItem
             // 
             this.killToolStripMenuItem.Name = "killToolStripMenuItem";
-            this.killToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.killToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.killToolStripMenuItem.Text = "Kill";
             this.killToolStripMenuItem.Click += new System.EventHandler(this.OnClickKill);
             // 
@@ -364,6 +370,7 @@ namespace WalkerSim.Editor
             this.simCanvas.TabIndex = 4;
             this.simCanvas.TabStop = false;
             this.simCanvas.MouseClick += new System.Windows.Forms.MouseEventHandler(this.OnSimCanvasClick);
+            this.simCanvas.MouseMove += new System.Windows.Forms.MouseEventHandler(this.OnSimCanvasMouseMove);
             // 
             // tabSimulation
             // 
@@ -1049,7 +1056,7 @@ namespace WalkerSim.Editor
             this.tabPage3.Controls.Add(this.rtbLog);
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(1047, 169);
+            this.tabPage3.Size = new System.Drawing.Size(892, 167);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Log";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -1063,7 +1070,7 @@ namespace WalkerSim.Editor
             this.rtbLog.Location = new System.Drawing.Point(0, 0);
             this.rtbLog.Name = "rtbLog";
             this.rtbLog.ReadOnly = true;
-            this.rtbLog.Size = new System.Drawing.Size(1047, 169);
+            this.rtbLog.Size = new System.Drawing.Size(892, 167);
             this.rtbLog.TabIndex = 0;
             this.rtbLog.Text = "";
             // 
@@ -1091,6 +1098,32 @@ namespace WalkerSim.Editor
             // colorPickerDlg
             // 
             this.colorPickerDlg.AnyColor = true;
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(177, 6);
+            // 
+            // addPlayerToolStripMenuItem
+            // 
+            this.addPlayerToolStripMenuItem.Name = "addPlayerToolStripMenuItem";
+            this.addPlayerToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.addPlayerToolStripMenuItem.Text = "Add Player";
+            this.addPlayerToolStripMenuItem.Click += new System.EventHandler(this.OnAddPlayerClick);
+            // 
+            // setPlayerPositionToolStripMenuItem
+            // 
+            this.setPlayerPositionToolStripMenuItem.Name = "setPlayerPositionToolStripMenuItem";
+            this.setPlayerPositionToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.setPlayerPositionToolStripMenuItem.Text = "Set Player Position";
+            this.setPlayerPositionToolStripMenuItem.Click += new System.EventHandler(this.OnSetPlayerPosClick);
+            // 
+            // viewActiveAgents
+            // 
+            this.viewActiveAgents.CheckOnClick = true;
+            this.viewActiveAgents.Name = "viewActiveAgents";
+            this.viewActiveAgents.Size = new System.Drawing.Size(180, 22);
+            this.viewActiveAgents.Text = "Active Agents";
             // 
             // FormMain
             // 
@@ -1227,6 +1260,10 @@ namespace WalkerSim.Editor
         private System.Windows.Forms.NumericUpDown inputMaxAgents;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.ComboBox inputPostSpawnBehavior;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripMenuItem addPlayerToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem setPlayerPositionToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem viewActiveAgents;
     }
 }
 

@@ -22,7 +22,7 @@ namespace WalkerSim
 
         private Vector3[] _groupStarts = new Vector3[0];
 
-        private int _maxAllowedAliveAgents = 0;
+        private int _maxAllowedAliveAgents = 64;
 
         public bool EditorMode = false;
 

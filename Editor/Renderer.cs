@@ -6,6 +6,7 @@ namespace WalkerSim.Editor
     {
         private static Bitmap _cachedRoads;
         private static string _cachedRoadsPath;
+        private static Brush _activeAgentColor = new SolidBrush(Color.Green);
 
         private static Vector3 SimPosToBitmapPos(System.Drawing.Graphics gr, Simulation simulation, Vector3 pos)
         {
@@ -93,6 +94,20 @@ namespace WalkerSim.Editor
 
                 var color = groupColors[agent.Group % groupColors.Length];
                 gr.FillRectangle(color, imagePos.X, imagePos.Y, 1f, 1f);
+            }
+        }
+        public static void RenderActiveAgents(System.Drawing.Graphics gr, Simulation simulation, Brush[] groupColors)
+        {
+            var agents = simulation.Active;
+            foreach (var kv in agents)
+            {
+                var agent = kv.Value;
+                if (agent.CurrentState != Agent.State.Active)
+                    continue;
+
+                var imagePos = SimPosToBitmapPos(gr, simulation, agent.Position);
+
+                gr.FillRectangle(_activeAgentColor, imagePos.X, imagePos.Y, 1f, 1f);
             }
         }
 

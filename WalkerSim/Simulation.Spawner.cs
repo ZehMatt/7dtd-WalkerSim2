@@ -26,6 +26,8 @@ namespace WalkerSim
 
         private bool _allowAgentSpawn = true;
 
+        private int _nextFakeEntityId = 0;
+
         public void SetAgentSpawnHandler(AgentSpawnHandler handler)
         {
             _agentSpawnHandler = handler;
@@ -149,7 +151,15 @@ namespace WalkerSim
             }
             else
             {
-                Logging.Warn("No spawn handler registered");
+                if (EditorMode)
+                {
+                    agentEntityId = _nextFakeEntityId;
+                    _nextFakeEntityId++;
+                }
+                else
+                {
+                    Logging.Err("No spawn handler registered");
+                }
             }
 
             if (agentEntityId != -1)
