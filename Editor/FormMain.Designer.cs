@@ -39,8 +39,14 @@ namespace WalkerSim.Editor
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.zoomSubMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.xToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.inToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.outToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewRoads = new System.Windows.Forms.ToolStripMenuItem();
             this.viewAgents = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewActiveAgents = new System.Windows.Forms.ToolStripMenuItem();
             this.viewEvents = new System.Windows.Forms.ToolStripMenuItem();
             this.viewPrefabs = new System.Windows.Forms.ToolStripMenuItem();
             this.simulationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -54,6 +60,9 @@ namespace WalkerSim.Editor
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.emitSoundToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.killToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.addPlayerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.setPlayerPositionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.simCanvas = new System.Windows.Forms.PictureBox();
             this.tabSimulation = new System.Windows.Forms.TabControl();
@@ -113,10 +122,7 @@ namespace WalkerSim.Editor
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorPickerDlg = new System.Windows.Forms.ColorDialog();
             this.toolTipGroupSize = new System.Windows.Forms.ToolTip(this.components);
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.addPlayerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.setPlayerPositionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.viewActiveAgents = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -158,7 +164,7 @@ namespace WalkerSim.Editor
             this.toolsToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(900, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(855, 24);
             this.menuStrip1.TabIndex = 4;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -202,6 +208,8 @@ namespace WalkerSim.Editor
             // viewToolStripMenuItem
             // 
             this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.zoomSubMenu,
+            this.toolStripSeparator3,
             this.viewRoads,
             this.viewAgents,
             this.viewActiveAgents,
@@ -210,6 +218,47 @@ namespace WalkerSim.Editor
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
             this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.viewToolStripMenuItem.Text = "View";
+            // 
+            // zoomSubMenu
+            // 
+            this.zoomSubMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.xToolStripMenuItem1,
+            this.toolStripSeparator2,
+            this.inToolStripMenuItem,
+            this.outToolStripMenuItem});
+            this.zoomSubMenu.Name = "zoomSubMenu";
+            this.zoomSubMenu.Size = new System.Drawing.Size(180, 22);
+            this.zoomSubMenu.Text = "Zoom";
+            // 
+            // xToolStripMenuItem1
+            // 
+            this.xToolStripMenuItem1.Name = "xToolStripMenuItem1";
+            this.xToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            this.xToolStripMenuItem1.Text = "Reset";
+            this.xToolStripMenuItem1.Click += new System.EventHandler(this.OnZoomResetClick);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
+            // 
+            // inToolStripMenuItem
+            // 
+            this.inToolStripMenuItem.Name = "inToolStripMenuItem";
+            this.inToolStripMenuItem.ShortcutKeyDisplayString = "";
+            this.inToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Up)));
+            this.inToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.inToolStripMenuItem.Text = "In";
+            this.inToolStripMenuItem.Click += new System.EventHandler(this.OnZoomInClick);
+            // 
+            // outToolStripMenuItem
+            // 
+            this.outToolStripMenuItem.Name = "outToolStripMenuItem";
+            this.outToolStripMenuItem.ShortcutKeyDisplayString = "";
+            this.outToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Down)));
+            this.outToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.outToolStripMenuItem.Text = "Out";
+            this.outToolStripMenuItem.Click += new System.EventHandler(this.OnZoomOutClick);
             // 
             // viewRoads
             // 
@@ -228,6 +277,13 @@ namespace WalkerSim.Editor
             this.viewAgents.Name = "viewAgents";
             this.viewAgents.Size = new System.Drawing.Size(180, 22);
             this.viewAgents.Text = "Inactive Agents";
+            // 
+            // viewActiveAgents
+            // 
+            this.viewActiveAgents.CheckOnClick = true;
+            this.viewActiveAgents.Name = "viewActiveAgents";
+            this.viewActiveAgents.Size = new System.Drawing.Size(180, 22);
+            this.viewActiveAgents.Text = "Active Agents";
             // 
             // viewEvents
             // 
@@ -329,16 +385,35 @@ namespace WalkerSim.Editor
             // emitSoundToolStripMenuItem
             // 
             this.emitSoundToolStripMenuItem.Name = "emitSoundToolStripMenuItem";
-            this.emitSoundToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.emitSoundToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.emitSoundToolStripMenuItem.Text = "Emit Sound";
             this.emitSoundToolStripMenuItem.Click += new System.EventHandler(this.OnClickSoundEmit);
             // 
             // killToolStripMenuItem
             // 
             this.killToolStripMenuItem.Name = "killToolStripMenuItem";
-            this.killToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.killToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.killToolStripMenuItem.Text = "Kill";
             this.killToolStripMenuItem.Click += new System.EventHandler(this.OnClickKill);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(168, 6);
+            // 
+            // addPlayerToolStripMenuItem
+            // 
+            this.addPlayerToolStripMenuItem.Name = "addPlayerToolStripMenuItem";
+            this.addPlayerToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.addPlayerToolStripMenuItem.Text = "Add Player";
+            this.addPlayerToolStripMenuItem.Click += new System.EventHandler(this.OnAddPlayerClick);
+            // 
+            // setPlayerPositionToolStripMenuItem
+            // 
+            this.setPlayerPositionToolStripMenuItem.Name = "setPlayerPositionToolStripMenuItem";
+            this.setPlayerPositionToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.setPlayerPositionToolStripMenuItem.Text = "Set Player Position";
+            this.setPlayerPositionToolStripMenuItem.Click += new System.EventHandler(this.OnSetPlayerPosClick);
             // 
             // splitContainer1
             // 
@@ -350,27 +425,29 @@ namespace WalkerSim.Editor
             // 
             // splitContainer1.Panel1
             // 
+            this.splitContainer1.Panel1.AutoScroll = true;
+            this.splitContainer1.Panel1.BackColor = System.Drawing.Color.Black;
             this.splitContainer1.Panel1.Controls.Add(this.simCanvas);
+            this.splitContainer1.Panel1.SizeChanged += new System.EventHandler(this.OnResizeCanvas);
             // 
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.tabSimulation);
-            this.splitContainer1.Size = new System.Drawing.Size(900, 716);
+            this.splitContainer1.Size = new System.Drawing.Size(855, 716);
             this.splitContainer1.SplitterDistance = 519;
             this.splitContainer1.TabIndex = 5;
+            this.splitContainer1.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.OnSplitContainerMove);
             // 
             // simCanvas
             // 
             this.simCanvas.BackColor = System.Drawing.Color.Black;
-            this.simCanvas.Dock = System.Windows.Forms.DockStyle.Fill;
             this.simCanvas.Location = new System.Drawing.Point(0, 0);
             this.simCanvas.Name = "simCanvas";
-            this.simCanvas.Size = new System.Drawing.Size(900, 519);
-            this.simCanvas.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.simCanvas.TabIndex = 4;
+            this.simCanvas.Size = new System.Drawing.Size(562, 448);
+            this.simCanvas.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
+            this.simCanvas.TabIndex = 6;
             this.simCanvas.TabStop = false;
             this.simCanvas.MouseClick += new System.Windows.Forms.MouseEventHandler(this.OnSimCanvasClick);
-            this.simCanvas.MouseMove += new System.Windows.Forms.MouseEventHandler(this.OnSimCanvasMouseMove);
             // 
             // tabSimulation
             // 
@@ -381,7 +458,7 @@ namespace WalkerSim.Editor
             this.tabSimulation.Location = new System.Drawing.Point(0, 0);
             this.tabSimulation.Name = "tabSimulation";
             this.tabSimulation.SelectedIndex = 0;
-            this.tabSimulation.Size = new System.Drawing.Size(900, 193);
+            this.tabSimulation.Size = new System.Drawing.Size(855, 193);
             this.tabSimulation.TabIndex = 0;
             // 
             // tabPage1
@@ -390,7 +467,7 @@ namespace WalkerSim.Editor
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(892, 167);
+            this.tabPage1.Size = new System.Drawing.Size(847, 167);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Base Parameters";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -437,17 +514,17 @@ namespace WalkerSim.Editor
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(886, 161);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(841, 161);
             this.tableLayoutPanel1.TabIndex = 47;
             // 
             // label13
             // 
             this.label13.AutoSize = true;
             this.label13.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label13.Location = new System.Drawing.Point(591, 35);
+            this.label13.Location = new System.Drawing.Point(563, 35);
             this.label13.Name = "label13";
             this.label13.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label13.Size = new System.Drawing.Size(141, 30);
+            this.label13.Size = new System.Drawing.Size(134, 30);
             this.label13.TabIndex = 50;
             this.label13.Text = "Pause during Bloodmoon";
             this.label13.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -456,17 +533,17 @@ namespace WalkerSim.Editor
             // 
             this.label12.AutoSize = true;
             this.label12.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label12.Location = new System.Drawing.Point(591, 5);
+            this.label12.Location = new System.Drawing.Point(563, 5);
             this.label12.Name = "label12";
             this.label12.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label12.Size = new System.Drawing.Size(141, 30);
+            this.label12.Size = new System.Drawing.Size(134, 30);
             this.label12.TabIndex = 49;
             this.label12.Text = "Start Agents Grouped";
             this.label12.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
             // inputSpawnProtectionTime
             // 
-            this.inputSpawnProtectionTime.Location = new System.Drawing.Point(147, 125);
+            this.inputSpawnProtectionTime.Location = new System.Drawing.Point(140, 125);
             this.inputSpawnProtectionTime.Margin = new System.Windows.Forms.Padding(0);
             this.inputSpawnProtectionTime.Maximum = new decimal(new int[] {
             400,
@@ -479,7 +556,7 @@ namespace WalkerSim.Editor
             0,
             0});
             this.inputSpawnProtectionTime.Name = "inputSpawnProtectionTime";
-            this.inputSpawnProtectionTime.Size = new System.Drawing.Size(147, 20);
+            this.inputSpawnProtectionTime.Size = new System.Drawing.Size(140, 20);
             this.inputSpawnProtectionTime.TabIndex = 45;
             this.inputSpawnProtectionTime.Value = new decimal(new int[] {
             300,
@@ -494,10 +571,10 @@ namespace WalkerSim.Editor
             this.panel1.AutoSize = true;
             this.panel1.Controls.Add(this.inputRandomSeed);
             this.panel1.Controls.Add(this.btRand);
-            this.panel1.Location = new System.Drawing.Point(147, 35);
+            this.panel1.Location = new System.Drawing.Point(140, 35);
             this.panel1.Margin = new System.Windows.Forms.Padding(0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(147, 20);
+            this.panel1.Size = new System.Drawing.Size(140, 20);
             this.panel1.TabIndex = 48;
             // 
             // inputRandomSeed
@@ -512,14 +589,14 @@ namespace WalkerSim.Editor
             0,
             0});
             this.inputRandomSeed.Name = "inputRandomSeed";
-            this.inputRandomSeed.Size = new System.Drawing.Size(122, 20);
+            this.inputRandomSeed.Size = new System.Drawing.Size(115, 20);
             this.inputRandomSeed.TabIndex = 28;
             // 
             // btRand
             // 
             this.btRand.AutoSize = true;
             this.btRand.Dock = System.Windows.Forms.DockStyle.Right;
-            this.btRand.Location = new System.Drawing.Point(122, 0);
+            this.btRand.Location = new System.Drawing.Point(115, 0);
             this.btRand.Margin = new System.Windows.Forms.Padding(0);
             this.btRand.Name = "btRand";
             this.btRand.Size = new System.Drawing.Size(25, 20);
@@ -533,10 +610,10 @@ namespace WalkerSim.Editor
             this.inputRespawnPosition.Dock = System.Windows.Forms.DockStyle.Fill;
             this.inputRespawnPosition.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.inputRespawnPosition.FormattingEnabled = true;
-            this.inputRespawnPosition.Location = new System.Drawing.Point(441, 35);
+            this.inputRespawnPosition.Location = new System.Drawing.Point(420, 35);
             this.inputRespawnPosition.Margin = new System.Windows.Forms.Padding(0);
             this.inputRespawnPosition.Name = "inputRespawnPosition";
-            this.inputRespawnPosition.Size = new System.Drawing.Size(147, 21);
+            this.inputRespawnPosition.Size = new System.Drawing.Size(140, 21);
             this.inputRespawnPosition.TabIndex = 37;
             // 
             // label6
@@ -547,7 +624,7 @@ namespace WalkerSim.Editor
             this.label6.Margin = new System.Windows.Forms.Padding(0);
             this.label6.Name = "label6";
             this.label6.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label6.Size = new System.Drawing.Size(147, 30);
+            this.label6.Size = new System.Drawing.Size(140, 30);
             this.label6.TabIndex = 46;
             this.label6.Text = "Spawn Protection Time";
             this.label6.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -556,10 +633,10 @@ namespace WalkerSim.Editor
             // 
             this.label5.AutoSize = true;
             this.label5.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label5.Location = new System.Drawing.Point(297, 35);
+            this.label5.Location = new System.Drawing.Point(283, 35);
             this.label5.Name = "label5";
             this.label5.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label5.Size = new System.Drawing.Size(141, 30);
+            this.label5.Size = new System.Drawing.Size(134, 30);
             this.label5.TabIndex = 36;
             this.label5.Text = "Respawn Position";
             this.label5.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -569,10 +646,10 @@ namespace WalkerSim.Editor
             this.inputWorld.Dock = System.Windows.Forms.DockStyle.Fill;
             this.inputWorld.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.inputWorld.FormattingEnabled = true;
-            this.inputWorld.Location = new System.Drawing.Point(147, 5);
+            this.inputWorld.Location = new System.Drawing.Point(140, 5);
             this.inputWorld.Margin = new System.Windows.Forms.Padding(0);
             this.inputWorld.Name = "inputWorld";
-            this.inputWorld.Size = new System.Drawing.Size(147, 21);
+            this.inputWorld.Size = new System.Drawing.Size(140, 21);
             this.inputWorld.TabIndex = 41;
             this.inputWorld.SelectedIndexChanged += new System.EventHandler(this.OnWorldSelectionChanged);
             // 
@@ -581,10 +658,10 @@ namespace WalkerSim.Editor
             this.inputStartPosition.Dock = System.Windows.Forms.DockStyle.Fill;
             this.inputStartPosition.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.inputStartPosition.FormattingEnabled = true;
-            this.inputStartPosition.Location = new System.Drawing.Point(441, 5);
+            this.inputStartPosition.Location = new System.Drawing.Point(420, 5);
             this.inputStartPosition.Margin = new System.Windows.Forms.Padding(0);
             this.inputStartPosition.Name = "inputStartPosition";
-            this.inputStartPosition.Size = new System.Drawing.Size(147, 21);
+            this.inputStartPosition.Size = new System.Drawing.Size(140, 21);
             this.inputStartPosition.TabIndex = 35;
             // 
             // label10
@@ -595,7 +672,7 @@ namespace WalkerSim.Editor
             this.label10.Margin = new System.Windows.Forms.Padding(0);
             this.label10.Name = "label10";
             this.label10.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label10.Size = new System.Drawing.Size(147, 30);
+            this.label10.Size = new System.Drawing.Size(140, 30);
             this.label10.TabIndex = 40;
             this.label10.Text = "World";
             this.label10.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -604,10 +681,10 @@ namespace WalkerSim.Editor
             // 
             this.label4.AutoSize = true;
             this.label4.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label4.Location = new System.Drawing.Point(297, 5);
+            this.label4.Location = new System.Drawing.Point(283, 5);
             this.label4.Name = "label4";
             this.label4.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label4.Size = new System.Drawing.Size(141, 30);
+            this.label4.Size = new System.Drawing.Size(134, 30);
             this.label4.TabIndex = 34;
             this.label4.Text = "Start Position";
             this.label4.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -620,7 +697,7 @@ namespace WalkerSim.Editor
             this.label1.Margin = new System.Windows.Forms.Padding(0);
             this.label1.Name = "label1";
             this.label1.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label1.Size = new System.Drawing.Size(147, 30);
+            this.label1.Size = new System.Drawing.Size(140, 30);
             this.label1.TabIndex = 29;
             this.label1.Text = "Random Seed";
             this.label1.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -633,7 +710,7 @@ namespace WalkerSim.Editor
             this.label3.Margin = new System.Windows.Forms.Padding(0);
             this.label3.Name = "label3";
             this.label3.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label3.Size = new System.Drawing.Size(147, 30);
+            this.label3.Size = new System.Drawing.Size(140, 30);
             this.label3.TabIndex = 33;
             this.label3.Text = "Group Size";
             this.label3.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -641,7 +718,7 @@ namespace WalkerSim.Editor
             // inputGroupSize
             // 
             this.inputGroupSize.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.inputGroupSize.Location = new System.Drawing.Point(147, 65);
+            this.inputGroupSize.Location = new System.Drawing.Point(140, 65);
             this.inputGroupSize.Margin = new System.Windows.Forms.Padding(0);
             this.inputGroupSize.Maximum = new decimal(new int[] {
             30000,
@@ -654,7 +731,7 @@ namespace WalkerSim.Editor
             0,
             0});
             this.inputGroupSize.Name = "inputGroupSize";
-            this.inputGroupSize.Size = new System.Drawing.Size(147, 20);
+            this.inputGroupSize.Size = new System.Drawing.Size(140, 20);
             this.inputGroupSize.TabIndex = 32;
             this.inputGroupSize.Value = new decimal(new int[] {
             16,
@@ -670,7 +747,7 @@ namespace WalkerSim.Editor
             this.label2.Margin = new System.Windows.Forms.Padding(0);
             this.label2.Name = "label2";
             this.label2.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label2.Size = new System.Drawing.Size(147, 30);
+            this.label2.Size = new System.Drawing.Size(140, 30);
             this.label2.TabIndex = 31;
             this.label2.Text = "Population Density";
             this.label2.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -678,7 +755,7 @@ namespace WalkerSim.Editor
             // inputStartGrouped
             // 
             this.inputStartGrouped.AutoSize = true;
-            this.inputStartGrouped.Location = new System.Drawing.Point(738, 8);
+            this.inputStartGrouped.Location = new System.Drawing.Point(703, 8);
             this.inputStartGrouped.Name = "inputStartGrouped";
             this.inputStartGrouped.Size = new System.Drawing.Size(15, 14);
             this.inputStartGrouped.TabIndex = 27;
@@ -687,7 +764,7 @@ namespace WalkerSim.Editor
             // inputPauseDuringBloodmoon
             // 
             this.inputPauseDuringBloodmoon.AutoSize = true;
-            this.inputPauseDuringBloodmoon.Location = new System.Drawing.Point(738, 38);
+            this.inputPauseDuringBloodmoon.Location = new System.Drawing.Point(703, 38);
             this.inputPauseDuringBloodmoon.Name = "inputPauseDuringBloodmoon";
             this.inputPauseDuringBloodmoon.Size = new System.Drawing.Size(15, 14);
             this.inputPauseDuringBloodmoon.TabIndex = 39;
@@ -697,10 +774,10 @@ namespace WalkerSim.Editor
             // 
             this.label14.AutoSize = true;
             this.label14.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label14.Location = new System.Drawing.Point(591, 65);
+            this.label14.Location = new System.Drawing.Point(563, 65);
             this.label14.Name = "label14";
             this.label14.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label14.Size = new System.Drawing.Size(141, 30);
+            this.label14.Size = new System.Drawing.Size(134, 30);
             this.label14.TabIndex = 51;
             this.label14.Text = "Fast forward at start";
             this.label14.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -708,7 +785,7 @@ namespace WalkerSim.Editor
             // inputFastForward
             // 
             this.inputFastForward.AutoSize = true;
-            this.inputFastForward.Location = new System.Drawing.Point(738, 68);
+            this.inputFastForward.Location = new System.Drawing.Point(703, 68);
             this.inputFastForward.Name = "inputFastForward";
             this.inputFastForward.Size = new System.Drawing.Size(15, 14);
             this.inputFastForward.TabIndex = 44;
@@ -718,7 +795,7 @@ namespace WalkerSim.Editor
             // 
             this.inputMaxAgents.AutoSize = true;
             this.inputMaxAgents.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.inputMaxAgents.Location = new System.Drawing.Point(147, 95);
+            this.inputMaxAgents.Location = new System.Drawing.Point(140, 95);
             this.inputMaxAgents.Margin = new System.Windows.Forms.Padding(0);
             this.inputMaxAgents.Maximum = new decimal(new int[] {
             400,
@@ -731,7 +808,7 @@ namespace WalkerSim.Editor
             0,
             0});
             this.inputMaxAgents.Name = "inputMaxAgents";
-            this.inputMaxAgents.Size = new System.Drawing.Size(147, 20);
+            this.inputMaxAgents.Size = new System.Drawing.Size(140, 20);
             this.inputMaxAgents.TabIndex = 52;
             this.inputMaxAgents.Value = new decimal(new int[] {
             300,
@@ -750,7 +827,7 @@ namespace WalkerSim.Editor
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(892, 167);
+            this.tabPage2.Size = new System.Drawing.Size(847, 167);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Movement Processors";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -1056,7 +1133,7 @@ namespace WalkerSim.Editor
             this.tabPage3.Controls.Add(this.rtbLog);
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(892, 167);
+            this.tabPage3.Size = new System.Drawing.Size(847, 167);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Log";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -1070,7 +1147,7 @@ namespace WalkerSim.Editor
             this.rtbLog.Location = new System.Drawing.Point(0, 0);
             this.rtbLog.Name = "rtbLog";
             this.rtbLog.ReadOnly = true;
-            this.rtbLog.Size = new System.Drawing.Size(892, 167);
+            this.rtbLog.Size = new System.Drawing.Size(847, 167);
             this.rtbLog.TabIndex = 0;
             this.rtbLog.Text = "";
             // 
@@ -1099,37 +1176,16 @@ namespace WalkerSim.Editor
             // 
             this.colorPickerDlg.AnyColor = true;
             // 
-            // toolStripSeparator1
+            // toolStripSeparator3
             // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(177, 6);
-            // 
-            // addPlayerToolStripMenuItem
-            // 
-            this.addPlayerToolStripMenuItem.Name = "addPlayerToolStripMenuItem";
-            this.addPlayerToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.addPlayerToolStripMenuItem.Text = "Add Player";
-            this.addPlayerToolStripMenuItem.Click += new System.EventHandler(this.OnAddPlayerClick);
-            // 
-            // setPlayerPositionToolStripMenuItem
-            // 
-            this.setPlayerPositionToolStripMenuItem.Name = "setPlayerPositionToolStripMenuItem";
-            this.setPlayerPositionToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.setPlayerPositionToolStripMenuItem.Text = "Set Player Position";
-            this.setPlayerPositionToolStripMenuItem.Click += new System.EventHandler(this.OnSetPlayerPosClick);
-            // 
-            // viewActiveAgents
-            // 
-            this.viewActiveAgents.CheckOnClick = true;
-            this.viewActiveAgents.Name = "viewActiveAgents";
-            this.viewActiveAgents.Size = new System.Drawing.Size(180, 22);
-            this.viewActiveAgents.Text = "Active Agents";
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
             // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(900, 740);
+            this.ClientSize = new System.Drawing.Size(855, 740);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.menuStrip1);
             this.DoubleBuffered = true;
@@ -1142,6 +1198,7 @@ namespace WalkerSim.Editor
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.splitContainer1.Panel1.ResumeLayout(false);
+            this.splitContainer1.Panel1.PerformLayout();
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
@@ -1193,7 +1250,6 @@ namespace WalkerSim.Editor
         private System.Windows.Forms.ToolStripMenuItem viewAgents;
         private System.Windows.Forms.ToolStripMenuItem viewEvents;
         private System.Windows.Forms.SplitContainer splitContainer1;
-        private System.Windows.Forms.PictureBox simCanvas;
         private System.Windows.Forms.TabControl tabSimulation;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
@@ -1264,6 +1320,13 @@ namespace WalkerSim.Editor
         private System.Windows.Forms.ToolStripMenuItem addPlayerToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem setPlayerPositionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem viewActiveAgents;
+        private System.Windows.Forms.PictureBox simCanvas;
+        private System.Windows.Forms.ToolStripMenuItem zoomSubMenu;
+        private System.Windows.Forms.ToolStripMenuItem xToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripMenuItem inToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem outToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
     }
 }
 

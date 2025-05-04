@@ -29,6 +29,8 @@ namespace WalkerSim.Editor
 
         private Dictionary<string, ToolTip> _toolTips = new Dictionary<string, ToolTip>();
 
+        private float _canvasScale = 0.5f;
+
         Simulation simulation = Simulation.Instance;
         Random prng;
         Bitmap bitmap;
@@ -86,6 +88,8 @@ namespace WalkerSim.Editor
             UpdateConfigFields();
             ReconfigureSimulation();
 
+            CenterCanvas();
+
 #if DEBUG
             prng = new Random(1);
 #else
@@ -98,6 +102,27 @@ namespace WalkerSim.Editor
             viewRoads.Click += (sender, e) => RenderSimulation();
             viewPrefabs.Click += (sender, e) => RenderSimulation();
             viewEvents.Click += (sender, e) => RenderSimulation();
+
+            splitContainer1.Panel1.AutoScroll = true;
+            splitContainer1.Panel1.MouseWheel += (sender, e) =>
+            {
+                if (ModifierKeys == Keys.Control)
+                {
+                    if (e.Delta > 0)
+                    {
+                        OnZoomInClick(sender, e);
+                    }
+                    else
+                    {
+                        OnZoomOutClick(sender, e);
+                    }
+                }
+                ((HandledMouseEventArgs)e).Handled = true;
+            };
+            splitContainer1.MouseWheel += (sender, e) =>
+            {
+                ((HandledMouseEventArgs)e).Handled = true;
+            };
         }
 
         private void SetToolTip(Control ctrl, string helpText)
@@ -242,7 +267,10 @@ namespace WalkerSim.Editor
 
         private void SetupDrawingContext()
         {
-            bitmap = new Bitmap(ImageWidth, ImageHeight);
+            var scaledWidth = ImageWidth * _canvasScale;
+            var scaledHeight = ImageHeight * _canvasScale;
+
+            bitmap = new Bitmap((int)scaledWidth, (int)scaledHeight);
             gr = System.Drawing.Graphics.FromImage(bitmap);
             simCanvas.Image = bitmap;
         }
@@ -439,8 +467,8 @@ namespace WalkerSim.Editor
             var worldMins = sim.WorldMins;
             var worldMaxs = sim.WorldMaxs;
 
-            var newX = Math.Remap(x, 0, ImageWidth, worldMins.X, worldMaxs.X);
-            var newY = Math.Remap(y, 0, ImageHeight, worldMins.Y, worldMaxs.Y);
+            var newX = Math.Remap(x, 0, simCanvas.Width, worldMins.X, worldMaxs.X);
+            var newY = Math.Remap(y, 0, simCanvas.Height, worldMins.Y, worldMaxs.Y);
 
             return new Vector3(newX, newY);
         }
@@ -630,6 +658,33 @@ namespace WalkerSim.Editor
             advanceOneTickToolStripMenuItem.Enabled = false;
         }
 
+        private void ZoomReset()
+        {
+            // Depending on world size use appropriate scaling.
+            var worldSize = simulation.WorldSize;
+            var worldSizeX = worldSize.X;
+            var worldSizeY = worldSize.Y;
+
+            var size = System.Math.Max(worldSizeX, worldSizeY);
+            if (size > 10000)
+            {
+                _canvasScale = 0.65f;
+            }
+            else if (size > 8000)
+            {
+                _canvasScale = 0.66f;
+            }
+            else if (size > 6000)
+            {
+                _canvasScale = 0.68f;
+            }
+
+            SetupDrawingContext();
+            CenterCanvas();
+
+            RenderSimulation();
+        }
+
         private void OnWorldSelectionChanged(object sender, EventArgs e)
         {
             var worldIdx = inputWorld.SelectedIndex;
@@ -647,7 +702,7 @@ namespace WalkerSim.Editor
             simulation.Reset(CurrentConfig);
             GenerateColorTable();
 
-            RenderSimulation();
+            ZoomReset();
         }
 
         private void CheckMaxAgents()
@@ -724,6 +779,11 @@ namespace WalkerSim.Editor
                 }
 
                 LoadConfiguration(browseFileDlg.FileName);
+
+                simulation.Reset(CurrentConfig);
+
+                GenerateColorTable();
+                RenderSimulation();
             }
         }
 
@@ -1131,6 +1191,70 @@ namespace WalkerSim.Editor
         {
             Tool.Active = new SetPlayerPositionTool();
             simCanvas.Cursor = Cursors.Cross;
+        }
+
+        private void CenterCanvas()
+        {
+            var panelCanvas = splitContainer1.Panel1;
+
+            // Get the panel's client size (visible area)
+            var panelWidth = panelCanvas.ClientSize.Width;
+            var panelHeight = panelCanvas.ClientSize.Height;
+
+            // Get the PictureBox size
+            var imageWidth = simCanvas.Width;
+            var imageHeight = simCanvas.Height;
+
+            // Center horizontally if PictureBox width is smaller than panel width
+            if (imageWidth < panelWidth)
+            {
+                int x = (panelWidth - imageWidth) / 2;
+                simCanvas.Left = x;
+            }
+
+            // Center vertically if PictureBox height is smaller than panel height
+            if (imageHeight < panelHeight)
+            {
+                int y = (panelHeight - imageHeight) / 2;
+                simCanvas.Top = y;
+            }
+        }
+
+        private void OnResizeCanvas(object sender, EventArgs e)
+        {
+            CenterCanvas();
+        }
+
+        private void OnSplitContainerMove(object sender, SplitterEventArgs e)
+        {
+            CenterCanvas();
+        }
+
+        private void OnZoomInClick(object sender, EventArgs e)
+        {
+            if (_canvasScale >= 4.0f)
+                return;
+
+            _canvasScale += 0.05f;
+            SetupDrawingContext();
+            CenterCanvas();
+            RenderSimulation();
+        }
+
+        private void OnZoomOutClick(object sender, EventArgs e)
+        {
+            if (_canvasScale < 0.2f)
+                return;
+
+            _canvasScale -= 0.05f;
+            SetupDrawingContext();
+            CenterCanvas();
+            RenderSimulation();
+        }
+
+        private void OnZoomResetClick(object sender, EventArgs e)
+        {
+            ZoomReset();
         }
     }
 }
