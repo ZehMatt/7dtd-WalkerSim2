@@ -209,6 +209,11 @@
                     <xs:documentation>Spawned agent starts chasing the activator of the spawn</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
+            <xs:enumeration value="Nothing">
+                <xs:annotation>
+                    <xs:documentation>Spawned agents just spawn, they will most likely just stand around</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
 

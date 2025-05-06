@@ -40,6 +40,8 @@ namespace WalkerSim
                     return "Wander";
                 case Config.PostSpawnBehavior.ChaseActivator:
                     return "Chase Activator";
+                case Config.PostSpawnBehavior.Nothing:
+                    return "Do Nothing";
                 default:
                     break;
             }

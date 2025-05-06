@@ -3,6 +3,8 @@
 - Fix: Some zombies were not despawned when getting too far away.
 - Fix: Console help text was not correctly printed.
 - Fix: Changing the World in the Editor does not update the preview.
+- Fix: Zombies start running after being spawned.
+- Fix: Zombies trying to dig when using `Wander` for `PostSpawnBehavior`
 - Improve: Simulation is now fully deterministic.
 - Improve: Using faster speeds in the Editor will now remain accurate, uses multi-threading.
 - Improve: Default configuration has been updated for a more immersive experience.

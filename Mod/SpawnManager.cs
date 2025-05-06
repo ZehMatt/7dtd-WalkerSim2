@@ -352,18 +352,15 @@ namespace WalkerSim
                 return -1;
             }
 
+            // Spawn.
+            world.SpawnEntityInWorld(spawnedAgent);
+
+            // Update attributes.
             spawnedAgent.bIsChunkObserver = true;
             spawnedAgent.SetSpawnerSource(EnumSpawnerSource.StaticSpawner);
-            spawnedAgent.moveDirection = rot;
             spawnedAgent.ticksNoPlayerAdjacent = 130;
 
             // Because some Mods use the entitygroups.xml to do normal NPCs, we have to check this first.
-            if (spawnedAgent is EntityEnemy)
-            {
-                var enemy = spawnedAgent as EntityEnemy;
-                enemy.IsHordeZombie = true;
-            }
-
             if (spawnedAgent is EntityZombie spawnedZombie)
             {
                 spawnedZombie.IsHordeZombie = true;
@@ -379,6 +376,11 @@ namespace WalkerSim
             if (spawnData.PostSpawnBehavior == Config.PostSpawnBehavior.Wander)
             {
                 var destPos = worldPos + (rot * 80);
+
+                // Adjust position by getting terrain height at the destination, they might dig if the destination is
+                // below the terrain.
+                destPos.y = world.GetTerrainHeight(Mathf.FloorToInt(destPos.x), Mathf.FloorToInt(destPos.z)) + 1;
+
                 spawnedAgent.SetInvestigatePosition(destPos, 6000, false);
                 Logging.Debug("Spawned agent wandering to {0}", destPos);
             }
@@ -392,18 +394,19 @@ namespace WalkerSim
                 }
                 else
                 {
-                    var destPos = worldPos + (rot * 80);
-                    spawnedAgent.SetInvestigatePosition(destPos, 6000, false);
-                    Logging.Debug("Spawned agent chasing activator {0} failed, using default position", spawnData.ActivatorEntityId);
+                    Logging.Warn("This should never happen, zombie spawned with no activator.");
                 }
+
+            }
+            else if (spawnData.PostSpawnBehavior == Config.PostSpawnBehavior.Nothing)
+            {
+                // Do nothing.
+                Logging.Info("No PostSpawn action for agent {0}", spawnedAgent.entityId);
             }
             else
             {
                 Logging.Err("Unknown post spawn behavior: {0}", spawnData.PostSpawnBehavior);
             }
-
-            // Spawn.
-            world.SpawnEntityInWorld(spawnedAgent);
 
             // Update the agent data.
             agent.EntityId = spawnedAgent.entityId;

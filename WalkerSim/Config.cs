@@ -29,8 +29,9 @@ namespace WalkerSim
             Wander = 0,
             [XmlEnum("ChaseActivator")]
             ChaseActivator,
+            [XmlEnum("Nothing")]
+            Nothing,
         }
-
 
         public enum WorldLocation
         {
