@@ -273,6 +273,9 @@ namespace WalkerSim.Editor
             bitmap = new Bitmap((int)scaledWidth, (int)scaledHeight);
             gr = System.Drawing.Graphics.FromImage(bitmap);
             simCanvas.Image = bitmap;
+
+            // Draw current state.
+            RenderSimulation();
         }
 
         private void SetupWorlds()
@@ -454,6 +457,7 @@ namespace WalkerSim.Editor
             this.Text = $"Ticks: {updateRate}/s";
 
             RenderSimulation();
+            UpdateStats();
         }
 
         Vector3 SimPosToBitmapPos(Vector3 pos)
@@ -504,8 +508,9 @@ namespace WalkerSim.Editor
                 Renderer.RenderEvents(gr, simulation);
             }
 
-            // Wind arrow.
-            DrawingUtils.DrawArrow(gr, simulation.WindDirection, new PointF(26, 26), 16, 6);
+
+            Renderer.DrawInformation(gr, simulation);
+
 
             if (Tool.Active != null)
             {
@@ -531,6 +536,18 @@ namespace WalkerSim.Editor
             RenderToBitmap();
 
             simCanvas.Refresh();
+        }
+
+        private void UpdateStats()
+        {
+            lblStatTotalAgents.Text = simulation.AgentCount.ToString();
+            lblStatInactive.Text = (simulation.AgentCount - simulation.ActiveCount).ToString();
+            lblStatActive.Text = simulation.ActiveCount.ToString();
+            lblStatWindDir.Text = simulation.WindDirection.ToString();
+            lblStatWindTarget.Text = simulation.WindDirectionTarget.ToString();
+            lblStatWindChange.Text = simulation.TickNextWindChange.ToString();
+            lblStatTicks.Text = simulation.Ticks.ToString();
+            lblStatSimTime.Text = String.Format("{0:0.000} ms", simulation.GetAverageTickTime());
         }
 
         private void OnGroupSelection(object sender, EventArgs e)
@@ -681,8 +698,6 @@ namespace WalkerSim.Editor
 
             SetupDrawingContext();
             CenterCanvas();
-
-            RenderSimulation();
         }
 
         private void OnWorldSelectionChanged(object sender, EventArgs e)
@@ -1238,7 +1253,6 @@ namespace WalkerSim.Editor
             _canvasScale += 0.05f;
             SetupDrawingContext();
             CenterCanvas();
-            RenderSimulation();
         }
 
         private void OnZoomOutClick(object sender, EventArgs e)
@@ -1249,7 +1263,6 @@ namespace WalkerSim.Editor
             _canvasScale -= 0.05f;
             SetupDrawingContext();
             CenterCanvas();
-            RenderSimulation();
         }
 
         private void OnZoomResetClick(object sender, EventArgs e)

@@ -44,6 +44,7 @@ namespace WalkerSim.Editor
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.inToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.outToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.viewRoads = new System.Windows.Forms.ToolStripMenuItem();
             this.viewAgents = new System.Windows.Forms.ToolStripMenuItem();
             this.viewActiveAgents = new System.Windows.Forms.ToolStripMenuItem();
@@ -122,7 +123,23 @@ namespace WalkerSim.Editor
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorPickerDlg = new System.Windows.Forms.ColorDialog();
             this.toolTipGroupSize = new System.Windows.Forms.ToolTip(this.components);
-            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.label16 = new System.Windows.Forms.Label();
+            this.lblStatTotalAgents = new System.Windows.Forms.Label();
+            this.label17 = new System.Windows.Forms.Label();
+            this.lblStatInactive = new System.Windows.Forms.Label();
+            this.lblStatActive = new System.Windows.Forms.Label();
+            this.label19 = new System.Windows.Forms.Label();
+            this.lblStatTicks = new System.Windows.Forms.Label();
+            this.label21 = new System.Windows.Forms.Label();
+            this.lblStatWindDir = new System.Windows.Forms.Label();
+            this.label23 = new System.Windows.Forms.Label();
+            this.lblStatWindChange = new System.Windows.Forms.Label();
+            this.label25 = new System.Windows.Forms.Label();
+            this.lblStatSimTime = new System.Windows.Forms.Label();
+            this.label27 = new System.Windows.Forms.Label();
+            this.lblStatWindTarget = new System.Windows.Forms.Label();
+            this.label20 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -148,6 +165,7 @@ namespace WalkerSim.Editor
             ((System.ComponentModel.ISupportInitialize)(this.inputProcessorDistance)).BeginInit();
             this.tabPage3.SuspendLayout();
             this.contextLog.SuspendLayout();
+            this.tabPage4.SuspendLayout();
             this.SuspendLayout();
             // 
             // updateTimer
@@ -227,27 +245,27 @@ namespace WalkerSim.Editor
             this.inToolStripMenuItem,
             this.outToolStripMenuItem});
             this.zoomSubMenu.Name = "zoomSubMenu";
-            this.zoomSubMenu.Size = new System.Drawing.Size(180, 22);
+            this.zoomSubMenu.Size = new System.Drawing.Size(155, 22);
             this.zoomSubMenu.Text = "Zoom";
             // 
             // xToolStripMenuItem1
             // 
             this.xToolStripMenuItem1.Name = "xToolStripMenuItem1";
-            this.xToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            this.xToolStripMenuItem1.Size = new System.Drawing.Size(159, 22);
             this.xToolStripMenuItem1.Text = "Reset";
             this.xToolStripMenuItem1.Click += new System.EventHandler(this.OnZoomResetClick);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(156, 6);
             // 
             // inToolStripMenuItem
             // 
             this.inToolStripMenuItem.Name = "inToolStripMenuItem";
             this.inToolStripMenuItem.ShortcutKeyDisplayString = "";
             this.inToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Up)));
-            this.inToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.inToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
             this.inToolStripMenuItem.Text = "In";
             this.inToolStripMenuItem.Click += new System.EventHandler(this.OnZoomInClick);
             // 
@@ -256,9 +274,14 @@ namespace WalkerSim.Editor
             this.outToolStripMenuItem.Name = "outToolStripMenuItem";
             this.outToolStripMenuItem.ShortcutKeyDisplayString = "";
             this.outToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Down)));
-            this.outToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.outToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
             this.outToolStripMenuItem.Text = "Out";
             this.outToolStripMenuItem.Click += new System.EventHandler(this.OnZoomOutClick);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(152, 6);
             // 
             // viewRoads
             // 
@@ -266,7 +289,7 @@ namespace WalkerSim.Editor
             this.viewRoads.CheckOnClick = true;
             this.viewRoads.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewRoads.Name = "viewRoads";
-            this.viewRoads.Size = new System.Drawing.Size(180, 22);
+            this.viewRoads.Size = new System.Drawing.Size(155, 22);
             this.viewRoads.Text = "Roads";
             // 
             // viewAgents
@@ -275,14 +298,14 @@ namespace WalkerSim.Editor
             this.viewAgents.CheckOnClick = true;
             this.viewAgents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewAgents.Name = "viewAgents";
-            this.viewAgents.Size = new System.Drawing.Size(180, 22);
+            this.viewAgents.Size = new System.Drawing.Size(155, 22);
             this.viewAgents.Text = "Inactive Agents";
             // 
             // viewActiveAgents
             // 
             this.viewActiveAgents.CheckOnClick = true;
             this.viewActiveAgents.Name = "viewActiveAgents";
-            this.viewActiveAgents.Size = new System.Drawing.Size(180, 22);
+            this.viewActiveAgents.Size = new System.Drawing.Size(155, 22);
             this.viewActiveAgents.Text = "Active Agents";
             // 
             // viewEvents
@@ -291,14 +314,14 @@ namespace WalkerSim.Editor
             this.viewEvents.CheckOnClick = true;
             this.viewEvents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewEvents.Name = "viewEvents";
-            this.viewEvents.Size = new System.Drawing.Size(180, 22);
+            this.viewEvents.Size = new System.Drawing.Size(155, 22);
             this.viewEvents.Text = "Events";
             // 
             // viewPrefabs
             // 
             this.viewPrefabs.CheckOnClick = true;
             this.viewPrefabs.Name = "viewPrefabs";
-            this.viewPrefabs.Size = new System.Drawing.Size(180, 22);
+            this.viewPrefabs.Size = new System.Drawing.Size(155, 22);
             this.viewPrefabs.Text = "Prefabs";
             // 
             // simulationToolStripMenuItem
@@ -441,7 +464,7 @@ namespace WalkerSim.Editor
             // simCanvas
             // 
             this.simCanvas.BackColor = System.Drawing.Color.Black;
-            this.simCanvas.Location = new System.Drawing.Point(0, 0);
+            this.simCanvas.Location = new System.Drawing.Point(142, 34);
             this.simCanvas.Name = "simCanvas";
             this.simCanvas.Size = new System.Drawing.Size(562, 448);
             this.simCanvas.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -453,6 +476,7 @@ namespace WalkerSim.Editor
             // 
             this.tabSimulation.Controls.Add(this.tabPage1);
             this.tabSimulation.Controls.Add(this.tabPage2);
+            this.tabSimulation.Controls.Add(this.tabPage4);
             this.tabSimulation.Controls.Add(this.tabPage3);
             this.tabSimulation.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabSimulation.Location = new System.Drawing.Point(0, 0);
@@ -1176,10 +1200,207 @@ namespace WalkerSim.Editor
             // 
             this.colorPickerDlg.AnyColor = true;
             // 
-            // toolStripSeparator3
+            // tabPage4
             // 
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
+            this.tabPage4.Controls.Add(this.lblStatWindTarget);
+            this.tabPage4.Controls.Add(this.label20);
+            this.tabPage4.Controls.Add(this.lblStatSimTime);
+            this.tabPage4.Controls.Add(this.label27);
+            this.tabPage4.Controls.Add(this.lblStatWindChange);
+            this.tabPage4.Controls.Add(this.label25);
+            this.tabPage4.Controls.Add(this.lblStatWindDir);
+            this.tabPage4.Controls.Add(this.label23);
+            this.tabPage4.Controls.Add(this.lblStatTicks);
+            this.tabPage4.Controls.Add(this.label21);
+            this.tabPage4.Controls.Add(this.lblStatActive);
+            this.tabPage4.Controls.Add(this.label19);
+            this.tabPage4.Controls.Add(this.lblStatInactive);
+            this.tabPage4.Controls.Add(this.label17);
+            this.tabPage4.Controls.Add(this.lblStatTotalAgents);
+            this.tabPage4.Controls.Add(this.label16);
+            this.tabPage4.Location = new System.Drawing.Point(4, 22);
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage4.Size = new System.Drawing.Size(847, 167);
+            this.tabPage4.TabIndex = 3;
+            this.tabPage4.Text = "Statistics";
+            this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(9, 7);
+            this.label16.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.label16.Name = "label16";
+            this.label16.Padding = new System.Windows.Forms.Padding(2);
+            this.label16.Size = new System.Drawing.Size(74, 17);
+            this.label16.TabIndex = 0;
+            this.label16.Text = "Total Agents:";
+            // 
+            // lblStatTotalAgents
+            // 
+            this.lblStatTotalAgents.AutoSize = true;
+            this.lblStatTotalAgents.Location = new System.Drawing.Point(126, 7);
+            this.lblStatTotalAgents.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.lblStatTotalAgents.Name = "lblStatTotalAgents";
+            this.lblStatTotalAgents.Padding = new System.Windows.Forms.Padding(2);
+            this.lblStatTotalAgents.Size = new System.Drawing.Size(17, 17);
+            this.lblStatTotalAgents.TabIndex = 1;
+            this.lblStatTotalAgents.Text = "0";
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(10, 24);
+            this.label17.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.label17.Name = "label17";
+            this.label17.Padding = new System.Windows.Forms.Padding(2);
+            this.label17.Size = new System.Drawing.Size(88, 17);
+            this.label17.TabIndex = 2;
+            this.label17.Text = "Inactive Agents:";
+            // 
+            // lblStatInactive
+            // 
+            this.lblStatInactive.AutoSize = true;
+            this.lblStatInactive.Location = new System.Drawing.Point(126, 24);
+            this.lblStatInactive.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.lblStatInactive.Name = "lblStatInactive";
+            this.lblStatInactive.Padding = new System.Windows.Forms.Padding(2);
+            this.lblStatInactive.Size = new System.Drawing.Size(17, 17);
+            this.lblStatInactive.TabIndex = 3;
+            this.lblStatInactive.Text = "0";
+            // 
+            // lblStatActive
+            // 
+            this.lblStatActive.AutoSize = true;
+            this.lblStatActive.Location = new System.Drawing.Point(126, 41);
+            this.lblStatActive.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.lblStatActive.Name = "lblStatActive";
+            this.lblStatActive.Padding = new System.Windows.Forms.Padding(2);
+            this.lblStatActive.Size = new System.Drawing.Size(17, 17);
+            this.lblStatActive.TabIndex = 5;
+            this.lblStatActive.Text = "0";
+            // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Location = new System.Drawing.Point(10, 41);
+            this.label19.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.label19.Name = "label19";
+            this.label19.Padding = new System.Windows.Forms.Padding(2);
+            this.label19.Size = new System.Drawing.Size(80, 17);
+            this.label19.TabIndex = 4;
+            this.label19.Text = "Active Agents:";
+            // 
+            // lblStatTicks
+            // 
+            this.lblStatTicks.AutoSize = true;
+            this.lblStatTicks.Location = new System.Drawing.Point(126, 58);
+            this.lblStatTicks.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.lblStatTicks.Name = "lblStatTicks";
+            this.lblStatTicks.Padding = new System.Windows.Forms.Padding(2);
+            this.lblStatTicks.Size = new System.Drawing.Size(17, 17);
+            this.lblStatTicks.TabIndex = 7;
+            this.lblStatTicks.Text = "0";
+            // 
+            // label21
+            // 
+            this.label21.AutoSize = true;
+            this.label21.Location = new System.Drawing.Point(10, 58);
+            this.label21.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.label21.Name = "label21";
+            this.label21.Padding = new System.Windows.Forms.Padding(2);
+            this.label21.Size = new System.Drawing.Size(40, 17);
+            this.label21.TabIndex = 6;
+            this.label21.Text = "Ticks:";
+            // 
+            // lblStatWindDir
+            // 
+            this.lblStatWindDir.AutoSize = true;
+            this.lblStatWindDir.Location = new System.Drawing.Point(126, 92);
+            this.lblStatWindDir.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.lblStatWindDir.Name = "lblStatWindDir";
+            this.lblStatWindDir.Padding = new System.Windows.Forms.Padding(2);
+            this.lblStatWindDir.Size = new System.Drawing.Size(26, 17);
+            this.lblStatWindDir.TabIndex = 9;
+            this.lblStatWindDir.Text = "0 0";
+            // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.Location = new System.Drawing.Point(10, 92);
+            this.label23.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.label23.Name = "label23";
+            this.label23.Padding = new System.Windows.Forms.Padding(2);
+            this.label23.Size = new System.Drawing.Size(84, 17);
+            this.label23.TabIndex = 8;
+            this.label23.Text = "Wind Direction:";
+            // 
+            // lblStatWindChange
+            // 
+            this.lblStatWindChange.AutoSize = true;
+            this.lblStatWindChange.Location = new System.Drawing.Point(126, 109);
+            this.lblStatWindChange.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.lblStatWindChange.Name = "lblStatWindChange";
+            this.lblStatWindChange.Padding = new System.Windows.Forms.Padding(2);
+            this.lblStatWindChange.Size = new System.Drawing.Size(17, 17);
+            this.lblStatWindChange.TabIndex = 11;
+            this.lblStatWindChange.Text = "0";
+            // 
+            // label25
+            // 
+            this.label25.AutoSize = true;
+            this.label25.Location = new System.Drawing.Point(10, 109);
+            this.label25.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.label25.Name = "label25";
+            this.label25.Padding = new System.Windows.Forms.Padding(2);
+            this.label25.Size = new System.Drawing.Size(101, 17);
+            this.label25.TabIndex = 10;
+            this.label25.Text = "Next Wind Change";
+            // 
+            // lblStatSimTime
+            // 
+            this.lblStatSimTime.AutoSize = true;
+            this.lblStatSimTime.Location = new System.Drawing.Point(126, 126);
+            this.lblStatSimTime.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.lblStatSimTime.Name = "lblStatSimTime";
+            this.lblStatSimTime.Padding = new System.Windows.Forms.Padding(2);
+            this.lblStatSimTime.Size = new System.Drawing.Size(33, 17);
+            this.lblStatSimTime.TabIndex = 13;
+            this.lblStatSimTime.Text = "0 ms";
+            // 
+            // label27
+            // 
+            this.label27.AutoSize = true;
+            this.label27.Location = new System.Drawing.Point(10, 126);
+            this.label27.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.label27.Name = "label27";
+            this.label27.Padding = new System.Windows.Forms.Padding(2);
+            this.label27.Size = new System.Drawing.Size(88, 17);
+            this.label27.TabIndex = 12;
+            this.label27.Text = "Simulation Time:";
+            // 
+            // lblStatWindTarget
+            // 
+            this.lblStatWindTarget.AutoSize = true;
+            this.lblStatWindTarget.Location = new System.Drawing.Point(126, 75);
+            this.lblStatWindTarget.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.lblStatWindTarget.Name = "lblStatWindTarget";
+            this.lblStatWindTarget.Padding = new System.Windows.Forms.Padding(2);
+            this.lblStatWindTarget.Size = new System.Drawing.Size(26, 17);
+            this.lblStatWindTarget.TabIndex = 15;
+            this.lblStatWindTarget.Text = "0 0";
+            // 
+            // label20
+            // 
+            this.label20.AutoSize = true;
+            this.label20.Location = new System.Drawing.Point(10, 75);
+            this.label20.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.label20.Name = "label20";
+            this.label20.Padding = new System.Windows.Forms.Padding(2);
+            this.label20.Size = new System.Drawing.Size(118, 17);
+            this.label20.TabIndex = 14;
+            this.label20.Text = "Wind Direction Target:";
             // 
             // FormMain
             // 
@@ -1227,6 +1448,8 @@ namespace WalkerSim.Editor
             ((System.ComponentModel.ISupportInitialize)(this.inputProcessorDistance)).EndInit();
             this.tabPage3.ResumeLayout(false);
             this.contextLog.ResumeLayout(false);
+            this.tabPage4.ResumeLayout(false);
+            this.tabPage4.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1327,6 +1550,23 @@ namespace WalkerSim.Editor
         private System.Windows.Forms.ToolStripMenuItem inToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem outToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.TabPage tabPage4;
+        private System.Windows.Forms.Label lblStatTotalAgents;
+        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.Label lblStatActive;
+        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.Label lblStatInactive;
+        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.Label lblStatSimTime;
+        private System.Windows.Forms.Label label27;
+        private System.Windows.Forms.Label lblStatWindChange;
+        private System.Windows.Forms.Label label25;
+        private System.Windows.Forms.Label lblStatWindDir;
+        private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.Label lblStatTicks;
+        private System.Windows.Forms.Label label21;
+        private System.Windows.Forms.Label lblStatWindTarget;
+        private System.Windows.Forms.Label label20;
     }
 }
 

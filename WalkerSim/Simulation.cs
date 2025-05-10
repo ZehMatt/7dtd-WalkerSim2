@@ -24,6 +24,8 @@ namespace WalkerSim
 
         private int _maxAllowedAliveAgents = 64;
 
+        private float[] _averageSimTime = new float[24];
+
         public bool EditorMode = false;
 
         public void Stop()
@@ -99,6 +101,11 @@ namespace WalkerSim
                 SetupGrid();
                 Populate();
                 SetupProcessors();
+
+                for (int i = 0; i < _averageSimTime.Length; i++)
+                {
+                    _averageSimTime[0] = 0.0f;
+                }
             }
         }
 
@@ -434,8 +441,15 @@ namespace WalkerSim
                 lastTickTimeMs = (float)elapsedMs;
                 averageTickTime += (float)elapsedMs;
 
-                if (_state.Ticks > 1)
-                    averageTickTime *= 0.5f;
+                _averageSimTime[_state.Ticks % _averageSimTime.Length] = (float)elapsedMs;
+
+                // Calculate the average tick time.
+                float sum = 0.0f;
+                for (int i = 0; i < _averageSimTime.Length; i++)
+                {
+                    sum += _averageSimTime[i];
+                }
+                averageTickTime = sum / _averageSimTime.Length;
 
                 if (_shouldStop)
                     break;
