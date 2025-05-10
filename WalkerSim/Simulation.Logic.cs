@@ -247,17 +247,33 @@ namespace WalkerSim
 
             if (_state.Ticks >= _state.TickNextWindChange)
             {
-                // Pick new direction.
-                _state.WindDirTarget.X = (float)System.Math.Cos(prng.NextDouble() * System.Math.PI * 2);
-                _state.WindDirTarget.Y = (float)System.Math.Sin(prng.NextDouble() * System.Math.PI * 2);
+                // Calculate new direction within 90 degrees of current direction
+                var currentAngle = System.Math.Atan2(_state.WindDir.Y, _state.WindDir.X);
+                var maxAngleChange = System.Math.PI / 2; // 90 degrees max
+                var newAngle = currentAngle + (prng.NextDouble() - 0.5) * maxAngleChange;
 
-                // Pick a random delay for the next change.
-                _state.TickNextWindChange = _state.Ticks + (uint)prng.Next(500, 1000);
+                _state.WindDirTarget.X = (float)System.Math.Cos(newAngle);
+                _state.WindDirTarget.Y = (float)System.Math.Sin(newAngle);
+
+                // Keep original timing logic
+#if true
+                var minWindTime = MinutesToTicks(4);
+                var maxWindTime = MinutesToTicks(8);
+#else
+                var minWindTime = SecondsToTicks(5);
+                var maxWindTime = SecondsToTicks(10);
+#endif
+                _state.TickNextWindChange = _state.Ticks + (uint)prng.Next(minWindTime, maxWindTime);
             }
 
-            // Approach the target direction.
-            _state.WindDir.X = Math.Approach(_state.WindDir.X, _state.WindDirTarget.X, TickRate);
-            _state.WindDir.Y = Math.Approach(_state.WindDir.Y, _state.WindDirTarget.Y, TickRate);
+            var maxRotation = 0.001f;
+            var currentDir = new Vector3(_state.WindDir.X, _state.WindDir.Y);
+            var targetDir = new Vector3(_state.WindDirTarget.X, _state.WindDirTarget.Y);
+
+            currentDir = Vector3.Normalize(Vector3.Lerp(currentDir, targetDir, maxRotation));
+
+            _state.WindDir.X = currentDir.X;
+            _state.WindDir.Y = currentDir.Y;
         }
 
         private void BounceOffWalls(Agent agent)

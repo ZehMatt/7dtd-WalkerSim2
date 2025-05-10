@@ -539,5 +539,15 @@ namespace WalkerSim
 
             return _processors[groupIndex].Color;
         }
+
+        private int SecondsToTicks(int seconds)
+        {
+            return seconds * TicksPerSecond;
+        }
+
+        private int MinutesToTicks(int minutes)
+        {
+            return SecondsToTicks(minutes * 60);
+        }
     }
 }

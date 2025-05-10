@@ -1237,7 +1237,7 @@ namespace WalkerSim.Editor
             // label16
             // 
             this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(9, 7);
+            this.label16.Location = new System.Drawing.Point(9, 9);
             this.label16.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label16.Name = "label16";
             this.label16.Padding = new System.Windows.Forms.Padding(2);
@@ -1249,7 +1249,7 @@ namespace WalkerSim.Editor
             // 
             this.lblStatTotalAgents.AutoSize = true;
             this.lblStatTotalAgents.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblStatTotalAgents.Location = new System.Drawing.Point(126, 7);
+            this.lblStatTotalAgents.Location = new System.Drawing.Point(126, 9);
             this.lblStatTotalAgents.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblStatTotalAgents.Name = "lblStatTotalAgents";
             this.lblStatTotalAgents.Padding = new System.Windows.Forms.Padding(2);
@@ -1260,7 +1260,7 @@ namespace WalkerSim.Editor
             // label17
             // 
             this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(10, 24);
+            this.label17.Location = new System.Drawing.Point(10, 26);
             this.label17.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label17.Name = "label17";
             this.label17.Padding = new System.Windows.Forms.Padding(2);
@@ -1272,7 +1272,7 @@ namespace WalkerSim.Editor
             // 
             this.lblStatInactive.AutoSize = true;
             this.lblStatInactive.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblStatInactive.Location = new System.Drawing.Point(126, 24);
+            this.lblStatInactive.Location = new System.Drawing.Point(126, 26);
             this.lblStatInactive.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblStatInactive.Name = "lblStatInactive";
             this.lblStatInactive.Padding = new System.Windows.Forms.Padding(2);
@@ -1284,7 +1284,7 @@ namespace WalkerSim.Editor
             // 
             this.lblStatActive.AutoSize = true;
             this.lblStatActive.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblStatActive.Location = new System.Drawing.Point(126, 41);
+            this.lblStatActive.Location = new System.Drawing.Point(126, 43);
             this.lblStatActive.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblStatActive.Name = "lblStatActive";
             this.lblStatActive.Padding = new System.Windows.Forms.Padding(2);
@@ -1295,7 +1295,7 @@ namespace WalkerSim.Editor
             // label19
             // 
             this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(10, 41);
+            this.label19.Location = new System.Drawing.Point(10, 43);
             this.label19.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label19.Name = "label19";
             this.label19.Padding = new System.Windows.Forms.Padding(2);
@@ -1307,7 +1307,7 @@ namespace WalkerSim.Editor
             // 
             this.lblStatTicks.AutoSize = true;
             this.lblStatTicks.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblStatTicks.Location = new System.Drawing.Point(622, 7);
+            this.lblStatTicks.Location = new System.Drawing.Point(622, 9);
             this.lblStatTicks.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblStatTicks.Name = "lblStatTicks";
             this.lblStatTicks.Padding = new System.Windows.Forms.Padding(2);
@@ -1318,7 +1318,7 @@ namespace WalkerSim.Editor
             // label21
             // 
             this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(522, 7);
+            this.label21.Location = new System.Drawing.Point(522, 9);
             this.label21.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label21.Name = "label21";
             this.label21.Padding = new System.Windows.Forms.Padding(2);
@@ -1330,7 +1330,7 @@ namespace WalkerSim.Editor
             // 
             this.lblStatWindDir.AutoSize = true;
             this.lblStatWindDir.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblStatWindDir.Location = new System.Drawing.Point(346, 24);
+            this.lblStatWindDir.Location = new System.Drawing.Point(352, 26);
             this.lblStatWindDir.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblStatWindDir.Name = "lblStatWindDir";
             this.lblStatWindDir.Padding = new System.Windows.Forms.Padding(2);
@@ -1341,7 +1341,7 @@ namespace WalkerSim.Editor
             // label23
             // 
             this.label23.AutoSize = true;
-            this.label23.Location = new System.Drawing.Point(230, 24);
+            this.label23.Location = new System.Drawing.Point(218, 26);
             this.label23.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label23.Name = "label23";
             this.label23.Padding = new System.Windows.Forms.Padding(2);
@@ -1353,7 +1353,7 @@ namespace WalkerSim.Editor
             // 
             this.lblStatWindChange.AutoSize = true;
             this.lblStatWindChange.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblStatWindChange.Location = new System.Drawing.Point(346, 41);
+            this.lblStatWindChange.Location = new System.Drawing.Point(352, 43);
             this.lblStatWindChange.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblStatWindChange.Name = "lblStatWindChange";
             this.lblStatWindChange.Padding = new System.Windows.Forms.Padding(2);
@@ -1364,7 +1364,7 @@ namespace WalkerSim.Editor
             // label25
             // 
             this.label25.AutoSize = true;
-            this.label25.Location = new System.Drawing.Point(230, 41);
+            this.label25.Location = new System.Drawing.Point(218, 43);
             this.label25.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label25.Name = "label25";
             this.label25.Padding = new System.Windows.Forms.Padding(2);
@@ -1376,7 +1376,7 @@ namespace WalkerSim.Editor
             // 
             this.lblStatSimTime.AutoSize = true;
             this.lblStatSimTime.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblStatSimTime.Location = new System.Drawing.Point(622, 24);
+            this.lblStatSimTime.Location = new System.Drawing.Point(622, 26);
             this.lblStatSimTime.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblStatSimTime.Name = "lblStatSimTime";
             this.lblStatSimTime.Padding = new System.Windows.Forms.Padding(2);
@@ -1387,7 +1387,7 @@ namespace WalkerSim.Editor
             // label27
             // 
             this.label27.AutoSize = true;
-            this.label27.Location = new System.Drawing.Point(522, 24);
+            this.label27.Location = new System.Drawing.Point(522, 26);
             this.label27.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label27.Name = "label27";
             this.label27.Padding = new System.Windows.Forms.Padding(2);
@@ -1399,7 +1399,7 @@ namespace WalkerSim.Editor
             // 
             this.lblStatWindTarget.AutoSize = true;
             this.lblStatWindTarget.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblStatWindTarget.Location = new System.Drawing.Point(346, 7);
+            this.lblStatWindTarget.Location = new System.Drawing.Point(352, 9);
             this.lblStatWindTarget.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblStatWindTarget.Name = "lblStatWindTarget";
             this.lblStatWindTarget.Padding = new System.Windows.Forms.Padding(2);
@@ -1410,7 +1410,7 @@ namespace WalkerSim.Editor
             // label20
             // 
             this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(230, 7);
+            this.label20.Location = new System.Drawing.Point(218, 9);
             this.label20.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label20.Name = "label20";
             this.label20.Padding = new System.Windows.Forms.Padding(2);
@@ -1422,7 +1422,7 @@ namespace WalkerSim.Editor
             // 
             this.lblStatUpdateTime.AutoSize = true;
             this.lblStatUpdateTime.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblStatUpdateTime.Location = new System.Drawing.Point(622, 41);
+            this.lblStatUpdateTime.Location = new System.Drawing.Point(622, 43);
             this.lblStatUpdateTime.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblStatUpdateTime.Name = "lblStatUpdateTime";
             this.lblStatUpdateTime.Padding = new System.Windows.Forms.Padding(2);
@@ -1433,7 +1433,7 @@ namespace WalkerSim.Editor
             // label22
             // 
             this.label22.AutoSize = true;
-            this.label22.Location = new System.Drawing.Point(522, 41);
+            this.label22.Location = new System.Drawing.Point(522, 43);
             this.label22.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label22.Name = "label22";
             this.label22.Padding = new System.Windows.Forms.Padding(2);
@@ -1445,7 +1445,7 @@ namespace WalkerSim.Editor
             // 
             this.lblStatGroups.AutoSize = true;
             this.lblStatGroups.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblStatGroups.Location = new System.Drawing.Point(126, 58);
+            this.lblStatGroups.Location = new System.Drawing.Point(126, 60);
             this.lblStatGroups.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblStatGroups.Name = "lblStatGroups";
             this.lblStatGroups.Padding = new System.Windows.Forms.Padding(2);
@@ -1456,7 +1456,7 @@ namespace WalkerSim.Editor
             // label24
             // 
             this.label24.AutoSize = true;
-            this.label24.Location = new System.Drawing.Point(10, 58);
+            this.label24.Location = new System.Drawing.Point(10, 60);
             this.label24.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label24.Name = "label24";
             this.label24.Padding = new System.Windows.Forms.Padding(2);
