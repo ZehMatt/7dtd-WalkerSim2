@@ -6,11 +6,6 @@ namespace WalkerSim
 {
     internal partial class Simulation
     {
-        private float averageTickTime = 0f;
-        private float lastTickTimeMs = 0f;
-
-        private Stopwatch tickWatch = new Stopwatch();
-
         // Singleton instances to avoid GCing.
         private FixedBufferList<Agent> _nearby = new FixedBufferList<Agent>(Limits.MaxQuerySize);
 
@@ -20,10 +15,12 @@ namespace WalkerSim
         // If DeterministicLoop is set to true this will be the amount of how many agents it will update per tick.
         private const uint MaxUpdateCountPerTick = 2000;
 
-        ThreadLocal<FixedBufferList<Agent>> QueryBuffer = new ThreadLocal<FixedBufferList<Agent>>(() =>
+        private ThreadLocal<FixedBufferList<Agent>> QueryBuffer = new ThreadLocal<FixedBufferList<Agent>>(() =>
         {
             return new FixedBufferList<Agent>(Limits.MaxQuerySize);
         });
+
+        private TimeMeasurement _simTime = new TimeMeasurement();
 
         private void UpdateAgentLogic(Agent agent)
         {
@@ -40,7 +37,7 @@ namespace WalkerSim
 
         public void Tick()
         {
-            tickWatch.Restart();
+            _simTime.Restart();
 
             try
             {
@@ -100,7 +97,7 @@ namespace WalkerSim
                 Logging.Exception(ex);
             }
 
-            tickWatch.Stop();
+            _simTime.Capture();
         }
 
         private void UpatePOICounter()
@@ -261,16 +258,6 @@ namespace WalkerSim
             // Approach the target direction.
             _state.WindDir.X = Math.Approach(_state.WindDir.X, _state.WindDirTarget.X, TickRate);
             _state.WindDir.Y = Math.Approach(_state.WindDir.Y, _state.WindDirTarget.Y, TickRate);
-        }
-
-        public float GetTickTime()
-        {
-            return lastTickTimeMs;
-        }
-
-        public float GetAverageTickTime()
-        {
-            return averageTickTime;
         }
 
         private void BounceOffWalls(Agent agent)

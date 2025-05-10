@@ -167,5 +167,9 @@ namespace WalkerSim
         {
             get => _running;
         }
+
+        public float AverageSimTime => _simTime.Average;
+
+        public float AverageUpdateTime => _updateTime.Average;
     }
 }

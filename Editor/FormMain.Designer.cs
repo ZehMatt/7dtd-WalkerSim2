@@ -140,6 +140,10 @@ namespace WalkerSim.Editor
             this.label27 = new System.Windows.Forms.Label();
             this.lblStatWindTarget = new System.Windows.Forms.Label();
             this.label20 = new System.Windows.Forms.Label();
+            this.lblStatUpdateTime = new System.Windows.Forms.Label();
+            this.label22 = new System.Windows.Forms.Label();
+            this.lblStatGroups = new System.Windows.Forms.Label();
+            this.label24 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -1202,6 +1206,10 @@ namespace WalkerSim.Editor
             // 
             // tabPage4
             // 
+            this.tabPage4.Controls.Add(this.lblStatGroups);
+            this.tabPage4.Controls.Add(this.label24);
+            this.tabPage4.Controls.Add(this.lblStatUpdateTime);
+            this.tabPage4.Controls.Add(this.label22);
             this.tabPage4.Controls.Add(this.lblStatWindTarget);
             this.tabPage4.Controls.Add(this.label20);
             this.tabPage4.Controls.Add(this.lblStatSimTime);
@@ -1240,6 +1248,7 @@ namespace WalkerSim.Editor
             // lblStatTotalAgents
             // 
             this.lblStatTotalAgents.AutoSize = true;
+            this.lblStatTotalAgents.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.lblStatTotalAgents.Location = new System.Drawing.Point(126, 7);
             this.lblStatTotalAgents.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblStatTotalAgents.Name = "lblStatTotalAgents";
@@ -1262,6 +1271,7 @@ namespace WalkerSim.Editor
             // lblStatInactive
             // 
             this.lblStatInactive.AutoSize = true;
+            this.lblStatInactive.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.lblStatInactive.Location = new System.Drawing.Point(126, 24);
             this.lblStatInactive.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblStatInactive.Name = "lblStatInactive";
@@ -1273,6 +1283,7 @@ namespace WalkerSim.Editor
             // lblStatActive
             // 
             this.lblStatActive.AutoSize = true;
+            this.lblStatActive.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.lblStatActive.Location = new System.Drawing.Point(126, 41);
             this.lblStatActive.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblStatActive.Name = "lblStatActive";
@@ -1295,7 +1306,8 @@ namespace WalkerSim.Editor
             // lblStatTicks
             // 
             this.lblStatTicks.AutoSize = true;
-            this.lblStatTicks.Location = new System.Drawing.Point(126, 58);
+            this.lblStatTicks.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.lblStatTicks.Location = new System.Drawing.Point(622, 7);
             this.lblStatTicks.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblStatTicks.Name = "lblStatTicks";
             this.lblStatTicks.Padding = new System.Windows.Forms.Padding(2);
@@ -1306,7 +1318,7 @@ namespace WalkerSim.Editor
             // label21
             // 
             this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(10, 58);
+            this.label21.Location = new System.Drawing.Point(522, 7);
             this.label21.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label21.Name = "label21";
             this.label21.Padding = new System.Windows.Forms.Padding(2);
@@ -1317,7 +1329,8 @@ namespace WalkerSim.Editor
             // lblStatWindDir
             // 
             this.lblStatWindDir.AutoSize = true;
-            this.lblStatWindDir.Location = new System.Drawing.Point(126, 92);
+            this.lblStatWindDir.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.lblStatWindDir.Location = new System.Drawing.Point(346, 24);
             this.lblStatWindDir.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblStatWindDir.Name = "lblStatWindDir";
             this.lblStatWindDir.Padding = new System.Windows.Forms.Padding(2);
@@ -1328,7 +1341,7 @@ namespace WalkerSim.Editor
             // label23
             // 
             this.label23.AutoSize = true;
-            this.label23.Location = new System.Drawing.Point(10, 92);
+            this.label23.Location = new System.Drawing.Point(230, 24);
             this.label23.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label23.Name = "label23";
             this.label23.Padding = new System.Windows.Forms.Padding(2);
@@ -1339,7 +1352,8 @@ namespace WalkerSim.Editor
             // lblStatWindChange
             // 
             this.lblStatWindChange.AutoSize = true;
-            this.lblStatWindChange.Location = new System.Drawing.Point(126, 109);
+            this.lblStatWindChange.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.lblStatWindChange.Location = new System.Drawing.Point(346, 41);
             this.lblStatWindChange.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblStatWindChange.Name = "lblStatWindChange";
             this.lblStatWindChange.Padding = new System.Windows.Forms.Padding(2);
@@ -1350,7 +1364,7 @@ namespace WalkerSim.Editor
             // label25
             // 
             this.label25.AutoSize = true;
-            this.label25.Location = new System.Drawing.Point(10, 109);
+            this.label25.Location = new System.Drawing.Point(230, 41);
             this.label25.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label25.Name = "label25";
             this.label25.Padding = new System.Windows.Forms.Padding(2);
@@ -1361,7 +1375,8 @@ namespace WalkerSim.Editor
             // lblStatSimTime
             // 
             this.lblStatSimTime.AutoSize = true;
-            this.lblStatSimTime.Location = new System.Drawing.Point(126, 126);
+            this.lblStatSimTime.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.lblStatSimTime.Location = new System.Drawing.Point(622, 24);
             this.lblStatSimTime.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblStatSimTime.Name = "lblStatSimTime";
             this.lblStatSimTime.Padding = new System.Windows.Forms.Padding(2);
@@ -1372,7 +1387,7 @@ namespace WalkerSim.Editor
             // label27
             // 
             this.label27.AutoSize = true;
-            this.label27.Location = new System.Drawing.Point(10, 126);
+            this.label27.Location = new System.Drawing.Point(522, 24);
             this.label27.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label27.Name = "label27";
             this.label27.Padding = new System.Windows.Forms.Padding(2);
@@ -1383,7 +1398,8 @@ namespace WalkerSim.Editor
             // lblStatWindTarget
             // 
             this.lblStatWindTarget.AutoSize = true;
-            this.lblStatWindTarget.Location = new System.Drawing.Point(126, 75);
+            this.lblStatWindTarget.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.lblStatWindTarget.Location = new System.Drawing.Point(346, 7);
             this.lblStatWindTarget.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblStatWindTarget.Name = "lblStatWindTarget";
             this.lblStatWindTarget.Padding = new System.Windows.Forms.Padding(2);
@@ -1394,13 +1410,59 @@ namespace WalkerSim.Editor
             // label20
             // 
             this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(10, 75);
+            this.label20.Location = new System.Drawing.Point(230, 7);
             this.label20.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label20.Name = "label20";
             this.label20.Padding = new System.Windows.Forms.Padding(2);
             this.label20.Size = new System.Drawing.Size(118, 17);
             this.label20.TabIndex = 14;
             this.label20.Text = "Wind Direction Target:";
+            // 
+            // lblStatUpdateTime
+            // 
+            this.lblStatUpdateTime.AutoSize = true;
+            this.lblStatUpdateTime.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.lblStatUpdateTime.Location = new System.Drawing.Point(622, 41);
+            this.lblStatUpdateTime.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.lblStatUpdateTime.Name = "lblStatUpdateTime";
+            this.lblStatUpdateTime.Padding = new System.Windows.Forms.Padding(2);
+            this.lblStatUpdateTime.Size = new System.Drawing.Size(33, 17);
+            this.lblStatUpdateTime.TabIndex = 17;
+            this.lblStatUpdateTime.Text = "0 ms";
+            // 
+            // label22
+            // 
+            this.label22.AutoSize = true;
+            this.label22.Location = new System.Drawing.Point(522, 41);
+            this.label22.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.label22.Name = "label22";
+            this.label22.Padding = new System.Windows.Forms.Padding(2);
+            this.label22.Size = new System.Drawing.Size(75, 17);
+            this.label22.TabIndex = 16;
+            this.label22.Text = "Update Time:";
+            // 
+            // lblStatGroups
+            // 
+            this.lblStatGroups.AutoSize = true;
+            this.lblStatGroups.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.lblStatGroups.Location = new System.Drawing.Point(126, 58);
+            this.lblStatGroups.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.lblStatGroups.Name = "lblStatGroups";
+            this.lblStatGroups.Padding = new System.Windows.Forms.Padding(2);
+            this.lblStatGroups.Size = new System.Drawing.Size(17, 17);
+            this.lblStatGroups.TabIndex = 19;
+            this.lblStatGroups.Text = "0";
+            // 
+            // label24
+            // 
+            this.label24.AutoSize = true;
+            this.label24.Location = new System.Drawing.Point(10, 58);
+            this.label24.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.label24.Name = "label24";
+            this.label24.Padding = new System.Windows.Forms.Padding(2);
+            this.label24.Size = new System.Drawing.Size(48, 17);
+            this.label24.TabIndex = 18;
+            this.label24.Text = "Groups:";
             // 
             // FormMain
             // 
@@ -1567,6 +1629,10 @@ namespace WalkerSim.Editor
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.Label lblStatWindTarget;
         private System.Windows.Forms.Label label20;
+        private System.Windows.Forms.Label lblStatUpdateTime;
+        private System.Windows.Forms.Label label22;
+        private System.Windows.Forms.Label lblStatGroups;
+        private System.Windows.Forms.Label label24;
     }
 }
 

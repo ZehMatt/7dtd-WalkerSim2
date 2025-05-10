@@ -453,9 +453,6 @@ namespace WalkerSim.Editor
         {
             simulation.GameUpdate(updateTimer.Interval / 1000.0f);
 
-            float updateRate = 1000f / simulation.GetAverageTickTime();
-            this.Text = $"Ticks: {updateRate}/s";
-
             RenderSimulation();
             UpdateStats();
         }
@@ -543,11 +540,22 @@ namespace WalkerSim.Editor
             lblStatTotalAgents.Text = simulation.AgentCount.ToString();
             lblStatInactive.Text = (simulation.AgentCount - simulation.ActiveCount).ToString();
             lblStatActive.Text = simulation.ActiveCount.ToString();
+            lblStatGroups.Text = simulation.GroupCount.ToString();
             lblStatWindDir.Text = simulation.WindDirection.ToString();
             lblStatWindTarget.Text = simulation.WindDirectionTarget.ToString();
             lblStatWindChange.Text = simulation.TickNextWindChange.ToString();
             lblStatTicks.Text = simulation.Ticks.ToString();
-            lblStatSimTime.Text = String.Format("{0:0.000} ms", simulation.GetAverageTickTime());
+            lblStatSimTime.Text = String.Format(
+                "{0:0.00000} ms. ({1:0.000}/ps)",
+                simulation.AverageSimTime * 1000.0,
+                (simulation.AverageSimTime > 0 ? 1 / simulation.AverageSimTime : 0)
+                );
+
+            lblStatUpdateTime.Text = String.Format(
+                "{0:0.00000} ms. ({1:0.000}/ps)",
+                simulation.AverageUpdateTime * 1000.0,
+                (simulation.AverageUpdateTime > 0 ? 1 / simulation.AverageUpdateTime : 0)
+                );
         }
 
         private void OnGroupSelection(object sender, EventArgs e)

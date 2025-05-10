@@ -4,13 +4,62 @@ using System.Threading;
 
 namespace WalkerSim
 {
+    internal class TimeMeasurement
+    {
+        private Stopwatch _sw = new Stopwatch();
+        private float[] _samples = new float[64];
+
+        private int _index = 0;
+        private int _count = 0;
+
+        public void Add(float time)
+        {
+            _samples[_index % _samples.Length] = time;
+            _index++;
+            _count = System.Math.Min(_count + 1, _samples.Length);
+        }
+
+        public void Reset()
+        {
+            _index = 0;
+            _count = 0;
+        }
+
+        public void Restart()
+        {
+            _sw.Restart();
+        }
+
+        public float Capture()
+        {
+            var elapsed = (float)_sw.Elapsed.TotalSeconds;
+            Add(elapsed);
+            return elapsed;
+        }
+
+        public float Average
+        {
+            get
+            {
+                if (_count == 0)
+                    return 0.0f;
+                float sum = 0.0f;
+                for (int i = 0; i < _count; i++)
+                {
+                    sum += _samples[i];
+                }
+                return sum / _count;
+            }
+        }
+    }
+
     internal partial class Simulation
     {
         public static Simulation Instance = new Simulation();
 
         public float TimeScale = 1.0f;
 
-        public const int TicksPerSecond = 40;
+        public const int TicksPerSecond = 30;
         public const float TickRate = 1f / TicksPerSecond;
         public const int TickRateMs = 1000 / TicksPerSecond;
 
@@ -24,7 +73,7 @@ namespace WalkerSim
 
         private int _maxAllowedAliveAgents = 64;
 
-        private float[] _averageSimTime = new float[24];
+        TimeMeasurement _updateTime = new TimeMeasurement();
 
         public bool EditorMode = false;
 
@@ -102,10 +151,8 @@ namespace WalkerSim
                 Populate();
                 SetupProcessors();
 
-                for (int i = 0; i < _averageSimTime.Length; i++)
-                {
-                    _averageSimTime[0] = 0.0f;
-                }
+                _simTime.Reset();
+                _updateTime.Reset();
             }
         }
 
@@ -368,8 +415,6 @@ namespace WalkerSim
 
         private void ThreadUpdate()
         {
-            Stopwatch sw = new Stopwatch();
-
             if (_state.Config.FastForwardAtStart && _state.Ticks == 0)
             {
                 Logging.Out("Advancing simulation for {0} ticks...", Simulation.Limits.TicksToAdvanceOnStartup);
@@ -392,17 +437,16 @@ namespace WalkerSim
                 Logging.Out("... done, took {0}.", elapsed);
             }
 
+            _updateTime.Restart();
+
             float accumulator = 0;
-
-            sw.Start();
-
             while (!_shouldStop)
             {
-                var timeElapsed = sw.Elapsed.TotalSeconds;
-                var elapsedMs = tickWatch.Elapsed.TotalMilliseconds;
-                var scaledDt = (float)(timeElapsed * TimeScale);
+                var timeElapsed = _updateTime.Capture();
+                _updateTime.Restart();
 
-                sw.Restart();
+                var elapsedMs = timeElapsed;
+                var scaledDt = (float)(timeElapsed * TimeScale);
 
                 if (_paused)
                 {
@@ -423,33 +467,20 @@ namespace WalkerSim
 
                 while (accumulator >= TickRate)
                 {
+                    _simTime.Restart();
+
                     Tick();
+
+                    _simTime.Capture();
 
                     if (_shouldStop)
                         break;
 
                     CheckAgentSpawn();
-                    CheckAutoSave();
-
                     accumulator -= TickRate;
                 }
 
-
-                if (_shouldStop)
-                    break;
-
-                lastTickTimeMs = (float)elapsedMs;
-                averageTickTime += (float)elapsedMs;
-
-                _averageSimTime[_state.Ticks % _averageSimTime.Length] = (float)elapsedMs;
-
-                // Calculate the average tick time.
-                float sum = 0.0f;
-                for (int i = 0; i < _averageSimTime.Length; i++)
-                {
-                    sum += _averageSimTime[i];
-                }
-                averageTickTime = sum / _averageSimTime.Length;
+                CheckAutoSave();
 
                 if (_shouldStop)
                     break;
