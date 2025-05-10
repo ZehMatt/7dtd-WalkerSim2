@@ -255,14 +255,12 @@ namespace WalkerSim
                 _state.WindDirTarget.Y = (float)System.Math.Sin(prng.NextDouble() * System.Math.PI * 2);
 
                 // Pick a random delay for the next change.
-                _state.TickNextWindChange = _state.Ticks + (uint)prng.Next(2000, 4000);
+                _state.TickNextWindChange = _state.Ticks + (uint)prng.Next(500, 1000);
             }
 
             // Approach the target direction.
-            var delta = _state.WindDirTarget - _state.WindDir;
-            var windChangeSpeed = 1.0f;
-
-            _state.WindDir = Vector3.Normalize(_state.WindDir + ((delta * windChangeSpeed) * TickRate));
+            _state.WindDir.X = Math.Approach(_state.WindDir.X, _state.WindDirTarget.X, TickRate);
+            _state.WindDir.Y = Math.Approach(_state.WindDir.Y, _state.WindDirTarget.Y, TickRate);
         }
 
         public float GetTickTime()

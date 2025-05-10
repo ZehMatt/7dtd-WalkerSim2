@@ -175,5 +175,12 @@ namespace WalkerSim.Editor
                 gr.DrawRectangle(Pens.Green, rect.X, rect.Y, rect.Width, rect.Height);
             }
         }
+
+        public static void DrawInformation(System.Drawing.Graphics gr, Simulation simulation)
+        {
+            // Wind arrow.
+            DrawingUtils.DrawArrow(gr, simulation.WindDirection, new PointF(26, 16), 16, 6);
+        }
+
     }
 }
