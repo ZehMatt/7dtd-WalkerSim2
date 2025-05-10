@@ -49,11 +49,19 @@
                     </xs:annotation>
                 </xs:element>
 
+                <xs:element name="FastForwardAtStart" type="xs:boolean">
+                    <xs:annotation>
+                        <xs:documentation>Fast forwards the simulation at a new start</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+
                 <xs:element name="GroupSize">
                     <xs:annotation>
-                        <xs:documentation>The total amount of groups will be total agents divided by
+                        <xs:documentation>
+                            The total amount of groups will be total agents divided by
                             this, movement processors can assign groups that will be affected
-                            starting at 0</xs:documentation>
+                            starting at 0
+                        </xs:documentation>
                     </xs:annotation>
                     <xs:simpleType>
                         <xs:restriction base="xs:integer">
@@ -80,6 +88,12 @@
                     </xs:annotation>
                 </xs:element>
 
+                <xs:element name="SpawnProtectionTime" type="xs:integer">
+                    <xs:annotation>
+                        <xs:documentation>The amount of seconds the player requires to be alive before any agents will spawn, this only applies to starting a new game and spawning for the first time</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+
                 <xs:element name="MovementProcessors">
                     <xs:annotation>
                         <xs:documentation>Processors that determine agent movement behavior</xs:documentation>
@@ -89,8 +103,10 @@
 
                             <xs:element name="ProcessorGroup" maxOccurs="unbounded">
                                 <xs:annotation>
-                                    <xs:documentation>A group of processors that will affect the
-                                        movement of the agents</xs:documentation>
+                                    <xs:documentation>
+                                        A group of processors that will affect the
+                                        movement of the agents
+                                    </xs:documentation>
                                 </xs:annotation>
                                 <xs:complexType>
                                     <xs:sequence>
@@ -104,23 +120,29 @@
                                                     type="MovementProcessorType"
                                                     use="required">
                                                     <xs:annotation>
-                                                        <xs:documentation>Type of the movement
-                                                            processor</xs:documentation>
+                                                        <xs:documentation>
+                                                            Type of the movement
+                                                            processor
+                                                        </xs:documentation>
                                                     </xs:annotation>
                                                 </xs:attribute>
                                                 <xs:attribute name="Distance" type="xs:decimal"
                                                     use="optional">
                                                     <xs:annotation>
-                                                        <xs:documentation>Distance parameter for the
+                                                        <xs:documentation>
+                                                            Distance parameter for the
                                                             processor, not all processor types use
-                                                            it</xs:documentation>
+                                                            it
+                                                        </xs:documentation>
                                                     </xs:annotation>
                                                 </xs:attribute>
                                                 <xs:attribute name="Power" type="xs:decimal"
                                                     use="required">
                                                     <xs:annotation>
-                                                        <xs:documentation>Power or strength
-                                                            parameter for the processor</xs:documentation>
+                                                        <xs:documentation>
+                                                            Power or strength
+                                                            parameter for the processor
+                                                        </xs:documentation>
                                                     </xs:annotation>
                                                 </xs:attribute>
                                             </xs:complexType>
@@ -129,21 +151,36 @@
 
                                     <xs:attribute name="Group" type="xs:integer" use="required">
                                         <xs:annotation>
-                                            <xs:documentation>Index of the group it should affect,
-                                                -1 applies to all else</xs:documentation>
+                                            <xs:documentation>
+                                                Index of the group it should affect,
+                                                -1 applies to all else
+                                            </xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
                                     <xs:attribute name="SpeedScale" type="xs:decimal" use="required">
                                         <xs:annotation>
-                                            <xs:documentation>Scales the movement speed in the
+                                            <xs:documentation>
+                                                Scales the movement speed in the
                                                 simulation, 1.0 is normal speed, 2.0 would be twice
-                                                the speed</xs:documentation>
+                                                the speed
+                                            </xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
+
+                                    <xs:attribute name="PostSpawnBehavior" type="PostSpawnBehavior" use="required">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                The behavior of the agent after its spawned in the game world
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+
                                     <xs:attribute name="Color" type="xs:string" use="required">
                                         <xs:annotation>
-                                            <xs:documentation>Visual representation color of the
-                                                group, only used for the Viewer</xs:documentation>
+                                            <xs:documentation>
+                                                Visual representation color of the
+                                                group, only used for the Viewer
+                                            </xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
                                 </xs:complexType>
@@ -156,6 +193,29 @@
             </xs:sequence>
         </xs:complexType>
     </xs:element>
+
+    <xs:simpleType name="PostSpawnBehavior">
+        <xs:annotation>
+            <xs:documentation>Enumeration for behavior after agent is spawned</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Wander">
+                <xs:annotation>
+                    <xs:documentation>Spawned agent start wandering after spawn</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="ChaseActivator">
+                <xs:annotation>
+                    <xs:documentation>Spawned agent starts chasing the activator of the spawn</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Nothing">
+                <xs:annotation>
+                    <xs:documentation>Spawned agents just spawn, they will most likely just stand around</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
 
     <xs:simpleType name="SpawnPosition">
         <xs:annotation>
@@ -240,14 +300,18 @@
             </xs:enumeration>
             <xs:enumeration value="FlockSameGroup">
                 <xs:annotation>
-                    <xs:documentation>Agents flock with their own group within the specified
-                        distance</xs:documentation>
+                    <xs:documentation>
+                        Agents flock with their own group within the specified
+                        distance
+                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="AlignSameGroup">
                 <xs:annotation>
-                    <xs:documentation>Agents align with their own group within the specified
-                        distance</xs:documentation>
+                    <xs:documentation>
+                        Agents align with their own group within the specified
+                        distance
+                    </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="AvoidSameGroup">

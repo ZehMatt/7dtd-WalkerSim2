@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace WalkerSim
 {
@@ -72,8 +72,7 @@ namespace WalkerSim
 
         private void UpdateEvents()
         {
-            var dt = TickRate * TimeScale;
-
+            var dt = TickRate;
             var events = _state.Events;
 
             lock (events)

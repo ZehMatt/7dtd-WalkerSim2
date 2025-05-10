@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 
 namespace WalkerSim
 {
@@ -10,6 +11,7 @@ namespace WalkerSim
             public int EntityId;
             public int ViewRadius;
             public bool IsAlive;
+            public DateTime NextPossibleSpawnTime = DateTime.Now;
         }
 
         public IEnumerable<KeyValuePair<int, Player>> Players
@@ -22,13 +24,14 @@ namespace WalkerSim
             get => _state.Players.Count;
         }
 
-        public void AddPlayer(int entityId, Vector3 pos, int viewRadius)
+        public void AddPlayer(int entityId, Vector3 pos, int viewRadius, int spawnDelay)
         {
             Player player = new Player();
             player.EntityId = entityId;
             player.Position = pos;
             player.ViewRadius = viewRadius;
             player.IsAlive = true;
+            player.NextPossibleSpawnTime = DateTime.Now.AddSeconds(spawnDelay);
 
             _state.Players.TryAdd(entityId, player);
 
@@ -49,6 +52,17 @@ namespace WalkerSim
             {
                 player.Position = newPos;
                 player.IsAlive = isAlive;
+            }
+        }
+
+        public void NotifyPlayerSpawned(int entityId, int spawnDelay)
+        {
+            if (_state.Players.TryGetValue(entityId, out var player))
+            {
+                Logging.Out("Player spawned in simulation, entity id: {0}, position: {1}", entityId, player.Position);
+
+                player.IsAlive = true;
+                player.NextPossibleSpawnTime = DateTime.Now.AddSeconds(spawnDelay);
             }
         }
 

@@ -1,7 +1,20 @@
 # 0.9.5 (ongoing)
+- Fix: The editor no longer resets the simulation when changing parameters.
+- Fix: Some zombies were not despawned when getting too far away.
+- Fix: Console help text was not correctly printed.
+- Fix: Changing the World in the Editor does not update the preview.
+- Fix: Zombies start running after being spawned.
+- Fix: Zombies trying to dig when using `Wander` for `PostSpawnBehavior`
+- Improve: Simulation is now fully deterministic.
+- Improve: Using faster speeds in the Editor will now remain accurate, uses multi-threading.
+- Improve: Default configuration has been updated for a more immersive experience.
+- Improve: Change random distribution of POI's, bigger POI's will be prefered now.
+- Feature: Added `SpawnProtectionTime`, this disables zombie spawning when entering a new game for the first time.
+- Feature: Added `PostSpawnBehavior` which controls what agents will do once spawned in-game, right now limited to `Wander` and `ChaseActivator`.
+- Feature: The Editor can now zoom in and out on the simulation preview.
 
 # 0.9.4
-- Fix: Zombie spawning now obeys tags of biome spawner
+- Fix: Zombie spawning now obeys tags of biome spawner.
 - Fix: Zombies killed are removed from the active list, reducing excessive logging and correctly respawning zombies.
 - Fix: Some agents were not updated depending on the population count.
 - Improve: Reduce memory footprint and better performance by limiting the spawn queue.

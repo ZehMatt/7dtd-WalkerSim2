@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace WalkerSim
 {
@@ -26,6 +26,22 @@ namespace WalkerSim
                     return "Random POI";
                 case Config.WorldLocation.Mixed:
                     return "Mixed";
+                default:
+                    break;
+            }
+            throw new Exception("Invalid value");
+        }
+
+        public static string GetPostSpawnBehaviorString(Config.PostSpawnBehavior value)
+        {
+            switch (value)
+            {
+                case Config.PostSpawnBehavior.Wander:
+                    return "Wander";
+                case Config.PostSpawnBehavior.ChaseActivator:
+                    return "Chase Activator";
+                case Config.PostSpawnBehavior.Nothing:
+                    return "Do Nothing";
                 default:
                     break;
             }
@@ -62,5 +78,16 @@ namespace WalkerSim
         {
             return System.Drawing.ColorTranslator.ToHtml(color);
         }
+
+        public static bool IsDebugMode()
+        {
+            // Check if the DEBUG constant is defined
+#if DEBUG
+            return true;
+#else
+            return false;
+#endif
+        }
+
     }
 }

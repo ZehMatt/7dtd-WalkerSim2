@@ -18,11 +18,13 @@ namespace WalkerSim
         private bool _running = false;
         private bool _shouldStop = false;
         private bool _paused = false;
-        private bool _fastAdvanceAtStart = false;
+        private bool _isFastAdvancing = false;
 
         private Vector3[] _groupStarts = new Vector3[0];
 
-        private int _maxAllowedAliveAgents = 0;
+        private int _maxAllowedAliveAgents = 64;
+
+        public bool EditorMode = false;
 
         public void Stop()
         {
@@ -90,12 +92,9 @@ namespace WalkerSim
 
             lock (_state)
             {
+                _state.SoftReset();
                 _state.Config = config;
                 _state.PRNG = new WalkerSim.Random(config.RandomSeed);
-                _state.SlowIterator = 0;
-                _state.TickNextWindChange = 0;
-                _state.Ticks = 0;
-                _state.POIIterator = 0;
 
                 SetupGrid();
                 Populate();
@@ -113,11 +112,6 @@ namespace WalkerSim
                     Logging.Out("Resuming simulation.");
             }
             _paused = paused;
-        }
-
-        public void SetFastAdvanceAtStart(bool fastAdvance)
-        {
-            _fastAdvanceAtStart = fastAdvance;
         }
 
         public void EntityKilled(int entityId)
@@ -212,13 +206,45 @@ namespace WalkerSim
 
             var prefabs = mapData.Prefabs;
             var decos = prefabs.Decorations;
+            if (decos.Length == 0)
+            {
+                // No decorations, fallback to random border position.
+                return GetRandomBorderPosition();
+            }
 
-            //var prng = _state.PRNG;
-            //var selectedIdx = prng.Next(decos.Length);
-            var selectedIdx = _state.POIIterator % decos.Length;
-            _state.POIIterator += 7;
+            var prng = _state.PRNG;
 
-            return decos[selectedIdx].Position;
+            // Weighted selection, the bigger the decoration, the more likely it is to be selected.
+            var totalArea = 0.0f;
+            foreach (var deco in decos)
+            {
+                totalArea += deco.Bounds.X * deco.Bounds.Y;
+            }
+
+            var selectedArea = 0.0f;
+            var selectedDeco = decos[0];
+            var rand = (float)prng.NextDouble() * totalArea;
+            for (int i = 0; i < decos.Length; i++)
+            {
+                var deco = decos[i];
+                var area = deco.Bounds.X * deco.Bounds.Y;
+                selectedArea += area;
+                if (selectedArea >= rand)
+                {
+                    selectedDeco = deco;
+                    break;
+                }
+            }
+
+            var bounds = selectedDeco.Bounds;
+            var pos = selectedDeco.Position;
+
+            var offset = new Vector3(
+                -(bounds.X / 2) + ((float)prng.NextDouble() * bounds.X),
+                -(bounds.Y / 2) + ((float)prng.NextDouble() * bounds.Y)
+                );
+
+            return pos + offset;
         }
 
         Vector3 GetGroupPosition(int groupIndex)
@@ -336,16 +362,17 @@ namespace WalkerSim
         private void ThreadUpdate()
         {
             Stopwatch sw = new Stopwatch();
-            sw.Start();
 
-            if (_fastAdvanceAtStart)
+            if (_state.Config.FastForwardAtStart && _state.Ticks == 0)
             {
                 Logging.Out("Advancing simulation for {0} ticks...", Simulation.Limits.TicksToAdvanceOnStartup);
+
+                _isFastAdvancing = true;
 
                 var elapsed = Utils.Measure(() =>
                 {
                     var oldTimeScale = TimeScale;
-                    TimeScale = 64.0f;
+                    TimeScale = 128.0f;
                     for (uint num = 0u; num < Simulation.Limits.TicksToAdvanceOnStartup && !_shouldStop; num++)
                     {
                         Tick();
@@ -353,19 +380,41 @@ namespace WalkerSim
                     TimeScale = oldTimeScale;
                 });
 
+                _isFastAdvancing = false;
+
                 Logging.Out("... done, took {0}.", elapsed);
             }
 
+            float accumulator = 0;
+
+            sw.Start();
+
             while (!_shouldStop)
             {
-                if (_paused)
-                {
-                    Thread.Sleep(TickRateMs);
-                    continue;
-                }
+                var timeElapsed = sw.Elapsed.TotalSeconds;
+                var elapsedMs = tickWatch.Elapsed.TotalMilliseconds;
+                var scaledDt = (float)(timeElapsed * TimeScale);
 
                 sw.Restart();
 
+                if (_paused)
+                {
+                    Thread.Sleep(1);
+                    continue;
+                }
+
+                accumulator = System.Math.Min(accumulator + scaledDt, 2.0f);
+
+                if (accumulator < TickRate)
+                {
+                    if (_shouldStop)
+                        break;
+
+                    Thread.Sleep(1);
+                    continue;
+                }
+
+                while (accumulator >= TickRate)
                 {
                     Tick();
 
@@ -374,10 +423,13 @@ namespace WalkerSim
 
                     CheckAgentSpawn();
                     CheckAutoSave();
+
+                    accumulator -= TickRate;
                 }
 
-                sw.Stop();
-                var elapsedMs = tickWatch.Elapsed.TotalMilliseconds;
+
+                if (_shouldStop)
+                    break;
 
                 lastTickTimeMs = (float)elapsedMs;
                 averageTickTime += (float)elapsedMs;
@@ -387,9 +439,6 @@ namespace WalkerSim
 
                 if (_shouldStop)
                     break;
-
-                var sleepTime = Math.Clamp((int)(elapsedMs - TickRateMs), 0, TickRateMs);
-                Thread.Sleep(sleepTime);
             }
 
             _running = false;

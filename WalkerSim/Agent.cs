@@ -1,4 +1,4 @@
-﻿namespace WalkerSim
+namespace WalkerSim
 {
     internal class Agent : GridObject
     {

@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace WalkerSim
 {
@@ -16,83 +18,89 @@ namespace WalkerSim
         public bool Deterministic = false;
 
         // If DeterministicLoop is set to true this will be the amount of how many agents it will update per tick.
-        private const int MaxUpdateCountPerTick = 2000;
+        private const uint MaxUpdateCountPerTick = 2000;
 
+        ThreadLocal<FixedBufferList<Agent>> QueryBuffer = new ThreadLocal<FixedBufferList<Agent>>(() =>
+        {
+            return new FixedBufferList<Agent>(Limits.MaxQuerySize);
+        });
+
+        private void UpdateAgentLogic(Agent agent)
+        {
+            if (agent.CurrentState == Agent.State.Wandering)
+            {
+                UpdateAgent(agent);
+            }
+            else if (agent.CurrentState == Agent.State.Respawning)
+            {
+                RespawnAgent(agent);
+            }
+
+        }
 
         public void Tick()
         {
             tickWatch.Restart();
 
-            lock (_state)
+            try
             {
-                UpdateWindDirection();
-                UpdateEvents();
-                UpatePOICounter();
-
-                var agents = _state.Agents;
-                var numUpdates = 0;
-                var maxUpdates = System.Math.Min(
-                    System.Math.Min(MaxUpdateCountPerTick * TimeScale, agents.Count),
-                    4000
-                );
-
-                uint multiplier = 257;
-                if (agents.Count % 257 == 0)
+                lock (_state)
                 {
-                    // Edge case, ensure we always have full coverage.
-                    multiplier = 263;
-                }
+                    UpdateWindDirection();
+                    UpdateEvents();
+                    UpatePOICounter();
 
-                while (true)
-                {
-                    var agentIndex = (int)(_state.SlowIterator % agents.Count);
-                    var agent = agents[agentIndex];
+                    var agents = _state.Agents;
+                    var maxUpdates = MaxUpdateCountPerTick;
 
-                    _state.SlowIterator = (_state.SlowIterator * multiplier) + 1;
-
-                    if (agent.CurrentState == Agent.State.Wandering)
+                    if (agents.Count > 0)
                     {
-                        UpdateAgent(agent);
-                    }
-                    else if (agent.CurrentState == Agent.State.Respawning)
-                    {
-                        Logging.Debug("agent being respawned");
-                        RespawnAgent(agent);
-                    }
+                        if (EditorMode || _isFastAdvancing)
+                        {
+                            // Update in parallel.
+                            Parallel.For(0, maxUpdates, i =>
+                            {
+                                var index = (int)((_state.SlowIterator + (uint)i) % agents.Count);
+                                var agent = agents[index];
+                                UpdateAgentLogic(agent);
+                            });
+                        }
+                        else
+                        {
+                            // Update single threaded.
+                            for (int i = 0; i < maxUpdates; i++)
+                            {
+                                var index = (int)((_state.SlowIterator + (uint)i) % agents.Count);
+                                var agent = agents[index];
+                                UpdateAgentLogic(agent);
+                            }
+                        }
 
-                    var exitLoop = false;
-                    if (Deterministic)
-                    {
-                        exitLoop = numUpdates >= maxUpdates;
-                    }
-                    else
-                    {
-                        exitLoop = tickWatch.Elapsed.TotalSeconds >= TickRate;
-                    }
+                        _state.SlowIterator += maxUpdates;
 
-                    if (exitLoop)
-                    {
-                        break;
+                        // Update the grid, can't do this in parallel since it's not thread safe.
+                        for (int i = 0; i < agents.Count; i++)
+                        {
+                            MoveInGrid(agents[i]);
+                        }
                     }
-
-                    numUpdates++;
-                }
-
-                // Update the grid, can't do this in parallel since it's not thread safe.
-                for (int i = 0; i < agents.Count; i++)
-                {
-                    MoveInGrid(agents[i]);
-                }
 
 #if DEBUG
-                for (int i = 0; i < agents.Count; i++)
-                {
-                    ValidateAgentInCorrectCell(agents[i]);
-                }
+                    for (int i = 0; i < agents.Count; i++)
+                    {
+                        ValidateAgentInCorrectCell(agents[i]);
+                    }
 #endif
 
-                _state.Ticks++;
+                    _state.Ticks++;
+                }
             }
+            catch (System.Exception ex)
+            {
+                Logging.Exception(ex);
+            }
+
+            tickWatch.Stop();
         }
 
         private void UpatePOICounter()
@@ -145,8 +153,24 @@ namespace WalkerSim
 
             float maxNeighborDistance = _state.MaxNeighbourDistance;
 
-            _nearby.Clear();
-            QueryCellsLockFree(agent.Position, agent.Index, maxNeighborDistance, _nearby);
+            // When single threaded we use the local buffer.
+            FixedBufferList<Agent> nearby = _nearby;
+
+            if (EditorMode)
+            {
+                // Use the thread local buffer for editor mode.
+                nearby = QueryBuffer.Value;
+            }
+            else if (_isFastAdvancing)
+            {
+                // It seems we can't use QueryBuffer for Unity/Mono, this doesn't seem to be working,
+                // and the instance is never set, allocate temporary one.
+                nearby = new FixedBufferList<Agent>(Limits.MaxQuerySize);
+            }
+
+            nearby.Clear();
+
+            QueryCellsLockFree(agent.Position, agent.Index, maxNeighborDistance, nearby);
 
             var curVel = agent.Velocity * 0.97f;
 
@@ -163,7 +187,7 @@ namespace WalkerSim
                 {
                     var processor = processorGroup.Entries[i];
 
-                    var addVel = processor.Handler(_state, agent, _nearby, processor.DistanceSqr, processor.Power);
+                    var addVel = processor.Handler(_state, agent, nearby, processor.DistanceSqr, processor.Power);
                     addVel.Validate();
 
                     curVel += addVel;
@@ -177,9 +201,39 @@ namespace WalkerSim
             curVel.Validate();
             agent.Velocity = curVel;
 
-            ApplyMovement(agent, deltaTime * TimeScale, processorGroup.SpeedScale);
+            if (_isFastAdvancing)
+            {
+                deltaTime *= 2.0f;
+            }
+
+            ApplyMovement(agent, deltaTime, processorGroup.SpeedScale);
 
             Warp(agent);
+        }
+
+        public void ApplyMovement(Agent agent, float deltaTime, float speedScale)
+        {
+            // Cap the deltaTime
+            deltaTime = System.Math.Min(deltaTime, TimeScale);
+
+            // Keep the Z axis clean.
+            agent.Position.Z = 0;
+            agent.Velocity.Z = 0;
+
+            var pos = agent.Position;
+            pos.Validate();
+
+            var vel = agent.Velocity;
+            vel.Validate();
+
+            var walkSpeed = 1.4f; // Roughly 1.4m/s
+            var realPower = speedScale * walkSpeed;
+
+            var dir = Vector3.Normalize(vel);
+            pos += (dir * realPower) * deltaTime;
+            pos.Validate();
+
+            agent.Position = pos;
         }
 
         private void RespawnAgent(Agent agent)
@@ -219,29 +273,6 @@ namespace WalkerSim
         public float GetAverageTickTime()
         {
             return averageTickTime;
-        }
-
-        public void ApplyMovement(Agent agent, float deltaTime, float power)
-        {
-            // Cap the deltaTime
-            deltaTime = System.Math.Min(deltaTime, TimeScale);
-
-            // Keep the Z axis clean.
-            agent.Position.Z = 0;
-            agent.Velocity.Z = 0;
-
-            var pos = agent.Position;
-            pos.Validate();
-
-            var vel = agent.Velocity;
-            vel.Validate();
-
-            //var dir = Vector3.Normalize(vel);
-            var dir = vel;
-            pos += (dir * power) * deltaTime;
-            pos.Validate();
-
-            agent.Position = pos;
         }
 
         private void BounceOffWalls(Agent agent)

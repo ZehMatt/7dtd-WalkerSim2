@@ -1,45 +1,28 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace WalkerSim
 {
-    internal class FixedBufferList<T> : IEnumerable<T>
+    internal sealed class FixedBufferList<T> : IEnumerable<T>
     {
-        T[] _data;
-        int _count = 0;
-        int _capacity = 0;
+        private readonly T[] _data;
+        private int _count;
 
         public FixedBufferList(int maxSize)
         {
             _data = new T[maxSize];
-            _capacity = maxSize;
         }
 
-        public bool Full
-        {
-            get => _count >= _capacity;
-        }
-
-        public bool Empty
-        {
-            get => _count == 0;
-        }
-
-        public int Count
-        {
-            get => _count;
-        }
+        public bool Full => _count >= _data.Length;
+        public bool Empty => _count == 0;
+        public int Count => _count;
 
         public void Add(T item)
         {
             _data[_count++] = item;
         }
 
-        public void Clear()
-        {
-            _count = 0;
-        }
+        public void Clear() => _count = 0;
 
         public T this[int index]
         {
@@ -47,15 +30,27 @@ namespace WalkerSim
             set => _data[index] = value;
         }
 
-        public IEnumerator<T> GetEnumerator()
-        {
-            return _data.Take(_count).GetEnumerator();
-        }
+        public Enumerator GetEnumerator() => new Enumerator(this);
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator()
+        public struct Enumerator : IEnumerator<T>
         {
-            return GetEnumerator();
-        }
+            private readonly FixedBufferList<T> _list;
+            private int _index;
 
+            internal Enumerator(FixedBufferList<T> list)
+            {
+                _list = list;
+                _index = -1;
+            }
+
+            public T Current => _list._data[_index];
+            object IEnumerator.Current => Current;
+
+            public bool MoveNext() => ++_index < _list._count;
+            public void Reset() => _index = -1;
+            public void Dispose() { }
+        }
     }
 }

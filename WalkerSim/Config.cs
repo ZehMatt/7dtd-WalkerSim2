@@ -23,6 +23,15 @@ namespace WalkerSim
             SchemaLocation = "http://zeh.matt/WalkerSim WalkerSimSchema.xsd";
         }
 
+        public enum PostSpawnBehavior
+        {
+            [XmlEnum("Wander")]
+            Wander = 0,
+            [XmlEnum("ChaseActivator")]
+            ChaseActivator,
+            [XmlEnum("Nothing")]
+            Nothing,
+        }
 
         public enum WorldLocation
         {
@@ -96,6 +105,9 @@ namespace WalkerSim
             [XmlAttribute("SpeedScale")]
             public float SpeedScale = 1.0f;
 
+            [XmlAttribute("PostSpawnBehavior")]
+            public PostSpawnBehavior PostSpawnBehavior = PostSpawnBehavior.Wander;
+
             [XmlAttribute("Color")]
             public string Color = "";
 
@@ -121,6 +133,9 @@ namespace WalkerSim
         [XmlElement("StartAgentsGrouped")]
         public bool StartAgentsGrouped = true;
 
+        [XmlElement("FastForwardAtStart")]
+        public bool FastForwardAtStart = true;
+
         [XmlElement("GroupSize")]
         public int GroupSize = 200;
 
@@ -132,6 +147,9 @@ namespace WalkerSim
 
         [XmlElement("PauseDuringBloodmoon")]
         public bool PauseDuringBloodmoon = true;
+
+        [XmlElement("SpawnProtectionTime")]
+        public int SpawnProtectionTime = 300;
 
         [XmlArray("MovementProcessors")]
         public List<MovementProcessorGroup> Processors;

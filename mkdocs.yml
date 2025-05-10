@@ -16,8 +16,9 @@ nav:
         - Editor: configuring/editor.md
         - Configuration:
             - Base Parameters: configuring/configuration/base.md
-            - Movement Processors: configuring/configuration/processors.md
-            - Grouping: configuring/configuration/grouping.md
+            - Movement:
+                - Groups: configuring/configuration/grouping.md
+                - Processors: configuring/configuration/processors.md
 
 theme: 
     name: material
