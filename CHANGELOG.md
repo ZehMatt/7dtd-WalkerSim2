@@ -1,4 +1,4 @@
-# 0.9.5 (ongoing)
+# 0.9.5
 - Fix: The editor no longer resets the simulation when changing parameters.
 - Fix: Some zombies were not despawned when getting too far away.
 - Fix: Console help text was not correctly printed.
