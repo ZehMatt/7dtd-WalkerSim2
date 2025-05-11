@@ -128,7 +128,7 @@ namespace WalkerSim
         public int RandomSeed = 1337;
 
         [XmlElement("PopulationDensity")]
-        public int PopulationDensity = 160;
+        public int PopulationDensity = 300;
 
         [XmlElement("StartAgentsGrouped")]
         public bool StartAgentsGrouped = true;
@@ -196,7 +196,7 @@ namespace WalkerSim
             var conf = new Config()
             {
                 RandomSeed = 1337,
-                PopulationDensity = 160,
+                PopulationDensity = 300,
                 GroupSize = 32,
                 StartPosition = WorldLocation.RandomLocation,
                 RespawnPosition = WorldLocation.RandomBorderLocation,
@@ -229,7 +229,7 @@ namespace WalkerSim
                             {
                                 Type = MovementProcessorType.Wind,
                                 Distance = 0f,
-                                Power = 0.0001f,
+                                Power = 0.001f,
                             },
                             new MovementProcessor()
                             {
