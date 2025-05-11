@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace WalkerSim
@@ -28,7 +28,6 @@ namespace WalkerSim
             public int GroupCount = 0;
             public float MaxNeighbourDistance = 0;
             public int[] AgentsNearPOICounter;
-            public bool FastForwardStart = false;
             public int POIIterator = 0;
             // Statistics
             public int FailedSpawns = 0;
@@ -42,16 +41,23 @@ namespace WalkerSim
                 WorldMins = Vector3.Zero;
                 WorldMaxs = Vector3.Zero;
                 Players = new ConcurrentDictionary<int, Player>();
+                PRNG = null;
+                SoftReset();
+            }
+
+            public void SoftReset()
+            {
                 Events = new List<EventData>();
                 Active = new Dictionary<int, Agent>();
-                PRNG = null;
                 SlowIterator = 0;
+                TickNextWindChange = 0;
+                Ticks = 0;
+                POIIterator = 0;
+                FailedSpawns = 0;
+                SuccessfulSpawns = 0;
+                TotalDespawns = 0;
                 WindDir = new Vector3(1, 0, 0);
                 WindDirTarget = new Vector3(1, 0, 0);
-                WindTime = 0;
-                TickNextWindChange = 0;
-                GroupCount = 0;
-                FastForwardStart = true;
             }
         }
 
@@ -161,5 +167,9 @@ namespace WalkerSim
         {
             get => _running;
         }
+
+        public float AverageSimTime => _simTime.Average;
+
+        public float AverageUpdateTime => _updateTime.Average;
     }
 }

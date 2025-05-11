@@ -5,17 +5,28 @@ namespace WalkerSim
 {
     internal partial class Simulation
     {
-        public delegate int AgentSpawnHandler(Simulation simulation, Agent agent);
+        public struct SpawnData
+        {
+            public Agent Agent;
+            public Config.PostSpawnBehavior PostSpawnBehavior;
+            public int ActivatorEntityId;
+        }
+
+        public delegate int AgentSpawnHandler(Simulation simulation, SpawnData agent);
 
         private AgentSpawnHandler _agentSpawnHandler;
 
-        private ConcurrentQueue<Agent> _pendingSpawns = new ConcurrentQueue<Agent>();
+        private ConcurrentQueue<SpawnData> _pendingSpawns = new ConcurrentQueue<SpawnData>();
 
         private DateTime _nextSpawn = DateTime.Now;
 
         private FixedBufferList<Agent> _nearPlayer = new FixedBufferList<Agent>(512);
 
+        private DateTime _nextSpawnCheck = DateTime.Now;
+
         private bool _allowAgentSpawn = true;
+
+        private int _nextFakeEntityId = 0;
 
         public void SetAgentSpawnHandler(AgentSpawnHandler handler)
         {
@@ -29,10 +40,18 @@ namespace WalkerSim
                 return;
             }
 
+            if (_nextSpawnCheck > DateTime.Now)
+            {
+                // We don't have to run this every tick/frame, agents typically don't move that fast.
+                return;
+            }
+
+            _nextSpawnCheck = DateTime.Now.AddMilliseconds(200);
+
             if (_pendingSpawns.Count >= _maxAllowedAliveAgents)
             {
                 // We have reached the maximum amount of agents alive, do not spawn more.
-                Logging.Debug("Pending spawns count is {0}, not spawning more agents.", _pendingSpawns.Count);
+                // Logging.Debug("Pending spawns count is {0}, not spawning more agents.", _pendingSpawns.Count);
                 return;
             }
 
@@ -56,6 +75,12 @@ namespace WalkerSim
                 if (player.IsAlive == false)
                     continue;
 
+                if (DateTime.Now < player.NextPossibleSpawnTime)
+                {
+                    //Logging.Debug("Player {0} is not alive long enough to spawn agents, skipping...", player.EntityId);
+                    continue;
+                }
+
                 var playerPos = player.Position;
 
                 _nearPlayer.Clear();
@@ -78,7 +103,15 @@ namespace WalkerSim
                     Logging.Debug("Agent {0} near player {1} at {2}m, spawning...", agent.Index, player.EntityId, dist);
 
                     agent.CurrentState = Agent.State.PendingSpawn;
-                    _pendingSpawns.Enqueue(agent);
+
+                    var processorGroup = _processors[agent.Group];
+                    var spawnData = new SpawnData()
+                    {
+                        Agent = agent,
+                        PostSpawnBehavior = processorGroup != null ? processorGroup.PostSpawnBehavior : Config.PostSpawnBehavior.Wander,
+                        ActivatorEntityId = player.EntityId
+                    };
+                    _pendingSpawns.Enqueue(spawnData);
 
                     // Bail out, in case there are more left in the activation border it will be handled next tick.
                     // This also gives other players a chance to spawn agents.
@@ -102,22 +135,31 @@ namespace WalkerSim
                 return;
             }
 
-            Agent agent;
-            if (!_pendingSpawns.TryDequeue(out agent))
+            SpawnData spawnData;
+            if (!_pendingSpawns.TryDequeue(out spawnData))
             {
                 return;
             }
 
+            var agent = spawnData.Agent;
             _nextSpawn = now.AddSeconds(Limits.SpawnDespawnDelay);
 
             int agentEntityId = -1;
             if (_agentSpawnHandler != null)
             {
-                agentEntityId = _agentSpawnHandler(this, agent);
+                agentEntityId = _agentSpawnHandler(this, spawnData);
             }
             else
             {
-                Logging.Warn("No spawn handler registered");
+                if (EditorMode)
+                {
+                    agentEntityId = _nextFakeEntityId;
+                    _nextFakeEntityId++;
+                }
+                else
+                {
+                    Logging.Err("No spawn handler registered");
+                }
             }
 
             if (agentEntityId != -1)

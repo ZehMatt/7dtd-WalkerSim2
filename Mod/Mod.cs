@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace WalkerSim
 {
@@ -92,7 +91,6 @@ namespace WalkerSim
 
             var config = LoadConfiguration();
             simulation.Reset(config);
-            simulation.SetFastAdvanceAtStart(true);
         }
 
         internal static void RestartSimulation()
@@ -158,8 +156,6 @@ namespace WalkerSim
                 if (System.IO.File.Exists(simFile) && simulation.Load(simFile))
                 {
                     Logging.Out("Using existing simulation from: {0}", simFile);
-                    simulation.SetFastAdvanceAtStart(false);
-
                     CompareConfig();
                 }
                 else
@@ -213,6 +209,9 @@ namespace WalkerSim
                 return;
             }
 
+            // Ensure we have a cache only from this session.
+            SpawnManager.ClearCache();
+
             InitializeSimulation();
         }
 
@@ -230,70 +229,6 @@ namespace WalkerSim
 
                 // NOTE: Unity uses Y for vertical axis, we don't, screw that.
                 simulation.UpdatePlayer(entityId, VectorUtils.ToSim(pos), player.IsAlive());
-            }
-        }
-
-        static bool IsEntityDead(Entity entity, int entityId)
-        {
-            if (entity == null)
-            {
-                Logging.Debug("Entity not found: {0}", entityId);
-                return true;
-            }
-
-            if (!entity.IsAlive())
-            {
-                Logging.Debug("Entity dead: {0}", entityId);
-                return true;
-            }
-
-            return false;
-        }
-
-        static void UpdateActiveAgents()
-        {
-            var world = GameManager.Instance.World;
-
-            var simulation = Simulation.Instance;
-
-            // Don't allocate unless there are actual dead agents.
-            List<Agent> deadAgents = null;
-
-            foreach (var kv in simulation.Active)
-            {
-                var agent = kv.Value;
-                if (agent.EntityId == -1)
-                {
-                    Logging.Debug("Agent has no entity id, skipping. Agent state: {0}", agent.CurrentState);
-                    continue;
-                }
-
-                var entity = world.GetEntity(agent.EntityId);
-                if (IsEntityDead(entity, agent.EntityId))
-                {
-                    // Mark as dead so it will be sweeped.
-                    if (deadAgents == null)
-                    {
-                        deadAgents = new List<Agent>();
-                    }
-                    deadAgents.Add(agent);
-                }
-                else
-                {
-                    // Update position.
-                    var newPos = entity.GetPosition();
-                    agent.Position = VectorUtils.ToSim(newPos);
-                    agent.Position.Validate();
-                }
-            }
-
-            // Remove dead agents.
-            if (deadAgents != null)
-            {
-                foreach (var agent in deadAgents)
-                {
-                    simulation.MarkAgentDead(agent);
-                }
             }
         }
 
@@ -355,7 +290,7 @@ namespace WalkerSim
             try
             {
                 UpdatePlayerPositions();
-                UpdateActiveAgents();
+                SpawnManager.UpdateActiveAgents();
                 UpdateSimulation();
             }
             catch (Exception ex)
@@ -399,6 +334,20 @@ namespace WalkerSim
             Logging.Debug("Max View Distance: {0}", maxViewDistance);
             Logging.Debug("View Radius: {0}", viewRadius);
 
+            int spawnDelay = 0;
+            switch (_respawnReason)
+            {
+                case RespawnType.JoinMultiplayer:
+                case RespawnType.EnterMultiplayer:
+                case RespawnType.LoadedGame:
+                case RespawnType.Died:
+                    spawnDelay = 30;
+                    break;
+                case RespawnType.NewGame:
+                    spawnDelay = simulation.Config.SpawnProtectionTime;
+                    break;
+            }
+
             switch (_respawnReason)
             {
                 case RespawnType.JoinMultiplayer:
@@ -406,7 +355,10 @@ namespace WalkerSim
                 case RespawnType.NewGame:
                 case RespawnType.LoadedGame:
                     var entityId = GetPlayerEntityId(_cInfo);
-                    simulation.AddPlayer(entityId, VectorUtils.ToSim(_pos), viewRadius);
+                    simulation.AddPlayer(entityId, VectorUtils.ToSim(_pos), viewRadius, spawnDelay);
+                    break;
+                case RespawnType.Died:
+                    simulation.NotifyPlayerSpawned(GetPlayerEntityId(_cInfo), spawnDelay);
                     break;
             }
         }

@@ -57,6 +57,9 @@ namespace WalkerSim.Editor
             {
                 case PictureBoxSizeMode.Zoom:
                     return TranslateZoomMousePosition(picture, controlCoordinates);
+                case PictureBoxSizeMode.AutoSize:
+                    // In AutoSize mode, control coordinates directly match image coordinates
+                    return controlCoordinates;
             }
             throw new NotImplementedException("Implement me");
         }

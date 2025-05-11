@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 namespace WalkerSim
 {
@@ -41,6 +41,23 @@ namespace WalkerSim
         public static float Ceiling(float value)
         {
             return (float)System.Math.Ceiling(value);
+        }
+
+        public static float Approach(float value, float target, float delta)
+        {
+            if (value < target)
+            {
+                value += delta;
+                if (value > target)
+                    value = target;
+            }
+            else
+            {
+                value -= delta;
+                if (value < target)
+                    value = target;
+            }
+            return value;
         }
     }
 }

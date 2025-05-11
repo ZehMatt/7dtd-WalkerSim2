@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace WalkerSim.Console
 {
@@ -13,9 +13,9 @@ namespace WalkerSim.Console
                 " -> pause\n" +
                 "    Pauses the simulation which also stops spawning and despawning.\n" +
                 " -> resume\n" +
-                "    Resumes the simulation and also the spawning/despawning." +
+                "    Resumes the simulation and also the spawning/despawning.\n" +
                 " -> restart\n" +
-                "    Reloads the configuration and restarts the simulation." +
+                "    Reloads the configuration and restarts the simulation.\n" +
                 " -> stats\n" +
                 "    Print out some statistics from the simulation.\n" +
                 " -> timescale <value>\n" +
@@ -47,7 +47,7 @@ namespace WalkerSim.Console
             Logging.Info("  Total Despawns: {0}", sim.TotalDespawns);
             Logging.Info("  Active Agents: {0}", sim.ActiveCount);
             Logging.Info("  Ticks: {0}", sim.Ticks);
-            Logging.Info("  Average Tick Time: {0}, {1}/s", sim.GetAverageTickTime(), 1.0f / sim.GetAverageTickTime());
+            Logging.Info("  Average Tick Time: {0}, {1}/s", sim.AverageSimTime, 1.0f / sim.AverageSimTime);
             Logging.Info("  Wind Direction: {0}", sim.WindDirection);
             Logging.Info("  Wind Target: {0}", sim.WindDirectionTarget);
             Logging.Info("  Next Wind Change: {0}", sim.TickNextWindChange);

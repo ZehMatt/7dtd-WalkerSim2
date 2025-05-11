@@ -25,12 +25,15 @@ namespace WalkerSim.Editor
 
         private List<Config.WorldLocation> _startPositions = new List<Config.WorldLocation>();
         private List<Config.WorldLocation> _respawnPositions = new List<Config.WorldLocation>();
+        private List<Config.PostSpawnBehavior> _postSpawnBehaviors = new List<Config.PostSpawnBehavior>();
+
         private Dictionary<string, ToolTip> _toolTips = new Dictionary<string, ToolTip>();
+
+        private float _canvasScale = 0.5f;
 
         Simulation simulation = Simulation.Instance;
         Random prng;
         Bitmap bitmap;
-        Bitmap roadBitmap;
         System.Drawing.Graphics gr;
 
         Brush[] GroupColors;
@@ -80,9 +83,12 @@ namespace WalkerSim.Editor
 
             // Set world size to 6k as the default thing until the world is changed.
             simulation.SetWorldSize(WorldMins, WorldMaxs);
+            simulation.EditorMode = true;
 
             UpdateConfigFields();
             ReconfigureSimulation();
+
+            CenterCanvas();
 
 #if DEBUG
             prng = new Random(1);
@@ -91,6 +97,32 @@ namespace WalkerSim.Editor
 #endif
 
             inputRandomSeed.Value = prng.Next();
+
+            viewAgents.Click += (sender, e) => RenderSimulation();
+            viewRoads.Click += (sender, e) => RenderSimulation();
+            viewPrefabs.Click += (sender, e) => RenderSimulation();
+            viewEvents.Click += (sender, e) => RenderSimulation();
+
+            splitContainer1.Panel1.AutoScroll = true;
+            splitContainer1.Panel1.MouseWheel += (sender, e) =>
+            {
+                if (ModifierKeys == Keys.Control)
+                {
+                    if (e.Delta > 0)
+                    {
+                        OnZoomInClick(sender, e);
+                    }
+                    else
+                    {
+                        OnZoomOutClick(sender, e);
+                    }
+                }
+                ((HandledMouseEventArgs)e).Handled = true;
+            };
+            splitContainer1.MouseWheel += (sender, e) =>
+            {
+                ((HandledMouseEventArgs)e).Handled = true;
+            };
         }
 
         private void SetToolTip(Control ctrl, string helpText)
@@ -129,6 +161,7 @@ namespace WalkerSim.Editor
             SetToolTip(inputStartGrouped, "If enabled the agents will start close to members of their own group, this means the starting position is per group, if disabled the starting position is per agent.");
             SetToolTip(inputPauseDuringBloodmoon, "If enabled the simulation will pause during blood moon which means no new in-game zombies will spawn and will be resumed afterwards, this does not affect blood moon spawns.");
             SetToolTip(inputMovementGroup, "This specifies the group that this processor will affect, if set to -1 then all groups will be affected.\n\nNOTE: This is the index of the group.");
+            SetToolTip(inputSpawnProtectionTime, "The amount of seconds the player requires to be alive before any agents will spawn.\n\nNOTE: This only applies to starting a new game and spawning for the first time.");
         }
 
         private void LogMsg(string text, Color color, bool switchToLog)
@@ -205,6 +238,7 @@ namespace WalkerSim.Editor
             inputProcessorPower.MouseWheel += ScrollHandlerFunction;
             inputMovementGroup.MouseWheel += ScrollHandlerFunction;
             inputMovementSpeed.MouseWheel += ScrollHandlerFunction;
+            inputSpawnProtectionTime.MouseWheel += ScrollHandlerFunction;
         }
 
         private void SetupSpeedModifiers()
@@ -233,9 +267,15 @@ namespace WalkerSim.Editor
 
         private void SetupDrawingContext()
         {
-            bitmap = new Bitmap(ImageWidth, ImageHeight);
+            var scaledWidth = ImageWidth * _canvasScale;
+            var scaledHeight = ImageHeight * _canvasScale;
+
+            bitmap = new Bitmap((int)scaledWidth, (int)scaledHeight);
             gr = System.Drawing.Graphics.FromImage(bitmap);
             simCanvas.Image = bitmap;
+
+            // Draw current state.
+            RenderSimulation();
         }
 
         private void SetupWorlds()
@@ -258,6 +298,8 @@ namespace WalkerSim.Editor
             inputGroupSize.Maximum = Simulation.Limits.MaxDensity;
             inputRandomSeed.Minimum = 1;
             inputRandomSeed.Maximum = UInt32.MaxValue;
+            inputSpawnProtectionTime.Minimum = 0;
+            inputSpawnProtectionTime.Maximum = 1200;
         }
 
         private void SetupChoices()
@@ -280,6 +322,15 @@ namespace WalkerSim.Editor
                 inputRespawnPosition.Items.Add(name);
 
                 _respawnPositions.Add(choice);
+            }
+
+            var postSpawnChoices = Enum.GetValues(typeof(Config.PostSpawnBehavior)).Cast<Config.PostSpawnBehavior>();
+            foreach (var choice in postSpawnChoices)
+            {
+                var name = Utils.GetPostSpawnBehaviorString(choice);
+                inputPostSpawnBehavior.Items.Add(name);
+
+                _postSpawnBehaviors.Add(choice);
             }
         }
 
@@ -311,7 +362,9 @@ namespace WalkerSim.Editor
             CurrentConfig.RandomSeed = (int)inputRandomSeed.Value;
             CurrentConfig.PopulationDensity = (int)inputMaxAgents.Value;
             CurrentConfig.GroupSize = (int)inputGroupSize.Value;
+            CurrentConfig.SpawnProtectionTime = (int)inputSpawnProtectionTime.Value;
             CurrentConfig.StartAgentsGrouped = inputStartGrouped.Checked;
+            CurrentConfig.FastForwardAtStart = inputFastForward.Checked;
             CurrentConfig.PauseDuringBloodmoon = inputPauseDuringBloodmoon.Checked;
 
             var startChoice = inputStartPosition.SelectedIndex;
@@ -334,10 +387,13 @@ namespace WalkerSim.Editor
             inputRandomSeed.ValueChanged += (sender, arg) => SetConfigValues();
             inputMaxAgents.ValueChanged += (sender, arg) => SetConfigValues();
             inputGroupSize.ValueChanged += (sender, arg) => SetConfigValues();
+            inputSpawnProtectionTime.ValueChanged += (sender, arg) => SetConfigValues();
             inputStartGrouped.CheckedChanged += (sender, arg) => SetConfigValues();
+            inputFastForward.CheckedChanged += (sender, arg) => SetConfigValues();
             inputPauseDuringBloodmoon.CheckedChanged += (sender, arg) => SetConfigValues();
             inputStartPosition.SelectedIndexChanged += (sender, arg) => SetConfigValues();
             inputRespawnPosition.SelectedIndexChanged += (sender, arg) => SetConfigValues();
+            inputPostSpawnBehavior.SelectedIndexChanged += (sender, arg) => SetConfigValues();
         }
 
         private void UpdateConfigFields()
@@ -351,7 +407,9 @@ namespace WalkerSim.Editor
             inputMaxAgents.Value = CurrentConfig.PopulationDensity;
             inputGroupSize.Value = CurrentConfig.GroupSize;
             inputStartGrouped.Checked = CurrentConfig.StartAgentsGrouped;
+            inputFastForward.Checked = CurrentConfig.FastForwardAtStart;
             inputPauseDuringBloodmoon.Checked = CurrentConfig.PauseDuringBloodmoon;
+            inputSpawnProtectionTime.Value = CurrentConfig.SpawnProtectionTime;
 
             var spawnChoice = Utils.GetWorldLocationString(CurrentConfig.StartPosition);
             inputStartPosition.SelectedItem = spawnChoice;
@@ -375,8 +433,8 @@ namespace WalkerSim.Editor
             simulation.Reset(CurrentConfig);
 
             GenerateColorTable();
-
             simulation.Start();
+
             updateTimer.Start();
         }
 
@@ -395,10 +453,8 @@ namespace WalkerSim.Editor
         {
             simulation.GameUpdate(updateTimer.Interval / 1000.0f);
 
-            float updateRate = 1000f / simulation.GetAverageTickTime();
-            this.Text = $"Ticks: {updateRate}/s";
-
             RenderSimulation();
+            UpdateStats();
         }
 
         Vector3 SimPosToBitmapPos(Vector3 pos)
@@ -412,70 +468,10 @@ namespace WalkerSim.Editor
             var worldMins = sim.WorldMins;
             var worldMaxs = sim.WorldMaxs;
 
-            var newX = Math.Remap(x, 0, ImageWidth, worldMins.X, worldMaxs.X);
-            var newY = Math.Remap(y, 0, ImageHeight, worldMins.Y, worldMaxs.Y);
+            var newX = Math.Remap(x, 0, simCanvas.Width, worldMins.X, worldMaxs.X);
+            var newY = Math.Remap(y, 0, simCanvas.Height, worldMins.Y, worldMaxs.Y);
 
             return new Vector3(newX, newY);
-        }
-
-        private Bitmap GetCachedRoadsBitmap()
-        {
-            if (roadBitmap != null)
-            {
-                return roadBitmap;
-            }
-
-            var mapData = simulation.MapData;
-            if (mapData == null)
-                return null;
-
-            var roads = mapData.Roads;
-            if (roads == null)
-                return null;
-
-            roadBitmap = new Bitmap(roads.Width, roads.Height);
-
-            using (var gr = System.Drawing.Graphics.FromImage(roadBitmap))
-            {
-                gr.Clear(System.Drawing.Color.Black);
-
-                var brushMain = new SolidBrush(Color.FromArgb(100, 255, 255, 255));
-                var brushOffroad = new SolidBrush(Color.FromArgb(50, 255, 255, 255));
-
-                for (int y = 0; y < roads.Height; y++)
-                {
-                    for (int x = 0; x < roads.Width; x++)
-                    {
-                        var roadType = roads.GetRoadType(x, y);
-                        if (roadType == RoadType.None)
-                            continue;
-
-                        if (roadType == RoadType.Asphalt)
-                        {
-                            gr.FillRectangle(brushMain, x, y, 1, 1);
-                        }
-                        else
-                        {
-                            gr.FillRectangle(brushOffroad, x, y, 1, 1);
-                        }
-                    }
-                }
-            }
-
-            // Scale the bitmap to the simulation size.
-            roadBitmap = new Bitmap(roadBitmap, ImageWidth, ImageHeight);
-
-            return roadBitmap;
-        }
-
-        private void ClearRoadBitmap()
-        {
-            if (roadBitmap == null)
-            {
-                return;
-            }
-            roadBitmap.Dispose();
-            roadBitmap = null;
         }
 
         private void RenderToBitmap()
@@ -484,53 +480,34 @@ namespace WalkerSim.Editor
 
             if (viewRoads.Checked)
             {
-                var roadsBitmap = GetCachedRoadsBitmap();
-                if (roadsBitmap != null)
-                {
-                    gr.DrawImage(roadsBitmap, 0, 0);
-                }
+                Renderer.RenderRoads(gr, simulation);
+            }
+
+            if (viewPrefabs.Checked)
+            {
+                Renderer.RenderPrefabs(gr, simulation);
             }
 
             if (viewAgents.Checked)
             {
-                var agents = simulation.Agents;
-                foreach (var agent in agents)
-                {
-                    if (agent.CurrentState != Agent.State.Wandering)
-                        continue;
-
-                    var imagePos = SimPosToBitmapPos(agent.Position);
-
-                    var color = GroupColors[agent.Group % GroupColors.Length];
-                    gr.FillRectangle(color, imagePos.X, imagePos.Y, 1f, 1f);
-                }
+                Renderer.RenderAgents(gr, simulation, GroupColors);
             }
 
-            var plyIdx = 0;
-            var worldSize = simulation.WorldSize;
-            foreach (var kv in simulation.Players)
+            if (viewActiveAgents.Checked)
             {
-                var player = kv.Value;
-                var imagePos = SimPosToBitmapPos(player.Position);
-
-                var color = PlayerColors[plyIdx++ % PlayerColors.Length];
-                //gr.FillRectangle(color, imagePos.X, imagePos.Y, 1f, 1f);
-                gr.FillEllipse(color, imagePos.X - 2, imagePos.Y - 2, 4f, 4f);
-
-                var viewRadius = Math.Remap(player.ViewRadius, 0, worldSize.X, 0, ImageWidth);
-                gr.DrawEllipse(Pens.Blue, imagePos.X - viewRadius, imagePos.Y - viewRadius, viewRadius * 2, viewRadius * 2);
+                Renderer.RenderActiveAgents(gr, simulation, GroupColors);
             }
+
+            Renderer.RenderPlayers(gr, simulation, PlayerColors);
 
             if (viewEvents.Checked)
             {
-                foreach (var ev in simulation.Events)
-                {
-                    var imagePos = SimPosToBitmapPos(ev.Position);
-                    var radius = Math.Remap(ev.Radius, 0, worldSize.X, 0, ImageWidth);
-
-                    gr.DrawEllipse(Pens.Red, imagePos.X - radius, imagePos.Y - radius, radius * 2, radius * 2);
-                }
+                Renderer.RenderEvents(gr, simulation);
             }
+
+
+            Renderer.DrawInformation(gr, simulation);
+
 
             if (Tool.Active != null)
             {
@@ -549,9 +526,6 @@ namespace WalkerSim.Editor
 
                 Tool.Active.DrawPreview(simCanvas, gr, simPos);
             }
-
-            // Wind arrow.
-            DrawingUtils.DrawArrow(gr, simulation.WindDirection, new PointF(26, 26), 16, 6);
         }
 
         private void RenderSimulation()
@@ -561,15 +535,27 @@ namespace WalkerSim.Editor
             simCanvas.Refresh();
         }
 
-        private void OnClickSoundEmit(object sender, EventArgs e)
+        private void UpdateStats()
         {
-            Tool.Active = new SoundEventTool();
-            simCanvas.Cursor = Cursors.Cross;
-        }
-        private void OnClickKill(object sender, EventArgs e)
-        {
-            Tool.Active = new KillTool();
-            simCanvas.Cursor = Cursors.Cross;
+            lblStatTotalAgents.Text = simulation.AgentCount.ToString();
+            lblStatInactive.Text = (simulation.AgentCount - simulation.ActiveCount).ToString();
+            lblStatActive.Text = simulation.ActiveCount.ToString();
+            lblStatGroups.Text = simulation.GroupCount.ToString();
+            lblStatWindDir.Text = simulation.WindDirection.ToString();
+            lblStatWindTarget.Text = simulation.WindDirectionTarget.ToString();
+            lblStatWindChange.Text = simulation.TickNextWindChange.ToString();
+            lblStatTicks.Text = simulation.Ticks.ToString();
+            lblStatSimTime.Text = String.Format(
+                "{0:0.00000} ms. ({1:0.000}/ps)",
+                simulation.AverageSimTime * 1000.0,
+                (simulation.AverageSimTime > 0 ? 1 / simulation.AverageSimTime : 0)
+                );
+
+            lblStatUpdateTime.Text = String.Format(
+                "{0:0.00000} ms. ({1:0.000}/ps)",
+                simulation.AverageUpdateTime * 1000.0,
+                (simulation.AverageUpdateTime > 0 ? 1 / simulation.AverageUpdateTime : 0)
+                );
         }
 
         private void OnGroupSelection(object sender, EventArgs e)
@@ -610,6 +596,8 @@ namespace WalkerSim.Editor
             {
                 listProcessors.Items.Add(processor.Type);
             }
+
+            inputPostSpawnBehavior.SelectedIndex = (int)CurrentConfig.Processors[groupIdx].PostSpawnBehavior;
 
             buttonRemoveProcessor.Enabled = false;
 
@@ -695,6 +683,31 @@ namespace WalkerSim.Editor
             advanceOneTickToolStripMenuItem.Enabled = false;
         }
 
+        private void ZoomReset()
+        {
+            // Depending on world size use appropriate scaling.
+            var worldSize = simulation.WorldSize;
+            var worldSizeX = worldSize.X;
+            var worldSizeY = worldSize.Y;
+
+            var size = System.Math.Max(worldSizeX, worldSizeY);
+            if (size > 10000)
+            {
+                _canvasScale = 0.65f;
+            }
+            else if (size > 8000)
+            {
+                _canvasScale = 0.66f;
+            }
+            else if (size > 6000)
+            {
+                _canvasScale = 0.68f;
+            }
+
+            SetupDrawingContext();
+            CenterCanvas();
+        }
+
         private void OnWorldSelectionChanged(object sender, EventArgs e)
         {
             var worldIdx = inputWorld.SelectedIndex;
@@ -706,10 +719,13 @@ namespace WalkerSim.Editor
             var worldPath = Worlds.WorldFolders[worldIdx];
             simulation.LoadMapData(worldPath);
 
-            ClearRoadBitmap();
-            RenderSimulation();
-
             CheckMaxAgents();
+
+            ReconfigureSimulation();
+            simulation.Reset(CurrentConfig);
+            GenerateColorTable();
+
+            ZoomReset();
         }
 
         private void CheckMaxAgents()
@@ -717,13 +733,14 @@ namespace WalkerSim.Editor
             var mapData = simulation.MapData;
             var maxAgents = inputMaxAgents.Value;
 
-            if (maxAgents < 140)
-            {
-                lblMaxAgentsInfo.Visible = true;
-                lblMaxAgentsInfo.Text = $"Recommended: 140 or more.";
-                lblMaxAgentsInfo.ForeColor = Color.OrangeRed;
-                inputMaxAgents.ForeColor = Color.OrangeRed;
-            }
+            var colorRed = 255 - (System.Math.Min((int)maxAgents, 180) / 180.0) * 255;
+            var colorGreen = maxAgents <= 30
+                ? (System.Math.Min((int)maxAgents, 30) / 30.0) * 128  // Green ramps up to 128 for orange
+                : 180 - ((System.Math.Min((int)maxAgents, 180) - 30) / 110.0) * 128; // Green ramps down to 0
+            var colorBlue = 0; // No blue to keep warm tones
+            inputMaxAgents.ForeColor = Color.FromArgb((int)colorRed, (int)colorGreen, (int)colorBlue);
+
+            Invalidate();
         }
 
         private void OnSimCanvasClick(object sender, MouseEventArgs e)
@@ -744,8 +761,18 @@ namespace WalkerSim.Editor
 
             if (Tool.Active != null)
             {
-                Tool.Active.OnClick(simPos);
+                var nextState = Tool.Active.OnClick(simPos);
+                if (nextState == NextToolState.Stop)
+                {
+                    Tool.Active = null;
+                    simCanvas.Cursor = Cursors.Default;
+                }
             }
+        }
+
+        private void OnSimCanvasMouseMove(object sender, MouseEventArgs e)
+        {
+            RenderSimulation();
         }
 
         private void loadConfigurationToolStripMenuItem_Click(object sender, EventArgs e)
@@ -775,13 +802,17 @@ namespace WalkerSim.Editor
                 }
 
                 LoadConfiguration(browseFileDlg.FileName);
+
+                simulation.Reset(CurrentConfig);
+
+                GenerateColorTable();
+                RenderSimulation();
             }
         }
 
         private void ReconfigureSimulation()
         {
             simulation.ReloadConfig(CurrentConfig);
-            simulation.Reset(CurrentConfig);
             GenerateColorTable();
         }
 
@@ -1074,6 +1105,23 @@ namespace WalkerSim.Editor
             }
         }
 
+        private void OnPostSpawnBehaviorSelectionChanged(object sender, EventArgs e)
+        {
+            var selectedGroup = GetSelectedGroupEntry();
+            if (selectedGroup == null)
+            {
+                return;
+            }
+
+            var postSpawnChoice = inputPostSpawnBehavior.SelectedIndex;
+            if (postSpawnChoice != -1)
+            {
+                selectedGroup.PostSpawnBehavior = (Config.PostSpawnBehavior)postSpawnChoice;
+            }
+
+            ReconfigureSimulation();
+        }
+
         private void OnDuplicateGroupClick(object sender, EventArgs e)
         {
             var selectedGroup = GetSelectedGroupEntry();
@@ -1144,6 +1192,90 @@ namespace WalkerSim.Editor
         private void OnClickExit(object sender, EventArgs e)
         {
             Close();
+        }
+
+        private void OnClickSoundEmit(object sender, EventArgs e)
+        {
+            Tool.Active = new SoundEventTool();
+            simCanvas.Cursor = Cursors.Cross;
+        }
+        private void OnClickKill(object sender, EventArgs e)
+        {
+            Tool.Active = new KillTool();
+            simCanvas.Cursor = Cursors.Cross;
+        }
+        private void OnAddPlayerClick(object sender, EventArgs e)
+        {
+            Tool.Active = new AddPlayerTool();
+            simCanvas.Cursor = Cursors.Cross;
+        }
+
+        private void OnSetPlayerPosClick(object sender, EventArgs e)
+        {
+            Tool.Active = new SetPlayerPositionTool();
+            simCanvas.Cursor = Cursors.Cross;
+        }
+
+        private void CenterCanvas()
+        {
+            var panelCanvas = splitContainer1.Panel1;
+
+            // Get the panel's client size (visible area)
+            var panelWidth = panelCanvas.ClientSize.Width;
+            var panelHeight = panelCanvas.ClientSize.Height;
+
+            // Get the PictureBox size
+            var imageWidth = simCanvas.Width;
+            var imageHeight = simCanvas.Height;
+
+            // Center horizontally if PictureBox width is smaller than panel width
+            if (imageWidth < panelWidth)
+            {
+                int x = (panelWidth - imageWidth) / 2;
+                simCanvas.Left = x;
+            }
+
+            // Center vertically if PictureBox height is smaller than panel height
+            if (imageHeight < panelHeight)
+            {
+                int y = (panelHeight - imageHeight) / 2;
+                simCanvas.Top = y;
+            }
+        }
+
+        private void OnResizeCanvas(object sender, EventArgs e)
+        {
+            CenterCanvas();
+        }
+
+        private void OnSplitContainerMove(object sender, SplitterEventArgs e)
+        {
+            CenterCanvas();
+        }
+
+        private void OnZoomInClick(object sender, EventArgs e)
+        {
+            if (_canvasScale >= 4.0f)
+                return;
+
+            _canvasScale += 0.05f;
+            SetupDrawingContext();
+            CenterCanvas();
+        }
+
+        private void OnZoomOutClick(object sender, EventArgs e)
+        {
+            if (_canvasScale < 0.2f)
+                return;
+
+            _canvasScale -= 0.05f;
+            SetupDrawingContext();
+            CenterCanvas();
+        }
+
+        private void OnZoomResetClick(object sender, EventArgs e)
+        {
+            ZoomReset();
         }
     }
 }

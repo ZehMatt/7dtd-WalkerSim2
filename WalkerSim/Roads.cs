@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Drawing;
 
 namespace WalkerSim
@@ -12,14 +12,21 @@ namespace WalkerSim
 
     public class Roads
     {
+        // Downscaled to 768x768
         const int ScaledWidth = 768;
         const int ScaledHeight = 768;
 
-        const int CellSize = 64;
+        public const int CellSize = 32;
 
         RoadType[] _data;
         int _width;
         int _height;
+        string _name;
+
+        public string Name
+        {
+            get => _name;
+        }
 
         public struct RoadPoint
         {
@@ -35,14 +42,14 @@ namespace WalkerSim
             public int Y;
         }
 
-        struct Cell
+        public class Cell
         {
             public List<RoadPoint> Points;
         }
 
         Cell[] _roadGrid;
-        int _gridWidth;
-        int _gridHeight;
+        int _columnCount;
+        int _rowCount;
 
         public int Width
         {
@@ -54,7 +61,27 @@ namespace WalkerSim
             get => _height;
         }
 
-        public static Roads LoadFromBitmap(Bitmap img)
+        public int ColumnCount
+        {
+            get => _columnCount;
+        }
+
+        public int RowCount
+        {
+            get => _rowCount;
+        }
+
+        public static Roads LoadFromFile(string splatPath)
+        {
+            using (var img = Image.FromFile(splatPath))
+            {
+                ImageUtils.RemoveTransparency((Bitmap)img);
+
+                return Roads.LoadFromBitmap((Bitmap)img, splatPath);
+            }
+        }
+
+        private static Roads LoadFromBitmap(Bitmap img, string name)
         {
             // Resize the image to 712x712
             var scaled = new Bitmap(img, ScaledWidth, ScaledHeight);
@@ -81,14 +108,15 @@ namespace WalkerSim
             }
 
             var res = new Roads();
+            res._name = name;
             res._width = width;
             res._height = height;
             res._data = data;
 
             // Create the grid.
-            res._gridWidth = (int)Math.Ceiling((float)width / CellSize);
-            res._gridHeight = (int)Math.Ceiling((float)height / CellSize);
-            res._roadGrid = new Cell[res._gridWidth * res._gridHeight];
+            res._columnCount = (int)Math.Ceiling((float)width / CellSize);
+            res._rowCount = (int)Math.Ceiling((float)height / CellSize);
+            res._roadGrid = new Cell[res._columnCount * res._rowCount];
             for (int i = 0; i < res._roadGrid.Length; i++)
             {
                 res._roadGrid[i] = new Cell()
@@ -108,7 +136,7 @@ namespace WalkerSim
 
                     var cellX = x / CellSize;
                     var cellY = y / CellSize;
-                    var cellIndex = cellY * res._gridWidth + cellX;
+                    var cellIndex = cellY * res._columnCount + cellX;
                     var cell = res._roadGrid[cellIndex];
 
                     var point = new RoadPoint()
@@ -145,6 +173,7 @@ namespace WalkerSim
             return res;
         }
 
+        // Gets the pixel information for the given bitmap coordinates in the scaled image.
         public RoadType GetRoadType(int x, int y)
         {
             int index = y * _width + x;
@@ -154,14 +183,35 @@ namespace WalkerSim
             return _data[index];
         }
 
-        public RoadPoint GetClosestRoad(int x, int y)
+
+        public Cell GetCell(int cellX, int cellY)
         {
+            if (cellX < 0 || cellX >= _columnCount || cellY < 0 || cellY >= _rowCount)
+            {
+                return null;
+            }
+
+            var index = cellY * _columnCount + cellX;
+            return _roadGrid[index];
+        }
+
+        // Get the closest road point to the given bitmap coordinates, the search distance is limited to
+        // 3x3 grid of cells.
+        public RoadPoint GetClosestRoad(int x, int y, int dirX, int dirY)
+        {
+            var bestChoice = RoadPoint.Invalid;
             var closest = RoadPoint.Invalid;
 
             var cellX = x / CellSize;
             var cellY = y / CellSize;
-
             float closestDist = float.MaxValue;
+            // Define a view cone angle (e.g., 90 degrees total, 45 degrees each side)
+            const float viewConeCosThreshold = 0.7071f; // cos(45°)
+
+            // Normalize direction vector
+            float dirLength = (float)System.Math.Sqrt(dirX * dirX + dirY * dirY);
+            float normDirX = dirLength > 0 ? dirX / dirLength : 0;
+            float normDirY = dirLength > 0 ? dirY / dirLength : 0;
 
             // Iterate through neighboring cells (3x3 grid)
             for (int offsetY = -1; offsetY <= 1; offsetY++)
@@ -172,11 +222,10 @@ namespace WalkerSim
                     var neighborCellY = cellY + offsetY;
 
                     // Ensure the neighboring cell is within grid bounds
-                    if (neighborCellX >= 0 && neighborCellX < _gridWidth &&
-                        neighborCellY >= 0 && neighborCellY < _gridHeight)
+                    if (neighborCellX >= 0 && neighborCellX < _columnCount &&
+                        neighborCellY >= 0 && neighborCellY < _rowCount)
                     {
-                        var cellIndex = neighborCellY * _gridWidth + neighborCellX;
-                        var cell = _roadGrid[cellIndex];
+                        var cell = GetCell(neighborCellX, neighborCellY);
 
                         // Check each point in the neighboring cell
                         for (int i = 0; i < cell.Points.Count; i++)
@@ -187,19 +236,43 @@ namespace WalkerSim
                                 continue;
                             }
 
-                            var dist = Vector3.DistanceSqr(new Vector3(x, y), new Vector3(point.X, point.Y));
+                            // Vector from current position to road point
+                            float toPointX = point.X - x;
+                            float toPointY = point.Y - y;
+                            float toPointLength = (float)System.Math.Sqrt(toPointX * toPointX + toPointY * toPointY);
+                            if (toPointLength == 0)
+                                continue;
+
+                            var dist = toPointLength * toPointLength; // Use squared distance
                             if (dist < closestDist)
                             {
                                 closestDist = dist;
                                 closest = point;
+
+                                // Normalize vector to road point
+                                float normToPointX = toPointX / toPointLength;
+                                float normToPointY = toPointY / toPointLength;
+
+                                // Calculate dot product to check if point is within view cone
+                                float dot = normDirX * normToPointX + normDirY * normToPointY;
+                                if (dot >= viewConeCosThreshold) // Point is within view cone
+                                {
+                                    bestChoice = point;
+                                }
                             }
+
                         }
                     }
                 }
             }
 
+            if (bestChoice.Type != RoadType.None)
+            {
+                // If we found a point within the view cone, return it
+                return bestChoice;
+            }
+
             return closest;
         }
-
     }
 }

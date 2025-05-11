@@ -23,6 +23,15 @@ namespace WalkerSim
             SchemaLocation = "http://zeh.matt/WalkerSim WalkerSimSchema.xsd";
         }
 
+        public enum PostSpawnBehavior
+        {
+            [XmlEnum("Wander")]
+            Wander = 0,
+            [XmlEnum("ChaseActivator")]
+            ChaseActivator,
+            [XmlEnum("Nothing")]
+            Nothing,
+        }
 
         public enum WorldLocation
         {
@@ -96,6 +105,9 @@ namespace WalkerSim
             [XmlAttribute("SpeedScale")]
             public float SpeedScale = 1.0f;
 
+            [XmlAttribute("PostSpawnBehavior")]
+            public PostSpawnBehavior PostSpawnBehavior = PostSpawnBehavior.Wander;
+
             [XmlAttribute("Color")]
             public string Color = "";
 
@@ -116,10 +128,13 @@ namespace WalkerSim
         public int RandomSeed = 1337;
 
         [XmlElement("PopulationDensity")]
-        public int PopulationDensity = 160;
+        public int PopulationDensity = 300;
 
         [XmlElement("StartAgentsGrouped")]
         public bool StartAgentsGrouped = true;
+
+        [XmlElement("FastForwardAtStart")]
+        public bool FastForwardAtStart = true;
 
         [XmlElement("GroupSize")]
         public int GroupSize = 200;
@@ -132,6 +147,9 @@ namespace WalkerSim
 
         [XmlElement("PauseDuringBloodmoon")]
         public bool PauseDuringBloodmoon = true;
+
+        [XmlElement("SpawnProtectionTime")]
+        public int SpawnProtectionTime = 300;
 
         [XmlArray("MovementProcessors")]
         public List<MovementProcessorGroup> Processors;
@@ -178,7 +196,7 @@ namespace WalkerSim
             var conf = new Config()
             {
                 RandomSeed = 1337,
-                PopulationDensity = 160,
+                PopulationDensity = 300,
                 GroupSize = 32,
                 StartPosition = WorldLocation.RandomLocation,
                 RespawnPosition = WorldLocation.RandomBorderLocation,
@@ -211,7 +229,7 @@ namespace WalkerSim
                             {
                                 Type = MovementProcessorType.Wind,
                                 Distance = 0f,
-                                Power = 0.0001f,
+                                Power = 0.001f,
                             },
                             new MovementProcessor()
                             {
