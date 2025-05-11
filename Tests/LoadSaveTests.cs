@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 
 namespace WalkerSim.Tests
@@ -114,7 +114,6 @@ namespace WalkerSim.Tests
             var simA = new Simulation();
             simA.SetWorldSize(WorldMins, WorldMaxs);
             simA.Reset(config);
-            simA.Deterministic = true;
 
             // Add a few events.
             simA.AddSoundEvent(new Vector3(-100, -100, 0), 653.212f, 10.0f);
@@ -127,7 +126,6 @@ namespace WalkerSim.Tests
             ms.Position = 0;
 
             var simB = new Simulation();
-            simB.Deterministic = true;
             Assert.IsTrue(simB.Load(ms));
 
             // Compare current state of both.

@@ -9,9 +9,6 @@ namespace WalkerSim
         // Singleton instances to avoid GCing.
         private FixedBufferList<Agent> _nearby = new FixedBufferList<Agent>(Limits.MaxQuerySize);
 
-        // If this is true then the simulation will be deterministic given it has equal configurations.
-        public bool Deterministic = false;
-
         // If DeterministicLoop is set to true this will be the amount of how many agents it will update per tick.
         private const uint MaxUpdateCountPerTick = 2000;
 
