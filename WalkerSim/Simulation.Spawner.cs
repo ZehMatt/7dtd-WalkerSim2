@@ -33,6 +33,11 @@ namespace WalkerSim
             _agentSpawnHandler = handler;
         }
 
+        private bool HasReachedMaximumSpawnedAgents()
+        {
+            return _pendingSpawns.Count + _state.Active.Count >= _maxAllowedAliveAgents;
+        }
+
         private void CheckAgentSpawn()
         {
             if (_allowAgentSpawn == false)
@@ -48,25 +53,22 @@ namespace WalkerSim
 
             _nextSpawnCheck = DateTime.Now.AddMilliseconds(200);
 
-            if (_pendingSpawns.Count >= _maxAllowedAliveAgents)
-            {
-                // We have reached the maximum amount of agents alive, do not spawn more.
-                // Logging.Debug("Pending spawns count is {0}, not spawning more agents.", _pendingSpawns.Count);
-                return;
-            }
-
-            if (_state.Active.Count >= _maxAllowedAliveAgents)
-            {
-                // We have reached the maximum amount of agents alive, do not spawn more.
-                Logging.Debug("Active agents count is {0}, not spawning more agents.", _state.Active.Count);
-                return;
-            }
-
             // Don't activate them when they are in the inner radius.
             var activationBorderSize = 4.0f;
 
             foreach (var kv in _state.Players)
             {
+                if (HasReachedMaximumSpawnedAgents())
+                {
+                    // We have reached the maximum amount of agents alive, do not spawn more.
+                    Logging.Debug($"Maximum amount of agents alive reached, max: {_maxAllowedAliveAgents}, pending spawns: {_pendingSpawns.Count}, active agents: {_state.Active.Count}");
+
+                    // Increase delay, no need to try again so soon when it is not possible to spawn more agents.
+                    _nextSpawnCheck = DateTime.Now.AddMilliseconds(2000);
+
+                    return;
+                }
+
                 var player = kv.Value;
 
                 if (player.EntityId == -1)
