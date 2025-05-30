@@ -1,5 +1,7 @@
 # 0.9.6 (in development)
 - Fix: Editor crash trying to locate generated worlds.
+- Fix: Condition that allowed to spawn more zombies than the game allows.
+- Improve: When zombies fail to spawn the next attempt will be delayed as it will otherwise stall the spawn of other zombies.
 - Improve: Better performance for the in-game preview using `walkersim show`.
 - Change: Remove dependency to System.Drawing which eliminates the need to install libgdiplus on linux.
 

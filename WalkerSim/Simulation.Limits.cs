@@ -11,6 +11,7 @@ namespace WalkerSim
             public const int MaxQuerySize = 128;
             public const double SpawnDespawnDelay = 0.03;
             public const float SoundDecayRate = 20.0f;
+            public const uint MinSpawnDelayTicks = 300; // The time to wait before the next spawn attempt is made in ticks, 300 = 10 seconds.
         }
     }
 }

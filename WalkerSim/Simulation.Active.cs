@@ -105,6 +105,8 @@ namespace WalkerSim
                 // Activate in simulation.
                 agent.CurrentState = Agent.State.Wandering;
                 agent.EntityId = -1;
+                // Reset spawn timestamp, allow immediate respawning in case the player backtracks.
+                agent.LastSpawnTick = 0;
 
                 _state.Active.Remove(kv.Key);
                 _state.TotalDespawns++;
