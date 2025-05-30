@@ -18,19 +18,71 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-
+      with:
+        fetch-depth: 0
+        
+    - name: Fetch tags
+      run: |
+        git fetch --tags --force
+      shell: cmd
+      
     - name: Setup build info (Windows)
       env:
         COMMIT_SHA: ${{ github.sha }}
         BRANCH_NAME: ${{ github.ref_name }}
       run: |
+          # Log working directory and environment
+          echo "Working directory: $PWD" | Out-Host
+          echo "Branch name: $env:BRANCH_NAME" | Out-Host
+          # Determine version
           if ($env:BRANCH_NAME -like 'release/*') {
-            $version = $env:BRANCH_NAME -replace 'release/', ''
-            echo "BUILD_VERSION=$version" >> $env:GITHUB_ENV
+            $version = $env:BRANCH_NAME -replace '^release/', ''
+            echo "Release branch version (raw): $version" | Out-Host
           } else {
-            $sha12 = $env:COMMIT_SHA.Substring(0,12)
-            echo "BUILD_VERSION=$sha12" >> $env:GITHUB_ENV
+            $gitOutput = (git describe --tags --abbrev=0 2>&1)
+            echo "git describe output: $gitOutput" | Out-Host
+            $latestTag = ($gitOutput | Select-String -NotMatch "fatal").Line
+            if ($latestTag) {
+              $version = $latestTag
+              echo "Found tag: $latestTag" | Out-Host
+            } else {
+              $version = "0.0.0"
+              echo "No tags found, defaulting to version 0.0.0" | Out-Host
+            }
           }
+          # Validate version format (x.y.z)
+          if ($version -match '^\d+\.\d+\.\d+$') {
+            echo "BUILD_VERSION=$version" >> $env:GITHUB_ENV
+            echo "Valid version: $version" | Out-Host
+          } else {
+            $version = "0.9.5"
+            echo "BUILD_VERSION=$version" >> $env:GITHUB_ENV
+            echo "Invalid version format, defaulting to 0.9.5" | Out-Host
+          }
+          # Set commit hash (first 12 characters)
+          $sha12 = $env:COMMIT_SHA.Substring(0,12)
+          echo "COMMIT_SHA=$sha12" >> $env:GITHUB_ENV
+          echo "Commit SHA: $sha12" | Out-Host
+          # Update BuildInfo.cs
+          $buildInfoFile = "$env:GITHUB_WORKSPACE\WalkerSim\BuildInfo.cs"
+          echo "BuildInfo.cs path: $buildInfoFile" | Out-Host
+          if (-Not (Test-Path $buildInfoFile)) {
+            echo "Error: $buildInfoFile does not exist" | Out-Host
+            dir -Recurse | Where-Object { $_.Name -eq "BuildInfo.cs" } | ForEach-Object { echo "Found BuildInfo.cs at: $($_.FullName)" } | Out-Host
+            exit 1
+          }
+          # Log BuildInfo.cs content before update
+          echo "BuildInfo.cs content before update:" | Out-Host
+          Get-Content -Path $buildInfoFile | Out-Host
+          # Perform replacements
+          $content = Get-Content -Path $buildInfoFile -Raw
+          $content = $content -replace '\[assembly: AssemblyMetadata\("Commit", "[^"]*"\)\]', "[assembly: AssemblyMetadata(`"Commit`", `"$sha12`")]"
+          $content = $content -replace '\[assembly: AssemblyVersion\("[^"]*"\)\]', "[assembly: AssemblyVersion(`"$version`")]"
+          $content = $content -replace '\[assembly: AssemblyFileVersion\("[^"]*"\)\]', "[assembly: AssemblyFileVersion(`"$version.0`")]"
+          Set-Content -Path $buildInfoFile -Value $content
+          # Log BuildInfo.cs content after update
+          echo "BuildInfo.cs content after update:" | Out-Host
+          Get-Content -Path $buildInfoFile | Out-Host
       shell: powershell
 
     - name: Cache DepotDownloader
@@ -138,7 +190,7 @@ jobs:
     - name: Publish artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: WalkerSim2-${{ env.BUILD_VERSION }}
+        name: WalkerSim2-${{ env.BUILD_VERSION }}${{ startsWith(github.ref, 'refs/heads/release/') && '' || '-' }}${{ env.COMMIT_SHA }}
         path: |
           ./artifact/**/*
 

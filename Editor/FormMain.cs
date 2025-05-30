@@ -67,6 +67,8 @@ namespace WalkerSim.Editor
                 simulation.Stop();
             };
 
+            this.Text = $"WalkerSim Editor v{BuildInfo.Version}";
+
             CurrentConfig = Config.GetDefault();
             UpdateConfigFields();
 
