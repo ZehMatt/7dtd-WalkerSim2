@@ -8,6 +8,9 @@ namespace WalkerSim
 
         void IModApi.InitMod(Mod _modInstance)
         {
+            // Set the image loader to Unity.
+            Drawing.Loader = new Unity.Drawing.UnityImageLoader();
+
             // Set up logging.
             Logging.SetHandler(Logging.Level.Info, Log.Out);
             Logging.SetHandler(Logging.Level.Warning, Log.Warning);
