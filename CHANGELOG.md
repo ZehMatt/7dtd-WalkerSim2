@@ -1,4 +1,5 @@
 # 0.9.6 (in development)
+- Fix: Editor crash trying to locate generated worlds.
 - Improve: Better performance for the in-game preview using `walkersim show`.
 - Change: Remove dependency to System.Drawing which eliminates the need to install libgdiplus on linux.
 
