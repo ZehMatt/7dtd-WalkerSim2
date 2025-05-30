@@ -36,11 +36,12 @@ namespace WalkerSim
 
             Simulation.Instance.SetAgentSpawnHandler(SpawnManager.SpawnAgent);
             Simulation.Instance.SetAgentDespawnHandler(SpawnManager.DespawnAgent);
+
+            Logging.Out($"WalkerSim v{BuildInfo.Version} initialized.");
         }
 
         static void GameAwake()
         {
-            Logging.Out("GameAwake");
         }
 
         internal static Config LoadConfiguration()
@@ -115,7 +116,7 @@ namespace WalkerSim
             var simConfig = Simulation.Instance.Config;
             if (!simConfig.Compare(config))
             {
-                Logging.Out("Configuration on disk is different than the configuration in the saved state. In order to apply the changes the simulation must be restarted, this can be done using 'walkersim restart' in the console.");
+                Logging.Warn("Configuration on disk is different than the configuration in the saved state. In order to apply the changes the simulation must be restarted, this can be done using 'walkersim restart' in the console.");
             }
         }
 

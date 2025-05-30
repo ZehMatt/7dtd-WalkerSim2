@@ -17,6 +17,8 @@ namespace WalkerSim.Editor
 
             WalkerSim.Drawing.Loader = new WalkerSim.Editor.Drawing.ImageLoader();
 
+            //throw new Exception("Ouch");
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new FormMain());
@@ -41,8 +43,8 @@ namespace WalkerSim.Editor
             }
 
             string reportUrl = "https://github.com/ZehMatt/7dtd-WalkerSim2/issues/new";
-            string version = "0.9.5";
-            string commit = "unknown";
+            string version = BuildInfo.Version;
+            string commit = BuildInfo.Commit;
 
             // Detailed message for MessageBox
             string detailedMessage = $"An unhandled exception occurred:\n\n" +
@@ -52,7 +54,7 @@ namespace WalkerSim.Editor
                                    $"Would you like to report this issue on GitHub?";
 
             // Pre-filled GitHub issue data
-            string title = Uri.EscapeDataString($"Crash in version {version}");
+            string title = Uri.EscapeDataString($"Editor Crash in version {version}");
             string body = Uri.EscapeDataString(
                 $"**Describe the bug**\nAn unhandled exception occurred:\n\n" +
                 $"**Error Message**\n{Ex.Message}\n\n" +
