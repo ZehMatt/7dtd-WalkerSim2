@@ -46,7 +46,9 @@ namespace WalkerSim.Editor
 
             for (int i = 0; i < groupCount; i++)
             {
-                GroupColors[i] = new SolidBrush(simulation.GetGroupColor(i));
+                var groupColor = simulation.GetGroupColor(i);
+                var sysColor = System.Drawing.Color.FromArgb(groupColor.A, groupColor.R, groupColor.G, groupColor.B);
+                GroupColors[i] = new SolidBrush(sysColor);
             }
 
             PlayerColors = new Brush[64];
@@ -588,7 +590,7 @@ namespace WalkerSim.Editor
             }
             else
             {
-                boxGroupColor.BackColor = Utils.ParseColor(selectedGroup.Color);
+                boxGroupColor.BackColor = System.Drawing.ColorTranslator.FromHtml(selectedGroup.Color);
             }
 
             listProcessors.Items.Clear();
@@ -826,7 +828,7 @@ namespace WalkerSim.Editor
 
             var newGroup = new Config.MovementProcessorGroup()
             {
-                Color = Utils.ColorToHexString(ColorTable.GetColorForIndex(idx))
+                Color = WalkerSim.Drawing.ColorTable.GetColorForIndex(idx).ToHtml()
             };
             groups.Add(newGroup);
 
@@ -1093,13 +1095,13 @@ namespace WalkerSim.Editor
             }
             else
             {
-                colorPickerDlg.Color = Utils.ParseColor(selectedGroup.Color);
+                colorPickerDlg.Color = System.Drawing.ColorTranslator.FromHtml(selectedGroup.Color);
             }
 
             if (colorPickerDlg.ShowDialog() == DialogResult.OK)
             {
                 boxGroupColor.BackColor = colorPickerDlg.Color;
-                selectedGroup.Color = Utils.ColorToHexString(boxGroupColor.BackColor);
+                selectedGroup.Color = System.Drawing.ColorTranslator.ToHtml(boxGroupColor.BackColor);
 
                 ReconfigureSimulation();
             }

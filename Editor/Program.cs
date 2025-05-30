@@ -11,6 +11,8 @@ namespace WalkerSim.Editor
         [STAThread]
         static void Main()
         {
+            WalkerSim.Drawing.Loader = new WalkerSim.Editor.Drawing.ImageLoader();
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new FormMain());

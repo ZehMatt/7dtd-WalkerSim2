@@ -1,6 +1,6 @@
-﻿using UnityEngine;
+using UnityEngine;
 
-namespace WalkerSim.Drawing
+namespace WalkerSim.Rendering
 {
     internal class Primitives
     {

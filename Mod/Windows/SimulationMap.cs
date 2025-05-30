@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -96,7 +96,7 @@ namespace WalkerSim
                             var posY = Math.Remap(y, 0, roads.Height, 0, kHeight);
 
                             var color = roadType == RoadType.Asphalt ? colorMainRoad : colorOffRoad;
-                            Drawing.Primitives.DrawPixel(new UnityEngine.Vector2(posX, posY), color);
+                            Rendering.Primitives.DrawPixel(new UnityEngine.Vector2(posX, posY), color);
                         }
                     }
                 }
@@ -136,11 +136,11 @@ namespace WalkerSim
 
                         if (agent.CurrentState == Agent.State.Active)
                         {
-                            Drawing.Primitives.DrawFilledCircle(new UnityEngine.Vector2(pos.X, pos.Y), 2, UnityEngine.Color.red);
+                            Rendering.Primitives.DrawFilledCircle(new UnityEngine.Vector2(pos.X, pos.Y), 2, UnityEngine.Color.red);
                         }
                         else
                         {
-                            Drawing.Primitives.DrawPixel(new UnityEngine.Vector2(pos.X, pos.Y), UnityEngine.Color.green);
+                            Rendering.Primitives.DrawPixel(new UnityEngine.Vector2(pos.X, pos.Y), UnityEngine.Color.green);
                         }
 
                     }
@@ -154,11 +154,11 @@ namespace WalkerSim
                         var player = kv.Value;
 
                         var pos = simulation.RemapPosition2D(player.Position, Vector3.Zero, kCanvas);
-                        Drawing.Primitives.DrawFilledCircle(new UnityEngine.Vector2(pos.X, pos.Y), 2, UnityEngine.Color.blue);
+                        Rendering.Primitives.DrawFilledCircle(new UnityEngine.Vector2(pos.X, pos.Y), 2, UnityEngine.Color.blue);
 
                         // FIXME: We should maybe draw an ellipse with x and y remapped.
                         var viewRadius = Math.Remap(player.ViewRadius, 0, worldSize.X, 0, kWidth);
-                        Drawing.Primitives.DrawCircle(new UnityEngine.Vector2(pos.X, pos.Y), viewRadius, UnityEngine.Color.blue);
+                        Rendering.Primitives.DrawCircle(new UnityEngine.Vector2(pos.X, pos.Y), viewRadius, UnityEngine.Color.blue);
                     }
                 }
 
@@ -170,7 +170,7 @@ namespace WalkerSim
                         var pos = simulation.RemapPosition2D(ev.Position, Vector3.Zero, kCanvas);
                         var radius = Math.Remap(ev.Radius, 0, simulation.WorldSize.X, 0, kWidth);
 
-                        Drawing.Primitives.DrawCircle(new UnityEngine.Vector2(pos.X, pos.Y), radius, UnityEngine.Color.red);
+                        Rendering.Primitives.DrawCircle(new UnityEngine.Vector2(pos.X, pos.Y), radius, UnityEngine.Color.red);
                     }
                 }
 

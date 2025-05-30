@@ -64,10 +64,6 @@
       <HintPath>..\Binaries\System.Xml.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="System.Drawing">
-      <HintPath>..\Binaries\System.Drawing.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\Binaries\UnityEngine.dll</HintPath>
       <Private>False</Private>
@@ -85,6 +81,9 @@
     <Content Include="ModInfo.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Drawing\" />
   </ItemGroup>
   <Import Project="..\WalkerSim\WalkerSim.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

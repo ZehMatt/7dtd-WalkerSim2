@@ -524,17 +524,17 @@ namespace WalkerSim
             }
         }
 
-        public System.Drawing.Color GetGroupColor(int groupIndex)
+        public Drawing.Color GetGroupColor(int groupIndex)
         {
             if (groupIndex >= _processors.Count)
             {
-                return ColorTable.GetColorForIndex(groupIndex);
+                return Drawing.ColorTable.GetColorForIndex(groupIndex);
             }
 
             var proc = _processors[groupIndex];
             if (proc == null)
             {
-                return ColorTable.GetColorForIndex(groupIndex);
+                return Drawing.ColorTable.GetColorForIndex(groupIndex);
             }
 
             return _processors[groupIndex].Color;

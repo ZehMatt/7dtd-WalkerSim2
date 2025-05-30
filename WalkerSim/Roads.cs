@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Drawing;
 
 namespace WalkerSim
 {
@@ -73,18 +72,18 @@ namespace WalkerSim
 
         public static Roads LoadFromFile(string splatPath)
         {
-            using (var img = Image.FromFile(splatPath))
+            using (var img = WalkerSim.Drawing.LoadFromFile(splatPath))
             {
-                ImageUtils.RemoveTransparency((Bitmap)img);
+                img.RemoveTransparency();
 
-                return Roads.LoadFromBitmap((Bitmap)img, splatPath);
+                return Roads.LoadFromBitmap(img, splatPath);
             }
         }
 
-        private static Roads LoadFromBitmap(Bitmap img, string name)
+        private static Roads LoadFromBitmap(Drawing.IBitmap img, string name)
         {
             // Resize the image to 712x712
-            var scaled = new Bitmap(img, ScaledWidth, ScaledHeight);
+            var scaled = Drawing.Create(img, ScaledWidth, ScaledHeight);
 
             var height = scaled.Height;
             var width = scaled.Width;
