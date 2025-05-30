@@ -73,11 +73,6 @@ namespace WalkerSim
             }
         }
 
-        public static string ColorToHexString(Drawing.Color color)
-        {
-            return color.ToHtml();
-        }
-
         public static bool IsDebugMode()
         {
             // Check if the DEBUG constant is defined

@@ -129,8 +129,6 @@ namespace WalkerSim
                             continue;
 
                         var pos = simulation.RemapPosition2D(agent.Position, Vector3.Zero, kCanvas);
-                        //var color = colors[agent.Group];
-
                         Rendering.Primitives.DrawPixel(new UnityEngine.Vector2(pos.X, pos.Y), UnityEngine.Color.green);
                     }
 
@@ -147,8 +145,6 @@ namespace WalkerSim
                             continue;
 
                         var pos = simulation.RemapPosition2D(agent.Position, Vector3.Zero, kCanvas);
-                        //var color = colors[agent.Group];
-
                         Rendering.Primitives.DrawPixel(new UnityEngine.Vector2(pos.X, pos.Y), UnityEngine.Color.red);
                     }
 
