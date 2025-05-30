@@ -5,9 +5,6 @@
 
 - **7 Days to Die** installed via **Steam** (latest supported version).
 - **WalkerSim2** mod files (e.g., `WalkerSim2-0.9.3.zip`).
-- **Required dependencies**
-    - `libgdiplus`
-    - `libc6-dev`
 
 ---
 
@@ -80,39 +77,3 @@ WalkerSim2 depends on a core mod called `0_TFP_Harmony`, which should already be
   4. Click **Verify integrity of game files**.
 
 Steam will scan your installation and automatically restore any missing files, including `0_TFP_Harmony`.
-
----
-
-## Additional: Dependencies for Linux Users
-
-Both **7 Days to Die** game installations and **dedicated servers** on Linux require the following libraries to be installed:
-
-- `libgdiplus`
-- `libc6-dev`
-
-### For Debian/Ubuntu-based systems:
-
-Run the following command to install the required libraries:
-
-```bash
-sudo apt-get update && sudo apt-get install -y libgdiplus libc6-dev
-```
-
-### For Red Hat/Fedora-based systems:
-
-Use `dnf` to install the dependencies:
-
-```bash
-sudo dnf install -y libgdiplus libc6-dev
-```
-
-### For Arch-based systems:
-
-Use `pacman` to install the dependencies:
-
-```bash
-sudo pacman -S libgdiplus libc6-dev
-```
-
-These dependencies are required for **both game installations and dedicated servers** on Linux. They ensure that **WalkerSim2** works properly regardless of whether you're playing the game locally or hosting a server.
-

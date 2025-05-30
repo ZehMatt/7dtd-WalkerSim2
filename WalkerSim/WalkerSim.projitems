@@ -10,11 +10,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Agent.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ColorTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Drawing\ColorTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Config.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Drawing\Color.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Drawing\DrawingInterface.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Drawing\IBitmap.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Drawing\IImageLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FixedBufferList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Grid.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ImageUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Logging.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MapData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Math.cs" />

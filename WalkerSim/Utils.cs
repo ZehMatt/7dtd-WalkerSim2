@@ -1,10 +1,9 @@
-using System;
 
 namespace WalkerSim
 {
     internal static class Utils
     {
-        public static TimeSpan Measure(Action action)
+        public static System.TimeSpan Measure(System.Action action)
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
             action();
@@ -29,7 +28,7 @@ namespace WalkerSim
                 default:
                     break;
             }
-            throw new Exception("Invalid value");
+            throw new System.Exception("Invalid value");
         }
 
         public static string GetPostSpawnBehaviorString(Config.PostSpawnBehavior value)
@@ -45,7 +44,7 @@ namespace WalkerSim
                 default:
                     break;
             }
-            throw new Exception("Invalid value");
+            throw new System.Exception("Invalid value");
         }
 
         public static Vector3 GetRandomVector3(System.Random prng, Vector3 mins, Vector3 maxs, float borderSize = 250)
@@ -57,26 +56,21 @@ namespace WalkerSim
             return new Vector3(x, y);
         }
 
-        public static System.Drawing.Color ParseColor(string color)
+        public static Drawing.Color ParseColor(string value)
         {
-            if (color == "")
+            if (value == "")
             {
-                return System.Drawing.Color.Transparent;
+                return Drawing.Color.Transparent;
             }
             try
             {
-                var res = (System.Drawing.Color)System.Drawing.ColorTranslator.FromHtml(color);
+                var res = Drawing.Color.FromHtml(value);
                 return res;
             }
-            catch (Exception)
+            catch (System.Exception)
             {
-                return System.Drawing.Color.Transparent;
+                return Drawing.Color.Transparent;
             }
-        }
-
-        public static string ColorToHexString(System.Drawing.Color color)
-        {
-            return System.Drawing.ColorTranslator.ToHtml(color);
         }
 
         public static bool IsDebugMode()

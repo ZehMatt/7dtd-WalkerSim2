@@ -59,7 +59,10 @@ namespace WalkerSim
         {
             if (_state.Players.TryGetValue(entityId, out var player))
             {
-                Logging.Out("Player spawned in simulation, entity id: {0}, position: {1}", entityId, player.Position);
+                Logging.Out("Player spawned in simulation, entity id: {0}, position: {1}, spawn delay: {2} secs",
+                    entityId,
+                    player.Position,
+                    spawnDelay);
 
                 player.IsAlive = true;
                 player.NextPossibleSpawnTime = DateTime.Now.AddSeconds(spawnDelay);

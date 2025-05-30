@@ -192,6 +192,11 @@ namespace WalkerSim
 
         private static void MergePrefabs(PrefabsData prefabs)
         {
+            if (prefabs.Decorations == null)
+            {
+                return;
+            }
+
             var newList = new List<Decoration>(prefabs.Decorations);
 
             bool invalidated = true;

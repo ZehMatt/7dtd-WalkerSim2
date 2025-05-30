@@ -48,8 +48,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ColorTable.cs" />
     <Compile Include="DrawingUtils.cs" />
+    <Compile Include="Drawing\Drawing.cs" />
     <Compile Include="FormMain.cs">
       <SubType>Form</SubType>
     </Compile>

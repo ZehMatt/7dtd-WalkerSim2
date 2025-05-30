@@ -1,4 +1,6 @@
 # 0.9.6 (in development)
+- Improve: Better performance for the in-game preview using `walkersim show`.
+- Change: Remove dependency to System.Drawing which eliminates the need to install libgdiplus on linux.
 
 # 0.9.5
 - Fix: The editor no longer resets the simulation when changing parameters.

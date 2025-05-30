@@ -12,7 +12,7 @@ namespace WalkerSim
             public float SpeedScale = 1.0f;
             public int Group = -1;
             public Config.PostSpawnBehavior PostSpawnBehavior = Config.PostSpawnBehavior.Wander;
-            public System.Drawing.Color Color;
+            public Drawing.Color Color;
         }
 
         class Processor
@@ -101,7 +101,7 @@ namespace WalkerSim
                 if (processorGroup.Color == "")
                 {
                     // Assign a default color of purple.
-                    group.Color = System.Drawing.Color.Magenta;
+                    group.Color = Drawing.Color.Magenta;
                 }
                 else
                 {
@@ -162,9 +162,9 @@ namespace WalkerSim
                 if (group == null)
                     continue;
 
-                if (group.Color == System.Drawing.Color.Transparent)
+                if (group.Color == Drawing.Color.Transparent)
                 {
-                    group.Color = ColorTable.GetColorForIndex(i);
+                    group.Color = Drawing.ColorTable.GetColorForIndex(i);
                 }
             }
 
