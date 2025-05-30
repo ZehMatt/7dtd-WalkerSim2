@@ -1,3 +1,5 @@
+# 0.9.7 (in progress)
+
 # 0.9.6
 - Fix: Editor crash trying to locate generated worlds.
 - Fix: Condition that allowed to spawn more zombies than the game allows.
