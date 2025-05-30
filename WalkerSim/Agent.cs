@@ -19,6 +19,7 @@ namespace WalkerSim
         public int Health = -1;
         public State CurrentState = State.Dead;
         public uint LastUpdateTick = 0;
+        public uint LastSpawnTick = 0;
 
         public Agent()
         {

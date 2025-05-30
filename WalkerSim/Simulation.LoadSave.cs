@@ -12,7 +12,9 @@ namespace WalkerSim
         private float _autoSaveInterval = -1;
 
         private const uint SaveMagic = 0x4D534B57; // WKSM
-        private const uint SaveVersion = 2;
+
+        // Increment this in case of a breaking change in the save format.
+        private const uint SaveVersion = 3;
 
         private void SaveState(State state, BinaryWriter writer)
         {
@@ -97,6 +99,7 @@ namespace WalkerSim
                 }
                 Serialization.WriteInt32(writer, (int)agentState);
                 Serialization.WriteUInt32(writer, agent.LastUpdateTick);
+                Serialization.WriteUInt32(writer, agent.LastSpawnTick);
             }
         }
 
@@ -236,6 +239,7 @@ namespace WalkerSim
                 agent.Health = Serialization.ReadInt32(reader);
                 agent.CurrentState = (Agent.State)Serialization.ReadInt32(reader);
                 agent.LastUpdateTick = Serialization.ReadUInt32(reader);
+                agent.LastSpawnTick = Serialization.ReadUInt32(reader);
                 agents.Add(agent);
 
                 if (agent.CurrentState == Agent.State.Active)

@@ -102,8 +102,22 @@ namespace WalkerSim
                     if (dist > player.ViewRadius)
                         continue;
 
+                    // TODO: We are not handling overflow of Ticks but it takes a lot of time to get there.
+                    var spawnDelta = _state.Ticks - agent.LastSpawnTick;
+                    if (spawnDelta < Limits.MinSpawnDelayTicks)
+                    {
+                        // The actual spawning might fail and to avoid trying to spawn the same agent
+                        // too often we skip it for a while.
+
+                        Logging.Debug("Agent {0} was spawned too recently, skipping spawn, last spawn tick: {1}, current tick: {2}, delta: {3}",
+                            agent.Index, agent.LastSpawnTick, _state.Ticks, spawnDelta);
+
+                        continue;
+                    }
+
                     Logging.Debug("Agent {0} near player {1} at {2}m, spawning...", agent.Index, player.EntityId, dist);
 
+                    agent.LastSpawnTick = _state.Ticks;
                     agent.CurrentState = Agent.State.PendingSpawn;
 
                     var processorGroup = _processors[agent.Group];
