@@ -1,4 +1,4 @@
-# 0.9.6 (in development)
+# 0.9.6
 - Fix: Editor crash trying to locate generated worlds.
 - Fix: Condition that allowed to spawn more zombies than the game allows.
 - Improve: When zombies fail to spawn the next attempt will be delayed as it will otherwise stall the spawn of other zombies.
