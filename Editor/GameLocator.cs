@@ -63,7 +63,7 @@ namespace WalkerSim.Editor
         {
             var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            // Get the install path from the registry
+            // Get the install path from the registry.
             paths.Add(GetInstallPath());
 
             // Get Steam installation path from registry
@@ -91,7 +91,15 @@ namespace WalkerSim.Editor
                 }
             }
 
-            return paths.ToList();
+            var list = paths.ToList();
+
+            // Filter null or empty paths
+            list.RemoveAll(path => string.IsNullOrEmpty(path) || !Directory.Exists(path));
+
+            // Sort the paths alphabetically
+            list.Sort(StringComparer.OrdinalIgnoreCase);
+
+            return list;
         }
 
         private static string GetSteamPath()
