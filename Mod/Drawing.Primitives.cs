@@ -79,16 +79,25 @@ namespace WalkerSim.Rendering
             GL.End();
         }
 
-        public static void DrawPixel(Vector2 pos, Color color)
+        public static void BeginDrawPixels()
         {
             lineMaterial.SetPass(0);
             GL.Begin(GL.QUADS);
+        }
+
+        public static void DrawPixel(Vector2 pos, Color color)
+        {
             GL.Color(color);
             GL.Vertex3(pos.x, pos.y, 0);
             GL.Vertex3(pos.x + 1, pos.y, 0);
             GL.Vertex3(pos.x + 1, pos.y + 1, 0);
             GL.Vertex3(pos.x, pos.y + 1, 0);
+        }
+
+        public static void EndDrawPixels()
+        {
             GL.End();
         }
+
     }
 }
