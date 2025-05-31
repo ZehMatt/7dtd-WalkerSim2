@@ -38,6 +38,26 @@ namespace WalkerSim
             return _pendingSpawns.Count + _state.Active.Count >= _maxAllowedAliveAgents;
         }
 
+        private int GetCountActiveNearby(Vector3 position, float radius)
+        {
+            var count = 0;
+
+            foreach (var kv in _state.Active)
+            {
+                var agent = kv.Value;
+                if (agent.CurrentState != Agent.State.Active)
+                    continue;
+
+                var dist = Vector3.Distance(position, agent.Position);
+                if (dist <= radius)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
         private void CheckAgentSpawn()
         {
             if (_allowAgentSpawn == false)
@@ -54,7 +74,14 @@ namespace WalkerSim
             _nextSpawnCheck = DateTime.Now.AddMilliseconds(200);
 
             // Don't activate them when they are in the inner radius.
-            var activationBorderSize = 4.0f;
+            var activationBorderSize = 8.0f;
+
+            var maxActivePerPlayer = _maxAllowedAliveAgents;
+            if (_state.Players.Count > 0)
+            {
+                // If there are players, we allow more active agents per player.
+                maxActivePerPlayer = _maxAllowedAliveAgents / _state.Players.Count;
+            }
 
             foreach (var kv in _state.Players)
             {
@@ -80,6 +107,18 @@ namespace WalkerSim
                 if (DateTime.Now < player.NextPossibleSpawnTime)
                 {
                     //Logging.Debug("Player {0} is not alive long enough to spawn agents, skipping...", player.EntityId);
+                    continue;
+                }
+
+                var activeNearby = GetCountActiveNearby(player.Position, player.ViewRadius);
+                if (activeNearby >= maxActivePerPlayer)
+                {
+                    // Too many active agents nearby, do not spawn more.
+                    Logging.Debug("Player {0} has too many active agents nearby ({1}), skipping spawn...", player.EntityId, activeNearby);
+
+                    // Delay the test for this player.
+                    player.NextPossibleSpawnTime = DateTime.Now.AddSeconds(1);
+
                     continue;
                 }
 

@@ -4,6 +4,9 @@ namespace WalkerSim.Console
 {
     public class CommandWalkerSim : ConsoleCmdAbstract
     {
+        public override bool IsExecuteOnClient => false;
+        public override int DefaultPermissionLevel => 1000;
+
         private string GetHelpText()
         {
             return "Usage: walkersim <command>.\n" +
@@ -37,20 +40,20 @@ namespace WalkerSim.Console
         {
             var sim = Simulation.Instance;
 
-            Logging.Info("--- Simulation Statistics ---");
-            Logging.Info("  World Size: {0}", sim.WorldSize);
-            Logging.Info("  Players: {0}", sim.PlayerCount);
-            Logging.Info("  Total Agents: {0}", sim.Agents.Count);
-            Logging.Info("  Total Groups: {0}", sim.GroupCount);
-            Logging.Info("  Successful Spawns: {0}", sim.SuccessfulSpawns);
-            Logging.Info("  Failed Spawns: {0}", sim.FailedSpawns);
-            Logging.Info("  Total Despawns: {0}", sim.TotalDespawns);
-            Logging.Info("  Active Agents: {0}", sim.ActiveCount);
-            Logging.Info("  Ticks: {0}", sim.Ticks);
-            Logging.Info("  Average Tick Time: {0}, {1}/s", sim.AverageSimTime, 1.0f / sim.AverageSimTime);
-            Logging.Info("  Wind Direction: {0}", sim.WindDirection);
-            Logging.Info("  Wind Target: {0}", sim.WindDirectionTarget);
-            Logging.Info("  Next Wind Change: {0}", sim.TickNextWindChange);
+            SdtdConsole.Instance.Output("--- Simulation Statistics ---");
+            SdtdConsole.Instance.Output("  World Size: {0}", sim.WorldSize);
+            SdtdConsole.Instance.Output("  Players: {0}", sim.PlayerCount);
+            SdtdConsole.Instance.Output("  Total Agents: {0}", sim.Agents.Count);
+            SdtdConsole.Instance.Output("  Total Groups: {0}", sim.GroupCount);
+            SdtdConsole.Instance.Output("  Successful Spawns: {0}", sim.SuccessfulSpawns);
+            SdtdConsole.Instance.Output("  Failed Spawns: {0}", sim.FailedSpawns);
+            SdtdConsole.Instance.Output("  Total Despawns: {0}", sim.TotalDespawns);
+            SdtdConsole.Instance.Output("  Active Agents: {0}", sim.ActiveCount);
+            SdtdConsole.Instance.Output("  Ticks: {0}", sim.Ticks);
+            SdtdConsole.Instance.Output("  Average Tick Time: {0}, {1}/s", sim.AverageSimTime, 1.0f / sim.AverageSimTime);
+            SdtdConsole.Instance.Output("  Wind Direction: {0}", sim.WindDirection);
+            SdtdConsole.Instance.Output("  Wind Target: {0}", sim.WindDirectionTarget);
+            SdtdConsole.Instance.Output("  Next Wind Change: {0}", sim.TickNextWindChange);
         }
 
         public override void Execute(List<string> _params, CommandSenderInfo _senderInfo)
