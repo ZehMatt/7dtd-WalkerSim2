@@ -331,8 +331,14 @@ namespace WalkerSim
 
             var simulation = Simulation.Instance;
 
-            var maxViewDistance = GamePrefs.GetInt(EnumGamePrefs.ServerMaxAllowedViewDistance);
-            var viewRadius = (maxViewDistance * 16) / 2;
+            // The amount of chunks that can be loaded around the player.
+            var maxViewDistance = System.Math.Min(GamePrefs.GetInt(EnumGamePrefs.ServerMaxAllowedViewDistance), 12);
+            if (maxViewDistance > 7)
+            {
+                // Shrink by two chunks to reduce the amount of entities falling off the world.
+                maxViewDistance -= 2;
+            }
+            var viewRadius = (maxViewDistance * 16);
 
             Logging.Debug("Player Spawn: {0}", _respawnReason);
             Logging.Debug("Max View Distance: {0}", maxViewDistance);
