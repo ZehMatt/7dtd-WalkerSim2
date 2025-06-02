@@ -192,7 +192,7 @@ namespace WalkerSim
             {
                 var neighbor = nearby[i];
 
-                var dist = Vector3.DistanceSqr(agent.Position, neighbor.Position);
+                var dist = Vector3.Distance2DSqr(agent.Position, neighbor.Position);
                 if (dist > distanceSqr)
                     continue;
                 mean += neighbor.Position;
@@ -218,7 +218,7 @@ namespace WalkerSim
                 if (neighbor.Group != agent.Group)
                     continue;
 
-                var dist = Vector3.DistanceSqr(agent.Position, neighbor.Position);
+                var dist = Vector3.Distance2DSqr(agent.Position, neighbor.Position);
                 if (dist > distanceSqr)
                     continue;
                 mean += neighbor.Position;
@@ -244,7 +244,7 @@ namespace WalkerSim
                 if (neighbor.Group == agent.Group)
                     continue;
 
-                var dist = Vector3.DistanceSqr(agent.Position, neighbor.Position);
+                var dist = Vector3.Distance2DSqr(agent.Position, neighbor.Position);
                 if (dist > distanceSqr)
                     continue;
                 mean += neighbor.Position;
@@ -268,7 +268,7 @@ namespace WalkerSim
             {
                 var neighbor = nearby[i];
 
-                var dist = Vector3.DistanceSqr(agent.Position, neighbor.Position);
+                var dist = Vector3.Distance2DSqr(agent.Position, neighbor.Position);
                 if (dist > distanceSqr)
                     continue;
 
@@ -297,7 +297,7 @@ namespace WalkerSim
                 if (neighbor.Group != agent.Group)
                     continue;
 
-                var dist = Vector3.DistanceSqr(agent.Position, neighbor.Position);
+                var dist = Vector3.Distance2DSqr(agent.Position, neighbor.Position);
                 if (dist > distanceSqr)
                     continue;
 
@@ -325,7 +325,7 @@ namespace WalkerSim
                 if (neighbor.Group == agent.Group)
                     continue;
 
-                var dist = Vector3.DistanceSqr(agent.Position, neighbor.Position);
+                var dist = Vector3.Distance2DSqr(agent.Position, neighbor.Position);
                 if (dist > distanceSqr)
                     continue;
 
@@ -350,7 +350,7 @@ namespace WalkerSim
             {
                 var neighbor = nearby[i];
 
-                var dist = Vector3.DistanceSqr(agent.Position, neighbor.Position);
+                var dist = Vector3.Distance2DSqr(agent.Position, neighbor.Position);
                 if (dist > distanceSqr)
                     continue;
 
@@ -372,7 +372,7 @@ namespace WalkerSim
                 if (neighbor.Group != agent.Group)
                     continue;
 
-                var dist = Vector3.DistanceSqr(agent.Position, neighbor.Position);
+                var dist = Vector3.Distance2DSqr(agent.Position, neighbor.Position);
                 if (dist > distanceSqr)
                     continue;
 
@@ -393,7 +393,7 @@ namespace WalkerSim
                 if (neighbor.Group == agent.Group)
                     continue;
 
-                var dist = Vector3.DistanceSqr(agent.Position, neighbor.Position);
+                var dist = Vector3.Distance2DSqr(agent.Position, neighbor.Position);
                 if (dist > distanceSqr)
                     continue;
 
@@ -526,7 +526,7 @@ namespace WalkerSim
                         continue;
                 }
 
-                var dist = Vector3.DistanceSqr(agent.Position, deco.Position);
+                var dist = Vector3.Distance2DSqr(agent.Position, deco.Position);
 
                 if (dist < closestDist)
                 {
@@ -559,7 +559,7 @@ namespace WalkerSim
             for (int i = 0; i < decos.Length; i++)
             {
                 var deco = decos[i];
-                var dist = Vector3.DistanceSqr(agent.Position, deco.Position);
+                var dist = Vector3.Distance2DSqr(agent.Position, deco.Position);
                 if (dist > distance)
                 {
                     continue;
@@ -584,7 +584,7 @@ namespace WalkerSim
                 var ev = events[i];
                 if (ev.Type == EventType.Noise)
                 {
-                    var dist = Vector3.Distance(agent.Position, ev.Position);
+                    var dist = Vector3.Distance2D(agent.Position, ev.Position);
                     if (dist > ev.Radius)
                     {
                         continue;

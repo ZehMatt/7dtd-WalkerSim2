@@ -150,7 +150,7 @@ namespace WalkerSim
                 if (other.Index == excludeIndex)
                     continue;
 
-                var distance = Vector3.DistanceSqr(pos, other.Position);
+                var distance = Vector3.Distance2DSqr(pos, other.Position);
                 if (distance < maxDistSqr)
                 {
                     res.Add(other);
@@ -229,7 +229,7 @@ namespace WalkerSim
                 if (other.CurrentState != Agent.State.Wandering)
                     continue;
 
-                var distance = Vector3.DistanceSqr(pos, other.Position);
+                var distance = Vector3.Distance2DSqr(pos, other.Position);
                 if (distance < maxDistSqr)
                 {
                     count++;

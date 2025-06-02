@@ -48,7 +48,7 @@ namespace WalkerSim
                 if (agent.CurrentState != Agent.State.Active)
                     continue;
 
-                var dist = Vector3.Distance(position, agent.Position);
+                var dist = Vector3.Distance2D(position, agent.Position);
                 if (dist <= radius)
                 {
                     count++;
@@ -134,7 +134,7 @@ namespace WalkerSim
                     if (agent.CurrentState != Agent.State.Wandering)
                         continue;
 
-                    var dist = Vector3.Distance(playerPos, agent.Position);
+                    var dist = Vector3.Distance2D(playerPos, agent.Position);
                     if (dist < player.ViewRadius - activationBorderSize)
                         continue;
 

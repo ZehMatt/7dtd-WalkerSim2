@@ -47,12 +47,12 @@ namespace WalkerSim
 
         public float GetDistance(Agent other)
         {
-            return Vector3.Distance(Position, other.Position);
+            return Vector3.Distance2D(Position, other.Position);
         }
 
         public float GetDistance(Vector3 other)
         {
-            return Vector3.Distance(Position, other);
+            return Vector3.Distance2D(Position, other);
         }
     }
 }

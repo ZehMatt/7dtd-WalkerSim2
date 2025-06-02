@@ -42,7 +42,7 @@ namespace WalkerSim
                         continue;
                     }
 
-                    var dist = Vector3.Distance(ev.Position, data.Position);
+                    var dist = Vector3.Distance2D(ev.Position, data.Position);
 
                     // If the new event is within the existing event's radius we add to the duration.
                     if (dist <= ev.Radius)

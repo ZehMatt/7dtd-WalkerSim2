@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace WalkerSim
 {
@@ -94,7 +94,7 @@ namespace WalkerSim
             {
                 var other = cell[i];
 
-                var distance = Vector3.DistanceSqr(pos, other.Position);
+                var distance = Vector3.Distance2DSqr(pos, other.Position);
                 if (distance < maxDistSqr)
                 {
                     res.Add(other);

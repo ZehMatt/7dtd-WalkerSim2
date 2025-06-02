@@ -57,7 +57,7 @@ namespace WalkerSim
             // is not wanted. If the player respawns it will update the position and despawn as usual.
             foreach (var ply in _state.Players)
             {
-                var dist = Vector3.Distance(pos, ply.Value.Position);
+                var dist = Vector3.Distance2D(pos, ply.Value.Position);
 
                 // We add a little offset to avoid constant spawn-despawning.
                 if (dist >= ply.Value.ViewRadius + 8)
