@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 
 namespace WalkerSim
 {
-    internal class Math
+    internal class MathEx
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Remap(float value, float min1, float max1, float min2, float max2)

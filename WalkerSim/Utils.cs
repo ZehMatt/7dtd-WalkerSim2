@@ -51,8 +51,8 @@ namespace WalkerSim
         {
             float x0 = (float)prng.NextDouble();
             float y0 = (float)prng.NextDouble();
-            float x = Math.Remap(x0, 0f, 1f, mins.X + borderSize, maxs.X - borderSize);
-            float y = Math.Remap(y0, 0f, 1f, mins.Y + borderSize, maxs.Y - borderSize);
+            float x = MathEx.Remap(x0, 0f, 1f, mins.X + borderSize, maxs.X - borderSize);
+            float y = MathEx.Remap(y0, 0f, 1f, mins.Y + borderSize, maxs.Y - borderSize);
             return new Vector3(x, y);
         }
 

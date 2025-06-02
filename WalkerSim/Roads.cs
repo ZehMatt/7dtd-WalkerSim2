@@ -113,8 +113,8 @@ namespace WalkerSim
             res._data = data;
 
             // Create the grid.
-            res._columnCount = (int)Math.Ceiling((float)width / CellSize);
-            res._rowCount = (int)Math.Ceiling((float)height / CellSize);
+            res._columnCount = (int)MathEx.Ceiling((float)width / CellSize);
+            res._rowCount = (int)MathEx.Ceiling((float)height / CellSize);
             res._roadGrid = new Cell[res._columnCount * res._rowCount];
             for (int i = 0; i < res._roadGrid.Length; i++)
             {

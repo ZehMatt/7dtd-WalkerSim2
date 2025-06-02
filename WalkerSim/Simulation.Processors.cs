@@ -432,8 +432,8 @@ namespace WalkerSim
             var worldMaxs = state.WorldMaxs;
 
             // Remap the position to the roads bitmap.
-            var x = Math.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, roads.Width);
-            var y = Math.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, roads.Height);
+            var x = MathEx.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, roads.Width);
+            var y = MathEx.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, roads.Height);
 
             int ix = (int)x;
             int iy = (int)y;
@@ -477,8 +477,8 @@ namespace WalkerSim
             var worldMaxs = state.WorldMaxs;
 
             // Remap the position to the roads bitmap.
-            var x = Math.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, roads.Width);
-            var y = Math.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, roads.Height);
+            var x = MathEx.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, roads.Width);
+            var y = MathEx.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, roads.Height);
 
             int ix = (int)x;
             int iy = (int)y;

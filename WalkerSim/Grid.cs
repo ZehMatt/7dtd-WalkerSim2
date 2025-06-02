@@ -35,8 +35,8 @@ namespace WalkerSim
         private int GetCellIndex(Vector3 positon)
         {
             // The grid uses 0, 0 as starting origin.
-            float remapX = Math.Remap(positon.X, Mins.X, Maxs.X, 0f, Size.X);
-            float remapY = Math.Remap(positon.Y, Mins.Y, Maxs.Y, 0f, Size.Y);
+            float remapX = MathEx.Remap(positon.X, Mins.X, Maxs.X, 0f, Size.X);
+            float remapY = MathEx.Remap(positon.Y, Mins.Y, Maxs.Y, 0f, Size.Y);
 
             int cellX = (int)(remapX / CellSize);
             int cellY = (int)(remapY / CellSize);
@@ -112,8 +112,8 @@ namespace WalkerSim
             var maxDistSqr = maxDistance * maxDistance;
 
             // The grid uses 0, 0 as starting origin.
-            float remapX = Math.Remap(position.X, Mins.X, Maxs.X, 0f, Size.X);
-            float remapY = Math.Remap(position.Y, Mins.Y, Maxs.Y, 0f, Size.Y);
+            float remapX = MathEx.Remap(position.X, Mins.X, Maxs.X, 0f, Size.X);
+            float remapY = MathEx.Remap(position.Y, Mins.Y, Maxs.Y, 0f, Size.Y);
 
             int cellX = (int)(remapX / CellSize);
             int cellY = (int)(remapY / CellSize);

@@ -35,8 +35,8 @@ namespace WalkerSim
             var worldMaxs = _state.WorldMaxs;
 
             // The grid uses 0, 0 as starting origin.
-            float remapX = Math.Remap(x, worldMins.X, worldMaxs.X, 0f, WorldSize.X);
-            float remapY = Math.Remap(y, worldMins.Y, worldMaxs.Y, 0f, WorldSize.Y);
+            float remapX = MathEx.Remap(x, worldMins.X, worldMaxs.X, 0f, WorldSize.X);
+            float remapY = MathEx.Remap(y, worldMins.Y, worldMaxs.Y, 0f, WorldSize.Y);
 
             int cellX = (int)(remapX / CellSize);
             int cellY = (int)(remapY / CellSize);
@@ -173,8 +173,8 @@ namespace WalkerSim
             var worldMaxs = _state.WorldMaxs;
 
             // The grid uses 0, 0 as starting origin.
-            float remapX = Math.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, WorldSize.X);
-            float remapY = Math.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, WorldSize.Y);
+            float remapX = MathEx.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, WorldSize.X);
+            float remapY = MathEx.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, WorldSize.Y);
 
             int cellX = (int)(remapX / CellSize);
             int cellY = (int)(remapY / CellSize);
@@ -247,8 +247,8 @@ namespace WalkerSim
             var worldMaxs = _state.WorldMaxs;
 
             // The grid uses 0, 0 as starting origin.
-            float remapX = Math.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, WorldSize.X);
-            float remapY = Math.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, WorldSize.Y);
+            float remapX = MathEx.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, WorldSize.X);
+            float remapY = MathEx.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, WorldSize.Y);
 
             int cellX = (int)(remapX / CellSize);
             int cellY = (int)(remapY / CellSize);

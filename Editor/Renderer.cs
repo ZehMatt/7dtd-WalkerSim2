@@ -127,7 +127,7 @@ namespace WalkerSim.Editor
                 //gr.FillRectangle(color, imagePos.X, imagePos.Y, 1f, 1f);
                 gr.FillEllipse(color, imagePos.X - 2, imagePos.Y - 2, 4f, 4f);
 
-                var viewRadius = Math.Remap(player.ViewRadius, 0, worldSize.X, 0, width);
+                var viewRadius = MathEx.Remap(player.ViewRadius, 0, worldSize.X, 0, width);
                 gr.DrawEllipse(Pens.Blue, imagePos.X - viewRadius, imagePos.Y - viewRadius, viewRadius * 2, viewRadius * 2);
             }
         }
@@ -142,7 +142,7 @@ namespace WalkerSim.Editor
             foreach (var ev in simulation.Events)
             {
                 var imagePos = SimPosToBitmapPos(gr, simulation, ev.Position);
-                var radius = Math.Remap(ev.Radius, 0, worldSize.X, 0, width);
+                var radius = MathEx.Remap(ev.Radius, 0, worldSize.X, 0, width);
 
                 gr.DrawEllipse(Pens.Red, imagePos.X - radius, imagePos.Y - radius, radius * 2, radius * 2);
             }
@@ -165,8 +165,8 @@ namespace WalkerSim.Editor
             {
                 var imagePos = SimPosToBitmapPos(gr, simulation, poi.Position);
 
-                var sizeW = Math.Remap(poi.Bounds.X, 0, worldSize.X, 0, width);
-                var sizeH = Math.Remap(poi.Bounds.Y, 0, worldSize.Y, 0, height);
+                var sizeW = MathEx.Remap(poi.Bounds.X, 0, worldSize.X, 0, width);
+                var sizeH = MathEx.Remap(poi.Bounds.Y, 0, worldSize.Y, 0, height);
 
                 // Rectangle
                 var rect = new RectangleF(imagePos.X - sizeW / 2, imagePos.Y - sizeH / 2, sizeW, sizeH);

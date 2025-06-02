@@ -102,9 +102,9 @@ namespace WalkerSim
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 Clamp(Vector3 v, Vector3 min, Vector3 max) =>
             new Vector3(
-                Math.Clamp(v.X, min.X, max.X),
-                Math.Clamp(v.Y, min.Y, max.Y),
-                Math.Clamp(v.Z, min.Z, max.Z)
+                MathEx.Clamp(v.X, min.X, max.X),
+                MathEx.Clamp(v.Y, min.Y, max.Y),
+                MathEx.Clamp(v.Z, min.Z, max.Z)
             );
 
         [Conditional("DEBUG")]
@@ -123,7 +123,7 @@ namespace WalkerSim
 
         public static Vector3 Lerp(Vector3 start, Vector3 end, float t)
         {
-            t = Math.Clamp(t, 0f, 1f);
+            t = MathEx.Clamp(t, 0f, 1f);
             return new Vector3(
                 start.X + (end.X - start.X) * t,
                 start.Y + (end.Y - start.Y) * t,

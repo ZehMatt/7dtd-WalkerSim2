@@ -472,8 +472,8 @@ namespace WalkerSim.Editor
             var worldMins = sim.WorldMins;
             var worldMaxs = sim.WorldMaxs;
 
-            var newX = Math.Remap(x, 0, simCanvas.Width, worldMins.X, worldMaxs.X);
-            var newY = Math.Remap(y, 0, simCanvas.Height, worldMins.Y, worldMaxs.Y);
+            var newX = MathEx.Remap(x, 0, simCanvas.Width, worldMins.X, worldMaxs.X);
+            var newY = MathEx.Remap(y, 0, simCanvas.Height, worldMins.Y, worldMaxs.Y);
 
             return new Vector3(newX, newY);
         }

@@ -162,7 +162,7 @@ namespace WalkerSim
                         Rendering.Primitives.DrawFilledCircle(new UnityEngine.Vector2(pos.X, pos.Y), 2, UnityEngine.Color.blue);
 
                         // FIXME: We should maybe draw an ellipse with x and y remapped.
-                        var viewRadius = Math.Remap(player.ViewRadius, 0, worldSize.X, 0, kWidth);
+                        var viewRadius = MathEx.Remap(player.ViewRadius, 0, worldSize.X, 0, kWidth);
                         Rendering.Primitives.DrawCircle(new UnityEngine.Vector2(pos.X, pos.Y), viewRadius, UnityEngine.Color.blue);
                     }
                 }
@@ -173,7 +173,7 @@ namespace WalkerSim
                     foreach (var ev in events)
                     {
                         var pos = simulation.RemapPosition2D(ev.Position, Vector3.Zero, kCanvas);
-                        var radius = Math.Remap(ev.Radius, 0, simulation.WorldSize.X, 0, kWidth);
+                        var radius = MathEx.Remap(ev.Radius, 0, simulation.WorldSize.X, 0, kWidth);
 
                         Rendering.Primitives.DrawCircle(new UnityEngine.Vector2(pos.X, pos.Y), radius, UnityEngine.Color.red);
                     }

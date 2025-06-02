@@ -189,8 +189,8 @@ namespace WalkerSim
             }
 
             // Clamp the velocity.
-            curVel.X = Math.Clamp(curVel.X, -2.0f, 2.0f);
-            curVel.Y = Math.Clamp(curVel.Y, -2.0f, 2.0f);
+            curVel.X = MathEx.Clamp(curVel.X, -2.0f, 2.0f);
+            curVel.Y = MathEx.Clamp(curVel.Y, -2.0f, 2.0f);
 
             curVel.Validate();
             agent.Velocity = curVel;

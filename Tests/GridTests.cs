@@ -12,8 +12,8 @@ namespace WalkerSim.Tests
         {
             var x = prng.NextDouble();
             var y = prng.NextDouble();
-            return new Vector3(Math.Remap((float)x, 0.0f, 1.0f, WorldMins.X, WorldMaxs.X),
-                Math.Remap((float)y, 0.0f, 1.0f, WorldMins.X, WorldMaxs.X));
+            return new Vector3(MathEx.Remap((float)x, 0.0f, 1.0f, WorldMins.X, WorldMaxs.X),
+                MathEx.Remap((float)y, 0.0f, 1.0f, WorldMins.X, WorldMaxs.X));
         }
 
         static void SetAgentsAroundPos(Simulation sim, Vector3 pos, float radius)

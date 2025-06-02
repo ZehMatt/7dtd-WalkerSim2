@@ -163,7 +163,7 @@ namespace WalkerSim
                     Simulation.Limits.MinDensity,
                     Simulation.Limits.MaxDensity);
 
-                config.PopulationDensity = Math.Clamp(config.PopulationDensity,
+                config.PopulationDensity = MathEx.Clamp(config.PopulationDensity,
                     Simulation.Limits.MinDensity,
                     Simulation.Limits.MaxDensity);
             }

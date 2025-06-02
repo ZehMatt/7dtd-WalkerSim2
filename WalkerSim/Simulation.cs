@@ -201,8 +201,8 @@ namespace WalkerSim
             float borderSize = 250;
             float x0 = (float)prng.NextDouble();
             float y0 = (float)prng.NextDouble();
-            float x = Math.Remap(x0, 0f, 1f, _state.WorldMins.X + borderSize, _state.WorldMaxs.X - borderSize);
-            float y = Math.Remap(y0, 0f, 1f, _state.WorldMins.Y + borderSize, _state.WorldMaxs.Y - borderSize);
+            float x = MathEx.Remap(x0, 0f, 1f, _state.WorldMins.X + borderSize, _state.WorldMaxs.X - borderSize);
+            float y = MathEx.Remap(y0, 0f, 1f, _state.WorldMins.Y + borderSize, _state.WorldMaxs.Y - borderSize);
             return new Vector3(x, y);
         }
 
@@ -221,7 +221,7 @@ namespace WalkerSim
             {
                 // Top.
                 float x0 = (float)prng.NextDouble();
-                res.X = Math.Remap(x0, 0f, 1f, worldMins.X + borderSize, worldMaxs.X - borderSize);
+                res.X = MathEx.Remap(x0, 0f, 1f, worldMins.X + borderSize, worldMaxs.X - borderSize);
                 res.Y = worldMins.Y + borderSize;
             }
             else if (side == 1)
@@ -229,13 +229,13 @@ namespace WalkerSim
                 // Right.
                 res.X = worldMaxs.X - borderSize;
                 float y0 = (float)prng.NextDouble();
-                res.Y = Math.Remap(y0, 0f, 1f, worldMins.Y + borderSize, worldMaxs.Y - borderSize);
+                res.Y = MathEx.Remap(y0, 0f, 1f, worldMins.Y + borderSize, worldMaxs.Y - borderSize);
             }
             else if (side == 2)
             {
                 // Bottom.
                 float x0 = (float)prng.NextDouble();
-                res.X = Math.Remap(x0, 0f, 1f, worldMins.X + borderSize, worldMaxs.X - borderSize);
+                res.X = MathEx.Remap(x0, 0f, 1f, worldMins.X + borderSize, worldMaxs.X - borderSize);
                 res.Y = worldMaxs.Y - borderSize;
             }
             else if (side == 3)
@@ -243,7 +243,7 @@ namespace WalkerSim
                 // Left.
                 res.X = worldMins.X + borderSize;
                 float y0 = (float)prng.NextDouble();
-                res.Y = Math.Remap(y0, 0f, 1f, worldMins.Y + borderSize, worldMaxs.Y - borderSize);
+                res.Y = MathEx.Remap(y0, 0f, 1f, worldMins.Y + borderSize, worldMaxs.Y - borderSize);
             }
 
             return res;
@@ -351,7 +351,7 @@ namespace WalkerSim
             var config = _state.Config;
 
             // Give each agent 2 meters distance to each other.
-            var maxDistance = Math.Clamp((float)_state.Config.GroupSize * 2.0f, 10.0f, 500.0f);
+            var maxDistance = MathEx.Clamp((float)_state.Config.GroupSize * 2.0f, 10.0f, 500.0f);
 
             if (config.StartAgentsGrouped)
             {
@@ -379,7 +379,7 @@ namespace WalkerSim
 
             var sqrKm = (WorldSize.X / 1000.0f) * (WorldSize.Y / 1000.0f);
             var maxAgents = (int)System.Math.Ceiling(sqrKm * config.PopulationDensity);
-            maxAgents = Math.Clamp(maxAgents, 1, Limits.MaxAgents);
+            maxAgents = MathEx.Clamp(maxAgents, 1, Limits.MaxAgents);
 
             _state.GroupCount = maxAgents / config.GroupSize;
             if (maxAgents % config.GroupSize != 0)
@@ -507,8 +507,8 @@ namespace WalkerSim
             var worldMins = _state.WorldMins;
             var worldMaxs = _state.WorldMaxs;
 
-            pos.X = Math.Remap(pos.X, worldMins.X, worldMaxs.X, min.X, max.X);
-            pos.Y = Math.Remap(pos.Y, worldMins.Y, worldMaxs.Y, min.Y, max.Y);
+            pos.X = MathEx.Remap(pos.X, worldMins.X, worldMaxs.X, min.X, max.X);
+            pos.Y = MathEx.Remap(pos.Y, worldMins.Y, worldMaxs.Y, min.Y, max.Y);
             pos.Z = 0;
 
             return pos;

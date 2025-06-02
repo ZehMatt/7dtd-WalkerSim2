@@ -41,7 +41,7 @@ namespace WalkerSim.Editor
 
             var image = canvas.Image;
             var imagePos = simulation.RemapPosition2D(position, Vector3.Zero, new Vector3(image.Width, image.Height));
-            var radius = Math.Remap(Radius, 0, worldSize.X, 0, image.Width);
+            var radius = MathEx.Remap(Radius, 0, worldSize.X, 0, image.Width);
 
             graphics.DrawEllipse(Pens.Red, imagePos.X - radius, imagePos.Y - radius, radius * 2, radius * 2);
         }
@@ -74,7 +74,7 @@ namespace WalkerSim.Editor
 
             var image = canvas.Image;
             var imagePos = simulation.RemapPosition2D(position, Vector3.Zero, new Vector3(image.Width, image.Height));
-            var radius = Math.Remap(Radius, 0, worldSize.X, 0, image.Width);
+            var radius = MathEx.Remap(Radius, 0, worldSize.X, 0, image.Width);
 
             graphics.DrawEllipse(Pens.Red, imagePos.X - radius, imagePos.Y - radius, radius * 2, radius * 2);
         }
@@ -97,7 +97,7 @@ namespace WalkerSim.Editor
 
             var image = canvas.Image;
             var imagePos = simulation.RemapPosition2D(position, Vector3.Zero, new Vector3(image.Width, image.Height));
-            var radius = Math.Remap(96, 0, worldSize.X, 0, image.Width);
+            var radius = MathEx.Remap(96, 0, worldSize.X, 0, image.Width);
 
             graphics.DrawEllipse(Pens.Red, imagePos.X - radius, imagePos.Y - radius, radius * 2, radius * 2);
         }
@@ -119,7 +119,7 @@ namespace WalkerSim.Editor
 
             var image = canvas.Image;
             var imagePos = simulation.RemapPosition2D(position, Vector3.Zero, new Vector3(image.Width, image.Height));
-            var radius = Math.Remap(96, 0, worldSize.X, 0, image.Width);
+            var radius = MathEx.Remap(96, 0, worldSize.X, 0, image.Width);
 
             graphics.DrawEllipse(Pens.Red, imagePos.X - radius, imagePos.Y - radius, radius * 2, radius * 2);
         }
