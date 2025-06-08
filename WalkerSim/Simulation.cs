@@ -467,20 +467,13 @@ namespace WalkerSim
 
                 while (accumulator >= TickRate)
                 {
-                    _simTime.Restart();
-
                     Tick();
 
-                    _simTime.Capture();
+                    accumulator -= TickRate;
 
                     if (_shouldStop)
                         break;
-
-                    CheckAgentSpawn();
-                    accumulator -= TickRate;
                 }
-
-                CheckAutoSave();
 
                 if (_shouldStop)
                     break;

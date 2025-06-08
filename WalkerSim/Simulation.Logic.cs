@@ -32,6 +32,51 @@ namespace WalkerSim
 
         }
 
+        private void UpdateAgents()
+        {
+            var agents = _state.Agents;
+            var maxUpdates = MaxUpdateCountPerTick;
+
+            if (agents.Count > 0)
+            {
+                if (EditorMode || _isFastAdvancing)
+                {
+                    // Update in parallel.
+                    Parallel.For(0, maxUpdates, i =>
+                    {
+                        var index = (int)((_state.SlowIterator + (uint)i) % agents.Count);
+                        var agent = agents[index];
+                        UpdateAgentLogic(agent);
+                    });
+                }
+                else
+                {
+                    // Update single threaded.
+                    for (int i = 0; i < maxUpdates; i++)
+                    {
+                        var index = (int)((_state.SlowIterator + (uint)i) % agents.Count);
+                        var agent = agents[index];
+                        UpdateAgentLogic(agent);
+                    }
+                }
+
+                _state.SlowIterator += maxUpdates;
+
+                // Update the grid, can't do this in parallel since it's not thread safe.
+                for (int i = 0; i < agents.Count; i++)
+                {
+                    MoveInGrid(agents[i]);
+                }
+            }
+
+#if DEBUG
+            for (int i = 0; i < agents.Count; i++)
+            {
+                ValidateAgentInCorrectCell(agents[i]);
+            }
+#endif
+        }
+
         public void Tick()
         {
             _simTime.Restart();
@@ -40,59 +85,20 @@ namespace WalkerSim
             {
                 lock (_state)
                 {
+                    CheckAgentSpawn();
                     UpdateWindDirection();
                     UpdateEvents();
                     UpatePOICounter();
-
-                    var agents = _state.Agents;
-                    var maxUpdates = MaxUpdateCountPerTick;
-
-                    if (agents.Count > 0)
-                    {
-                        if (EditorMode || _isFastAdvancing)
-                        {
-                            // Update in parallel.
-                            Parallel.For(0, maxUpdates, i =>
-                            {
-                                var index = (int)((_state.SlowIterator + (uint)i) % agents.Count);
-                                var agent = agents[index];
-                                UpdateAgentLogic(agent);
-                            });
-                        }
-                        else
-                        {
-                            // Update single threaded.
-                            for (int i = 0; i < maxUpdates; i++)
-                            {
-                                var index = (int)((_state.SlowIterator + (uint)i) % agents.Count);
-                                var agent = agents[index];
-                                UpdateAgentLogic(agent);
-                            }
-                        }
-
-                        _state.SlowIterator += maxUpdates;
-
-                        // Update the grid, can't do this in parallel since it's not thread safe.
-                        for (int i = 0; i < agents.Count; i++)
-                        {
-                            MoveInGrid(agents[i]);
-                        }
-                    }
-
-#if DEBUG
-                    for (int i = 0; i < agents.Count; i++)
-                    {
-                        ValidateAgentInCorrectCell(agents[i]);
-                    }
-#endif
-
-                    _state.Ticks++;
+                    UpdateAgents();
+                    CheckAutoSave();
                 }
             }
             catch (System.Exception ex)
             {
                 Logging.Exception(ex);
             }
+
+            _state.Ticks++;
 
             _simTime.Capture();
         }

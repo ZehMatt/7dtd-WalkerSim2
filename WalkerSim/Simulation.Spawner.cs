@@ -125,7 +125,7 @@ namespace WalkerSim
                 var playerPos = player.Position;
 
                 _nearPlayer.Clear();
-                QueryCells(playerPos, -1, player.ViewRadius, _nearPlayer);
+                QueryCellsLockFree(playerPos, -1, player.ViewRadius, _nearPlayer);
 
                 for (int i = 0; i < _nearPlayer.Count; i++)
                 {
@@ -190,48 +190,55 @@ namespace WalkerSim
                 return;
             }
 
-            SpawnData spawnData;
-            if (!_pendingSpawns.TryDequeue(out spawnData))
+            try
             {
-                return;
-            }
-
-            var agent = spawnData.Agent;
-            _nextSpawn = now.AddSeconds(Limits.SpawnDespawnDelay);
-
-            int agentEntityId = -1;
-            if (_agentSpawnHandler != null)
-            {
-                agentEntityId = _agentSpawnHandler(this, spawnData);
-            }
-            else
-            {
-                if (EditorMode)
+                SpawnData spawnData;
+                if (!_pendingSpawns.TryDequeue(out spawnData))
                 {
-                    agentEntityId = _nextFakeEntityId;
-                    _nextFakeEntityId++;
+                    return;
+                }
+
+                var agent = spawnData.Agent;
+                _nextSpawn = now.AddSeconds(Limits.SpawnDespawnDelay);
+
+                int agentEntityId = -1;
+                if (_agentSpawnHandler != null)
+                {
+                    agentEntityId = _agentSpawnHandler(this, spawnData);
                 }
                 else
                 {
-                    Logging.Err("No spawn handler registered");
+                    if (EditorMode)
+                    {
+                        agentEntityId = _nextFakeEntityId;
+                        _nextFakeEntityId++;
+                    }
+                    else
+                    {
+                        Logging.Err("No spawn handler registered");
+                    }
+                }
+
+                if (agentEntityId != -1)
+                {
+                    agent.EntityId = agentEntityId;
+                    agent.CurrentState = Agent.State.Active;
+
+                    AddActiveAgent(agentEntityId, agent);
+
+                    _state.SuccessfulSpawns++;
+                }
+                else
+                {
+                    // Turn back to wandering, currently not possible to spawn.
+                    agent.CurrentState = Agent.State.Wandering;
+
+                    _state.FailedSpawns++;
                 }
             }
-
-            if (agentEntityId != -1)
+            catch (Exception ex)
             {
-                agent.EntityId = agentEntityId;
-                agent.CurrentState = Agent.State.Active;
-
-                AddActiveAgent(agentEntityId, agent);
-
-                _state.SuccessfulSpawns++;
-            }
-            else
-            {
-                // Turn back to wandering, currently not possible to spawn.
-                agent.CurrentState = Agent.State.Wandering;
-
-                _state.FailedSpawns++;
+                Logging.Exception(ex);
             }
         }
 
