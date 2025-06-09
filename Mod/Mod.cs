@@ -130,6 +130,18 @@ namespace WalkerSim
             var worldMins = VectorUtils.ToSim(min);
             var worldMaxs = VectorUtils.ToSim(max);
 
+            // NOTE: Because the conversion might rotate the axis we have to adjust for
+            // the correct min and max values.
+            var actualMinX = Math.Min(worldMins.X, worldMaxs.X);
+            var actualMinY = Math.Min(worldMins.Y, worldMaxs.Y);
+            var actualMinZ = Math.Min(worldMins.Z, worldMaxs.Z);
+            var actualMaxX = Math.Max(worldMins.X, worldMaxs.X);
+            var actualMaxY = Math.Max(worldMins.Y, worldMaxs.Y);
+            var actualMaxZ = Math.Max(worldMins.Z, worldMaxs.Z);
+
+            worldMins = new Vector3(actualMinX, actualMinY, actualMinZ);
+            worldMaxs = new Vector3(actualMaxX, actualMaxY, actualMaxZ);
+
             return (worldMins, worldMaxs);
         }
 
@@ -384,6 +396,7 @@ namespace WalkerSim
             Logging.Debug("Player Spawn: {0}", _respawnReason);
             Logging.Debug("Max View Distance: {0}", maxViewDistance);
             Logging.Debug("View Radius: {0}", viewRadius);
+            Logging.Debug("Spawn Position: {0}", _pos);
 
             int spawnDelay = 0;
             switch (_respawnReason)
