@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 
 namespace WalkerSim
 {
@@ -16,7 +16,7 @@ namespace WalkerSim
 
         public static Vector3 ToSim(Vector3i vec)
         {
-            return new Vector3(vec.x, -vec.z, vec.y);
+            return new Vector3(vec.x, vec.z, vec.y);
         }
 
         public static UnityEngine.Vector3 ToUnity(Vector3 vec)

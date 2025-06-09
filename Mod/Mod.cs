@@ -126,8 +126,9 @@ namespace WalkerSim
             var world = GameManager.Instance.World;
             world.GetWorldExtent(out Vector3i min, out Vector3i max);
 
-            var worldMins = VectorUtils.ToSim(new UnityEngine.Vector3(min.x, min.y, min.z));
-            var worldMaxs = VectorUtils.ToSim(new UnityEngine.Vector3(max.x, max.y, max.z));
+            // Construct the corrected min and max vectors
+            var worldMins = VectorUtils.ToSim(min);
+            var worldMaxs = VectorUtils.ToSim(max);
 
             return (worldMins, worldMaxs);
         }
@@ -158,9 +159,9 @@ namespace WalkerSim
 
             // Set to actual world size.
             {
-                simulation.SetWorldSize(worldMins, worldMaxs);
+                Logging.Out("Actual World Size: {0}, {1}", worldMins, worldMaxs);
 
-                Logging.Out("World Size: {0}, {1}", worldMins, worldMaxs);
+                simulation.SetWorldSize(worldMins, worldMaxs);
             }
 
             // Load or create the state.
