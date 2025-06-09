@@ -1,6 +1,7 @@
 # 0.9.7 (in progress)
 - Fix: Allow clients with admin permission to run console commands such as `walkersim stats`, `walkersim show` will still only work on local games.
 - Fix: Incorrect calculation of the view radius, the spawn area was reduced by 50%.
+- Fix: State persisting between games when playing single player causing unintentional problems.
 - Change: Use 80% of maximum allowed zombies instead of 50%, 20% will be reserved for sleepers.
 - Improve: Spawning logic now takes into account how many spawned zombies are near players preventing one player taking all spawn slots, better balances multiplayer games.
 

@@ -29,6 +29,7 @@ namespace WalkerSim
             ModEvents.GameStartDone.RegisterHandler(GameStartDone);
             ModEvents.GameUpdate.RegisterHandler(GameUpdate);
             ModEvents.GameShutdown.RegisterHandler(GameShutdown);
+            ModEvents.WorldShuttingDown.RegisterHandler(WorldShuttingdown);
             ModEvents.EntityKilled.RegisterHandler(EntityKilled);
 
             ModEvents.PlayerSpawnedInWorld.RegisterHandler(PlayerSpawnedInWorld);
@@ -120,6 +121,17 @@ namespace WalkerSim
             }
         }
 
+        static (Vector3, Vector3) GetActualWorldSize()
+        {
+            var world = GameManager.Instance.World;
+            world.GetWorldExtent(out Vector3i min, out Vector3i max);
+
+            var worldMins = VectorUtils.ToSim(new UnityEngine.Vector3(min.x, min.y, min.z));
+            var worldMaxs = VectorUtils.ToSim(new UnityEngine.Vector3(max.x, max.y, max.z));
+
+            return (worldMins, worldMaxs);
+        }
+
         static void InitializeSimulation()
         {
             var simulation = Simulation.Instance;
@@ -142,29 +154,41 @@ namespace WalkerSim
                     Logging.Err("Failed to load map data");
             }
 
-            // Set world size
+            var (worldMins, worldMaxs) = GetActualWorldSize();
+
+            // Set to actual world size.
             {
-                var world = GameManager.Instance.World;
-                world.GetWorldExtent(out Vector3i min, out Vector3i max);
-
-                var worldMins = new Vector3(min.x, min.x, min.y);
-                var worldMaxs = new Vector3(max.x, max.x, max.y);
-
                 simulation.SetWorldSize(worldMins, worldMaxs);
+
+                Logging.Out("World Size: {0}, {1}", worldMins, worldMaxs);
             }
 
             // Load or create the state.
             {
                 var simFile = GetSimulationSaveFile();
+                var resetSim = false;
 
                 if (System.IO.File.Exists(simFile) && simulation.Load(simFile))
                 {
                     Logging.Out("Using existing simulation from: {0}", simFile);
                     CompareConfig();
+
+                    // See if world size matches.
+                    if (simulation.WorldMins != worldMins || simulation.WorldMaxs != worldMaxs)
+                    {
+                        Logging.Warn("World size in simulation does not match the actual world size, resetting simulation." +
+                            "This should never happen, make sure the save folder does not contain a 'walkersim.bin' save file from another game.");
+                        resetSim = true;
+                    }
                 }
                 else
                 {
                     Logging.Out("No previous simulation found, starting new.");
+                    resetSim = true;
+                }
+
+                if (resetSim)
+                {
                     ResetSimulation();
                 }
 
@@ -206,6 +230,8 @@ namespace WalkerSim
 
         static void GameStartDone()
         {
+            Logging.Info("GameStartDone, setting up simulation...");
+
             if (!IsHost())
             {
                 // If we are just a client we also avoid using hooks to not mess with EAC.
@@ -303,11 +329,25 @@ namespace WalkerSim
             }
         }
 
-        static void GameShutdown()
+        static void ShutdownSimulation()
         {
             var simulation = Simulation.Instance;
-            simulation.AutoSave();
             simulation.Stop();
+            simulation.AutoSave();
+        }
+
+        static void GameShutdown()
+        {
+            Logging.Info("GameShutdown, stopping simulation...");
+
+            ShutdownSimulation();
+        }
+
+        static void WorldShuttingdown()
+        {
+            Logging.Info("WorldShuttingdown, stopping simulation...");
+
+            ShutdownSimulation();
         }
 
         static int GetPlayerEntityId(ClientInfo _cInfo)
