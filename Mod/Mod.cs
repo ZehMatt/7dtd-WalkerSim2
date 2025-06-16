@@ -41,7 +41,7 @@ namespace WalkerSim
             Logging.Out($"WalkerSim v{BuildInfo.Version} initialized.");
         }
 
-        static void GameAwake()
+        static void GameAwake(ref ModEvents.SGameAwakeData data)
         {
         }
 
@@ -241,7 +241,7 @@ namespace WalkerSim
             return false;
         }
 
-        static void GameStartDone()
+        static void GameStartDone(ref ModEvents.SGameStartDoneData data)
         {
             Logging.Info("GameStartDone, setting up simulation...");
 
@@ -286,7 +286,7 @@ namespace WalkerSim
             simulation.GameUpdate((float)diff.TotalSeconds);
         }
 
-        static void GameUpdate()
+        static void GameUpdate(ref ModEvents.SGameUpdateData data)
         {
             if (!IsHost())
             {
@@ -349,14 +349,14 @@ namespace WalkerSim
             simulation.AutoSave();
         }
 
-        static void GameShutdown()
+        static void GameShutdown(ref ModEvents.SGameShutdownData data)
         {
             Logging.Info("GameShutdown, stopping simulation...");
 
             ShutdownSimulation();
         }
 
-        static void WorldShuttingdown()
+        static void WorldShuttingdown(ref ModEvents.SWorldShuttingDownData data)
         {
             Logging.Info("WorldShuttingdown, stopping simulation...");
 
@@ -375,8 +375,9 @@ namespace WalkerSim
             return player.entityId;
         }
 
-        static void PlayerSpawnedInWorld(ClientInfo _cInfo, RespawnType _respawnReason, Vector3i _pos)
+        static void PlayerSpawnedInWorld(ref ModEvents.SPlayerSpawnedInWorldData data)
         {
+            // ClientInfo _cInfo, RespawnType _respawnReason, Vector3i _pos
             if (!IsHost())
             {
                 return;
@@ -393,13 +394,13 @@ namespace WalkerSim
             }
             var viewRadius = (maxViewDistance * 16);
 
-            Logging.Debug("Player Spawn: {0}", _respawnReason);
+            Logging.Debug("Player Spawn: {0}", data.RespawnType);
             Logging.Debug("Max View Distance: {0}", maxViewDistance);
             Logging.Debug("View Radius: {0}", viewRadius);
-            Logging.Debug("Spawn Position: {0}", _pos);
+            Logging.Debug("Spawn Position: {0}", data.Position);
 
             int spawnDelay = 0;
-            switch (_respawnReason)
+            switch (data.RespawnType)
             {
                 case RespawnType.JoinMultiplayer:
                 case RespawnType.EnterMultiplayer:
@@ -412,22 +413,22 @@ namespace WalkerSim
                     break;
             }
 
-            switch (_respawnReason)
+            switch (data.RespawnType)
             {
                 case RespawnType.JoinMultiplayer:
                 case RespawnType.EnterMultiplayer:
                 case RespawnType.NewGame:
                 case RespawnType.LoadedGame:
-                    var entityId = GetPlayerEntityId(_cInfo);
-                    simulation.AddPlayer(entityId, VectorUtils.ToSim(_pos), viewRadius, spawnDelay);
+                    var entityId = GetPlayerEntityId(data.ClientInfo);
+                    simulation.AddPlayer(entityId, VectorUtils.ToSim(data.Position), viewRadius, spawnDelay);
                     break;
                 case RespawnType.Died:
-                    simulation.NotifyPlayerSpawned(GetPlayerEntityId(_cInfo), spawnDelay);
+                    simulation.NotifyPlayerSpawned(GetPlayerEntityId(data.ClientInfo), spawnDelay);
                     break;
             }
         }
 
-        static void PlayerDisconnected(ClientInfo _cInfo, bool _bShutdown)
+        static void PlayerDisconnected(ref ModEvents.SPlayerDisconnectedData data)
         {
             if (!IsHost())
             {
@@ -436,20 +437,22 @@ namespace WalkerSim
 
             var simulation = Simulation.Instance;
 
-            var entityId = GetPlayerEntityId(_cInfo);
+            var entityId = GetPlayerEntityId(data.ClientInfo);
 
             simulation.RemovePlayer(entityId);
         }
 
-        static void EntityKilled(Entity _entity, Entity _source)
+        static void EntityKilled(ref ModEvents.SEntityKilledData data)
         {
             if (!IsHost())
             {
                 return;
             }
 
+            var killedEntity = data.KilledEntitiy;
+
             var simulation = Simulation.Instance;
-            var entityId = _entity.entityId;
+            var entityId = killedEntity.entityId;
 
             simulation.EntityKilled(entityId);
         }
