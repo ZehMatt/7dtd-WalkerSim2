@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 
 namespace WalkerSim
 {
@@ -8,7 +8,7 @@ namespace WalkerSim
     {
         static bool Prefix(AIDirectorWanderingHordeComponent __instance, AIWanderingHordeSpawner.SpawnType _spawnType)
         {
-            Logging.Out("Preventing wandering horde spawn.");
+            Logging.Debug("Preventing wandering horde spawn.");
 
             // Prevent it from running each frame.
             __instance.SetNextTime(_spawnType, ulong.MaxValue);
