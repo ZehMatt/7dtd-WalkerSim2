@@ -1,3 +1,5 @@
+# 0.9.8 (in progress)
+
 # 0.9.7
 - Fix: Allow clients with admin permission to run console commands such as `walkersim stats`, `walkersim show` will still only work on local games.
 - Fix: Incorrect calculation of the view radius, the spawn area was reduced by 50%.
