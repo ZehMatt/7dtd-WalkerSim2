@@ -1,4 +1,5 @@
-# 0.9.8 (in progress)
+# 0.9.8
+- Change: Support for game version 2.0, older versions will not work.
 
 # 0.9.7
 - Fix: Allow clients with admin permission to run console commands such as `walkersim stats`, `walkersim show` will still only work on local games.
