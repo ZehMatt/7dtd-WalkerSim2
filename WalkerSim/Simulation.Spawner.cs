@@ -148,8 +148,10 @@ namespace WalkerSim
                         // The actual spawning might fail and to avoid trying to spawn the same agent
                         // too often we skip it for a while.
 
+#if false
                         Logging.Debug("Agent {0} was spawned too recently, skipping spawn, last spawn tick: {1}, current tick: {2}, delta: {3}",
                             agent.Index, agent.LastSpawnTick, _state.Ticks, spawnDelta);
+#endif
 
                         continue;
                     }
@@ -219,7 +221,19 @@ namespace WalkerSim
                     }
                 }
 
-                if (agentEntityId != -1)
+                if (agentEntityId == 0)
+                {
+                    // Turn back to wandering, skipping spawn.
+                    agent.CurrentState = Agent.State.Wandering;
+                }
+                else if (agentEntityId == -1)
+                {
+                    // Turn back to wandering, currently not possible to spawn.
+                    agent.CurrentState = Agent.State.Wandering;
+
+                    _state.FailedSpawns++;
+                }
+                else
                 {
                     agent.EntityId = agentEntityId;
                     agent.CurrentState = Agent.State.Active;
@@ -227,13 +241,6 @@ namespace WalkerSim
                     AddActiveAgent(agentEntityId, agent);
 
                     _state.SuccessfulSpawns++;
-                }
-                else
-                {
-                    // Turn back to wandering, currently not possible to spawn.
-                    agent.CurrentState = Agent.State.Wandering;
-
-                    _state.FailedSpawns++;
                 }
             }
             catch (Exception ex)
