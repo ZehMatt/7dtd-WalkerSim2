@@ -89,7 +89,8 @@ namespace WalkerSim
                 if (HasReachedMaximumSpawnedAgents())
                 {
                     // We have reached the maximum amount of agents alive, do not spawn more.
-                    Logging.DbgInfo($"Maximum amount of agents alive reached, max: {_maxAllowedAliveAgents}, pending spawns: {_pendingSpawns.Count}, active agents: {_state.Active.Count}");
+                    Logging.CondInfo(Config.LoggingOpts.Spawns,
+                        $"Maximum amount of agents alive reached, max: {_maxAllowedAliveAgents}, pending spawns: {_pendingSpawns.Count}, active agents: {_state.Active.Count}");
 
                     // Increase delay, no need to try again so soon when it is not possible to spawn more agents.
                     _nextSpawnCheck = DateTime.Now.AddMilliseconds(2000);
@@ -115,7 +116,10 @@ namespace WalkerSim
                 if (activeNearby >= maxActivePerPlayer)
                 {
                     // Too many active agents nearby, do not spawn more.
-                    Logging.DbgInfo("Player {0} has too many active agents nearby ({1}), skipping spawn...", player.EntityId, activeNearby);
+                    Logging.CondInfo(Config.LoggingOpts.Spawns,
+                        "Player {0} has too many active agents nearby ({1}), skipping spawn...",
+                        player.EntityId,
+                        activeNearby);
 
                     // Delay the test for this player.
                     player.NextPossibleSpawnTime = DateTime.Now.AddSeconds(1);
@@ -157,7 +161,11 @@ namespace WalkerSim
                         continue;
                     }
 
-                    Logging.DbgInfo("Agent {0} near player {1} at {2}m, spawning...", agent.Index, player.EntityId, dist);
+                    Logging.CondInfo(Config.LoggingOpts.Spawns,
+                        "Agent {0} near player {1} at {2}m, spawning...",
+                        agent.Index,
+                        player.EntityId,
+                        dist);
 
                     agent.LastSpawnTick = _state.Ticks;
                     agent.CurrentState = Agent.State.PendingSpawn;

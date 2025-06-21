@@ -72,7 +72,7 @@ namespace WalkerSim
                 return config;
             }
 
-            Logging.Out("No config found, using defaults.");
+            Logging.Warn("No config found, using defaults.");
             return Config.GetDefault();
         }
 

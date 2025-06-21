@@ -84,13 +84,13 @@ namespace WalkerSim
                 return;
             }
 
+            Logging.CondInfo(Config.LoggingOpts.General, "Stopping simulation...");
+
             _shouldStop = true;
             _thread.Join();
             _thread = null;
             _running = false;
             _nextAutoSave = DateTime.MaxValue;
-
-            Logging.Out("Simulation stopped.");
         }
 
         public void Advance(uint numTicks)
@@ -113,12 +113,12 @@ namespace WalkerSim
                 _nextAutoSave = DateTime.Now.AddSeconds(_autoSaveInterval);
             }
 
+            Logging.CondInfo(Config.LoggingOpts.General, "Starting simulation...");
+
             _running = true;
             _shouldStop = false;
             _thread = new Thread(ThreadUpdate);
             _thread.Start();
-
-            Logging.Out("Started Simulation.");
         }
 
         public void SetWorldSize(Vector3 worldMins, Vector3 worldMaxs)
@@ -415,9 +415,13 @@ namespace WalkerSim
 
         private void ThreadUpdate()
         {
-            if (_state.Config.FastForwardAtStart && _state.Ticks == 0)
+            Logging.CondInfo(Config.LoggingOpts.General, "Started simulation.");
+
+            if (Config.FastForwardAtStart && _state.Ticks == 0)
             {
-                Logging.Out("Advancing simulation for {0} ticks...", Simulation.Limits.TicksToAdvanceOnStartup);
+                Logging.CondInfo(Config.LoggingOpts.General,
+                    "Advancing simulation for {0} ticks...",
+                    Simulation.Limits.TicksToAdvanceOnStartup);
 
                 _isFastAdvancing = true;
 
@@ -434,7 +438,7 @@ namespace WalkerSim
 
                 _isFastAdvancing = false;
 
-                Logging.Out("... done, took {0}.", elapsed);
+                Logging.CondInfo(Config.LoggingOpts.General, "... done, took {0}.", elapsed);
             }
 
             _updateTime.Restart();
@@ -450,7 +454,7 @@ namespace WalkerSim
 
                 if (_paused)
                 {
-                    Thread.Sleep(1);
+                    Thread.Sleep(10);
                     continue;
                 }
 
@@ -481,6 +485,8 @@ namespace WalkerSim
 
             _running = false;
             _shouldStop = false;
+
+            Logging.CondInfo(Config.LoggingOpts.General, "Simulation stopped.");
         }
 
         // Called from the main thread, this should be invoked from GameUpdate.

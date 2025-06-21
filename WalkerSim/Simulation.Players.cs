@@ -33,14 +33,21 @@ namespace WalkerSim
 
             _state.Players.TryAdd(entityId, player);
 
-            Logging.Out("Player added in simulation, entity id: {0}, position: {1}", entityId, player.Position);
+            Logging.CondInfo(Config.LoggingOpts.General,
+                "Player added in simulation, entity id: {0}, position: {1}",
+                entityId,
+                player.Position);
         }
 
         public void RemovePlayer(int entityId)
         {
-            if (_state.Players.TryRemove(entityId, out var _))
+            if (_state.Players.TryRemove(entityId, out var player))
             {
-                Logging.Out("Player removed from simulation, entity id: {0}", entityId);
+                player.IsAlive = false;
+
+                Logging.CondInfo(Config.LoggingOpts.General,
+                    "Player removed from simulation, entity id: {0}",
+                    entityId);
             }
         }
 
@@ -57,7 +64,8 @@ namespace WalkerSim
         {
             if (_state.Players.TryGetValue(entityId, out var player))
             {
-                Logging.Out("Player spawned in simulation, entity id: {0}, position: {1}, spawn delay: {2} secs",
+                Logging.CondInfo(Config.LoggingOpts.General,
+                    "Player spawned in simulation, entity id: {0}, position: {1}, spawn activation delay: {2} secs",
                     entityId,
                     player.Position,
                     spawnDelay);

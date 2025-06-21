@@ -59,6 +59,10 @@ namespace WalkerSim
 
         public void AddSoundEvent(Vector3 pos, float radius, float duration)
         {
+            Logging.CondInfo(Config.LoggingOpts.Events,
+                "Adding sound event at {0}, radius: {1}, duration: {2}",
+                pos, radius, duration);
+
             var data = new EventData
             {
                 Type = EventType.Noise,
