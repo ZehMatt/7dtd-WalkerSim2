@@ -144,6 +144,8 @@ namespace WalkerSim.Editor
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorPickerDlg = new System.Windows.Forms.ColorDialog();
             this.toolTipGroupSize = new System.Windows.Forms.ToolTip(this.components);
+            this.label18 = new System.Windows.Forms.Label();
+            this.inputActivationRadius = new System.Windows.Forms.NumericUpDown();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -170,6 +172,7 @@ namespace WalkerSim.Editor
             this.tabPage4.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.contextLog.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.inputActivationRadius)).BeginInit();
             this.SuspendLayout();
             // 
             // updateTimer
@@ -531,6 +534,8 @@ namespace WalkerSim.Editor
             this.tableLayoutPanel1.Controls.Add(this.label14, 4, 3);
             this.tableLayoutPanel1.Controls.Add(this.inputFastForward, 5, 3);
             this.tableLayoutPanel1.Controls.Add(this.inputMaxAgents, 1, 4);
+            this.tableLayoutPanel1.Controls.Add(this.label18, 2, 3);
+            this.tableLayoutPanel1.Controls.Add(this.inputActivationRadius, 3, 3);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(3, 3);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -1464,6 +1469,47 @@ namespace WalkerSim.Editor
             // 
             this.colorPickerDlg.AnyColor = true;
             // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label18.Location = new System.Drawing.Point(283, 65);
+            this.label18.Name = "label18";
+            this.label18.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
+            this.label18.Size = new System.Drawing.Size(134, 30);
+            this.label18.TabIndex = 53;
+            this.label18.Text = "Activation Radius";
+            this.label18.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // inputActivationRadius
+            // 
+            this.inputActivationRadius.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.inputActivationRadius.Increment = new decimal(new int[] {
+            8,
+            0,
+            0,
+            0});
+            this.inputActivationRadius.Location = new System.Drawing.Point(420, 65);
+            this.inputActivationRadius.Margin = new System.Windows.Forms.Padding(0);
+            this.inputActivationRadius.Maximum = new decimal(new int[] {
+            196,
+            0,
+            0,
+            0});
+            this.inputActivationRadius.Minimum = new decimal(new int[] {
+            48,
+            0,
+            0,
+            0});
+            this.inputActivationRadius.Name = "inputActivationRadius";
+            this.inputActivationRadius.Size = new System.Drawing.Size(140, 20);
+            this.inputActivationRadius.TabIndex = 54;
+            this.inputActivationRadius.Value = new decimal(new int[] {
+            96,
+            0,
+            0,
+            0});
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1512,6 +1558,7 @@ namespace WalkerSim.Editor
             this.tabPage4.PerformLayout();
             this.tabPage3.ResumeLayout(false);
             this.contextLog.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.inputActivationRadius)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1633,6 +1680,8 @@ namespace WalkerSim.Editor
         private System.Windows.Forms.Label label22;
         private System.Windows.Forms.Label lblStatGroups;
         private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.Label label18;
+        private System.Windows.Forms.NumericUpDown inputActivationRadius;
     }
 }
 

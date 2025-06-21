@@ -52,6 +52,8 @@ namespace WalkerSim
 
         private bool IsInsidePlayerMaxView(Vector3 pos)
         {
+            var viewRadius = Config.SpawnActivationRadius;
+
             // NOTE: We do not check if the player is alive here, the game plays a death animation
             // and zombies will eat on the player so despawning them the moment the player is killed
             // is not wanted. If the player respawns it will update the position and despawn as usual.
@@ -60,7 +62,7 @@ namespace WalkerSim
                 var dist = Vector3.Distance2D(pos, ply.Value.Position);
 
                 // We add a little offset to avoid constant spawn-despawning.
-                if (dist >= ply.Value.ViewRadius + 8)
+                if (dist >= viewRadius + 8)
                 {
                     continue;
                 }

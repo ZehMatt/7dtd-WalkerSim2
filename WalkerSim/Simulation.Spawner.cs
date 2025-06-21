@@ -75,6 +75,7 @@ namespace WalkerSim
 
             // Don't activate them when they are in the inner radius.
             var activationBorderSize = 8.0f;
+            var viewRadius = Config.SpawnActivationRadius;
 
             var maxActivePerPlayer = _maxAllowedAliveAgents;
             if (_state.Players.Count > 0)
@@ -110,7 +111,7 @@ namespace WalkerSim
                     continue;
                 }
 
-                var activeNearby = GetCountActiveNearby(player.Position, player.ViewRadius);
+                var activeNearby = GetCountActiveNearby(player.Position, viewRadius);
                 if (activeNearby >= maxActivePerPlayer)
                 {
                     // Too many active agents nearby, do not spawn more.
@@ -125,7 +126,7 @@ namespace WalkerSim
                 var playerPos = player.Position;
 
                 _nearPlayer.Clear();
-                QueryCellsLockFree(playerPos, -1, player.ViewRadius, _nearPlayer);
+                QueryCellsLockFree(playerPos, -1, viewRadius, _nearPlayer);
 
                 for (int i = 0; i < _nearPlayer.Count; i++)
                 {
@@ -135,10 +136,10 @@ namespace WalkerSim
                         continue;
 
                     var dist = Vector3.Distance2D(playerPos, agent.Position);
-                    if (dist < player.ViewRadius - activationBorderSize)
+                    if (dist < viewRadius - activationBorderSize)
                         continue;
 
-                    if (dist > player.ViewRadius)
+                    if (dist > viewRadius)
                         continue;
 
                     // TODO: We are not handling overflow of Ticks but it takes a lot of time to get there.

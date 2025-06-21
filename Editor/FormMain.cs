@@ -166,6 +166,7 @@ namespace WalkerSim.Editor
             SetToolTip(inputPauseDuringBloodmoon, "If enabled the simulation will pause during blood moon which means no new in-game zombies will spawn and will be resumed afterwards, this does not affect blood moon spawns.");
             SetToolTip(inputMovementGroup, "This specifies the group that this processor will affect, if set to -1 then all groups will be affected.\n\nNOTE: This is the index of the group.");
             SetToolTip(inputSpawnProtectionTime, "The amount of seconds the player requires to be alive before any agents will spawn.\n\nNOTE: This only applies to starting a new game and spawning for the first time.");
+            SetToolTip(inputActivationRadius, "The radius for the player in blocks/meters for when agents will spawn/despawn in the game world.\nDefault is 96, setting this too high can cause a lot of spawn failures, setting it to a lower value is not recommended.\n\nNOTE: This should not exceed the maximum view distance from serversettings.xml, view distance is specified in chunks and each chunk is 16x16x16.");
         }
 
         public void Message(Logging.Level level, string message)
@@ -232,6 +233,7 @@ namespace WalkerSim.Editor
             inputMovementGroup.MouseWheel += ScrollHandlerFunction;
             inputMovementSpeed.MouseWheel += ScrollHandlerFunction;
             inputSpawnProtectionTime.MouseWheel += ScrollHandlerFunction;
+            inputActivationRadius.MouseWheel += ScrollHandlerFunction;
         }
 
         private void SetupSpeedModifiers()
@@ -354,6 +356,7 @@ namespace WalkerSim.Editor
             }
             CurrentConfig.RandomSeed = (int)inputRandomSeed.Value;
             CurrentConfig.PopulationDensity = (int)inputMaxAgents.Value;
+            CurrentConfig.SpawnActivationRadius = (int)inputActivationRadius.Value;
             CurrentConfig.GroupSize = (int)inputGroupSize.Value;
             CurrentConfig.SpawnProtectionTime = (int)inputSpawnProtectionTime.Value;
             CurrentConfig.StartAgentsGrouped = inputStartGrouped.Checked;
@@ -387,6 +390,7 @@ namespace WalkerSim.Editor
             inputStartPosition.SelectedIndexChanged += (sender, arg) => SetConfigValues();
             inputRespawnPosition.SelectedIndexChanged += (sender, arg) => SetConfigValues();
             inputPostSpawnBehavior.SelectedIndexChanged += (sender, arg) => SetConfigValues();
+            inputActivationRadius.ValueChanged += (sender, arg) => SetConfigValues();
         }
 
         private void UpdateConfigFields()
@@ -398,6 +402,7 @@ namespace WalkerSim.Editor
 
             inputRandomSeed.Value = CurrentConfig.RandomSeed;
             inputMaxAgents.Value = CurrentConfig.PopulationDensity;
+            inputActivationRadius.Value = CurrentConfig.SpawnActivationRadius;
             inputGroupSize.Value = CurrentConfig.GroupSize;
             inputStartGrouped.Checked = CurrentConfig.StartAgentsGrouped;
             inputFastForward.Checked = CurrentConfig.FastForwardAtStart;

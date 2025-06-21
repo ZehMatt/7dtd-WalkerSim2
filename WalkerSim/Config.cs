@@ -130,6 +130,9 @@ namespace WalkerSim
         [XmlElement("PopulationDensity")]
         public int PopulationDensity = 300;
 
+        [XmlElement("SpawnActivationRadius")]
+        public int SpawnActivationRadius = 96;
+
         [XmlElement("StartAgentsGrouped")]
         public bool StartAgentsGrouped = true;
 
@@ -197,6 +200,7 @@ namespace WalkerSim
             {
                 RandomSeed = 1337,
                 PopulationDensity = 300,
+                SpawnActivationRadius = 96,
                 GroupSize = 32,
                 StartPosition = WorldLocation.RandomLocation,
                 RespawnPosition = WorldLocation.RandomBorderLocation,

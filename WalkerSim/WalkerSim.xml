@@ -5,6 +5,7 @@
   </DebugOptions>
   <RandomSeed>665992037</RandomSeed>
   <PopulationDensity>300</PopulationDensity>
+  <SpawnActivationRadius>96</SpawnActivationRadius>
   <StartAgentsGrouped>true</StartAgentsGrouped>
   <FastForwardAtStart>true</FastForwardAtStart>
   <GroupSize>16</GroupSize>

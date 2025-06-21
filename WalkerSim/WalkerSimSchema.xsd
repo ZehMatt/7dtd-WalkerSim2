@@ -43,6 +43,18 @@
                     </xs:simpleType>
                 </xs:element>
 
+                <xs:element name="SpawnActivationRadius">
+                    <xs:annotation>
+                        <xs:documentation>The radius for the player in blocks/meters for when agents will spawn/despawn in the game world. This should not exceed the maximum view distance from serversettings.xml, view distance is specified in chunks and each chunk is 16x16x16</xs:documentation>
+                    </xs:annotation>
+                    <xs:simpleType>
+                        <xs:restriction base="xs:integer">
+                            <xs:minInclusive value="48" />
+                            <xs:maxInclusive value="192" />
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+
                 <xs:element name="StartAgentsGrouped" type="xs:boolean">
                     <xs:annotation>
                         <xs:documentation>Whether agents start grouped together</xs:documentation>

@@ -9,7 +9,6 @@ namespace WalkerSim
         {
             public Vector3 Position;
             public int EntityId;
-            public int ViewRadius;
             public bool IsAlive;
             public DateTime NextPossibleSpawnTime = DateTime.Now;
         }
@@ -24,12 +23,11 @@ namespace WalkerSim
             get => _state.Players.Count;
         }
 
-        public void AddPlayer(int entityId, Vector3 pos, int viewRadius, int spawnDelay)
+        public void AddPlayer(int entityId, Vector3 pos, int spawnDelay)
         {
             Player player = new Player();
             player.EntityId = entityId;
             player.Position = pos;
-            player.ViewRadius = viewRadius;
             player.IsAlive = true;
             player.NextPossibleSpawnTime = DateTime.Now.AddSeconds(spawnDelay);
 

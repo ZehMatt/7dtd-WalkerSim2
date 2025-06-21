@@ -59,13 +59,13 @@ namespace WalkerSim
         {
             if (_classIdCounter.TryGetValue(classId, out var count))
             {
-                if (count > 1)
+                if (count > 0)
                 {
                     _classIdCounter[classId] = count - 1;
                 }
                 else
                 {
-                    Logging.DebugWarn("Decrementing class id {0} count below 0, entity {1}, bad counting, this is a bug.", classId, entityId);
+                    Logging.DebugErr("Decrementing class id {0} count below 0, entity {1}, bad counting, this is a bug.", classId, entityId);
                 }
             }
         }
@@ -129,6 +129,8 @@ namespace WalkerSim
 
         static void DeduplicateSpawnList(List<BiomeEntitySpawnData> list)
         {
+            list.Sort((a, b) => a.entityClassId.CompareTo(b.entityClassId));
+
             for (int i = 0; i < list.Count; i++)
             {
                 var entry = list[i];
@@ -137,6 +139,10 @@ namespace WalkerSim
                     if (entry.entityClassId == list[j].entityClassId)
                     {
                         entry.prob = System.Math.Max(entry.prob, list[j].prob);
+
+                        Logging.Debug("Deduplicating entity class {0} ({1}), keeping highest probability {2}",
+                            entry.className, entry.entityClassId, entry.prob);
+
                         list.RemoveAt(j);
                         j--;
                     }
@@ -255,13 +261,14 @@ namespace WalkerSim
                     }
                 }
 
-                // Sort the spawn lists by entity class id.
-                entityClassesDay.Sort((a, b) => a.entityClassId.CompareTo(b.entityClassId));
-                entityClassesNight.Sort((a, b) => a.entityClassId.CompareTo(b.entityClassId));
 
                 // De-duplicate the spawn lists with identical entity class ids, select highest probability.
                 DeduplicateSpawnList(entityClassesDay);
                 DeduplicateSpawnList(entityClassesNight);
+
+                // Sort by probability.
+                entityClassesDay.Sort((a, b) => b.prob.CompareTo(a.prob));
+                entityClassesNight.Sort((a, b) => b.prob.CompareTo(a.prob));
 
                 // Cache the spawn data for this chunk.
                 _spawnDataDay[chunk.Key] = entityClassesDay;
@@ -323,14 +330,15 @@ namespace WalkerSim
                     }
                 }
 
-                if (GetSpawnedClassIdCount(selectedClassId) > 0)
+                var existingCount = GetSpawnedClassIdCount(selectedClassId);
+                if (existingCount >= 2)
                 {
-                    Logging.Debug("Selected entity class {0} ({1}) from {2} attempts", selectedClassName, selectedClassId, attempt + 1);
-                    break;
+                    Logging.Debug("Selected entity class {0} ({1}) exists too often, instances: {2}, retrying...", selectedClassName, selectedClassId, existingCount);
                 }
                 else
                 {
-                    Logging.Debug("Selected entity class {0} ({1}) is a duplicate, retrying...", selectedClassName, selectedClassId);
+                    Logging.Debug("Selected entity class {0} ({1}) from {2} attempts", selectedClassName, selectedClassId, attempt + 1);
+                    break;
                 }
             }
 
@@ -363,7 +371,7 @@ namespace WalkerSim
             var chunk = world.GetChunkSync(chunkPosX, chunkPosZ) as Chunk;
             if (chunk == null)
             {
-                Logging.DebugErr("Failed to spawn agent, chunk not loaded at {0}, {1}", chunkPosX, chunkPosZ);
+                Logging.DebugErr("Failed to spawn agent {0}, chunk not loaded at {1}, {2}", agent.Index, chunkPosX, chunkPosZ);
                 return -1;
             }
 
@@ -375,13 +383,13 @@ namespace WalkerSim
 
             if (!CanSpawnAtPosition(worldPos))
             {
-                Logging.Debug("Failed to spawn agent, position not suitable at {0}", worldPos);
+                Logging.Debug("Failed to spawn agent {0}, position not suitable at {1}", agent.Index, worldPos);
                 return -1;
             }
 
             if (simulation.Config.Debug.LogSpawnDespawn)
             {
-                Logging.Out("Spawning agent at {0}", worldPos);
+                Logging.Out("Spawning agent {0} at {1}", agent.Index, worldPos);
             }
 
             // Use previously assigned entity class id.
@@ -446,7 +454,10 @@ namespace WalkerSim
                 destPos.y = world.GetTerrainHeight(Mathf.FloorToInt(destPos.x), Mathf.FloorToInt(destPos.z)) + 1;
 
                 spawnedAgent.SetInvestigatePosition(destPos, 6000, false);
-                Logging.Debug("Spawned agent wandering to {0}", destPos);
+                Logging.Debug("Spawned agent {0}, entity id: {1} wandering to {2}",
+                    agent.Index,
+                    spawnedAgent.entityId,
+                    destPos);
             }
             else if (spawnData.PostSpawnBehavior == Config.PostSpawnBehavior.ChaseActivator)
             {
@@ -454,7 +465,10 @@ namespace WalkerSim
                 if (activator != null)
                 {
                     spawnedAgent.SetAttackTarget(activator, 6000);
-                    Logging.Debug("Spawned agent chasing activator {0}", spawnData.ActivatorEntityId);
+                    Logging.Debug("Spawned agent {0}, entity id: {1} chasing activator {2}",
+                        agent.Index,
+                        spawnedAgent.entityId,
+                        spawnData.ActivatorEntityId);
                 }
                 else
                 {
@@ -465,7 +479,7 @@ namespace WalkerSim
             else if (spawnData.PostSpawnBehavior == Config.PostSpawnBehavior.Nothing)
             {
                 // Do nothing.
-                Logging.Info("No PostSpawn action for agent {0}", spawnedAgent.entityId);
+                Logging.Info("No PostSpawn action for agent {0}, entity id {1}", agent.Index, spawnedAgent.entityId);
             }
             else
             {
@@ -478,10 +492,11 @@ namespace WalkerSim
             agent.CurrentState = Agent.State.Active;
             agent.Health = spawnedAgent.Health;
 
-            if (simulation.Config.Debug.LogSpawnDespawn)
-            {
-                Logging.Out("Agent spawned at {0}, entity id {1}, class id {2}", worldPos, spawnedAgent.entityId, entityClassId);
-            }
+            Logging.Debug("Agent {0} spawned at {1}, entity id {2}, class id {3}",
+                agent.Index,
+                worldPos,
+                spawnedAgent.entityId,
+                entityClassId);
 
             IncrementSpawnedClassIdCount(entityClassId);
 
@@ -496,10 +511,16 @@ namespace WalkerSim
                 return false;
             }
 
+            if (agent.CurrentState != Agent.State.Active)
+            {
+                Logging.Debug("Trying to despawn agent {0} that is not active, state: {1}.", agent.Index, agent.CurrentState);
+                return false;
+            }
+
             var entity = world.GetEntity(agent.EntityId) as EntityAlive;
             if (entity == null)
             {
-                Logging.Warn("Entity not found: {0}, unable to despawn.", agent.EntityId);
+                Logging.Warn("Entity not found {0} for agent {1}, unable to despawn.", agent.EntityId, agent.Index);
                 return false;
             }
 
@@ -555,7 +576,13 @@ namespace WalkerSim
                 var agent = kv.Value;
                 if (agent.EntityId == -1)
                 {
-                    Logging.Debug("Agent has no entity id, skipping. Agent state: {0}", agent.CurrentState);
+                    Logging.Debug("Agent {0} has no entity id, skipping. Agent state: {1}", agent.Index, agent.CurrentState);
+                    continue;
+                }
+
+                if (agent.CurrentState != Agent.State.Active)
+                {
+                    Logging.Debug("Agent {0} is not active, skipping. Agent state: {1}", agent.Index, agent.CurrentState);
                     continue;
                 }
 

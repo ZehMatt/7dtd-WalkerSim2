@@ -416,7 +416,7 @@ namespace WalkerSim
                 case RespawnType.NewGame:
                 case RespawnType.LoadedGame:
                     var entityId = GetPlayerEntityId(data.ClientInfo);
-                    simulation.AddPlayer(entityId, VectorUtils.ToSim(data.Position), viewRadius, spawnDelay);
+                    simulation.AddPlayer(entityId, VectorUtils.ToSim(data.Position), spawnDelay);
                     break;
                 case RespawnType.Died:
                     simulation.NotifyPlayerSpawned(GetPlayerEntityId(data.ClientInfo), spawnDelay);
