@@ -8,15 +8,6 @@ namespace WalkerSim
     {
         public delegate void LogMessage(string message);
 
-        [Flags]
-        public enum Prefix
-        {
-            None = 0,
-            Level = 1 << 0,
-            WalkerSim = 1 << 1,
-            Timestamp = 1 << 2,
-        }
-
         public enum Level
         {
             Info,

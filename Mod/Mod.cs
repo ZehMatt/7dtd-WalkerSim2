@@ -376,7 +376,6 @@ namespace WalkerSim
 
         static void PlayerSpawnedInWorld(ref ModEvents.SPlayerSpawnedInWorldData data)
         {
-            // ClientInfo _cInfo, RespawnType _respawnReason, Vector3i _pos
             if (!IsHost())
             {
                 return;
@@ -384,15 +383,7 @@ namespace WalkerSim
 
             var simulation = Simulation.Instance;
 
-            // The amount of chunks that can be loaded around the player.
-            // Chunk size in this game is 16x16x16 blocks, so the view distance is multiplied by 16.
-            // NOTE: Default setting is 12 which is 192 blocks, we use a maximum of 7 which is 112 blocks.
-            var maxViewDistance = Math.Min(GamePrefs.GetInt(EnumGamePrefs.ServerMaxAllowedViewDistance), 7);
-            var viewRadius = (maxViewDistance * 16);
-
             Logging.Debug("Player Spawn: {0}", data.RespawnType);
-            Logging.Debug("Max View Distance: {0}", maxViewDistance);
-            Logging.Debug("View Radius: {0}", viewRadius);
             Logging.Debug("Spawn Position: {0}", data.Position);
 
             int spawnDelay = 0;
@@ -470,9 +461,8 @@ namespace WalkerSim
                 return;
             }
 
-#if false
             // Log all variables from noise.
-            Logging.Info("Noise: {0}, Volume: {1}, Duration: {2}, MuffledWhenCrouched: {3}, HeatMapStrength: {4}, HeatMapWorldTimeToLive: {5}, volumeScale: {6}.",
+            Logging.Debug("Noise: {0}, Volume: {1}, Duration: {2}, MuffledWhenCrouched: {3}, HeatMapStrength: {4}, HeatMapWorldTimeToLive: {5}, volumeScale: {6}.",
                                clipName,
                                noise.volume,
                                noise.duration,
@@ -480,7 +470,6 @@ namespace WalkerSim
                                noise.heatMapStrength,
                                noise.heatMapWorldTimeToLive,
                                volumeScale);
-#endif
 
             if (instigator != null)
             {
