@@ -77,8 +77,8 @@ namespace WalkerSim
 
             if (classIdCount > 0)
             {
-                // Apply heavy penalty for already spawned class ids.
-                prob /= (classIdCount + 1) * 2;
+                var penalty = 0.35f + (float)System.Math.Pow(classIdCount, 3.5);
+                prob /= penalty;
             }
 
             return prob;
