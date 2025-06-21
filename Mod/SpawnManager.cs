@@ -27,7 +27,7 @@ namespace WalkerSim
 
             if (alive >= maxAllowed)
             {
-                Logging.Debug("Max zombies reached, alive: {0}, max: {1}", alive, maxAllowed);
+                Logging.DbgInfo("Max zombies reached, alive: {0}, max: {1}", alive, maxAllowed);
                 return false;
             }
 
@@ -65,7 +65,7 @@ namespace WalkerSim
                 }
                 else
                 {
-                    Logging.DebugErr("Decrementing class id {0} count below 0, entity {1}, bad counting, this is a bug.", classId, entityId);
+                    Logging.DbgErr("Decrementing class id {0} count below 0, entity {1}, bad counting, this is a bug.", classId, entityId);
                 }
             }
         }
@@ -94,13 +94,13 @@ namespace WalkerSim
 
             if (!world.CanMobsSpawnAtPos(position))
             {
-                Logging.Debug("CanMobsSpawnAtPos returned false for position {0}", position);
+                Logging.DbgInfo("CanMobsSpawnAtPos returned false for position {0}", position);
                 return false;
             }
 
             if (world.isPositionInRangeOfBedrolls(position))
             {
-                Logging.Debug("Position {0} is near a bedroll", position);
+                Logging.DbgInfo("Position {0} is near a bedroll", position);
                 return false;
             }
 
@@ -140,7 +140,7 @@ namespace WalkerSim
                     {
                         entry.prob = System.Math.Max(entry.prob, list[j].prob);
 
-                        Logging.Debug("Deduplicating entity class {0} ({1}), keeping highest probability {2}",
+                        Logging.DbgInfo("Deduplicating entity class {0} ({1}), keeping highest probability {2}",
                             entry.className, entry.entityClassId, entry.prob);
 
                         list.RemoveAt(j);
@@ -173,13 +173,13 @@ namespace WalkerSim
                 var biomeData = world.Biomes.GetBiome(biomeId);
                 if (biomeData == null)
                 {
-                    Logging.Debug("Biome data is null for id {0}", biomeId);
+                    Logging.DbgInfo("Biome data is null for id {0}", biomeId);
                     return -1;
                 }
 
                 if (!BiomeSpawningClass.list.TryGetValue(biomeData.m_sBiomeName, out BiomeSpawnEntityGroupList biomeList))
                 {
-                    Logging.Debug("Biome data not found for id {0}", biomeId);
+                    Logging.DbgInfo("Biome data not found for id {0}", biomeId);
                     return -1;
                 }
 
@@ -187,12 +187,12 @@ namespace WalkerSim
                 int groupsEnabledFlags = 0;
                 {
                     FastTags<TagGroup.Poi> fastTags = FastTags<TagGroup.Poi>.none;
-                    Logging.Debug("About to get POIs");
+                    Logging.DbgInfo("About to get POIs");
 
                     List<PrefabInstance> spawnPIs = new List<PrefabInstance>();
                     world.GetPOIsAtXZ(worldX + 16, worldX + 80 - 16, worldZ + 16, worldZ + 80 - 16, spawnPIs);
 
-                    Logging.Debug("Got {0} POIs", spawnPIs.Count);
+                    Logging.DbgInfo("Got {0} POIs", spawnPIs.Count);
                     for (int j = 0; j < spawnPIs.Count; j++)
                     {
                         // build list of tags for POIs around chunk
@@ -211,7 +211,7 @@ namespace WalkerSim
                         }
                     }
 
-                    Logging.Debug("ChunkFlags generated: {0}", groupsEnabledFlags);
+                    Logging.DbgInfo("ChunkFlags generated: {0}", groupsEnabledFlags);
                 }
 
                 // Gather all possible groups.
@@ -274,24 +274,24 @@ namespace WalkerSim
                 _spawnDataDay[chunk.Key] = entityClassesDay;
                 _spawnDataNight[chunk.Key] = entityClassesNight;
 
-                Logging.Debug("Spawn list for chunk {0} (Day: {1}, Night: {2}), Biome: {3}",
+                Logging.DbgInfo("Spawn list for chunk {0} (Day: {1}, Night: {2}), Biome: {3}",
                     chunk.Key,
                     entityClassesDay.Count,
                     entityClassesNight.Count,
                     biomeData.m_sBiomeName);
 
                 // Day.
-                Logging.Debug("  Daytime >");
+                Logging.DbgInfo("  Daytime >");
                 foreach (var entry in entityClassesDay)
                 {
-                    Logging.Debug("    Class: {0} ({1}), Probability: {2}", entry.className, entry.entityClassId, entry.prob);
+                    Logging.DbgInfo("    Class: {0} ({1}), Probability: {2}", entry.className, entry.entityClassId, entry.prob);
                 }
 
                 // Night.
-                Logging.Debug("  Nighttime >");
+                Logging.DbgInfo("  Nighttime >");
                 foreach (var entry in entityClassesNight)
                 {
-                    Logging.Debug("    Class: {0} ({1}), Probability: {2}", entry.className, entry.entityClassId, entry.prob);
+                    Logging.DbgInfo("    Class: {0} ({1}), Probability: {2}", entry.className, entry.entityClassId, entry.prob);
                 }
 
                 spawnList = world.IsDaytime() ? entityClassesDay : entityClassesNight;
@@ -333,11 +333,11 @@ namespace WalkerSim
                 var existingCount = GetSpawnedClassIdCount(selectedClassId);
                 if (existingCount >= 2)
                 {
-                    Logging.Debug("Selected entity class {0} ({1}) exists too often, instances: {2}, retrying...", selectedClassName, selectedClassId, existingCount);
+                    Logging.DbgInfo("Selected entity class {0} ({1}) exists too often, instances: {2}, retrying...", selectedClassName, selectedClassId, existingCount);
                 }
                 else
                 {
-                    Logging.Debug("Selected entity class {0} ({1}) from {2} attempts", selectedClassName, selectedClassId, attempt + 1);
+                    Logging.DbgInfo("Selected entity class {0} ({1}) from {2} attempts", selectedClassName, selectedClassId, attempt + 1);
                     break;
                 }
             }
@@ -371,19 +371,19 @@ namespace WalkerSim
             var chunk = world.GetChunkSync(chunkPosX, chunkPosZ) as Chunk;
             if (chunk == null)
             {
-                Logging.DebugErr("Failed to spawn agent {0}, chunk not loaded at {1}, {2}", agent.Index, chunkPosX, chunkPosZ);
+                Logging.DbgErr("Failed to spawn agent {0}, chunk not loaded at {1}, {2}", agent.Index, chunkPosX, chunkPosZ);
                 return -1;
             }
 
             var terrainHeight = world.GetTerrainHeight(Mathf.FloorToInt(worldPos.x), Mathf.FloorToInt(worldPos.z)) + 1;
-            Logging.Debug("Terrain height at {0}, {1} is {2}", worldPos.x, worldPos.z, terrainHeight);
+            Logging.DbgInfo("Terrain height at {0}, {1} is {2}", worldPos.x, worldPos.z, terrainHeight);
 
             // Adjust position height.
             worldPos.y = terrainHeight;
 
             if (!CanSpawnAtPosition(worldPos))
             {
-                Logging.Debug("Failed to spawn agent {0}, position not suitable at {1}", agent.Index, worldPos);
+                Logging.DbgInfo("Failed to spawn agent {0}, position not suitable at {1}", agent.Index, worldPos);
                 return -1;
             }
 
@@ -410,7 +410,7 @@ namespace WalkerSim
             }
             else
             {
-                Logging.Debug("Using previous entity class id: {0}", entityClassId);
+                Logging.DbgInfo("Using previous entity class id: {0}", entityClassId);
             }
 
             var rot = VectorUtils.ToUnity(agent.Velocity);
@@ -420,7 +420,7 @@ namespace WalkerSim
             var spawnedAgent = EntityFactory.CreateEntity(entityClassId, worldPos, rot) as EntityAlive;
             if (spawnedAgent == null)
             {
-                Logging.DebugErr("Unable to create zombie entity!, Class Id: {0}, Pos: {1}", entityClassId, worldPos);
+                Logging.DbgErr("Unable to create zombie entity!, Class Id: {0}, Pos: {1}", entityClassId, worldPos);
                 return -1;
             }
 
@@ -440,7 +440,7 @@ namespace WalkerSim
 
             if (agent.Health != -1)
             {
-                Logging.Debug("Using previous health: {0}", agent.Health);
+                Logging.DbgInfo("Using previous health: {0}", agent.Health);
                 spawnedAgent.Health = agent.Health;
             }
 
@@ -454,7 +454,7 @@ namespace WalkerSim
                 destPos.y = world.GetTerrainHeight(Mathf.FloorToInt(destPos.x), Mathf.FloorToInt(destPos.z)) + 1;
 
                 spawnedAgent.SetInvestigatePosition(destPos, 6000, false);
-                Logging.Debug("Spawned agent {0}, entity id: {1} wandering to {2}",
+                Logging.DbgInfo("Spawned agent {0}, entity id: {1} wandering to {2}",
                     agent.Index,
                     spawnedAgent.entityId,
                     destPos);
@@ -465,7 +465,7 @@ namespace WalkerSim
                 if (activator != null)
                 {
                     spawnedAgent.SetAttackTarget(activator, 6000);
-                    Logging.Debug("Spawned agent {0}, entity id: {1} chasing activator {2}",
+                    Logging.DbgInfo("Spawned agent {0}, entity id: {1} chasing activator {2}",
                         agent.Index,
                         spawnedAgent.entityId,
                         spawnData.ActivatorEntityId);
@@ -492,7 +492,7 @@ namespace WalkerSim
             agent.CurrentState = Agent.State.Active;
             agent.Health = spawnedAgent.Health;
 
-            Logging.Debug("Agent {0} spawned at {1}, entity id {2}, class id {3}",
+            Logging.DbgInfo("Agent {0} spawned at {1}, entity id {2}, class id {3}",
                 agent.Index,
                 worldPos,
                 spawnedAgent.entityId,
@@ -513,7 +513,7 @@ namespace WalkerSim
 
             if (agent.CurrentState != Agent.State.Active)
             {
-                Logging.Debug("Trying to despawn agent {0} that is not active, state: {1}.", agent.Index, agent.CurrentState);
+                Logging.DbgInfo("Trying to despawn agent {0} that is not active, state: {1}.", agent.Index, agent.CurrentState);
                 return false;
             }
 
@@ -549,13 +549,13 @@ namespace WalkerSim
         {
             if (entity == null)
             {
-                Logging.Debug("Entity not found: {0}, can't update state.", entityId);
+                Logging.DbgInfo("Entity not found: {0}, can't update state.", entityId);
                 return true;
             }
 
             if (!entity.IsAlive())
             {
-                Logging.Debug("Entity is dead: {0}", entityId);
+                Logging.DbgInfo("Entity is dead: {0}", entityId);
                 return true;
             }
 
@@ -576,13 +576,13 @@ namespace WalkerSim
                 var agent = kv.Value;
                 if (agent.EntityId == -1)
                 {
-                    Logging.Debug("Agent {0} has no entity id, skipping. Agent state: {1}", agent.Index, agent.CurrentState);
+                    Logging.DbgInfo("Agent {0} has no entity id, skipping. Agent state: {1}", agent.Index, agent.CurrentState);
                     continue;
                 }
 
                 if (agent.CurrentState != Agent.State.Active)
                 {
-                    Logging.Debug("Agent {0} is not active, skipping. Agent state: {1}", agent.Index, agent.CurrentState);
+                    Logging.DbgInfo("Agent {0} is not active, skipping. Agent state: {1}", agent.Index, agent.CurrentState);
                     continue;
                 }
 

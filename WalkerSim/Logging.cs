@@ -13,7 +13,6 @@ namespace WalkerSim
             Info,
             Warning,
             Error,
-            Count,
         }
 
         public interface ISink
@@ -62,22 +61,22 @@ namespace WalkerSim
         public static void Exception(System.Exception ex) => Message(Level.Error, ex.ToString());
 
         [Conditional("DEBUG")]
-        public static void Debug(string message) => Message(Level.Info, message);
+        public static void DbgInfo(string message) => Message(Level.Info, message);
 
         [Conditional("DEBUG")]
-        public static void Debug(string format, params object[] args) => Message(Level.Info, string.Format(format, args));
+        public static void DbgInfo(string format, params object[] args) => Message(Level.Info, string.Format(format, args));
 
         [Conditional("DEBUG")]
-        public static void DebugErr(string message) => Message(Level.Error, message);
+        public static void DbgErr(string message) => Message(Level.Error, message);
 
         [Conditional("DEBUG")]
-        public static void DebugErr(string format, params object[] args) => Message(Level.Error, string.Format(format, args));
+        public static void DbgErr(string format, params object[] args) => Message(Level.Error, string.Format(format, args));
 
         [Conditional("DEBUG")]
-        public static void DebugWarn(string message) => Message(Level.Warning, message);
+        public static void DbgWrn(string message) => Message(Level.Warning, message);
 
         [Conditional("DEBUG")]
-        public static void DebugWarn(string format, params object[] args) => Message(Level.Warning, string.Format(format, args));
+        public static void DbgWrn(string format, params object[] args) => Message(Level.Warning, string.Format(format, args));
 
         public class ConsoleSink : ISink
         {

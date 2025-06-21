@@ -383,8 +383,8 @@ namespace WalkerSim
 
             var simulation = Simulation.Instance;
 
-            Logging.Debug("Player Spawn: {0}", data.RespawnType);
-            Logging.Debug("Spawn Position: {0}", data.Position);
+            Logging.DbgInfo("Player Spawn: {0}", data.RespawnType);
+            Logging.DbgInfo("Spawn Position: {0}", data.Position);
 
             int spawnDelay = 0;
             switch (data.RespawnType)
@@ -462,7 +462,7 @@ namespace WalkerSim
             }
 
             // Log all variables from noise.
-            Logging.Debug("Noise: {0}, Volume: {1}, Duration: {2}, MuffledWhenCrouched: {3}, HeatMapStrength: {4}, HeatMapWorldTimeToLive: {5}, volumeScale: {6}.",
+            Logging.DbgInfo("Noise: {0}, Volume: {1}, Duration: {2}, MuffledWhenCrouched: {3}, HeatMapStrength: {4}, HeatMapWorldTimeToLive: {5}, volumeScale: {6}.",
                                clipName,
                                noise.volume,
                                noise.duration,
