@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace WalkerSim.Editor
 {
-    public partial class FormMain : Form
+    public partial class FormMain : Form, Logging.ISink
     {
         static readonly int ImageWidth = 768;
         static readonly int ImageHeight = 768;
@@ -168,52 +168,41 @@ namespace WalkerSim.Editor
             SetToolTip(inputSpawnProtectionTime, "The amount of seconds the player requires to be alive before any agents will spawn.\n\nNOTE: This only applies to starting a new game and spawning for the first time.");
         }
 
-        private void LogMsg(string text, Color color, bool switchToLog)
+        public void Message(Logging.Level level, string message)
         {
             if (InvokeRequired)
             {
                 BeginInvoke((MethodInvoker)delegate
                 {
-                    LogMsg(text, color, switchToLog);
+                    Message(level, message);
                 });
                 return;
             }
 
+            Color color = Color.Black;
+            switch (level)
+            {
+                case Logging.Level.Info:
+                    color = Color.Black;
+                    break;
+                case Logging.Level.Warning:
+                    color = Color.Yellow;
+                    break;
+                case Logging.Level.Error:
+                    color = Color.Red;
+                    break;
+            }
+
             rtbLog.SuspendLayout();
             rtbLog.SelectionColor = color;
-            rtbLog.AppendText($"{text}{Environment.NewLine}");
+            rtbLog.AppendText($"{message}{Environment.NewLine}");
             rtbLog.ScrollToCaret();
             rtbLog.ResumeLayout();
-
-            if (switchToLog)
-            {
-                tabSimulation.SelectTab(2); // Switch to log.
-            }
-        }
-
-        private void LogInfo(string msg)
-        {
-            LogMsg(msg, Color.Black, false);
-        }
-
-        private void LogWrn(string msg)
-        {
-            LogMsg(msg, Color.Goldenrod, true);
-        }
-
-        private void LogErr(string msg)
-        {
-            LogMsg(msg, Color.DarkRed, true);
         }
 
         private void SetupLogging()
         {
-            Logging.Prefixes = Logging.Prefix.Level | Logging.Prefix.Timestamp;
-
-            Logging.SetHandler(Logging.Level.Info, LogInfo);
-            Logging.SetHandler(Logging.Level.Warning, LogWrn);
-            Logging.SetHandler(Logging.Level.Error, LogErr);
-
+            Logging.AddSink(this);
             Logging.Info("Initialized logging.");
         }
 

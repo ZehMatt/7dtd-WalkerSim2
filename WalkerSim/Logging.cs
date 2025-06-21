@@ -1,9 +1,10 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace WalkerSim
 {
-    internal static class Logging
+    public static class Logging
     {
         public delegate void LogMessage(string message);
 
@@ -24,61 +25,31 @@ namespace WalkerSim
             Count,
         }
 
-        public static Prefix Prefixes = Prefix.WalkerSim;
+        public interface ISink
+        {
+            void Message(Level level, string message);
+        }
 
-        static LogMessage[] logHandler = new LogMessage[(int)Level.Count];
+        private static List<ISink> _sinks = new List<ISink>();
 
         static Logging()
         {
         }
 
-        private static string GetPrefix(Level level)
-        {
-            var res = "";
-            if ((Prefixes & Prefix.WalkerSim) != Prefix.None)
-            {
-                res = "[WalkerSim]";
-            }
-            if ((Prefixes & Prefix.Level) != Prefix.None)
-            {
-                if (level == Level.Info)
-                    res += "[INF]";
-                else if (level == Level.Warning)
-                    res += "[WRN]";
-                else if (level == Level.Error)
-                    res += "[ERR]";
-                else
-                    throw new Exception("Invalid logging level");
-            }
-            if ((Prefixes & Prefix.Timestamp) != Prefix.None)
-            {
-                res += DateTime.Now.ToString("[dd/MM/yy HH:mm:ss:fff]");
-            }
-            return res;
-        }
-
         private static void Message(Level level, string message)
         {
-            string output;
-            if (Prefixes != Prefix.None)
+            foreach (var sink in _sinks)
             {
-                output = String.Format("{0} {1}", GetPrefix(level), message);
+                sink.Message(level, message);
             }
-            else
-            {
-                output = message;
-            }
-
-            LogMessage handler = logHandler[(int)level];
-            if (handler == null)
-                return;
-
-            handler(output);
         }
 
-        public static void SetHandler(Level level, LogMessage logOut)
+        public static void AddSink(ISink sink)
         {
-            logHandler[(int)level] = logOut;
+            if (sink == null)
+                throw new ArgumentNullException(nameof(sink));
+
+            _sinks.Add(sink);
         }
 
         public static void Out(string message) => Message(Level.Info, message);
@@ -110,5 +81,51 @@ namespace WalkerSim
 
         [Conditional("DEBUG")]
         public static void DebugErr(string format, params object[] args) => Message(Level.Error, string.Format(format, args));
+
+        [Conditional("DEBUG")]
+        public static void DebugWarn(string message) => Message(Level.Warning, message);
+
+        [Conditional("DEBUG")]
+        public static void DebugWarn(string format, params object[] args) => Message(Level.Warning, string.Format(format, args));
+
+        public class ConsoleSink : ISink
+        {
+            public void Message(Level level, string message)
+            {
+                switch (level)
+                {
+                    case Level.Info:
+                        System.Console.WriteLine($"[INF] {message}");
+                        break;
+                    case Level.Warning:
+                        System.Console.WriteLine($"[WRN] {message}");
+                        break;
+                    case Level.Error:
+                        System.Console.Error.WriteLine($"[ERR] {message}");
+                        break;
+                }
+            }
+        }
+
+        public class FileSink : ISink
+        {
+            private readonly string _filePath;
+
+            public FileSink(string filePath)
+            {
+                _filePath = filePath;
+            }
+
+            public void Message(Level level, string message)
+            {
+                try
+                {
+                    System.IO.File.AppendAllText(_filePath, $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{level}] {message}\n");
+                }
+                catch (Exception)
+                {
+                }
+            }
+        }
     }
 }

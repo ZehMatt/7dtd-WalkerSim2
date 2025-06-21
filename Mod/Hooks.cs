@@ -8,7 +8,9 @@ namespace WalkerSim
     {
         static bool Prefix(AIDirectorWanderingHordeComponent __instance, AIWanderingHordeSpawner.SpawnType _spawnType)
         {
+#if false
             Logging.Debug("Preventing wandering horde spawn.");
+#endif
 
             // Prevent it from running each frame.
             __instance.SetNextTime(_spawnType, ulong.MaxValue);

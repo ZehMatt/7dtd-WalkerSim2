@@ -12,9 +12,8 @@ namespace WalkerSim
             Drawing.Loader = new Unity.Drawing.UnityImageLoader();
 
             // Set up logging.
-            Logging.SetHandler(Logging.Level.Info, Log.Out);
-            Logging.SetHandler(Logging.Level.Warning, Log.Warning);
-            Logging.SetHandler(Logging.Level.Error, Log.Error);
+            Logging.AddSink(new LogFileSink("WalkerSim"));
+            Logging.AddSink(new LogGameConsoleSink());
 
             // Setup the simulation window.
             SimulationWindow.Init();
@@ -386,12 +385,9 @@ namespace WalkerSim
             var simulation = Simulation.Instance;
 
             // The amount of chunks that can be loaded around the player.
-            var maxViewDistance = System.Math.Min(GamePrefs.GetInt(EnumGamePrefs.ServerMaxAllowedViewDistance), 12);
-            if (maxViewDistance > 7)
-            {
-                // Shrink by two chunks to reduce the amount of entities falling off the world.
-                maxViewDistance -= 2;
-            }
+            // Chunk size in this game is 16x16x16 blocks, so the view distance is multiplied by 16.
+            // NOTE: Default setting is 12 which is 192 blocks, we use a maximum of 7 which is 112 blocks.
+            var maxViewDistance = Math.Min(GamePrefs.GetInt(EnumGamePrefs.ServerMaxAllowedViewDistance), 7);
             var viewRadius = (maxViewDistance * 16);
 
             Logging.Debug("Player Spawn: {0}", data.RespawnType);
