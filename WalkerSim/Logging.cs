@@ -34,6 +34,17 @@ namespace WalkerSim
             }
         }
 
+        private static void Message(bool log, Level level, string message)
+        {
+            if (!log)
+                return;
+
+            foreach (var sink in _sinks)
+            {
+                sink.Message(level, message);
+            }
+        }
+
         public static void AddSink(ISink sink)
         {
             if (sink == null)
@@ -42,6 +53,7 @@ namespace WalkerSim
             _sinks.Add(sink);
         }
 
+        // Unconditional.
         public static void Out(string message) => Message(Level.Info, message);
 
         public static void Out(string format, params object[] args) => Message(Level.Info, string.Format(format, args));
@@ -60,6 +72,20 @@ namespace WalkerSim
 
         public static void Exception(System.Exception ex) => Message(Level.Error, ex.ToString());
 
+        // Conditional
+        public static void CondInfo(bool log, string message) => Message(log, Level.Info, message);
+
+        public static void CondInfo(bool log, string format, params object[] args) => Message(log, Level.Info, string.Format(format, args));
+
+        public static void CondErr(bool log, string message) => Message(log, Level.Error, message);
+
+        public static void CondErr(bool log, string format, params object[] args) => Message(log, Level.Error, string.Format(format, args));
+
+        public static void CondWrn(bool log, string message) => Message(log, Level.Warning, message);
+
+        public static void CondWrn(bool log, string format, params object[] args) => Message(log, Level.Warning, string.Format(format, args));
+
+        // Debug-only methods
         [Conditional("DEBUG")]
         public static void DbgInfo(string message) => Message(Level.Info, message);
 
@@ -77,45 +103,5 @@ namespace WalkerSim
 
         [Conditional("DEBUG")]
         public static void DbgWrn(string format, params object[] args) => Message(Level.Warning, string.Format(format, args));
-
-        public class ConsoleSink : ISink
-        {
-            public void Message(Level level, string message)
-            {
-                switch (level)
-                {
-                    case Level.Info:
-                        System.Console.WriteLine($"[INF] {message}");
-                        break;
-                    case Level.Warning:
-                        System.Console.WriteLine($"[WRN] {message}");
-                        break;
-                    case Level.Error:
-                        System.Console.Error.WriteLine($"[ERR] {message}");
-                        break;
-                }
-            }
-        }
-
-        public class FileSink : ISink
-        {
-            private readonly string _filePath;
-
-            public FileSink(string filePath)
-            {
-                _filePath = filePath;
-            }
-
-            public void Message(Level level, string message)
-            {
-                try
-                {
-                    System.IO.File.AppendAllText(_filePath, $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{level}] {message}\n");
-                }
-                catch (Exception)
-                {
-                }
-            }
-        }
     }
 }
