@@ -65,6 +65,13 @@ namespace WalkerSim.Editor
                 var nameB = Path.GetFileName(b);
                 return String.Compare(nameA, nameB);
             });
+
+            // Log the found worlds.
+            Logging.Info($"Found {_worldFolders.Count} worlds:");
+            foreach (var world in _worldFolders)
+            {
+                Logging.Info($"- {Path.GetFileName(world)} ({world})");
+            }
         }
     }
 }

@@ -75,6 +75,7 @@ namespace WalkerSim
 
             // Don't activate them when they are in the inner radius.
             var activationBorderSize = 8.0f;
+            var viewRadius = Config.SpawnActivationRadius;
 
             var maxActivePerPlayer = _maxAllowedAliveAgents;
             if (_state.Players.Count > 0)
@@ -88,7 +89,8 @@ namespace WalkerSim
                 if (HasReachedMaximumSpawnedAgents())
                 {
                     // We have reached the maximum amount of agents alive, do not spawn more.
-                    Logging.Debug($"Maximum amount of agents alive reached, max: {_maxAllowedAliveAgents}, pending spawns: {_pendingSpawns.Count}, active agents: {_state.Active.Count}");
+                    Logging.CondInfo(Config.LoggingOpts.Spawns,
+                        $"Maximum amount of agents alive reached, max: {_maxAllowedAliveAgents}, pending spawns: {_pendingSpawns.Count}, active agents: {_state.Active.Count}");
 
                     // Increase delay, no need to try again so soon when it is not possible to spawn more agents.
                     _nextSpawnCheck = DateTime.Now.AddMilliseconds(2000);
@@ -110,11 +112,14 @@ namespace WalkerSim
                     continue;
                 }
 
-                var activeNearby = GetCountActiveNearby(player.Position, player.ViewRadius);
+                var activeNearby = GetCountActiveNearby(player.Position, viewRadius);
                 if (activeNearby >= maxActivePerPlayer)
                 {
                     // Too many active agents nearby, do not spawn more.
-                    Logging.Debug("Player {0} has too many active agents nearby ({1}), skipping spawn...", player.EntityId, activeNearby);
+                    Logging.CondInfo(Config.LoggingOpts.Spawns,
+                        "Player {0} has too many active agents nearby ({1}), skipping spawn...",
+                        player.EntityId,
+                        activeNearby);
 
                     // Delay the test for this player.
                     player.NextPossibleSpawnTime = DateTime.Now.AddSeconds(1);
@@ -125,7 +130,7 @@ namespace WalkerSim
                 var playerPos = player.Position;
 
                 _nearPlayer.Clear();
-                QueryCellsLockFree(playerPos, -1, player.ViewRadius, _nearPlayer);
+                QueryCellsLockFree(playerPos, -1, viewRadius, _nearPlayer);
 
                 for (int i = 0; i < _nearPlayer.Count; i++)
                 {
@@ -135,10 +140,10 @@ namespace WalkerSim
                         continue;
 
                     var dist = Vector3.Distance2D(playerPos, agent.Position);
-                    if (dist < player.ViewRadius - activationBorderSize)
+                    if (dist < viewRadius - activationBorderSize)
                         continue;
 
-                    if (dist > player.ViewRadius)
+                    if (dist > viewRadius)
                         continue;
 
                     // TODO: We are not handling overflow of Ticks but it takes a lot of time to get there.
@@ -148,13 +153,19 @@ namespace WalkerSim
                         // The actual spawning might fail and to avoid trying to spawn the same agent
                         // too often we skip it for a while.
 
-                        Logging.Debug("Agent {0} was spawned too recently, skipping spawn, last spawn tick: {1}, current tick: {2}, delta: {3}",
+#if false
+                        Logging.DbgInfo("Agent {0} was spawned too recently, skipping spawn, last spawn tick: {1}, current tick: {2}, delta: {3}",
                             agent.Index, agent.LastSpawnTick, _state.Ticks, spawnDelta);
+#endif
 
                         continue;
                     }
 
-                    Logging.Debug("Agent {0} near player {1} at {2}m, spawning...", agent.Index, player.EntityId, dist);
+                    Logging.CondInfo(Config.LoggingOpts.Spawns,
+                        "Agent {0} near player {1} at {2}m, spawning...",
+                        agent.Index,
+                        player.EntityId,
+                        dist);
 
                     agent.LastSpawnTick = _state.Ticks;
                     agent.CurrentState = Agent.State.PendingSpawn;
@@ -219,7 +230,19 @@ namespace WalkerSim
                     }
                 }
 
-                if (agentEntityId != -1)
+                if (agentEntityId == 0)
+                {
+                    // Turn back to wandering, skipping spawn.
+                    agent.CurrentState = Agent.State.Wandering;
+                }
+                else if (agentEntityId == -1)
+                {
+                    // Turn back to wandering, currently not possible to spawn.
+                    agent.CurrentState = Agent.State.Wandering;
+
+                    _state.FailedSpawns++;
+                }
+                else
                 {
                     agent.EntityId = agentEntityId;
                     agent.CurrentState = Agent.State.Active;
@@ -227,13 +250,6 @@ namespace WalkerSim
                     AddActiveAgent(agentEntityId, agent);
 
                     _state.SuccessfulSpawns++;
-                }
-                else
-                {
-                    // Turn back to wandering, currently not possible to spawn.
-                    agent.CurrentState = Agent.State.Wandering;
-
-                    _state.FailedSpawns++;
                 }
             }
             catch (Exception ex)

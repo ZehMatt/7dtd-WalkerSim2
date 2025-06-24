@@ -29,20 +29,27 @@ Below is a list of all base parameters, their descriptions, types, constraints, 
 - **Constraints**: Minimum: 1, Maximum: 4000.
 - **Example Use Case**: Setting a density of `200` for a moderately populated zombie simulation.
 
-### 4. `StartAgentsGrouped`
+### 4. `SpawnActivationRadius`
+
+- **Type**: Integer
+- **Description**: The radius for the player in blocks/meters for when agents will spawn/despawn in the game world. This should not exceed the maximum view distance from serversettings.xml, view distance is specified in chunks and each chunk is 16x16x16.
+- **Constraints**: Minimum: 48, Maximum: 196.
+- **Note**: The default is set to 96, setting this too high can cause a lot of spawn failures, setting it to a lower value is not recommended. 
+
+### 5. `StartAgentsGrouped`
 
 - **Type**: Boolean
 - **Description**: Determines whether agents start the simulation grouped together. If `true`, agents are placed in clusters based on the `GroupSize` parameter; if `false`, they are distributed individually.
 - **Example Use Case**: Setting to `true` to simulate zombies starting in tight-knit hordes.
 
-### 5. `GroupSize`
+### 6. `GroupSize`
 
 - **Type**: Integer
 - **Description**: Defines the size of each agent group when `StartAgentsGrouped` is `true`. The total number of groups is calculated as the total number of agents divided by this value.
 - **Constraints**: Minimum: 1.
 - **Example Use Case**: Setting to `20` to create groups of 20 zombies each.
 
-### 6. `AgentStartPosition`
+### 7. `AgentStartPosition`
 
 - **Type**: Enumeration (`SpawnPosition`)
 - **Description**: Specifies where agents are placed at the start of the simulation.
@@ -53,7 +60,7 @@ Below is a list of all base parameters, their descriptions, types, constraints, 
   - `Mixed`: Agents start at a mix of border locations, random locations, and POIs.
 - **Example Use Case**: Using `RandomPOI` to simulate zombies spawning near key locations.
 
-### 7. `AgentRespawnPosition`
+### 8. `AgentRespawnPosition`
 
 - **Type**: Enumeration (`RespawnPosition`)
 - **Description**: Specifies where agents respawn after being removed (e.g., due to death or despawning).
@@ -65,7 +72,7 @@ Below is a list of all base parameters, their descriptions, types, constraints, 
   - `Mixed`: Agents respawn at a mix of border locations, random locations, and POIs.
 - **Example Use Case**: Setting to `RandomBorderLocation` to simulate zombies re-entering from the edges.
 
-### 8. `PauseDuringBloodmoon`
+### 9. `PauseDuringBloodmoon`
 
 - **Type**: Boolean
 - **Description**: Determines whether the simulation pauses during specific events, such as a "Bloodmoon" (a predefined event that may intensify zombie activity). If `true`, the simulation halts during these events.

@@ -12,9 +12,8 @@ namespace WalkerSim
             Drawing.Loader = new Unity.Drawing.UnityImageLoader();
 
             // Set up logging.
-            Logging.SetHandler(Logging.Level.Info, Log.Out);
-            Logging.SetHandler(Logging.Level.Warning, Log.Warning);
-            Logging.SetHandler(Logging.Level.Error, Log.Error);
+            Logging.AddSink(new LogFileSink("WalkerSim"));
+            Logging.AddSink(new LogGameConsoleSink());
 
             // Setup the simulation window.
             SimulationWindow.Init();
@@ -73,7 +72,7 @@ namespace WalkerSim
                 return config;
             }
 
-            Logging.Out("No config found, using defaults.");
+            Logging.Warn("No config found, using defaults.");
             return Config.GetDefault();
         }
 
@@ -377,7 +376,6 @@ namespace WalkerSim
 
         static void PlayerSpawnedInWorld(ref ModEvents.SPlayerSpawnedInWorldData data)
         {
-            // ClientInfo _cInfo, RespawnType _respawnReason, Vector3i _pos
             if (!IsHost())
             {
                 return;
@@ -385,19 +383,8 @@ namespace WalkerSim
 
             var simulation = Simulation.Instance;
 
-            // The amount of chunks that can be loaded around the player.
-            var maxViewDistance = System.Math.Min(GamePrefs.GetInt(EnumGamePrefs.ServerMaxAllowedViewDistance), 12);
-            if (maxViewDistance > 7)
-            {
-                // Shrink by two chunks to reduce the amount of entities falling off the world.
-                maxViewDistance -= 2;
-            }
-            var viewRadius = (maxViewDistance * 16);
-
-            Logging.Debug("Player Spawn: {0}", data.RespawnType);
-            Logging.Debug("Max View Distance: {0}", maxViewDistance);
-            Logging.Debug("View Radius: {0}", viewRadius);
-            Logging.Debug("Spawn Position: {0}", data.Position);
+            Logging.DbgInfo("Player Spawn: {0}", data.RespawnType);
+            Logging.DbgInfo("Spawn Position: {0}", data.Position);
 
             int spawnDelay = 0;
             switch (data.RespawnType)
@@ -420,7 +407,7 @@ namespace WalkerSim
                 case RespawnType.NewGame:
                 case RespawnType.LoadedGame:
                     var entityId = GetPlayerEntityId(data.ClientInfo);
-                    simulation.AddPlayer(entityId, VectorUtils.ToSim(data.Position), viewRadius, spawnDelay);
+                    simulation.AddPlayer(entityId, VectorUtils.ToSim(data.Position), spawnDelay);
                     break;
                 case RespawnType.Died:
                     simulation.NotifyPlayerSpawned(GetPlayerEntityId(data.ClientInfo), spawnDelay);
@@ -474,9 +461,8 @@ namespace WalkerSim
                 return;
             }
 
-#if false
             // Log all variables from noise.
-            Logging.Info("Noise: {0}, Volume: {1}, Duration: {2}, MuffledWhenCrouched: {3}, HeatMapStrength: {4}, HeatMapWorldTimeToLive: {5}, volumeScale: {6}.",
+            Logging.DbgInfo("Noise: {0}, Volume: {1}, Duration: {2}, MuffledWhenCrouched: {3}, HeatMapStrength: {4}, HeatMapWorldTimeToLive: {5}, volumeScale: {6}.",
                                clipName,
                                noise.volume,
                                noise.duration,
@@ -484,7 +470,6 @@ namespace WalkerSim
                                noise.heatMapStrength,
                                noise.heatMapWorldTimeToLive,
                                volumeScale);
-#endif
 
             if (instigator != null)
             {

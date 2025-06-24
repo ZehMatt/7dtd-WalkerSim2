@@ -115,20 +115,35 @@ namespace WalkerSim
             public List<MovementProcessor> Entries = new List<MovementProcessor>();
         }
 
-        public class DebugOptions
+        public class LoggingOptions
         {
-            [XmlElement("LogSpawnDespawn")]
-            public bool LogSpawnDespawn;
+            [XmlElement("General")]
+            public bool General = true;
+
+            [XmlElement("Spawns")]
+            public bool Spawns = false;
+
+            [XmlElement("Despawns")]
+            public bool Despawns = false;
+
+            [XmlElement("EntityClassSelection")]
+            public bool EntityClassSelection = false;
+
+            [XmlElement("Events")]
+            public bool Events = false;
         }
 
-        [XmlElement("DebugOptions")]
-        public DebugOptions Debug;
+        [XmlElement("Logging")]
+        public LoggingOptions LoggingOpts;
 
         [XmlElement("RandomSeed")]
         public int RandomSeed = 1337;
 
         [XmlElement("PopulationDensity")]
         public int PopulationDensity = 300;
+
+        [XmlElement("SpawnActivationRadius")]
+        public int SpawnActivationRadius = 96;
 
         [XmlElement("StartAgentsGrouped")]
         public bool StartAgentsGrouped = true;
@@ -195,8 +210,17 @@ namespace WalkerSim
         {
             var conf = new Config()
             {
+                LoggingOpts = new LoggingOptions
+                {
+                    General = true,
+                    Spawns = false,
+                    Despawns = false,
+                    EntityClassSelection = false,
+                    Events = false,
+                },
                 RandomSeed = 1337,
                 PopulationDensity = 300,
+                SpawnActivationRadius = 96,
                 GroupSize = 32,
                 StartPosition = WorldLocation.RandomLocation,
                 RespawnPosition = WorldLocation.RandomBorderLocation,
@@ -246,7 +270,6 @@ namespace WalkerSim
                         }
                     },
                 },
-                Debug = new DebugOptions(),
             };
             return conf;
         }

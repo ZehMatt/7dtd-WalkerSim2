@@ -8,30 +8,80 @@ namespace WalkerSim
         struct BiomeEntitySpawnData
         {
             public int entityClassId;
+            public string className;
             public float prob;
         }
 
         static Dictionary<long, List<BiomeEntitySpawnData>> _spawnDataNight = new Dictionary<long, List<BiomeEntitySpawnData>>();
         static Dictionary<long, List<BiomeEntitySpawnData>> _spawnDataDay = new Dictionary<long, List<BiomeEntitySpawnData>>();
-
-        static HashSet<int> _spawnedClassIds = new HashSet<int>();
+        static Dictionary<int, int> _classIdCounter = new Dictionary<int, int>();
 
         static private bool CanSpawnZombie()
         {
+            // NOTE: Sleeper reservation is handled before it reaches the queue.
+            // This just ensures we never go above the maximum count of zombies allowed in the world.
+
             // Check for maximum count.
             var alive = GameStats.GetInt(EnumGameStats.EnemyCount);
-
-            // We only allow half of the max count to be spawned to give sleepers some room.
-            // TODO: Make this a configuration.
-            var maxAllowed = GamePrefs.GetInt(EnumGamePrefs.MaxSpawnedZombies) / 2;
+            var maxAllowed = GamePrefs.GetInt(EnumGamePrefs.MaxSpawnedZombies);
 
             if (alive >= maxAllowed)
             {
-                Logging.Debug("Max zombies reached, alive: {0}, max: {1}", alive, maxAllowed);
+                Logging.DbgInfo("Max zombies reached, alive: {0}, max: {1}", alive, maxAllowed);
                 return false;
             }
 
             return true;
+        }
+
+        static int GetSpawnedClassIdCount(int classId)
+        {
+            if (_classIdCounter.TryGetValue(classId, out var count))
+            {
+                return count;
+            }
+            return 0;
+        }
+
+        static void IncrementSpawnedClassIdCount(int classId)
+        {
+            if (_classIdCounter.TryGetValue(classId, out var count))
+            {
+                _classIdCounter[classId] = count + 1;
+            }
+            else
+            {
+                _classIdCounter[classId] = 1;
+            }
+        }
+
+        static void DecrementSpawnedClassIdCount(int classId, int entityId)
+        {
+            if (_classIdCounter.TryGetValue(classId, out var count))
+            {
+                if (count > 0)
+                {
+                    _classIdCounter[classId] = count - 1;
+                }
+                else
+                {
+                    Logging.DbgErr("Decrementing class id {0} count below 0, entity {1}, bad counting, this is a bug.", classId, entityId);
+                }
+            }
+        }
+
+        static float GetEntityClassProbability(BiomeEntitySpawnData entry)
+        {
+            var prob = entry.prob;
+            var classIdCount = GetSpawnedClassIdCount(entry.entityClassId);
+
+            if (classIdCount > 0)
+            {
+                var penalty = 0.35f + (float)System.Math.Pow(classIdCount, 3.5);
+                prob /= penalty;
+            }
+
+            return prob;
         }
 
         static private bool CanSpawnAtPosition(UnityEngine.Vector3 position)
@@ -44,13 +94,13 @@ namespace WalkerSim
 
             if (!world.CanMobsSpawnAtPos(position))
             {
-                Logging.Debug("CanMobsSpawnAtPos returned false for position {0}", position);
+                Logging.DbgInfo("CanMobsSpawnAtPos returned false for position {0}", position);
                 return false;
             }
 
             if (world.isPositionInRangeOfBedrolls(position))
             {
-                Logging.Debug("Position {0} is near a bedroll", position);
+                Logging.DbgInfo("Position {0} is near a bedroll", position);
                 return false;
             }
 
@@ -79,6 +129,8 @@ namespace WalkerSim
 
         static void DeduplicateSpawnList(List<BiomeEntitySpawnData> list)
         {
+            list.Sort((a, b) => a.entityClassId.CompareTo(b.entityClassId));
+
             for (int i = 0; i < list.Count; i++)
             {
                 var entry = list[i];
@@ -87,6 +139,10 @@ namespace WalkerSim
                     if (entry.entityClassId == list[j].entityClassId)
                     {
                         entry.prob = System.Math.Max(entry.prob, list[j].prob);
+
+                        Logging.DbgInfo("Deduplicating entity class {0} ({1}), keeping highest probability {2}",
+                            entry.className, entry.entityClassId, entry.prob);
+
                         list.RemoveAt(j);
                         j--;
                     }
@@ -94,14 +150,15 @@ namespace WalkerSim
             }
         }
 
-        static private int GetEntityClassId(Chunk chunk, UnityEngine.Vector3 worldPos)
+        static private int GetEntityClassId(Simulation simulation, Chunk chunk, UnityEngine.Vector3 worldPos)
         {
             var world = GameManager.Instance.World;
-
             if (world == null)
             {
                 return -1;
             }
+
+            var config = simulation.Config;
 
             List<BiomeEntitySpawnData> spawnList = GetBiomeEntityClasses(chunk.Key);
             if (spawnList == null)
@@ -117,13 +174,17 @@ namespace WalkerSim
                 var biomeData = world.Biomes.GetBiome(biomeId);
                 if (biomeData == null)
                 {
-                    Logging.Debug("Biome data is null for id {0}", biomeId);
+                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                        "Biome data is null for id {0}",
+                        biomeId);
                     return -1;
                 }
 
                 if (!BiomeSpawningClass.list.TryGetValue(biomeData.m_sBiomeName, out BiomeSpawnEntityGroupList biomeList))
                 {
-                    Logging.Debug("Biome data not found for id {0}", biomeId);
+                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                        "Biome data not found for id {0}",
+                        biomeId);
                     return -1;
                 }
 
@@ -131,12 +192,22 @@ namespace WalkerSim
                 int groupsEnabledFlags = 0;
                 {
                     FastTags<TagGroup.Poi> fastTags = FastTags<TagGroup.Poi>.none;
-                    Logging.Debug("About to get POIs");
-
                     List<PrefabInstance> spawnPIs = new List<PrefabInstance>();
-                    world.GetPOIsAtXZ(worldX + 16, worldX + 80 - 16, worldZ + 16, worldZ + 80 - 16, spawnPIs);
 
-                    Logging.Debug("Got {0} POIs", spawnPIs.Count);
+                    var xMin = worldX + 16;
+                    var xMax = worldX + 80 - 16;
+                    var zMin = worldZ + 16;
+                    var zMax = worldZ + 80 - 16;
+                    world.GetPOIsAtXZ(xMin, xMax, zMin, zMax, spawnPIs);
+
+                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                        "Got {0} POIs for ({1}, {2}) ({3}, {4})",
+                        spawnPIs.Count,
+                        xMin,
+                        xMax,
+                        zMin,
+                        zMax);
+
                     for (int j = 0; j < spawnPIs.Count; j++)
                     {
                         // build list of tags for POIs around chunk
@@ -155,7 +226,9 @@ namespace WalkerSim
                         }
                     }
 
-                    Logging.Debug("ChunkFlags generated: {0}", groupsEnabledFlags);
+                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                        "ChunkFlags generated: {0}",
+                        groupsEnabledFlags);
                 }
 
                 // Gather all possible groups.
@@ -172,24 +245,32 @@ namespace WalkerSim
                         // This group is not enabled for this chunk.
                         continue;
                     }
-
                     if (EntityGroups.list.TryGetValue(group.entityGroupName, out var data))
                     {
                         foreach (var entry in data)
                         {
+                            if (entry.entityClassId == 0)
+                            {
+                                // Ignore this case, not relevant in this situation.
+                                continue;
+                            }
+
                             if (group.daytime == EDaytime.Day || group.daytime == EDaytime.Any)
                             {
                                 entityClassesDay.Add(new BiomeEntitySpawnData
                                 {
                                     entityClassId = entry.entityClassId,
+                                    className = EntityClass.GetEntityClassName(entry.entityClassId),
                                     prob = entry.prob
                                 });
                             }
+
                             if (group.daytime == EDaytime.Night || group.daytime == EDaytime.Any)
                             {
                                 entityClassesNight.Add(new BiomeEntitySpawnData
                                 {
                                     entityClassId = entry.entityClassId,
+                                    className = EntityClass.GetEntityClassName(entry.entityClassId),
                                     prob = entry.prob
                                 });
                             }
@@ -197,42 +278,64 @@ namespace WalkerSim
                     }
                 }
 
-                // Sort the spawn lists by entity class id.
-                entityClassesDay.Sort((a, b) => a.entityClassId.CompareTo(b.entityClassId));
-                entityClassesNight.Sort((a, b) => a.entityClassId.CompareTo(b.entityClassId));
 
                 // De-duplicate the spawn lists with identical entity class ids, select highest probability.
                 DeduplicateSpawnList(entityClassesDay);
                 DeduplicateSpawnList(entityClassesNight);
 
+                // Sort by probability.
+                entityClassesDay.Sort((a, b) => b.prob.CompareTo(a.prob));
+                entityClassesNight.Sort((a, b) => b.prob.CompareTo(a.prob));
+
                 // Cache the spawn data for this chunk.
                 _spawnDataDay[chunk.Key] = entityClassesDay;
                 _spawnDataNight[chunk.Key] = entityClassesNight;
 
-                Logging.Debug("Spawn list for chunk {0} (Day: {1}, Night: {2})", chunk.Key, entityClassesDay.Count, entityClassesNight.Count);
+                Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                    "Spawn list for chunk {0} (Day: {1}, Night: {2}), Biome: {3}",
+                    chunk.Key,
+                    entityClassesDay.Count,
+                    entityClassesNight.Count,
+                    biomeData.m_sBiomeName);
+
+                // Day.
+                Logging.CondInfo(config.LoggingOpts.EntityClassSelection, "  Daytime:");
+                foreach (var entry in entityClassesDay)
+                {
+                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                        "    Class: {0} ({1}), Probability: {2}",
+                        entry.className,
+                        entry.entityClassId,
+                        entry.prob);
+                }
+
+                // Night.
+                Logging.CondInfo(config.LoggingOpts.EntityClassSelection, "  Nighttime:");
+                foreach (var entry in entityClassesNight)
+                {
+                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                        "    Class: {0} ({1}), Probability: {2}",
+                        entry.className,
+                        entry.entityClassId,
+                        entry.prob);
+                }
 
                 spawnList = world.IsDaytime() ? entityClassesDay : entityClassesNight;
             }
-
-            // Penalty of duplicate entity classes already spawned.
-            var duplicateClassProbScale = 0.10f;
 
             // Calculate the total probability.
             float totalProb = 0;
             for (int i = 0; i < spawnList.Count; i++)
             {
                 var entry = spawnList[i];
-                var prob = entry.prob;
-                if (_spawnedClassIds.Contains(entry.entityClassId))
-                {
-                    // Significantly reduce the probability of spawning an already spawned entity.
-                    prob *= duplicateClassProbScale;
-                }
+                var prob = GetEntityClassProbability(entry);
+
                 totalProb += prob;
             }
 
             // Select a random class id, it also attempts to avoid spawning duplicates.
             var selectedClassId = -1;
+            var selectedClassName = string.Empty;
             for (int attempt = 0; attempt < 3; attempt++)
             {
                 var rand = Simulation.Instance.PRNG;
@@ -241,30 +344,35 @@ namespace WalkerSim
                 for (int i = 0; i < spawnList.Count; i++)
                 {
                     var entry = spawnList[i];
-                    var prob = entry.prob;
+                    var prob = GetEntityClassProbability(entry);
 
-                    if (_spawnedClassIds.Contains(entry.entityClassId))
-                    {
-                        // Significantly reduce the probability of spawning an already spawned entity.
-                        prob *= duplicateClassProbScale;
-                    }
                     randomValue -= prob;
 
                     if (randomValue <= 0)
                     {
                         selectedClassId = entry.entityClassId;
+                        selectedClassName = entry.className;
                         break;
                     }
                 }
 
-                if (!_spawnedClassIds.Contains(selectedClassId))
+                var existingCount = GetSpawnedClassIdCount(selectedClassId);
+                if (existingCount >= 2)
                 {
-                    Logging.Debug("Selected entity class id {0} from {1} attempts", selectedClassId, attempt + 1);
-                    break;
+                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                        "Selected entity class {0} ({1}) exists too often, instances: {2}, retrying...",
+                        selectedClassName,
+                        selectedClassId,
+                        existingCount);
                 }
                 else
                 {
-                    Logging.Debug("Selected entity class id {0} is a duplicate, retrying...", selectedClassId);
+                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                        "Selected entity class {0} ({1}) from {2} attempts",
+                        selectedClassName,
+                        selectedClassId,
+                        attempt + 1);
+                    break;
                 }
             }
 
@@ -274,6 +382,7 @@ namespace WalkerSim
         static public int SpawnAgent(Simulation simulation, Simulation.SpawnData spawnData)
         {
             var agent = spawnData.Agent;
+            var config = simulation.Config;
 
             var world = GameManager.Instance.World;
             if (world == null)
@@ -297,48 +406,49 @@ namespace WalkerSim
             var chunk = world.GetChunkSync(chunkPosX, chunkPosZ) as Chunk;
             if (chunk == null)
             {
-                Logging.DebugErr("Failed to spawn agent, chunk not loaded at {0}, {1}", chunkPosX, chunkPosZ);
+                Logging.DbgErr("Failed to spawn agent {0}, chunk not loaded at {1}, {2}", agent.Index, chunkPosX, chunkPosZ);
                 return -1;
             }
 
             var terrainHeight = world.GetTerrainHeight(Mathf.FloorToInt(worldPos.x), Mathf.FloorToInt(worldPos.z)) + 1;
-            Logging.Debug("Terrain height at {0}, {1} is {2}", worldPos.x, worldPos.z, terrainHeight);
+            Logging.CondInfo(config.LoggingOpts.Spawns,
+                "Terrain height at {0}, {1} is {2}",
+                worldPos.x,
+                worldPos.z,
+                terrainHeight);
 
             // Adjust position height.
             worldPos.y = terrainHeight;
 
             if (!CanSpawnAtPosition(worldPos))
             {
-                Logging.Debug("Failed to spawn agent, position not suitable at {0}", worldPos);
+                Logging.CondInfo(config.LoggingOpts.Spawns, "Failed to spawn agent {0}, position not suitable at {1}", agent.Index, worldPos);
                 return -1;
             }
 
-            if (simulation.Config.Debug.LogSpawnDespawn)
-            {
-                Logging.Out("Spawning agent at {0}", worldPos);
-            }
+            Logging.CondInfo(config.LoggingOpts.Spawns, "Spawning agent {0} at {1}", agent.Index, worldPos);
 
             // Use previously assigned entity class id.
             int entityClassId = agent.EntityClassId;
             if (entityClassId == -1 || entityClassId == 0)
             {
-                entityClassId = GetEntityClassId(chunk, worldPos);
+                entityClassId = GetEntityClassId(simulation, chunk, worldPos);
                 if (entityClassId == -1 || entityClassId == 0)
                 {
-                    // Fallback to random.
-                    int lastClassId = -1;
-                    entityClassId = EntityGroups.GetRandomFromGroup("ZombiesAll", ref lastClassId);
-
-                    if (entityClassId == -1 || entityClassId == 0)
+                    if (entityClassId == -1)
                     {
-                        Logging.Err("Failed to get entity class id from ZombiesAll.");
-                        return -1;
+                        Logging.Err("Failed to get entity class id for chunk {0} at position {1}", chunk.Key, worldPos);
                     }
+
+                    // 0 signals to not spawn, this is on purpose to change the weights, comes from entitygroups.xml.
+                    return entityClassId;
                 }
             }
             else
             {
-                Logging.Debug("Using previous entity class id: {0}", entityClassId);
+                Logging.CondInfo(config.LoggingOpts.Spawns,
+                    "Using previous entity class id: {0}",
+                    entityClassId);
             }
 
             var rot = VectorUtils.ToUnity(agent.Velocity);
@@ -348,7 +458,10 @@ namespace WalkerSim
             var spawnedAgent = EntityFactory.CreateEntity(entityClassId, worldPos, rot) as EntityAlive;
             if (spawnedAgent == null)
             {
-                Logging.DebugErr("Unable to create zombie entity!, Class Id: {0}, Pos: {1}", entityClassId, worldPos);
+                Logging.CondErr(config.LoggingOpts.Spawns,
+                    "Unable to create zombie entity!, Class Id: {0}, Pos: {1}",
+                    entityClassId,
+                    worldPos);
                 return -1;
             }
 
@@ -368,7 +481,9 @@ namespace WalkerSim
 
             if (agent.Health != -1)
             {
-                Logging.Debug("Using previous health: {0}", agent.Health);
+                Logging.CondInfo(config.LoggingOpts.Spawns,
+                    "Using previous health: {0}",
+                    agent.Health);
                 spawnedAgent.Health = agent.Health;
             }
 
@@ -382,7 +497,11 @@ namespace WalkerSim
                 destPos.y = world.GetTerrainHeight(Mathf.FloorToInt(destPos.x), Mathf.FloorToInt(destPos.z)) + 1;
 
                 spawnedAgent.SetInvestigatePosition(destPos, 6000, false);
-                Logging.Debug("Spawned agent wandering to {0}", destPos);
+                Logging.CondInfo(config.LoggingOpts.Spawns,
+                    "Spawned agent {0}, entity id: {1} wandering to {2}",
+                    agent.Index,
+                    spawnedAgent.entityId,
+                    destPos);
             }
             else if (spawnData.PostSpawnBehavior == Config.PostSpawnBehavior.ChaseActivator)
             {
@@ -390,7 +509,11 @@ namespace WalkerSim
                 if (activator != null)
                 {
                     spawnedAgent.SetAttackTarget(activator, 6000);
-                    Logging.Debug("Spawned agent chasing activator {0}", spawnData.ActivatorEntityId);
+                    Logging.CondInfo(config.LoggingOpts.Spawns,
+                        "Spawned agent {0}, entity id: {1} chasing activator {2}",
+                        agent.Index,
+                        spawnedAgent.entityId,
+                        spawnData.ActivatorEntityId);
                 }
                 else
                 {
@@ -401,7 +524,10 @@ namespace WalkerSim
             else if (spawnData.PostSpawnBehavior == Config.PostSpawnBehavior.Nothing)
             {
                 // Do nothing.
-                Logging.Info("No PostSpawn action for agent {0}", spawnedAgent.entityId);
+                Logging.CondInfo(config.LoggingOpts.Spawns,
+                    "No PostSpawn action for agent {0}, entity id {1}",
+                    agent.Index,
+                    spawnedAgent.entityId);
             }
             else
             {
@@ -414,18 +540,14 @@ namespace WalkerSim
             agent.CurrentState = Agent.State.Active;
             agent.Health = spawnedAgent.Health;
 
-            if (simulation.Config.Debug.LogSpawnDespawn)
-            {
-                Logging.Out("Agent spawned at {0}, entity id {1}, class id {2}", worldPos, spawnedAgent.entityId, entityClassId);
-            }
+            Logging.CondInfo(config.LoggingOpts.Spawns,
+                "Agent {0} spawned at {1}, entity id {2}, class id {3}",
+                agent.Index,
+                worldPos,
+                spawnedAgent.entityId,
+                entityClassId);
 
-            _spawnedClassIds.Add(entityClassId);
-
-            if (_spawnedClassIds.Count > GamePrefs.GetInt(EnumGamePrefs.MaxSpawnedZombies))
-            {
-                // This is a potential bug, we should not have this many spawned class ids.
-                Logging.Warn("Potential bug, spawned class ids count is {0}", _spawnedClassIds.Count);
-            }
+            IncrementSpawnedClassIdCount(entityClassId);
 
             return spawnedAgent.entityId;
         }
@@ -438,14 +560,20 @@ namespace WalkerSim
                 return false;
             }
 
-            var entity = world.GetEntity(agent.EntityId) as EntityAlive;
-            if (entity == null)
+            if (agent.CurrentState != Agent.State.Active)
             {
-                Logging.Warn("Entity not found: {0}, unable to despawn.", agent.EntityId);
+                Logging.DbgInfo("Trying to despawn agent {0} that is not active, state: {1}.", agent.Index, agent.CurrentState);
                 return false;
             }
 
-            _spawnedClassIds.Remove(entity.entityClass);
+            var entity = world.GetEntity(agent.EntityId) as EntityAlive;
+            if (entity == null)
+            {
+                Logging.Warn("Entity not found {0} for agent {1}, unable to despawn.", agent.EntityId, agent.Index);
+                return false;
+            }
+
+            DecrementSpawnedClassIdCount(entity.entityClass, entity.entityId);
 
             // Retain current state.
             agent.Health = entity.Health;
@@ -458,10 +586,8 @@ namespace WalkerSim
 
             world.RemoveEntity(entity.entityId, EnumRemoveEntityReason.Despawned);
 
-            if (simulation.Config.Debug.LogSpawnDespawn)
-            {
-                Logging.Out("Agent despawned, entity id: {0}", agent.EntityId);
-            }
+            var config = simulation.Config;
+            Logging.CondInfo(config.LoggingOpts.Despawns, "Agent despawned, entity id: {0}", agent.EntityId);
 
             return true;
         }
@@ -470,13 +596,13 @@ namespace WalkerSim
         {
             if (entity == null)
             {
-                Logging.Debug("Entity not found: {0}, can't update state.", entityId);
+                Logging.DbgInfo("Entity not found: {0}, can't update state.", entityId);
                 return true;
             }
 
             if (!entity.IsAlive())
             {
-                Logging.Debug("Entity is dead: {0}", entityId);
+                Logging.DbgInfo("Entity is dead: {0}", entityId);
                 return true;
             }
 
@@ -497,7 +623,13 @@ namespace WalkerSim
                 var agent = kv.Value;
                 if (agent.EntityId == -1)
                 {
-                    Logging.Debug("Agent has no entity id, skipping. Agent state: {0}", agent.CurrentState);
+                    Logging.DbgInfo("Agent {0} has no entity id, skipping. Agent state: {1}", agent.Index, agent.CurrentState);
+                    continue;
+                }
+
+                if (agent.CurrentState != Agent.State.Active)
+                {
+                    Logging.DbgInfo("Agent {0} is not active, skipping. Agent state: {1}", agent.Index, agent.CurrentState);
                     continue;
                 }
 
@@ -525,8 +657,7 @@ namespace WalkerSim
             {
                 foreach (var agent in deadAgents)
                 {
-                    // NOTE: Needs to be cleared before marking dead as that resets all data.
-                    _spawnedClassIds.Remove(agent.EntityClassId);
+                    DecrementSpawnedClassIdCount(agent.EntityClassId, agent.EntityId);
 
                     simulation.MarkAgentDead(agent);
                 }
@@ -537,7 +668,7 @@ namespace WalkerSim
         {
             _spawnDataDay.Clear();
             _spawnDataNight.Clear();
-            _spawnedClassIds.Clear();
+            _classIdCounter.Clear();
         }
     }
 }

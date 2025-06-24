@@ -85,7 +85,7 @@ namespace WalkerSim.Editor
         public NextToolState OnClick(Vector3 position)
         {
             var simulation = Simulation.Instance;
-            simulation.AddPlayer(0, position, 96, 0);
+            simulation.AddPlayer(0, position, 0);
 
             return NextToolState.Stop;
         }

@@ -10,15 +10,35 @@
         <xs:complexType>
             <xs:sequence>
 
-                <xs:element name="DebugOptions" minOccurs="0">
+                <xs:element name="Logging" minOccurs="0">
                     <xs:annotation>
                         <xs:documentation>Debug options for the simulation</xs:documentation>
                     </xs:annotation>
                     <xs:complexType>
                         <xs:sequence>
-                            <xs:element name="LogSpawnDespawn" type="xs:boolean">
+                            <xs:element name="General" type="xs:boolean">
                                 <xs:annotation>
-                                    <xs:documentation>Log whether entities are spawned or despawned</xs:documentation>
+                                    <xs:documentation>Log general information</xs:documentation>
+                                </xs:annotation>
+                            </xs:element>
+                            <xs:element name="Spawns" type="xs:boolean">
+                                <xs:annotation>
+                                    <xs:documentation>Log spawn information</xs:documentation>
+                                </xs:annotation>
+                            </xs:element>
+                            <xs:element name="Despawns" type="xs:boolean">
+                                <xs:annotation>
+                                    <xs:documentation>Log despawn information</xs:documentation>
+                                </xs:annotation>
+                            </xs:element>
+                            <xs:element name="EntityClassSelection" type="xs:boolean">
+                                <xs:annotation>
+                                    <xs:documentation>Log entity class selection information</xs:documentation>
+                                </xs:annotation>
+                            </xs:element>
+                            <xs:element name="Events" type="xs:boolean">
+                                <xs:annotation>
+                                    <xs:documentation>Log world events</xs:documentation>
                                 </xs:annotation>
                             </xs:element>
                         </xs:sequence>
@@ -39,6 +59,18 @@
                         <xs:restriction base="xs:integer">
                             <xs:minInclusive value="1" />
                             <xs:maxInclusive value="4000" />
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+
+                <xs:element name="SpawnActivationRadius">
+                    <xs:annotation>
+                        <xs:documentation>The radius for the player in blocks/meters for when agents will spawn/despawn in the game world. This should not exceed the maximum view distance from serversettings.xml, view distance is specified in chunks and each chunk is 16x16x16</xs:documentation>
+                    </xs:annotation>
+                    <xs:simpleType>
+                        <xs:restriction base="xs:integer">
+                            <xs:minInclusive value="48" />
+                            <xs:maxInclusive value="192" />
                         </xs:restriction>
                     </xs:simpleType>
                 </xs:element>

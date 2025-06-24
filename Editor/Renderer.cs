@@ -118,6 +118,7 @@ namespace WalkerSim.Editor
 
             var plyIdx = 0;
             var worldSize = simulation.WorldSize;
+            var plyViewRadius = simulation.Config.SpawnActivationRadius;
             foreach (var kv in simulation.Players)
             {
                 var player = kv.Value;
@@ -127,7 +128,7 @@ namespace WalkerSim.Editor
                 //gr.FillRectangle(color, imagePos.X, imagePos.Y, 1f, 1f);
                 gr.FillEllipse(color, imagePos.X - 2, imagePos.Y - 2, 4f, 4f);
 
-                var viewRadius = MathEx.Remap(player.ViewRadius, 0, worldSize.X, 0, width);
+                var viewRadius = MathEx.Remap(plyViewRadius, 0, worldSize.X, 0, width);
                 gr.DrawEllipse(Pens.Blue, imagePos.X - viewRadius, imagePos.Y - viewRadius, viewRadius * 2, viewRadius * 2);
             }
         }

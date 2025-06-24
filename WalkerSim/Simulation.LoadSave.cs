@@ -14,7 +14,7 @@ namespace WalkerSim
         private const uint SaveMagic = 0x4D534B57; // WKSM
 
         // Increment this in case of a breaking change in the save format.
-        private const uint SaveVersion = 3;
+        private const uint SaveVersion = 4;
 
         private void SaveState(State state, BinaryWriter writer)
         {

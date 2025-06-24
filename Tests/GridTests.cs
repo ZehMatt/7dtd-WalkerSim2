@@ -47,7 +47,7 @@ namespace WalkerSim.Tests
             var sim = new Simulation();
             sim.SetWorldSize(WorldMins, WorldMaxs);
             sim.Reset(config);
-            sim.AddPlayer(0, Vector3.Zero, 96, 0);
+            sim.AddPlayer(0, Vector3.Zero, 0);
 
             for (int i = 0; i < 10; i++)
             {
