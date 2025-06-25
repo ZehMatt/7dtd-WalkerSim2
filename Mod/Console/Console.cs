@@ -7,7 +7,6 @@ namespace WalkerSim.Console
     {
         public string Name;
         public string Description;
-        public bool RequiresAdmin;
         public Delegate Handler;
 
         public static SubCommand[] Commands = new[] {
@@ -15,7 +14,6 @@ namespace WalkerSim.Console
             {
                 Name = "show",
                 Description = "Opens a new window with the simulation rendering, works only in singleplayer games.",
-                RequiresAdmin = false,
                 Handler = new Action(() =>
                 {
                     LocalPlayerUI.primaryUI.windowManager.Open("walkersim", true);
@@ -25,7 +23,6 @@ namespace WalkerSim.Console
             {
                 Name = "pause",
                 Description = "Pauses the simulation which also stops spawning and despawning.",
-                RequiresAdmin = true,
                 Handler = new Action(() =>
                 {
                     Simulation.Instance.SetPaused(true);
@@ -35,7 +32,6 @@ namespace WalkerSim.Console
             {
                 Name = "resume",
                 Description = "Resumes the simulation and also the spawning/despawning.",
-                RequiresAdmin = true,
                 Handler = new Action(() =>
                 {
                     Simulation.Instance.SetPaused(false);
@@ -45,7 +41,6 @@ namespace WalkerSim.Console
             {
                 Name = "restart",
                 Description = "Reloads the configuration and restarts the simulation.",
-                RequiresAdmin = true,
                 Handler = new Action(() =>
                 {
                     WalkerSimMod.RestartSimulation();
@@ -55,7 +50,6 @@ namespace WalkerSim.Console
             {
                 Name = "stats",
                 Description = "Print out some statistics from the simulation.",
-                RequiresAdmin = false,
                 Handler = new Action(() =>
                 {
                     var sim = Simulation.Instance;
@@ -80,7 +74,6 @@ namespace WalkerSim.Console
             {
                 Name = "timescale",
                 Description = "Sets the timescale of the simulation, can be used to speed it up or slow it down.",
-                RequiresAdmin = true,
                 Handler = new Action<float>(timeScale =>
                 {
                     Simulation.Instance.TimeScale = timeScale;
@@ -91,33 +84,6 @@ namespace WalkerSim.Console
 
     public class CommandWalkerSim : ConsoleCmdAbstract
     {
-        public override bool IsExecuteOnClient => false;
-
-        public override int DefaultPermissionLevel => 1000;
-
-        private static bool IsUserAdmin(ClientInfo clInfo)
-        {
-            if (clInfo == null)
-            {
-                // This is null when not running a server/host.
-                Logging.DbgInfo("ClientInfo is null, probably not host/server.");
-                return true;
-            }
-            if (GameManager.Instance.adminTools == null)
-            {
-                // Not a server/ singleplayer game, assume admin.
-                Logging.DbgInfo("adminTools not active, not a server/host.");
-                return true;
-            }
-            var users = GameManager.Instance.adminTools.Users;
-            if (users == null)
-            {
-                Logging.DbgInfo("Users not set in admin tools, cannot check permissions.");
-                return false;
-            }
-            return users.GetUserPermissionLevel(clInfo) == 0;
-        }
-
         public override void Execute(List<string> _params, CommandSenderInfo _senderInfo)
         {
             if (_params.Count == 0)
@@ -143,12 +109,6 @@ namespace WalkerSim.Console
             if (subCommand == null)
             {
                 ShowHelpText($"Unknown command: {command}");
-                return;
-            }
-
-            if (subCommand.RequiresAdmin && !IsUserAdmin(_senderInfo.RemoteClientInfo))
-            {
-                ShowHelpText("You do not have permission to execute this command.");
                 return;
             }
 
@@ -200,9 +160,8 @@ namespace WalkerSim.Console
 
             foreach (var cmd in SubCommand.Commands)
             {
-                res += string.Format("  {0} - {1}{2}\n",
+                res += string.Format("  {0} - {1}\n",
                     cmd.Name,
-                    cmd.RequiresAdmin ? "[Admin] " : "",
                     cmd.Description);
             }
 
