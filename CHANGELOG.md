@@ -1,4 +1,5 @@
 # 0.9.9 (in progress)
+- Fix: Clients without admin permission can restart the simulation with the console command.
 
 # 0.9.8
 - Change: Support for game version 2.0, older versions will not work.
