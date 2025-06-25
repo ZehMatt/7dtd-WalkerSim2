@@ -95,6 +95,29 @@ namespace WalkerSim.Console
 
         public override int DefaultPermissionLevel => 1000;
 
+        private static bool IsUserAdmin(ClientInfo clInfo)
+        {
+            if (clInfo == null)
+            {
+                // This is null when not running a server/host.
+                Logging.DbgInfo("ClientInfo is null, probably not host/server.");
+                return true;
+            }
+            if (GameManager.Instance.adminTools == null)
+            {
+                // Not a server/ singleplayer game, assume admin.
+                Logging.DbgInfo("adminTools not active, not a server/host.");
+                return true;
+            }
+            var users = GameManager.Instance.adminTools.Users;
+            if (users == null)
+            {
+                Logging.DbgInfo("Users not set in admin tools, cannot check permissions.");
+                return false;
+            }
+            return users.GetUserPermissionLevel(clInfo) >= 1000;
+        }
+
         public override void Execute(List<string> _params, CommandSenderInfo _senderInfo)
         {
             if (_params.Count == 0)
@@ -123,8 +146,7 @@ namespace WalkerSim.Console
                 return;
             }
 
-            var userIsAdmin = GameManager.Instance.adminTools.Users.GetUserPermissionLevel(_senderInfo.RemoteClientInfo) >= 1000;
-            if (subCommand.RequiresAdmin && !userIsAdmin)
+            if (subCommand.RequiresAdmin && !IsUserAdmin(_senderInfo.RemoteClientInfo))
             {
                 ShowHelpText("You do not have permission to execute this command.");
                 return;
