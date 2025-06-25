@@ -18,9 +18,6 @@ namespace WalkerSim
             // Setup the simulation window.
             SimulationWindow.Init();
 
-            // Setup hooks.
-            // TODO: Look into delaying this so clients can still use this with EAC when joining servers.
-            //       IsHost() is not reliable at this point of time.
             Hooks.Init();
 
             // Register for events.
