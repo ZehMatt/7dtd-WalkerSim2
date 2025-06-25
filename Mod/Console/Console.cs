@@ -56,6 +56,9 @@ namespace WalkerSim.Console
 
                     SdtdConsole.Instance.Output("--- Simulation Statistics ---");
                     SdtdConsole.Instance.Output("  World Size: {0}", sim.WorldSize);
+                    SdtdConsole.Instance.Output("  Ticks: {0}", sim.Ticks);
+                    SdtdConsole.Instance.Output("  Active: {0}", sim.Running);
+                    SdtdConsole.Instance.Output("  Paused: {0}", sim.Paused);
                     SdtdConsole.Instance.Output("  Players: {0}", sim.PlayerCount);
                     SdtdConsole.Instance.Output("  Total Agents: {0}", sim.Agents.Count);
                     SdtdConsole.Instance.Output("  Total Groups: {0}", sim.GroupCount);
@@ -63,7 +66,9 @@ namespace WalkerSim.Console
                     SdtdConsole.Instance.Output("  Failed Spawns: {0}", sim.FailedSpawns);
                     SdtdConsole.Instance.Output("  Total Despawns: {0}", sim.TotalDespawns);
                     SdtdConsole.Instance.Output("  Active Agents: {0}", sim.ActiveCount);
-                    SdtdConsole.Instance.Output("  Ticks: {0}", sim.Ticks);
+                    SdtdConsole.Instance.Output("  Bloodmoon: {0}", sim.IsBloodmoon);
+                    SdtdConsole.Instance.Output("  DayTime: {0}", sim.IsDayTime);
+                    SdtdConsole.Instance.Output("  Time Scale: {0}", sim.TimeScale);
                     SdtdConsole.Instance.Output("  Average Tick Time: {0}, {1}/s", sim.AverageSimTime, 1.0f / sim.AverageSimTime);
                     SdtdConsole.Instance.Output("  Wind Direction: {0}", sim.WindDirection);
                     SdtdConsole.Instance.Output("  Wind Target: {0}", sim.WindDirectionTarget);

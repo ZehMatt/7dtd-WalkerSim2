@@ -222,10 +222,6 @@ namespace WalkerSim
                 simulation.WorldMaxs,
                 simulation.Agents.Count);
 
-            // Simulation will be resumed in GameUpdate, there are a couple conditions such as 
-            // the requirement to have players before its resumed.
-            simulation.SetPaused(true);
-
             simulation.Start();
         }
 
@@ -300,34 +296,10 @@ namespace WalkerSim
             if (simulation == null)
                 return;
 
-            // Check for enemy spawning
-            {
-                var allowEnemySpawn = GamePrefs.GetBool(EnumGamePrefs.EnemySpawnMode);
-
-                simulation.SetEnableAgentSpawn(allowEnemySpawn);
-            }
-
-            // Check for pausing.
-            {
-                var isPaused = GameManager.Instance.IsPaused();
-                if (simulation.PlayerCount == 0)
-                {
-                    isPaused = true;
-                }
-
-                // TODO: Validate if this is correct, there seems to be various ways to check this.
-                if (simulation.Config.PauseDuringBloodmoon && world.isEventBloodMoon)
-                {
-                    isPaused = true;
-                }
-
-                simulation.SetPaused(isPaused);
-
-                if (isPaused)
-                {
-                    return;
-                }
-            }
+            // Update state.
+            simulation.SetEnableAgentSpawn(GamePrefs.GetBool(EnumGamePrefs.EnemySpawnMode));
+            simulation.SetIsBloodmoon(world.isEventBloodMoon);
+            simulation.SetIsDayTime(world.IsDaytime());
 
             try
             {

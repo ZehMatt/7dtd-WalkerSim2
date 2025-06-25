@@ -33,6 +33,9 @@ namespace WalkerSim
             public int FailedSpawns = 0;
             public int SuccessfulSpawns = 0;
             public int TotalDespawns = 0;
+            // Game State, not saved.
+            public bool IsBloodmoon = false;
+            public bool IsDayTime = true;
 
             public void Reset()
             {
@@ -171,5 +174,11 @@ namespace WalkerSim
         public float AverageSimTime => _simTime.Average;
 
         public float AverageUpdateTime => _updateTime.Average;
+
+        public bool Paused => IsPaused();
+
+        public bool IsBloodmoon => _state.IsBloodmoon;
+
+        public bool IsDayTime => _state.IsDayTime;
     }
 }

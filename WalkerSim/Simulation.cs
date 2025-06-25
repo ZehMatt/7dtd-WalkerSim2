@@ -413,6 +413,28 @@ namespace WalkerSim
             }
         }
 
+        private bool IsPaused()
+        {
+            if (_paused)
+            {
+                return true;
+            }
+
+            // Don't simulate with no registered players.
+            if (_state.Players.Count == 0)
+            {
+                return true;
+            }
+
+            if (Config.PauseDuringBloodmoon && _state.IsBloodmoon)
+            {
+                // Pause during bloodmoon if configured.
+                return true;
+            }
+
+            return false;
+        }
+
         private void ThreadUpdate()
         {
             Logging.CondInfo(Config.LoggingOpts.General, "Started simulation.");
@@ -452,9 +474,9 @@ namespace WalkerSim
                 var elapsedMs = timeElapsed;
                 var scaledDt = (float)(timeElapsed * TimeScale);
 
-                if (_paused)
+                if (IsPaused())
                 {
-                    Thread.Sleep(10);
+                    Thread.Sleep(100);
                     continue;
                 }
 
@@ -548,5 +570,16 @@ namespace WalkerSim
         {
             return SecondsToTicks(minutes * 60);
         }
+
+        public void SetIsBloodmoon(bool bloodmoon)
+        {
+            _state.IsBloodmoon = bloodmoon;
+        }
+
+        public void SetIsDayTime(bool isDay)
+        {
+            _state.IsDayTime = isDay;
+        }
     }
+
 }
