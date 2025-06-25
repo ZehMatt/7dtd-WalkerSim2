@@ -1,4 +1,4 @@
-# 0.9.9 (in progress)
+# 0.9.9
 - Fix: Clients without admin permission can restart the simulation with the console command.
 - Fix: Activation radius was too big causing issues with spawning.
 - Fix: During spawn it could select the entity class `None` which was substituted by `ZombiesAll` which skewed the probabilities causing some classes to never spawn.
