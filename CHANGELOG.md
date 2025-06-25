@@ -1,3 +1,5 @@
+# 1.0.0 (in progress)
+
 # 0.9.9
 - Fix: Clients without admin permission can restart the simulation with the console command.
 - Fix: Activation radius was too big causing issues with spawning.
