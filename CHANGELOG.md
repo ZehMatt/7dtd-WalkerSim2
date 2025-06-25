@@ -1,5 +1,9 @@
 # 0.9.9 (in progress)
 - Fix: Clients without admin permission can restart the simulation with the console command.
+- Fix: Activation radius was too big causing issues with spawning.
+- Fix: During spawn it could select the entity class `None` which was substituted by `ZombiesAll` which skewed the probabilities causing some classes to never spawn.
+- Change: Add option for the activation radius `SpawnActivationRadius`, default is 96m.
+- Change: Added options to change the logging behavior, also log into a dedicated WalkerSim log file.
 
 # 0.9.8
 - Change: Support for game version 2.0, older versions will not work.
