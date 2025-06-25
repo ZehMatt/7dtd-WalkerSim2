@@ -115,7 +115,7 @@ namespace WalkerSim.Console
                 Logging.DbgInfo("Users not set in admin tools, cannot check permissions.");
                 return false;
             }
-            return users.GetUserPermissionLevel(clInfo) >= 1000;
+            return users.GetUserPermissionLevel(clInfo) == 0;
         }
 
         public override void Execute(List<string> _params, CommandSenderInfo _senderInfo)
