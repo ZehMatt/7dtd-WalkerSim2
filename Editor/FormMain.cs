@@ -428,8 +428,6 @@ namespace WalkerSim.Editor
 
         private void StartSimulation()
         {
-            simulation.Reset(CurrentConfig);
-
             GenerateColorTable();
             simulation.Start();
 
@@ -1274,6 +1272,51 @@ namespace WalkerSim.Editor
         private void OnZoomResetClick(object sender, EventArgs e)
         {
             ZoomReset();
+        }
+
+        private void loadStateSaveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var browseFileDlg = new OpenFileDialog();
+            browseFileDlg.Filter = "WalkerSim State File (WalkerSim.bin)|*.bin|All files (*.*)|*.*";
+            browseFileDlg.FileName = "WalkerSim.bin";
+            browseFileDlg.RestoreDirectory = true;
+            browseFileDlg.InitialDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            browseFileDlg.Title = "Load save";
+            if (browseFileDlg.ShowDialog() == DialogResult.OK)
+            {
+                if (simulation.Running)
+                {
+                    var answer = MessageBox.Show("The simulation is currently running, in order to import the configuration it has to be stopped.\nDo you wish to stop the simulation?",
+                        "Simulation Running",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question
+                        );
+
+                    if (answer == DialogResult.No)
+                    {
+                        return;
+                    }
+
+                    StopSimulation();
+                }
+
+                simulation.Load(browseFileDlg.FileName);
+
+                CurrentConfig = simulation.Config;
+                UpdateConfigFields();
+                CheckMaxAgents();
+
+                GenerateColorTable();
+                RenderSimulation();
+                ZoomReset();
+            }
+        }
+
+        private void OnResetClick(object sender, EventArgs e)
+        {
+            OnStopClick(sender, e);
+
+            simulation.Reset(CurrentConfig);
         }
     }
 }
