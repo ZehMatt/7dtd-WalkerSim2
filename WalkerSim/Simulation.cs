@@ -421,7 +421,7 @@ namespace WalkerSim
             }
 
             // Don't simulate with no registered players.
-            if (_state.Players.Count == 0)
+            if (_state.Players.Count == 0 && !EditorMode)
             {
                 return true;
             }
