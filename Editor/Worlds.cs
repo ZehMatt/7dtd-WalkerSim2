@@ -13,6 +13,20 @@ namespace WalkerSim.Editor
             get => _worldFolders;
         }
 
+        public static bool GetWorldPath(string worldName, out string worldPath)
+        {
+            foreach (var world in _worldFolders)
+            {
+                if (Path.GetFileName(world).Equals(worldName, StringComparison.OrdinalIgnoreCase))
+                {
+                    worldPath = world;
+                    return true;
+                }
+            }
+            worldPath = null;
+            return false;
+        }
+
         public static void FindWorlds()
         {
             var installPaths = GameLocator.FindGamePaths();

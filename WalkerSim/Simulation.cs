@@ -132,6 +132,14 @@ namespace WalkerSim
             }
         }
 
+        public void SetWorldName(string worldName)
+        {
+            lock (_state)
+            {
+                _state.WorldName = worldName;
+            }
+        }
+
         public void SetMaxAllowedAliveAgents(int maxAlive)
         {
             _maxAllowedAliveAgents = maxAlive;
@@ -176,7 +184,7 @@ namespace WalkerSim
             }
         }
 
-        public bool LoadMapData(string directoryPath)
+        public bool LoadMapData(string directoryPath, string worldName)
         {
             lock (_state)
             {
@@ -190,6 +198,8 @@ namespace WalkerSim
                 {
                     SetWorldSize(mapData.WorldMins, mapData.WorldMaxs);
                 }
+
+                SetWorldName(worldName);
 
                 return true;
             }

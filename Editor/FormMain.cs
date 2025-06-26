@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -713,13 +714,8 @@ namespace WalkerSim.Editor
             }
 
             var worldPath = Worlds.WorldFolders[worldIdx];
-            simulation.LoadMapData(worldPath);
-
-            CheckMaxAgents();
-
-            ReconfigureSimulation();
-            simulation.Reset(CurrentConfig);
-            GenerateColorTable();
+            var worldName = Path.GetFileName(worldPath);
+            simulation.LoadMapData(worldPath, worldName);
 
             ZoomReset();
         }
@@ -810,6 +806,7 @@ namespace WalkerSim.Editor
         {
             simulation.ReloadConfig(CurrentConfig);
             GenerateColorTable();
+            UpdateStats();
         }
 
         private void OnAddGroupClick(object sender, EventArgs e)
@@ -1274,13 +1271,11 @@ namespace WalkerSim.Editor
             ZoomReset();
         }
 
-        private void loadStateSaveToolStripMenuItem_Click(object sender, EventArgs e)
+        private void OnLoadStateClick(object sender, EventArgs e)
         {
             var browseFileDlg = new OpenFileDialog();
             browseFileDlg.Filter = "WalkerSim State File (WalkerSim.bin)|*.bin|All files (*.*)|*.*";
             browseFileDlg.FileName = "WalkerSim.bin";
-            browseFileDlg.RestoreDirectory = true;
-            browseFileDlg.InitialDirectory = AppDomain.CurrentDomain.BaseDirectory;
             browseFileDlg.Title = "Load save";
             if (browseFileDlg.ShowDialog() == DialogResult.OK)
             {
@@ -1300,7 +1295,18 @@ namespace WalkerSim.Editor
                     StopSimulation();
                 }
 
-                simulation.Load(browseFileDlg.FileName);
+                if (!simulation.Load(browseFileDlg.FileName))
+                {
+                    MessageBox.Show("Failed to load the state save file", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                var worldName = simulation.WorldName;
+                if (Worlds.GetWorldPath(worldName, out var worldPath))
+                {
+                    // Update selection.
+                    inputWorld.SelectedItem = worldName;
+                }
 
                 CurrentConfig = simulation.Config;
                 UpdateConfigFields();
@@ -1309,6 +1315,7 @@ namespace WalkerSim.Editor
                 GenerateColorTable();
                 RenderSimulation();
                 ZoomReset();
+                UpdateStats();
             }
         }
 
@@ -1321,6 +1328,29 @@ namespace WalkerSim.Editor
             GenerateColorTable();
             RenderSimulation();
             ZoomReset();
+            UpdateStats();
+        }
+
+        private void OnSaveStateClick(object sender, EventArgs e)
+        {
+            var browseFileDlg = new SaveFileDialog();
+            browseFileDlg.Filter = "WalkerSim State File (WalkerSim.bin)|*.bin|All files (*.*)|*.*";
+            browseFileDlg.FileName = "WalkerSim.bin";
+            browseFileDlg.Title = "Export Configuration";
+            if (browseFileDlg.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    using (var writer = System.IO.File.CreateText(browseFileDlg.FileName))
+                    {
+                        simulation.Config.Export(writer);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logging.Exception(ex);
+                }
+            }
         }
     }
 }

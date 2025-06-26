@@ -145,16 +145,18 @@ namespace WalkerSim
         {
             var simulation = Simulation.Instance;
 
+            string worldName = GamePrefs.GetString(EnumGamePrefs.GameWorld);
+            string worldFolder = PathAbstractions.WorldsSearchPaths.GetLocation(worldName).FullPath;
+
             // Load the map data
             {
-                string worldFolder = PathAbstractions.WorldsSearchPaths.GetLocation(GamePrefs.GetString(EnumGamePrefs.GameWorld)).FullPath;
                 Logging.Out("World Folder: {0}", worldFolder);
 
                 Logging.Out("Loading Map Data...");
                 var loaded = false;
                 var elapsed = Utils.Measure(() =>
                 {
-                    loaded = simulation.LoadMapData(worldFolder);
+                    loaded = simulation.LoadMapData(worldFolder, worldName);
                 });
 
                 if (loaded)
@@ -186,6 +188,13 @@ namespace WalkerSim
                     if (simulation.WorldMins != worldMins || simulation.WorldMaxs != worldMaxs)
                     {
                         Logging.Warn("World size in simulation does not match the actual world size, resetting simulation." +
+                            "This should never happen, make sure the save folder does not contain a 'walkersim.bin' save file from another game.");
+                        resetSim = true;
+                    }
+
+                    if (simulation.WorldName != worldName)
+                    {
+                        Logging.Warn("World name in simulation does not match the actual world name, resetting simulation." +
                             "This should never happen, make sure the save folder does not contain a 'walkersim.bin' save file from another game.");
                         resetSim = true;
                     }
