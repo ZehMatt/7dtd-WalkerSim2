@@ -81,12 +81,12 @@ namespace WalkerSim.Editor
             SetupChoices();
             ScrollWheelHack();
             SetupToolTips();
-            //LoadDefaultConfiguration();
 
             CurrentConfig = Config.GetDefault();
 
             // Set world size to 6k as the default thing until the world is changed.
             simulation.SetWorldSize(WorldMins, WorldMaxs);
+            simulation.Reset(CurrentConfig);
             simulation.EditorMode = true;
 
             UpdateConfigFields();
@@ -1317,6 +1317,10 @@ namespace WalkerSim.Editor
             OnStopClick(sender, e);
 
             simulation.Reset(CurrentConfig);
+
+            GenerateColorTable();
+            RenderSimulation();
+            ZoomReset();
         }
     }
 }
