@@ -1276,7 +1276,7 @@ namespace WalkerSim.Editor
             var browseFileDlg = new OpenFileDialog();
             browseFileDlg.Filter = "WalkerSim State File (WalkerSim.bin)|*.bin|All files (*.*)|*.*";
             browseFileDlg.FileName = "WalkerSim.bin";
-            browseFileDlg.Title = "Load save";
+            browseFileDlg.Title = "Load state save";
             if (browseFileDlg.ShowDialog() == DialogResult.OK)
             {
                 if (simulation.Running)
@@ -1336,15 +1336,12 @@ namespace WalkerSim.Editor
             var browseFileDlg = new SaveFileDialog();
             browseFileDlg.Filter = "WalkerSim State File (WalkerSim.bin)|*.bin|All files (*.*)|*.*";
             browseFileDlg.FileName = "WalkerSim.bin";
-            browseFileDlg.Title = "Export Configuration";
+            browseFileDlg.Title = "Save state";
             if (browseFileDlg.ShowDialog() == DialogResult.OK)
             {
                 try
                 {
-                    using (var writer = System.IO.File.CreateText(browseFileDlg.FileName))
-                    {
-                        simulation.Config.Export(writer);
-                    }
+                    simulation.Save(browseFileDlg.FileName);
                 }
                 catch (Exception ex)
                 {
