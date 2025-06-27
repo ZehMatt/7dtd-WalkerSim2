@@ -13,51 +13,20 @@ namespace WalkerSim
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Clamp(float value, float min, float max)
         {
-            if (value < min)
-                return min;
-            if (value > max)
-                return max;
-            return value;
+            return System.Math.Min(System.Math.Max(value, min), max);
         }
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Clamp(int value, int min, int max)
         {
-            if (value < min)
-                return min;
-            if (value > max)
-                return max;
-            return value;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int Abs(int value)
-        {
-            return value < 0 ? -value : value;
+            return System.Math.Min(System.Math.Max(value, min), max);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Ceiling(float value)
         {
             return (float)System.Math.Ceiling(value);
-        }
-
-        public static float Approach(float value, float target, float delta)
-        {
-            if (value < target)
-            {
-                value += delta;
-                if (value > target)
-                    value = target;
-            }
-            else
-            {
-                value -= delta;
-                if (value < target)
-                    value = target;
-            }
-            return value;
         }
     }
 }

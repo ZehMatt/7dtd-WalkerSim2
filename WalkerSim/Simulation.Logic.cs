@@ -29,7 +29,6 @@ namespace WalkerSim
             {
                 RespawnAgent(agent);
             }
-
         }
 
         private void UpdateAgents()

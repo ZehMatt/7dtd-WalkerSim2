@@ -12,6 +12,7 @@ namespace WalkerSim
             public List<Agent> Agents = new List<Agent>();
             public Vector3 WorldMins = Vector3.Zero;
             public Vector3 WorldMaxs = Vector3.Zero;
+            public string WorldName = string.Empty;
             public MapData MapData = null;
             public List<int>[] Grid = null;
             public ConcurrentDictionary<int, Player> Players = new ConcurrentDictionary<int, Player>();
@@ -129,6 +130,11 @@ namespace WalkerSim
         public Vector3 WorldMaxs
         {
             get => _state.WorldMaxs;
+        }
+
+        public string WorldName
+        {
+            get => _state.WorldName;
         }
 
         public uint Ticks

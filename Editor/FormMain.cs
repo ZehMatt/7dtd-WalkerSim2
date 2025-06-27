@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -81,12 +82,12 @@ namespace WalkerSim.Editor
             SetupChoices();
             ScrollWheelHack();
             SetupToolTips();
-            //LoadDefaultConfiguration();
 
             CurrentConfig = Config.GetDefault();
 
             // Set world size to 6k as the default thing until the world is changed.
             simulation.SetWorldSize(WorldMins, WorldMaxs);
+            simulation.Reset(CurrentConfig);
             simulation.EditorMode = true;
 
             UpdateConfigFields();
@@ -428,8 +429,6 @@ namespace WalkerSim.Editor
 
         private void StartSimulation()
         {
-            simulation.Reset(CurrentConfig);
-
             GenerateColorTable();
             simulation.Start();
 
@@ -715,13 +714,8 @@ namespace WalkerSim.Editor
             }
 
             var worldPath = Worlds.WorldFolders[worldIdx];
-            simulation.LoadMapData(worldPath);
-
-            CheckMaxAgents();
-
-            ReconfigureSimulation();
-            simulation.Reset(CurrentConfig);
-            GenerateColorTable();
+            var worldName = Path.GetFileName(worldPath);
+            simulation.LoadMapData(worldPath, worldName);
 
             ZoomReset();
         }
@@ -812,6 +806,7 @@ namespace WalkerSim.Editor
         {
             simulation.ReloadConfig(CurrentConfig);
             GenerateColorTable();
+            UpdateStats();
         }
 
         private void OnAddGroupClick(object sender, EventArgs e)
@@ -1274,6 +1269,85 @@ namespace WalkerSim.Editor
         private void OnZoomResetClick(object sender, EventArgs e)
         {
             ZoomReset();
+        }
+
+        private void OnLoadStateClick(object sender, EventArgs e)
+        {
+            var browseFileDlg = new OpenFileDialog();
+            browseFileDlg.Filter = "WalkerSim State File (WalkerSim.bin)|*.bin|All files (*.*)|*.*";
+            browseFileDlg.FileName = "WalkerSim.bin";
+            browseFileDlg.Title = "Load state save";
+            if (browseFileDlg.ShowDialog() == DialogResult.OK)
+            {
+                if (simulation.Running)
+                {
+                    var answer = MessageBox.Show("The simulation is currently running, in order to import the configuration it has to be stopped.\nDo you wish to stop the simulation?",
+                        "Simulation Running",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question
+                        );
+
+                    if (answer == DialogResult.No)
+                    {
+                        return;
+                    }
+
+                    StopSimulation();
+                }
+
+                if (!simulation.Load(browseFileDlg.FileName))
+                {
+                    MessageBox.Show("Failed to load the state save file", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                var worldName = simulation.WorldName;
+                if (Worlds.GetWorldPath(worldName, out var worldPath))
+                {
+                    // Update selection.
+                    inputWorld.SelectedItem = worldName;
+                }
+
+                CurrentConfig = simulation.Config;
+                UpdateConfigFields();
+                CheckMaxAgents();
+
+                GenerateColorTable();
+                RenderSimulation();
+                ZoomReset();
+                UpdateStats();
+            }
+        }
+
+        private void OnResetClick(object sender, EventArgs e)
+        {
+            OnStopClick(sender, e);
+
+            simulation.Reset(CurrentConfig);
+
+            GenerateColorTable();
+            RenderSimulation();
+            ZoomReset();
+            UpdateStats();
+        }
+
+        private void OnSaveStateClick(object sender, EventArgs e)
+        {
+            var browseFileDlg = new SaveFileDialog();
+            browseFileDlg.Filter = "WalkerSim State File (WalkerSim.bin)|*.bin|All files (*.*)|*.*";
+            browseFileDlg.FileName = "WalkerSim.bin";
+            browseFileDlg.Title = "Save state";
+            if (browseFileDlg.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    simulation.Save(browseFileDlg.FileName);
+                }
+                catch (Exception ex)
+                {
+                    Logging.Exception(ex);
+                }
+            }
         }
     }
 }

@@ -132,6 +132,14 @@ namespace WalkerSim
             }
         }
 
+        public void SetWorldName(string worldName)
+        {
+            lock (_state)
+            {
+                _state.WorldName = worldName;
+            }
+        }
+
         public void SetMaxAllowedAliveAgents(int maxAlive)
         {
             _maxAllowedAliveAgents = maxAlive;
@@ -176,7 +184,7 @@ namespace WalkerSim
             }
         }
 
-        public bool LoadMapData(string directoryPath)
+        public bool LoadMapData(string directoryPath, string worldName)
         {
             lock (_state)
             {
@@ -190,6 +198,8 @@ namespace WalkerSim
                 {
                     SetWorldSize(mapData.WorldMins, mapData.WorldMaxs);
                 }
+
+                SetWorldName(worldName);
 
                 return true;
             }
@@ -421,7 +431,7 @@ namespace WalkerSim
             }
 
             // Don't simulate with no registered players.
-            if (_state.Players.Count == 0)
+            if (_state.Players.Count == 0 && !EditorMode)
             {
                 return true;
             }
