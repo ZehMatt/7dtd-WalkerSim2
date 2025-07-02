@@ -1,5 +1,6 @@
 # 1.0.0 (in progress)
-
+- Improve: Editor can now load and save the state, this allows inspecting the saved `walkersim.bin`.
+ 
 # 0.9.9
 - Fix: Clients without admin permission can restart the simulation with the console command.
 - Fix: Activation radius was too big causing issues with spawning.

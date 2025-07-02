@@ -37,6 +37,9 @@ namespace WalkerSim.Editor
             this.loadConfigurationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportConfigurationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
+            this.loadStateSaveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveStateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.zoomSubMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -53,6 +56,7 @@ namespace WalkerSim.Editor
             this.simulationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.startToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.resetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripSeparator();
             this.pauseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resumeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -91,6 +95,8 @@ namespace WalkerSim.Editor
             this.label14 = new System.Windows.Forms.Label();
             this.inputFastForward = new System.Windows.Forms.CheckBox();
             this.inputMaxAgents = new System.Windows.Forms.NumericUpDown();
+            this.label18 = new System.Windows.Forms.Label();
+            this.inputActivationRadius = new System.Windows.Forms.NumericUpDown();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.buttonDuplicateGroup = new System.Windows.Forms.Button();
             this.groupProps = new System.Windows.Forms.GroupBox();
@@ -144,8 +150,6 @@ namespace WalkerSim.Editor
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorPickerDlg = new System.Windows.Forms.ColorDialog();
             this.toolTipGroupSize = new System.Windows.Forms.ToolTip(this.components);
-            this.label18 = new System.Windows.Forms.Label();
-            this.inputActivationRadius = new System.Windows.Forms.NumericUpDown();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -160,6 +164,7 @@ namespace WalkerSim.Editor
             ((System.ComponentModel.ISupportInitialize)(this.inputRandomSeed)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputGroupSize)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputMaxAgents)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.inputActivationRadius)).BeginInit();
             this.tabPage2.SuspendLayout();
             this.groupProps.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.boxGroupColor)).BeginInit();
@@ -172,7 +177,6 @@ namespace WalkerSim.Editor
             this.tabPage4.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.contextLog.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.inputActivationRadius)).BeginInit();
             this.SuspendLayout();
             // 
             // updateTimer
@@ -199,6 +203,9 @@ namespace WalkerSim.Editor
             this.loadConfigurationToolStripMenuItem,
             this.exportConfigurationToolStripMenuItem,
             this.toolStripMenuItem1,
+            this.loadStateSaveToolStripMenuItem,
+            this.saveStateToolStripMenuItem,
+            this.toolStripSeparator4,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
@@ -222,6 +229,25 @@ namespace WalkerSim.Editor
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
             this.toolStripMenuItem1.Size = new System.Drawing.Size(184, 6);
+            // 
+            // loadStateSaveToolStripMenuItem
+            // 
+            this.loadStateSaveToolStripMenuItem.Name = "loadStateSaveToolStripMenuItem";
+            this.loadStateSaveToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.loadStateSaveToolStripMenuItem.Text = "Load State";
+            this.loadStateSaveToolStripMenuItem.Click += new System.EventHandler(this.OnLoadStateClick);
+            // 
+            // saveStateToolStripMenuItem
+            // 
+            this.saveStateToolStripMenuItem.Name = "saveStateToolStripMenuItem";
+            this.saveStateToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.saveStateToolStripMenuItem.Text = "Save State";
+            this.saveStateToolStripMenuItem.Click += new System.EventHandler(this.OnSaveStateClick);
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(184, 6);
             // 
             // exitToolStripMenuItem
             // 
@@ -252,7 +278,7 @@ namespace WalkerSim.Editor
             this.inToolStripMenuItem,
             this.outToolStripMenuItem});
             this.zoomSubMenu.Name = "zoomSubMenu";
-            this.zoomSubMenu.Size = new System.Drawing.Size(155, 22);
+            this.zoomSubMenu.Size = new System.Drawing.Size(180, 22);
             this.zoomSubMenu.Text = "Zoom";
             // 
             // xToolStripMenuItem1
@@ -288,7 +314,7 @@ namespace WalkerSim.Editor
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(152, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
             // 
             // viewRoads
             // 
@@ -296,7 +322,7 @@ namespace WalkerSim.Editor
             this.viewRoads.CheckOnClick = true;
             this.viewRoads.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewRoads.Name = "viewRoads";
-            this.viewRoads.Size = new System.Drawing.Size(155, 22);
+            this.viewRoads.Size = new System.Drawing.Size(180, 22);
             this.viewRoads.Text = "Roads";
             // 
             // viewAgents
@@ -305,14 +331,16 @@ namespace WalkerSim.Editor
             this.viewAgents.CheckOnClick = true;
             this.viewAgents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewAgents.Name = "viewAgents";
-            this.viewAgents.Size = new System.Drawing.Size(155, 22);
+            this.viewAgents.Size = new System.Drawing.Size(180, 22);
             this.viewAgents.Text = "Inactive Agents";
             // 
             // viewActiveAgents
             // 
+            this.viewActiveAgents.Checked = true;
             this.viewActiveAgents.CheckOnClick = true;
+            this.viewActiveAgents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewActiveAgents.Name = "viewActiveAgents";
-            this.viewActiveAgents.Size = new System.Drawing.Size(155, 22);
+            this.viewActiveAgents.Size = new System.Drawing.Size(180, 22);
             this.viewActiveAgents.Text = "Active Agents";
             // 
             // viewEvents
@@ -321,14 +349,14 @@ namespace WalkerSim.Editor
             this.viewEvents.CheckOnClick = true;
             this.viewEvents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewEvents.Name = "viewEvents";
-            this.viewEvents.Size = new System.Drawing.Size(155, 22);
+            this.viewEvents.Size = new System.Drawing.Size(180, 22);
             this.viewEvents.Text = "Events";
             // 
             // viewPrefabs
             // 
             this.viewPrefabs.CheckOnClick = true;
             this.viewPrefabs.Name = "viewPrefabs";
-            this.viewPrefabs.Size = new System.Drawing.Size(155, 22);
+            this.viewPrefabs.Size = new System.Drawing.Size(180, 22);
             this.viewPrefabs.Text = "Prefabs";
             // 
             // simulationToolStripMenuItem
@@ -336,6 +364,7 @@ namespace WalkerSim.Editor
             this.simulationToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.startToolStripMenuItem,
             this.stopToolStripMenuItem,
+            this.resetToolStripMenuItem,
             this.toolStripMenuItem3,
             this.pauseToolStripMenuItem,
             this.resumeToolStripMenuItem,
@@ -361,6 +390,13 @@ namespace WalkerSim.Editor
             this.stopToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
             this.stopToolStripMenuItem.Text = "Stop";
             this.stopToolStripMenuItem.Click += new System.EventHandler(this.OnStopClick);
+            // 
+            // resetToolStripMenuItem
+            // 
+            this.resetToolStripMenuItem.Name = "resetToolStripMenuItem";
+            this.resetToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
+            this.resetToolStripMenuItem.Text = "Reset";
+            this.resetToolStripMenuItem.Click += new System.EventHandler(this.OnResetClick);
             // 
             // toolStripMenuItem3
             // 
@@ -845,6 +881,47 @@ namespace WalkerSim.Editor
             this.inputMaxAgents.TabIndex = 52;
             this.inputMaxAgents.Value = new decimal(new int[] {
             300,
+            0,
+            0,
+            0});
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label18.Location = new System.Drawing.Point(283, 65);
+            this.label18.Name = "label18";
+            this.label18.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
+            this.label18.Size = new System.Drawing.Size(134, 30);
+            this.label18.TabIndex = 53;
+            this.label18.Text = "Activation Radius";
+            this.label18.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // inputActivationRadius
+            // 
+            this.inputActivationRadius.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.inputActivationRadius.Increment = new decimal(new int[] {
+            8,
+            0,
+            0,
+            0});
+            this.inputActivationRadius.Location = new System.Drawing.Point(420, 65);
+            this.inputActivationRadius.Margin = new System.Windows.Forms.Padding(0);
+            this.inputActivationRadius.Maximum = new decimal(new int[] {
+            196,
+            0,
+            0,
+            0});
+            this.inputActivationRadius.Minimum = new decimal(new int[] {
+            48,
+            0,
+            0,
+            0});
+            this.inputActivationRadius.Name = "inputActivationRadius";
+            this.inputActivationRadius.Size = new System.Drawing.Size(140, 20);
+            this.inputActivationRadius.TabIndex = 54;
+            this.inputActivationRadius.Value = new decimal(new int[] {
+            96,
             0,
             0,
             0});
@@ -1469,47 +1546,6 @@ namespace WalkerSim.Editor
             // 
             this.colorPickerDlg.AnyColor = true;
             // 
-            // label18
-            // 
-            this.label18.AutoSize = true;
-            this.label18.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label18.Location = new System.Drawing.Point(283, 65);
-            this.label18.Name = "label18";
-            this.label18.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label18.Size = new System.Drawing.Size(134, 30);
-            this.label18.TabIndex = 53;
-            this.label18.Text = "Activation Radius";
-            this.label18.TextAlign = System.Drawing.ContentAlignment.TopRight;
-            // 
-            // inputActivationRadius
-            // 
-            this.inputActivationRadius.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.inputActivationRadius.Increment = new decimal(new int[] {
-            8,
-            0,
-            0,
-            0});
-            this.inputActivationRadius.Location = new System.Drawing.Point(420, 65);
-            this.inputActivationRadius.Margin = new System.Windows.Forms.Padding(0);
-            this.inputActivationRadius.Maximum = new decimal(new int[] {
-            196,
-            0,
-            0,
-            0});
-            this.inputActivationRadius.Minimum = new decimal(new int[] {
-            48,
-            0,
-            0,
-            0});
-            this.inputActivationRadius.Name = "inputActivationRadius";
-            this.inputActivationRadius.Size = new System.Drawing.Size(140, 20);
-            this.inputActivationRadius.TabIndex = 54;
-            this.inputActivationRadius.Value = new decimal(new int[] {
-            96,
-            0,
-            0,
-            0});
-            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1543,6 +1579,7 @@ namespace WalkerSim.Editor
             ((System.ComponentModel.ISupportInitialize)(this.inputRandomSeed)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputGroupSize)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputMaxAgents)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.inputActivationRadius)).EndInit();
             this.tabPage2.ResumeLayout(false);
             this.groupProps.ResumeLayout(false);
             this.groupProps.PerformLayout();
@@ -1558,7 +1595,6 @@ namespace WalkerSim.Editor
             this.tabPage4.PerformLayout();
             this.tabPage3.ResumeLayout(false);
             this.contextLog.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.inputActivationRadius)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1682,6 +1718,10 @@ namespace WalkerSim.Editor
         private System.Windows.Forms.Label label24;
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.NumericUpDown inputActivationRadius;
+        private System.Windows.Forms.ToolStripMenuItem loadStateSaveToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveStateToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+        private System.Windows.Forms.ToolStripMenuItem resetToolStripMenuItem;
     }
 }
 

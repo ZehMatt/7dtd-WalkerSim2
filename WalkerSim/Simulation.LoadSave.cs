@@ -14,7 +14,7 @@ namespace WalkerSim
         private const uint SaveMagic = 0x4D534B57; // WKSM
 
         // Increment this in case of a breaking change in the save format.
-        private const uint SaveVersion = 4;
+        private const uint SaveVersion = 5;
 
         private void SaveState(State state, BinaryWriter writer)
         {
@@ -38,6 +38,7 @@ namespace WalkerSim
         {
             Serialization.WriteVector3(writer, state.WorldMins);
             Serialization.WriteVector3(writer, state.WorldMaxs);
+            Serialization.WriteStringUTF8(writer, state.WorldName);
             Serialization.WriteUInt32(writer, state.SlowIterator);
             Serialization.WriteVector3(writer, state.WindDir);
             Serialization.WriteVector3(writer, state.WindDirTarget);
@@ -176,6 +177,7 @@ namespace WalkerSim
         {
             state.WorldMins = Serialization.ReadVector3(reader);
             state.WorldMaxs = Serialization.ReadVector3(reader);
+            state.WorldName = Serialization.ReadStringUTF8(reader);
             state.SlowIterator = Serialization.ReadUInt32(reader);
             state.WindDir = Serialization.ReadVector3(reader);
             state.WindDirTarget = Serialization.ReadVector3(reader);
