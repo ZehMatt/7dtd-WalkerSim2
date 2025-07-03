@@ -81,6 +81,12 @@
                     </xs:annotation>
                 </xs:element>
 
+                <xs:element name="EnhancedSoundAwareness" type="xs:boolean">
+                    <xs:annotation>
+                        <xs:documentation>Increases the awareness of spawned zombies to sound, this will make them react to sound such as gun shots causing them to wander towards the source.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+
                 <xs:element name="FastForwardAtStart" type="xs:boolean">
                     <xs:annotation>
                         <xs:documentation>Fast forwards the simulation at a new start</xs:documentation>

@@ -11,6 +11,7 @@
     <PopulationDensity>300</PopulationDensity>
     <SpawnActivationRadius>96</SpawnActivationRadius>
     <StartAgentsGrouped>true</StartAgentsGrouped>
+    <EnhancedSoundAwareness>true</EnhancedSoundAwareness>
     <FastForwardAtStart>true</FastForwardAtStart>
     <GroupSize>16</GroupSize>
     <AgentStartPosition>RandomPOI</AgentStartPosition>

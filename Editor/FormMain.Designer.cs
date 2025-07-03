@@ -150,6 +150,8 @@ namespace WalkerSim.Editor
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorPickerDlg = new System.Windows.Forms.ColorDialog();
             this.toolTipGroupSize = new System.Windows.Forms.ToolTip(this.components);
+            this.label26 = new System.Windows.Forms.Label();
+            this.inputSoundAware = new System.Windows.Forms.CheckBox();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -278,7 +280,7 @@ namespace WalkerSim.Editor
             this.inToolStripMenuItem,
             this.outToolStripMenuItem});
             this.zoomSubMenu.Name = "zoomSubMenu";
-            this.zoomSubMenu.Size = new System.Drawing.Size(180, 22);
+            this.zoomSubMenu.Size = new System.Drawing.Size(155, 22);
             this.zoomSubMenu.Text = "Zoom";
             // 
             // xToolStripMenuItem1
@@ -314,7 +316,7 @@ namespace WalkerSim.Editor
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(152, 6);
             // 
             // viewRoads
             // 
@@ -322,7 +324,7 @@ namespace WalkerSim.Editor
             this.viewRoads.CheckOnClick = true;
             this.viewRoads.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewRoads.Name = "viewRoads";
-            this.viewRoads.Size = new System.Drawing.Size(180, 22);
+            this.viewRoads.Size = new System.Drawing.Size(155, 22);
             this.viewRoads.Text = "Roads";
             // 
             // viewAgents
@@ -331,7 +333,7 @@ namespace WalkerSim.Editor
             this.viewAgents.CheckOnClick = true;
             this.viewAgents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewAgents.Name = "viewAgents";
-            this.viewAgents.Size = new System.Drawing.Size(180, 22);
+            this.viewAgents.Size = new System.Drawing.Size(155, 22);
             this.viewAgents.Text = "Inactive Agents";
             // 
             // viewActiveAgents
@@ -340,7 +342,7 @@ namespace WalkerSim.Editor
             this.viewActiveAgents.CheckOnClick = true;
             this.viewActiveAgents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewActiveAgents.Name = "viewActiveAgents";
-            this.viewActiveAgents.Size = new System.Drawing.Size(180, 22);
+            this.viewActiveAgents.Size = new System.Drawing.Size(155, 22);
             this.viewActiveAgents.Text = "Active Agents";
             // 
             // viewEvents
@@ -349,14 +351,14 @@ namespace WalkerSim.Editor
             this.viewEvents.CheckOnClick = true;
             this.viewEvents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewEvents.Name = "viewEvents";
-            this.viewEvents.Size = new System.Drawing.Size(180, 22);
+            this.viewEvents.Size = new System.Drawing.Size(155, 22);
             this.viewEvents.Text = "Events";
             // 
             // viewPrefabs
             // 
             this.viewPrefabs.CheckOnClick = true;
             this.viewPrefabs.Name = "viewPrefabs";
-            this.viewPrefabs.Size = new System.Drawing.Size(180, 22);
+            this.viewPrefabs.Size = new System.Drawing.Size(155, 22);
             this.viewPrefabs.Text = "Prefabs";
             // 
             // simulationToolStripMenuItem
@@ -548,8 +550,8 @@ namespace WalkerSim.Editor
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16.66736F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16.66736F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16.66736F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16.66736F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16.66319F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 18.07372F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 15.33888F));
             this.tableLayoutPanel1.Controls.Add(this.label13, 4, 2);
             this.tableLayoutPanel1.Controls.Add(this.label12, 4, 1);
             this.tableLayoutPanel1.Controls.Add(this.inputSpawnProtectionTime, 1, 5);
@@ -572,6 +574,8 @@ namespace WalkerSim.Editor
             this.tableLayoutPanel1.Controls.Add(this.inputMaxAgents, 1, 4);
             this.tableLayoutPanel1.Controls.Add(this.label18, 2, 3);
             this.tableLayoutPanel1.Controls.Add(this.inputActivationRadius, 3, 3);
+            this.tableLayoutPanel1.Controls.Add(this.label26, 4, 4);
+            this.tableLayoutPanel1.Controls.Add(this.inputSoundAware, 5, 4);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(3, 3);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -593,7 +597,7 @@ namespace WalkerSim.Editor
             this.label13.Location = new System.Drawing.Point(563, 35);
             this.label13.Name = "label13";
             this.label13.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label13.Size = new System.Drawing.Size(134, 30);
+            this.label13.Size = new System.Drawing.Size(145, 30);
             this.label13.TabIndex = 50;
             this.label13.Text = "Pause during Bloodmoon";
             this.label13.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -605,7 +609,7 @@ namespace WalkerSim.Editor
             this.label12.Location = new System.Drawing.Point(563, 5);
             this.label12.Name = "label12";
             this.label12.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label12.Size = new System.Drawing.Size(134, 30);
+            this.label12.Size = new System.Drawing.Size(145, 30);
             this.label12.TabIndex = 49;
             this.label12.Text = "Start Agents Grouped";
             this.label12.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -824,7 +828,7 @@ namespace WalkerSim.Editor
             // inputStartGrouped
             // 
             this.inputStartGrouped.AutoSize = true;
-            this.inputStartGrouped.Location = new System.Drawing.Point(703, 8);
+            this.inputStartGrouped.Location = new System.Drawing.Point(714, 8);
             this.inputStartGrouped.Name = "inputStartGrouped";
             this.inputStartGrouped.Size = new System.Drawing.Size(15, 14);
             this.inputStartGrouped.TabIndex = 27;
@@ -833,7 +837,7 @@ namespace WalkerSim.Editor
             // inputPauseDuringBloodmoon
             // 
             this.inputPauseDuringBloodmoon.AutoSize = true;
-            this.inputPauseDuringBloodmoon.Location = new System.Drawing.Point(703, 38);
+            this.inputPauseDuringBloodmoon.Location = new System.Drawing.Point(714, 38);
             this.inputPauseDuringBloodmoon.Name = "inputPauseDuringBloodmoon";
             this.inputPauseDuringBloodmoon.Size = new System.Drawing.Size(15, 14);
             this.inputPauseDuringBloodmoon.TabIndex = 39;
@@ -846,7 +850,7 @@ namespace WalkerSim.Editor
             this.label14.Location = new System.Drawing.Point(563, 65);
             this.label14.Name = "label14";
             this.label14.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label14.Size = new System.Drawing.Size(134, 30);
+            this.label14.Size = new System.Drawing.Size(145, 30);
             this.label14.TabIndex = 51;
             this.label14.Text = "Fast forward at start";
             this.label14.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -854,7 +858,7 @@ namespace WalkerSim.Editor
             // inputFastForward
             // 
             this.inputFastForward.AutoSize = true;
-            this.inputFastForward.Location = new System.Drawing.Point(703, 68);
+            this.inputFastForward.Location = new System.Drawing.Point(714, 68);
             this.inputFastForward.Name = "inputFastForward";
             this.inputFastForward.Size = new System.Drawing.Size(15, 14);
             this.inputFastForward.TabIndex = 44;
@@ -1546,6 +1550,27 @@ namespace WalkerSim.Editor
             // 
             this.colorPickerDlg.AnyColor = true;
             // 
+            // label26
+            // 
+            this.label26.AutoSize = true;
+            this.label26.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label26.Location = new System.Drawing.Point(563, 95);
+            this.label26.Name = "label26";
+            this.label26.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
+            this.label26.Size = new System.Drawing.Size(145, 30);
+            this.label26.TabIndex = 55;
+            this.label26.Text = "Enhanced sound awareness";
+            this.label26.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // inputSoundAware
+            // 
+            this.inputSoundAware.AutoSize = true;
+            this.inputSoundAware.Location = new System.Drawing.Point(714, 98);
+            this.inputSoundAware.Name = "inputSoundAware";
+            this.inputSoundAware.Size = new System.Drawing.Size(15, 14);
+            this.inputSoundAware.TabIndex = 56;
+            this.inputSoundAware.UseVisualStyleBackColor = true;
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1722,6 +1747,8 @@ namespace WalkerSim.Editor
         private System.Windows.Forms.ToolStripMenuItem saveStateToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripMenuItem resetToolStripMenuItem;
+        private System.Windows.Forms.Label label26;
+        private System.Windows.Forms.CheckBox inputSoundAware;
     }
 }
 

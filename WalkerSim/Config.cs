@@ -148,6 +148,9 @@ namespace WalkerSim
         [XmlElement("StartAgentsGrouped")]
         public bool StartAgentsGrouped = true;
 
+        [XmlElement("EnhancedSoundAwareness")]
+        public bool EnhancedSoundAwareness = true;
+
         [XmlElement("FastForwardAtStart")]
         public bool FastForwardAtStart = true;
 

@@ -462,29 +462,32 @@ namespace WalkerSim
 
             simulation.AddSoundEvent(VectorUtils.ToSim(position), distance, noise.duration * 20);
 
-#if false
-            NotifyNearbyEnemies(instigator, position, distance);
-#endif
+            if (simulation.Config.EnhancedSoundAwareness)
+            {
+                NotifyNearbyEnemies(simulation, instigator, position, distance);
+            }
         }
 
-        internal static void NotifyNearbyEnemies(Entity instigator, UnityEngine.Vector3 position, float distance)
+        internal static void NotifyNearbyEnemies(Simulation simulation, Entity instigator, UnityEngine.Vector3 position, float distance)
         {
             if (!IsHost())
             {
                 return;
             }
+
             if (instigator is EntityEnemy)
             {
                 return;
             }
 
             var world = GameManager.Instance.World;
+            var logEvents = simulation.Config.LoggingOpts.Events;
 
             // Notify all nearby enemies in idle state.
             foreach (var active in Simulation.Instance.Active)
             {
                 var ent = world.GetEntity(active.Key) as EntityEnemy;
-                if (ent == null || ent.IsDead() || ent.IsIgnoredByAI())
+                if (ent == null || ent.IsDead())
                 {
                     continue;
                 }
@@ -501,10 +504,11 @@ namespace WalkerSim
                     continue;
                 }
 
-                Logging.Info("Alerting enemy {0} at {1} to noise at {2}, distance: {3}.",
+                Logging.CondInfo(logEvents, "Alerting enemy {0} at {1} to noise at {2}, distance: {3}.",
                              ent.entityId, entPos, position, entDist);
 
-                ent.SetInvestigatePosition(position, 6000, true);
+                // Have them interested for for 2~ min, assuming 30 ticks a second.
+                ent.SetInvestigatePosition(position, 3600, true);
             }
         }
     }
