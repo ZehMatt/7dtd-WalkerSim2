@@ -434,13 +434,11 @@ namespace WalkerSim
                 return;
             }
 
-            if (noise.heatMapStrength == 0.0f)
-            {
-                return;
-            }
+            var simulation = Simulation.Instance;
+            var logEvents = simulation.Config.LoggingOpts.Events;
 
             // Log all variables from noise.
-            Logging.DbgInfo("Noise: {0}, Volume: {1}, Duration: {2}, MuffledWhenCrouched: {3}, HeatMapStrength: {4}, HeatMapWorldTimeToLive: {5}, volumeScale: {6}.",
+            Logging.CondInfo(logEvents, "Noise: {0}, Volume: {1}, Duration: {2}, MuffledWhenCrouched: {3}, HeatMapStrength: {4}, HeatMapWorldTimeToLive: {5}, volumeScale: {6}.",
                                clipName,
                                noise.volume,
                                noise.duration,
@@ -448,6 +446,11 @@ namespace WalkerSim
                                noise.heatMapStrength,
                                noise.heatMapWorldTimeToLive,
                                volumeScale);
+
+            if (noise.heatMapStrength == 0.0f)
+            {
+                return;
+            }
 
             if (instigator != null)
             {
@@ -457,7 +460,6 @@ namespace WalkerSim
                 }
             }
 
-            var simulation = Simulation.Instance;
             var distance = noise.volume * volumeScale * 3.8f;
 
             simulation.AddSoundEvent(VectorUtils.ToSim(position), distance, noise.duration * 20);
