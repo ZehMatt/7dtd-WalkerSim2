@@ -66,7 +66,7 @@ namespace WalkerSim
         private Thread _thread;
         private bool _running = false;
         private bool _shouldStop = false;
-        private bool _paused = false;
+        private bool _pauseRequested = false;
         private bool _isFastAdvancing = false;
 
         private Vector3[] _groupStarts = new Vector3[0];
@@ -166,14 +166,14 @@ namespace WalkerSim
 
         public void SetPaused(bool paused)
         {
-            if (_paused != paused)
+            if (_pauseRequested != paused)
             {
                 if (paused)
                     Logging.Out("Paused simulation.");
                 else
                     Logging.Out("Resuming simulation.");
             }
-            _paused = paused;
+            _pauseRequested = paused;
         }
 
         public void EntityKilled(int entityId)
@@ -425,7 +425,7 @@ namespace WalkerSim
 
         private bool IsPaused()
         {
-            if (_paused)
+            if (_pauseRequested)
             {
                 return true;
             }
@@ -524,7 +524,7 @@ namespace WalkerSim
         // Called from the main thread, this should be invoked from GameUpdate.
         public void GameUpdate(float deltaTime)
         {
-            if (!_running || _shouldStop || _paused)
+            if (!_running || _shouldStop || IsPaused())
             {
                 return;
             }
