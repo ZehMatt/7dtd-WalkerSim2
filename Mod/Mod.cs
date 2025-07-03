@@ -429,13 +429,29 @@ namespace WalkerSim
                 return;
             }
 
+            if (instigator == null)
+            {
+                return;
+            }
+
             if (!AIDirectorData.FindNoise(clipName, out AIDirectorData.Noise noise) || instigator is EntityEnemy)
             {
                 return;
             }
 
             var simulation = Simulation.Instance;
-            var logEvents = simulation.Config.LoggingOpts.Events;
+            if (simulation == null)
+            {
+                return;
+            }
+
+            var config = simulation.Config;
+            if (config == null)
+            {
+                return;
+            }
+
+            var logEvents = config.LoggingOpts.Events;
 
             // Log all variables from noise.
             Logging.CondInfo(logEvents, "Noise: {0}, Volume: {1}, Duration: {2}, MuffledWhenCrouched: {3}, HeatMapStrength: {4}, HeatMapWorldTimeToLive: {5}, volumeScale: {6}.",

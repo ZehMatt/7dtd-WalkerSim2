@@ -8,7 +8,7 @@ namespace WalkerSim
         public class State
         {
             public uint Version = SaveVersion;
-            public Config Config = new Config();
+            public Config Config = Config.GetDefault();
             public List<Agent> Agents = new List<Agent>();
             public Vector3 WorldMins = Vector3.Zero;
             public Vector3 WorldMaxs = Vector3.Zero;

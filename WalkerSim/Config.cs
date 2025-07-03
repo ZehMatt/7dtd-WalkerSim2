@@ -185,6 +185,16 @@ namespace WalkerSim
                     Simulation.Limits.MinDensity,
                     Simulation.Limits.MaxDensity);
             }
+
+            if (config.LoggingOpts == null)
+            {
+                config.LoggingOpts = new LoggingOptions();
+            }
+
+            if (config.Processors == null)
+            {
+                config.Processors = new List<MovementProcessorGroup>();
+            }
         }
 
         public static Config LoadFromFile(string filePath)
