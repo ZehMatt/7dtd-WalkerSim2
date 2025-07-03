@@ -461,6 +461,51 @@ namespace WalkerSim
             var distance = noise.volume * volumeScale * 3.8f;
 
             simulation.AddSoundEvent(VectorUtils.ToSim(position), distance, noise.duration * 20);
+
+#if false
+            NotifyNearbyEnemies(instigator, position, distance);
+#endif
+        }
+
+        internal static void NotifyNearbyEnemies(Entity instigator, UnityEngine.Vector3 position, float distance)
+        {
+            if (!IsHost())
+            {
+                return;
+            }
+            if (instigator is EntityEnemy)
+            {
+                return;
+            }
+
+            var world = GameManager.Instance.World;
+
+            // Notify all nearby enemies in idle state.
+            foreach (var active in Simulation.Instance.Active)
+            {
+                var ent = world.GetEntity(active.Key) as EntityEnemy;
+                if (ent == null || ent.IsDead() || ent.IsIgnoredByAI())
+                {
+                    continue;
+                }
+
+                if (ent.attackTarget != null || ent.IsAlert)
+                {
+                    continue;
+                }
+
+                var entPos = ent.GetPosition();
+                var entDist = UnityEngine.Vector3.Distance(entPos, position);
+                if (entDist > distance)
+                {
+                    continue;
+                }
+
+                Logging.Info("Alerting enemy {0} at {1} to noise at {2}, distance: {3}.",
+                             ent.entityId, entPos, position, entDist);
+
+                ent.SetInvestigatePosition(position, 6000, true);
+            }
         }
     }
 }
