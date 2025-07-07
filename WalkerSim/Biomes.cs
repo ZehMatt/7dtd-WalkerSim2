@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace WalkerSim
 {
@@ -58,7 +59,6 @@ namespace WalkerSim
             return Type.Invalid; // Return Invalid if the color is not mapped
         }
 
-
         public static Drawing.Color GetColorForType(Type biomeType)
         {
             switch (biomeType)
@@ -89,20 +89,21 @@ namespace WalkerSim
 
             var data = new Type[width, height];
 
-            for (int y = 0; y < height; y++)
+            scaled.LockPixels();
+            Parallel.For(0, height * width, y =>
             {
-                for (int x = 0; x < width; x++)
-                {
-                    var pixel = scaled.GetPixel(x, y);
-                    var mappedType = Type.Invalid;
-                    if (!_colorMapping.TryGetValue(pixel, out mappedType))
-                    {
-                        mappedType = Type.Invalid;
-                    }
+                var x = y % width;
+                y /= width;
 
-                    data[x, y] = mappedType;
+                var pixel = scaled.GetPixel(x, y);
+                var mappedType = Type.Invalid;
+                if (!_colorMapping.TryGetValue(pixel, out mappedType))
+                {
+                    mappedType = Type.Invalid;
                 }
-            }
+                data[x, y] = mappedType;
+            });
+            scaled.UnlockPixels();
 
             var biomes = new Biomes
             {

@@ -10,6 +10,10 @@ namespace WalkerSim
 
             int Height { get; }
 
+            void LockPixels();
+
+            void UnlockPixels();
+
             Color GetPixel(int x, int y);
 
             void RemoveTransparency();
