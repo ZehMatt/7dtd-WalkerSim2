@@ -107,6 +107,7 @@ namespace WalkerSim.Editor
             viewRoads.Click += (sender, e) => RenderSimulation();
             viewPrefabs.Click += (sender, e) => RenderSimulation();
             viewEvents.Click += (sender, e) => RenderSimulation();
+            viewBiomes.Click += (sender, e) => RenderSimulation();
 
             splitContainer1.Panel1.AutoScroll = true;
             splitContainer1.Panel1.MouseWheel += (sender, e) =>
@@ -477,6 +478,11 @@ namespace WalkerSim.Editor
         private void RenderToBitmap()
         {
             gr.Clear(Color.Black);
+
+            if (viewBiomes.Checked)
+            {
+                Renderer.RenderBiomes(gr, simulation);
+            }
 
             if (viewRoads.Checked)
             {

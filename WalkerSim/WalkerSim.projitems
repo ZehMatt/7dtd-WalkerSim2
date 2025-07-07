@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Agent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Biomes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BuildInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Drawing\ColorTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Config.cs" />

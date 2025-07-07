@@ -17,10 +17,10 @@ namespace WalkerSim
 
         public const int CellSize = 32;
 
-        RoadType[] _data;
-        int _width;
-        int _height;
-        string _name;
+        RoadType[] _data = new RoadType[0];
+        int _width = 0;
+        int _height = 0;
+        string _name = string.Empty;
 
         public string Name
         {
@@ -46,9 +46,9 @@ namespace WalkerSim
             public List<RoadPoint> Points;
         }
 
-        Cell[] _roadGrid;
-        int _columnCount;
-        int _rowCount;
+        Cell[] _roadGrid = new Cell[0];
+        int _columnCount = 0;
+        int _rowCount = 0;
 
         public int Width
         {

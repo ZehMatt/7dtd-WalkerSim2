@@ -97,6 +97,8 @@ namespace WalkerSim.Editor
             this.inputMaxAgents = new System.Windows.Forms.NumericUpDown();
             this.label18 = new System.Windows.Forms.Label();
             this.inputActivationRadius = new System.Windows.Forms.NumericUpDown();
+            this.label26 = new System.Windows.Forms.Label();
+            this.inputSoundAware = new System.Windows.Forms.CheckBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.buttonDuplicateGroup = new System.Windows.Forms.Button();
             this.groupProps = new System.Windows.Forms.GroupBox();
@@ -150,8 +152,7 @@ namespace WalkerSim.Editor
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorPickerDlg = new System.Windows.Forms.ColorDialog();
             this.toolTipGroupSize = new System.Windows.Forms.ToolTip(this.components);
-            this.label26 = new System.Windows.Forms.Label();
-            this.inputSoundAware = new System.Windows.Forms.CheckBox();
+            this.viewBiomes = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -263,6 +264,7 @@ namespace WalkerSim.Editor
             this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.zoomSubMenu,
             this.toolStripSeparator3,
+            this.viewBiomes,
             this.viewRoads,
             this.viewAgents,
             this.viewActiveAgents,
@@ -280,7 +282,7 @@ namespace WalkerSim.Editor
             this.inToolStripMenuItem,
             this.outToolStripMenuItem});
             this.zoomSubMenu.Name = "zoomSubMenu";
-            this.zoomSubMenu.Size = new System.Drawing.Size(155, 22);
+            this.zoomSubMenu.Size = new System.Drawing.Size(180, 22);
             this.zoomSubMenu.Text = "Zoom";
             // 
             // xToolStripMenuItem1
@@ -316,7 +318,7 @@ namespace WalkerSim.Editor
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(152, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
             // 
             // viewRoads
             // 
@@ -324,7 +326,7 @@ namespace WalkerSim.Editor
             this.viewRoads.CheckOnClick = true;
             this.viewRoads.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewRoads.Name = "viewRoads";
-            this.viewRoads.Size = new System.Drawing.Size(155, 22);
+            this.viewRoads.Size = new System.Drawing.Size(180, 22);
             this.viewRoads.Text = "Roads";
             // 
             // viewAgents
@@ -333,7 +335,7 @@ namespace WalkerSim.Editor
             this.viewAgents.CheckOnClick = true;
             this.viewAgents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewAgents.Name = "viewAgents";
-            this.viewAgents.Size = new System.Drawing.Size(155, 22);
+            this.viewAgents.Size = new System.Drawing.Size(180, 22);
             this.viewAgents.Text = "Inactive Agents";
             // 
             // viewActiveAgents
@@ -342,7 +344,7 @@ namespace WalkerSim.Editor
             this.viewActiveAgents.CheckOnClick = true;
             this.viewActiveAgents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewActiveAgents.Name = "viewActiveAgents";
-            this.viewActiveAgents.Size = new System.Drawing.Size(155, 22);
+            this.viewActiveAgents.Size = new System.Drawing.Size(180, 22);
             this.viewActiveAgents.Text = "Active Agents";
             // 
             // viewEvents
@@ -351,14 +353,14 @@ namespace WalkerSim.Editor
             this.viewEvents.CheckOnClick = true;
             this.viewEvents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewEvents.Name = "viewEvents";
-            this.viewEvents.Size = new System.Drawing.Size(155, 22);
+            this.viewEvents.Size = new System.Drawing.Size(180, 22);
             this.viewEvents.Text = "Events";
             // 
             // viewPrefabs
             // 
             this.viewPrefabs.CheckOnClick = true;
             this.viewPrefabs.Name = "viewPrefabs";
-            this.viewPrefabs.Size = new System.Drawing.Size(155, 22);
+            this.viewPrefabs.Size = new System.Drawing.Size(180, 22);
             this.viewPrefabs.Text = "Prefabs";
             // 
             // simulationToolStripMenuItem
@@ -929,6 +931,27 @@ namespace WalkerSim.Editor
             0,
             0,
             0});
+            // 
+            // label26
+            // 
+            this.label26.AutoSize = true;
+            this.label26.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label26.Location = new System.Drawing.Point(563, 95);
+            this.label26.Name = "label26";
+            this.label26.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
+            this.label26.Size = new System.Drawing.Size(159, 30);
+            this.label26.TabIndex = 55;
+            this.label26.Text = "Enhanced sound awareness";
+            this.label26.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // inputSoundAware
+            // 
+            this.inputSoundAware.AutoSize = true;
+            this.inputSoundAware.Location = new System.Drawing.Point(728, 98);
+            this.inputSoundAware.Name = "inputSoundAware";
+            this.inputSoundAware.Size = new System.Drawing.Size(15, 14);
+            this.inputSoundAware.TabIndex = 56;
+            this.inputSoundAware.UseVisualStyleBackColor = true;
             // 
             // tabPage2
             // 
@@ -1550,26 +1573,12 @@ namespace WalkerSim.Editor
             // 
             this.colorPickerDlg.AnyColor = true;
             // 
-            // label26
+            // viewBiomes
             // 
-            this.label26.AutoSize = true;
-            this.label26.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label26.Location = new System.Drawing.Point(563, 95);
-            this.label26.Name = "label26";
-            this.label26.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label26.Size = new System.Drawing.Size(159, 30);
-            this.label26.TabIndex = 55;
-            this.label26.Text = "Enhanced sound awareness";
-            this.label26.TextAlign = System.Drawing.ContentAlignment.TopRight;
-            // 
-            // inputSoundAware
-            // 
-            this.inputSoundAware.AutoSize = true;
-            this.inputSoundAware.Location = new System.Drawing.Point(728, 98);
-            this.inputSoundAware.Name = "inputSoundAware";
-            this.inputSoundAware.Size = new System.Drawing.Size(15, 14);
-            this.inputSoundAware.TabIndex = 56;
-            this.inputSoundAware.UseVisualStyleBackColor = true;
+            this.viewBiomes.CheckOnClick = true;
+            this.viewBiomes.Name = "viewBiomes";
+            this.viewBiomes.Size = new System.Drawing.Size(180, 22);
+            this.viewBiomes.Text = "Biomes";
             // 
             // FormMain
             // 
@@ -1749,6 +1758,7 @@ namespace WalkerSim.Editor
         private System.Windows.Forms.ToolStripMenuItem resetToolStripMenuItem;
         private System.Windows.Forms.Label label26;
         private System.Windows.Forms.CheckBox inputSoundAware;
+        private System.Windows.Forms.ToolStripMenuItem viewBiomes;
     }
 }
 

@@ -53,141 +53,170 @@ namespace WalkerSim
             public bool YIsGroundlevel;
         }
 
-        private Roads _roads;
+        public Roads Roads { get; private set; }
 
-        public Roads Roads
-        {
-            get => _roads;
-        }
+        public Biomes Biomes { get; private set; }
 
-        private MapInfo _info;
+        public MapInfo Info { get; private set; }
 
-        public MapInfo Info
-        {
-            get => _info;
-        }
+        public PrefabsData Prefabs { get; private set; }
 
-        private PrefabsData _prefabs;
+        public Vector3 WorldSize { get; private set; }
 
-        public PrefabsData Prefabs
-        {
-            get => _prefabs;
-        }
+        public Vector3 WorldMins { get; private set; }
 
-        private Vector3 _worldSize;
-        private Vector3 _worldMins;
-        private Vector3 _worldMaxs;
-
-        public Vector3 WorldSize
-        {
-            get => _worldSize;
-        }
-
-        public Vector3 WorldMins
-        {
-            get => _worldMins;
-        }
-
-        public Vector3 WorldMaxs
-        {
-            get => _worldMaxs;
-        }
+        public Vector3 WorldMaxs { get; private set; }
 
         private static MapInfo LoadMapInfo(string path)
         {
-            if (!System.IO.File.Exists(path))
-            {
-                return null;
-            }
-
-            var fileData = System.IO.File.ReadAllText(path, System.Text.Encoding.UTF8);
-            if (fileData == null)
-            {
-                return null;
-            }
-
             var info = new MapInfo();
 
-            var doc = new System.Xml.XmlDocument();
-            doc.LoadXml(fileData);
-
-            var root = doc.DocumentElement;
-            if (root.Name != "MapInfo")
+            try
             {
-                return null;
-            }
-
-            // Read <propert name="X" value="Y" />
-            foreach (System.Xml.XmlNode node in root.ChildNodes)
-            {
-                if (node.Name == "property")
+                if (System.IO.File.Exists(path))
                 {
-                    var name = node.Attributes.GetNamedItem("name").Value;
-                    var value = node.Attributes.GetNamedItem("value").Value;
+                    var fileData = System.IO.File.ReadAllText(path, System.Text.Encoding.UTF8);
+                    if (fileData == null)
+                    {
+                        return null;
+                    }
 
-                    if (name == "Name")
+                    var doc = new System.Xml.XmlDocument();
+                    doc.LoadXml(fileData);
+
+                    var root = doc.DocumentElement;
+                    if (root.Name != "MapInfo")
                     {
-                        info.Name = value;
+                        return null;
                     }
-                    else if (name == "Description")
+
+                    // Read <propert name="X" value="Y" />
+                    foreach (System.Xml.XmlNode node in root.ChildNodes)
                     {
-                        info.Description = value;
-                    }
-                    else if (name == "Modes")
-                    {
-                        info.Modes = value;
-                    }
-                    else if (name == "HeightMapSize")
-                    {
-                        var split = value.Split(',');
-                        if (split.Length != 2)
+                        if (node.Name == "property")
                         {
-                            return null;
-                        }
+                            var name = node.Attributes.GetNamedItem("name").Value;
+                            var value = node.Attributes.GetNamedItem("value").Value;
 
-                        info.HeightMapWidth = int.Parse(split[0]);
-                        info.HeightMapHeight = int.Parse(split[1]);
+                            if (name == "Name")
+                            {
+                                info.Name = value;
+                            }
+                            else if (name == "Description")
+                            {
+                                info.Description = value;
+                            }
+                            else if (name == "Modes")
+                            {
+                                info.Modes = value;
+                            }
+                            else if (name == "HeightMapSize")
+                            {
+                                var split = value.Split(',');
+                                if (split.Length != 2)
+                                {
+                                    return null;
+                                }
+
+                                info.HeightMapWidth = int.Parse(split[0]);
+                                info.HeightMapHeight = int.Parse(split[1]);
+                            }
+                        }
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                Logging.Err("Failed to load map info from '{0}'.", path);
+                Logging.Exception(ex);
+                return null;
+            }
+
+            GC.Collect();
 
             return info;
         }
 
         private static Roads LoadRoadSplat(string folderPath)
         {
-            var splatPath = System.IO.Path.Combine(folderPath, "splat3_half.png");
-            if (!System.IO.File.Exists(splatPath))
+            Roads res = null;
+            var splatPath = string.Empty;
+            try
             {
-                splatPath = System.IO.Path.Combine(folderPath, "splat3_processed.png");
+                splatPath = System.IO.Path.Combine(folderPath, "splat3_half.png");
+                if (!System.IO.File.Exists(splatPath))
+                {
+                    splatPath = System.IO.Path.Combine(folderPath, "splat3_processed.png");
+                }
+                if (!System.IO.File.Exists(splatPath))
+                {
+                    splatPath = System.IO.Path.Combine(folderPath, "splat3.png");
+                }
+
+                if (System.IO.File.Exists(splatPath))
+                {
+                    res = Roads.LoadFromFile(splatPath);
+                }
             }
-            if (!System.IO.File.Exists(splatPath))
+            catch (Exception ex)
             {
-                splatPath = System.IO.Path.Combine(folderPath, "splat3.png");
-            }
-            if (!System.IO.File.Exists(splatPath))
-            {
-                return null;
+                Logging.Err("Failed to load roads from '{0}'.", splatPath);
+                Logging.Exception(ex);
             }
 
-            return Roads.LoadFromFile(splatPath);
+            if (res == null)
+            {
+                res = new Roads();
+            }
+
+            GC.Collect();
+
+            return res;
+        }
+
+        private static Biomes LoadBiomes(string folderPath)
+        {
+            Biomes res = null;
+
+            var biomePath = System.IO.Path.Combine(folderPath, "biomes.png");
+            if (System.IO.File.Exists(biomePath))
+            {
+                res = Biomes.LoadFromFile(biomePath);
+            }
+
+            GC.Collect();
+
+            return res;
         }
 
         private static PrefabsData LoadPrefabs(string folderPath)
         {
+            PrefabsData res = null;
             var filePath = System.IO.Path.Combine(folderPath, "prefabs.xml");
             var serializer = new XmlSerializer(typeof(PrefabsData));
             try
             {
                 using (var reader = new System.IO.StreamReader(filePath))
                 {
-                    return (PrefabsData)serializer.Deserialize(reader);
+                    res = (PrefabsData)serializer.Deserialize(reader);
                 }
             }
             catch (System.Exception)
             {
-                return null;
             }
+
+            if (res.Decorations == null)
+            {
+                res.Decorations = new Decoration[0];
+            }
+            else
+            {
+                MergePrefabs(res);
+            }
+
+            GC.Collect();
+
+            return res;
         }
 
         private static void MergePrefabs(PrefabsData prefabs)
@@ -275,18 +304,8 @@ namespace WalkerSim
             var mapInfo = LoadMapInfo(mapInfoPath);
 
             var roads = LoadRoadSplat(folderPath);
-            if (roads == null)
-            {
-                return null;
-            }
-
+            var biomes = LoadBiomes(folderPath);
             var prefabs = LoadPrefabs(folderPath);
-            if (prefabs == null)
-            {
-                return null;
-            }
-
-            MergePrefabs(prefabs);
 
             var worldSize = GetWorldSize(folderPath);
             var sizeX = worldSize.X / 2;
@@ -294,15 +313,13 @@ namespace WalkerSim
             var sizeZ = worldSize.Z;
 
             var res = new MapData();
-            res._info = mapInfo;
-            res._roads = roads;
-            res._prefabs = prefabs;
-            res._worldSize = worldSize;
-            res._worldMins = new Vector3(-sizeX, -sizeY, 0);
-            res._worldMaxs = new Vector3(sizeX, sizeY, sizeZ);
-
-            // Garbage collect here, the PNGs are sometimes huge.
-            GC.Collect();
+            res.Info = mapInfo;
+            res.Roads = roads;
+            res.Prefabs = prefabs;
+            res.Biomes = biomes;
+            res.WorldSize = worldSize;
+            res.WorldMins = new Vector3(-sizeX, -sizeY, 0);
+            res.WorldMaxs = new Vector3(sizeX, sizeY, sizeZ);
 
             return res;
         }
