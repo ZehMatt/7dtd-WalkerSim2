@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Drawing;
 
 namespace WalkerSim.Editor
@@ -115,17 +116,42 @@ namespace WalkerSim.Editor
                     // Should probably be transparent.
                     gr2.Clear(System.Drawing.Color.Transparent);
 
-                    for (int y = 0; y < biomes.Height; y++)
+                    // Render each region with fill and optional boundary
+                    foreach (var region in biomes.Regions)
                     {
-                        for (int x = 0; x < biomes.Width; x++)
-                        {
-                            var biomeType = biomes.GetBiomeType(x, y);
-                            if (biomeType == Biomes.Type.Invalid)
-                                continue;
+                        if (region.Type == Biomes.Type.Invalid)
+                            continue;
 
-                            var color = Biomes.GetColorForType(biomeType);
-                            var color2 = System.Drawing.Color.FromArgb(128, color.R, color.G, color.B);
-                            gr2.FillRectangle(new SolidBrush(color2), x, y, 1, 1);
+                        var color = Biomes.GetColorForType(region.Type);
+                        var color2 = System.Drawing.Color.FromArgb(128, color.R, color.G, color.B);
+
+                        // Fill the region
+                        using (var brush = new SolidBrush(color2))
+                        {
+                            foreach (var (x, y) in region.Points)
+                            {
+                                gr2.FillRectangle(brush, x, y, 1, 1);
+                            }
+                        }
+
+                        // Optional: thin black pen for boundaries; set to null if not needed
+                        using (var pen = new System.Drawing.Pen(System.Drawing.Color.Black, 0.1f))
+                        {
+                            if (pen != null) // Remove this check and the using statement if boundaries are not desired
+                            {
+                                var pointSet = new HashSet<(int, int)>(region.Points);
+                                foreach (var (x, y) in region.Points)
+                                {
+                                    if (!pointSet.Contains((x - 1, y)))
+                                        gr2.DrawLine(pen, x, y, x, y + 1); // left
+                                    if (!pointSet.Contains((x + 1, y)))
+                                        gr2.DrawLine(pen, x + 1, y, x + 1, y + 1); // right
+                                    if (!pointSet.Contains((x, y - 1)))
+                                        gr2.DrawLine(pen, x, y, x + 1, y); // top
+                                    if (!pointSet.Contains((x, y + 1)))
+                                        gr2.DrawLine(pen, x, y + 1, x + 1, y + 1); // bottom
+                                }
+                            }
                         }
                     }
                 }

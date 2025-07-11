@@ -32,6 +32,16 @@ namespace WalkerSim
 
         public Type[,] BiomeMap { get; private set; }
 
+        public class BiomeRegion
+        {
+            public Type Type { get; set; }
+            public List<(int X, int Y)> Points { get; set; } = new List<(int X, int Y)>();
+
+            // TODO: Trace along the edges to create a shape for more efficient lookups.
+        }
+
+        public List<BiomeRegion> Regions { get; private set; }
+
         public int Width { get; private set; }
         public int Height { get; private set; }
         public string Name { get; private set; } = string.Empty;
@@ -110,10 +120,56 @@ namespace WalkerSim
                 Width = width,
                 Height = height,
                 BiomeMap = data,
-                Name = filePath
+                Name = filePath,
+                Regions = ExtractRegions(data, width, height)
             };
 
             return biomes;
+        }
+
+        private static List<BiomeRegion> ExtractRegions(Type[,] data, int width, int height)
+        {
+            bool[,] visited = new bool[width, height];
+            List<BiomeRegion> regions = new List<BiomeRegion>();
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    if (visited[x, y] || data[x, y] == Type.Invalid)
+                        continue;
+
+                    Type currentType = data[x, y];
+                    BiomeRegion region = new BiomeRegion { Type = currentType };
+                    Queue<(int X, int Y)> queue = new Queue<(int X, int Y)>();
+                    queue.Enqueue((x, y));
+                    visited[x, y] = true;
+
+                    while (queue.Count > 0)
+                    {
+                        (int cx, int cy) = queue.Dequeue();
+                        region.Points.Add((cx, cy));
+
+                        // Check 4-connected neighbors.
+                        (int dx, int dy)[] directions = { (-1, 0), (1, 0), (0, -1), (0, 1) };
+                        foreach (var (dx, dy) in directions)
+                        {
+                            int nx = cx + dx;
+                            int ny = cy + dy;
+                            if (nx >= 0 && nx < width && ny >= 0 && ny < height &&
+                                !visited[nx, ny] && data[nx, ny] == currentType)
+                            {
+                                visited[nx, ny] = true;
+                                queue.Enqueue((nx, ny));
+                            }
+                        }
+                    }
+
+                    regions.Add(region);
+                }
+            }
+
+            return regions;
         }
 
         public Type GetBiomeType(int x, int y)
