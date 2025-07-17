@@ -97,6 +97,8 @@ namespace WalkerSim.Editor
             this.inputMaxAgents = new System.Windows.Forms.NumericUpDown();
             this.label18 = new System.Windows.Forms.Label();
             this.inputActivationRadius = new System.Windows.Forms.NumericUpDown();
+            this.label26 = new System.Windows.Forms.Label();
+            this.inputSoundAware = new System.Windows.Forms.CheckBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.buttonDuplicateGroup = new System.Windows.Forms.Button();
             this.groupProps = new System.Windows.Forms.GroupBox();
@@ -150,6 +152,7 @@ namespace WalkerSim.Editor
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorPickerDlg = new System.Windows.Forms.ColorDialog();
             this.toolTipGroupSize = new System.Windows.Forms.ToolTip(this.components);
+            this.viewBiomes = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -261,6 +264,7 @@ namespace WalkerSim.Editor
             this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.zoomSubMenu,
             this.toolStripSeparator3,
+            this.viewBiomes,
             this.viewRoads,
             this.viewAgents,
             this.viewActiveAgents,
@@ -548,8 +552,8 @@ namespace WalkerSim.Editor
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16.66736F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16.66736F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16.66736F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16.66736F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16.66319F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 19.73841F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 13.6742F));
             this.tableLayoutPanel1.Controls.Add(this.label13, 4, 2);
             this.tableLayoutPanel1.Controls.Add(this.label12, 4, 1);
             this.tableLayoutPanel1.Controls.Add(this.inputSpawnProtectionTime, 1, 5);
@@ -572,6 +576,8 @@ namespace WalkerSim.Editor
             this.tableLayoutPanel1.Controls.Add(this.inputMaxAgents, 1, 4);
             this.tableLayoutPanel1.Controls.Add(this.label18, 2, 3);
             this.tableLayoutPanel1.Controls.Add(this.inputActivationRadius, 3, 3);
+            this.tableLayoutPanel1.Controls.Add(this.label26, 4, 4);
+            this.tableLayoutPanel1.Controls.Add(this.inputSoundAware, 5, 4);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(3, 3);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -593,7 +599,7 @@ namespace WalkerSim.Editor
             this.label13.Location = new System.Drawing.Point(563, 35);
             this.label13.Name = "label13";
             this.label13.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label13.Size = new System.Drawing.Size(134, 30);
+            this.label13.Size = new System.Drawing.Size(159, 30);
             this.label13.TabIndex = 50;
             this.label13.Text = "Pause during Bloodmoon";
             this.label13.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -605,7 +611,7 @@ namespace WalkerSim.Editor
             this.label12.Location = new System.Drawing.Point(563, 5);
             this.label12.Name = "label12";
             this.label12.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label12.Size = new System.Drawing.Size(134, 30);
+            this.label12.Size = new System.Drawing.Size(159, 30);
             this.label12.TabIndex = 49;
             this.label12.Text = "Start Agents Grouped";
             this.label12.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -824,7 +830,7 @@ namespace WalkerSim.Editor
             // inputStartGrouped
             // 
             this.inputStartGrouped.AutoSize = true;
-            this.inputStartGrouped.Location = new System.Drawing.Point(703, 8);
+            this.inputStartGrouped.Location = new System.Drawing.Point(728, 8);
             this.inputStartGrouped.Name = "inputStartGrouped";
             this.inputStartGrouped.Size = new System.Drawing.Size(15, 14);
             this.inputStartGrouped.TabIndex = 27;
@@ -833,7 +839,7 @@ namespace WalkerSim.Editor
             // inputPauseDuringBloodmoon
             // 
             this.inputPauseDuringBloodmoon.AutoSize = true;
-            this.inputPauseDuringBloodmoon.Location = new System.Drawing.Point(703, 38);
+            this.inputPauseDuringBloodmoon.Location = new System.Drawing.Point(728, 38);
             this.inputPauseDuringBloodmoon.Name = "inputPauseDuringBloodmoon";
             this.inputPauseDuringBloodmoon.Size = new System.Drawing.Size(15, 14);
             this.inputPauseDuringBloodmoon.TabIndex = 39;
@@ -846,7 +852,7 @@ namespace WalkerSim.Editor
             this.label14.Location = new System.Drawing.Point(563, 65);
             this.label14.Name = "label14";
             this.label14.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.label14.Size = new System.Drawing.Size(134, 30);
+            this.label14.Size = new System.Drawing.Size(159, 30);
             this.label14.TabIndex = 51;
             this.label14.Text = "Fast forward at start";
             this.label14.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -854,7 +860,7 @@ namespace WalkerSim.Editor
             // inputFastForward
             // 
             this.inputFastForward.AutoSize = true;
-            this.inputFastForward.Location = new System.Drawing.Point(703, 68);
+            this.inputFastForward.Location = new System.Drawing.Point(728, 68);
             this.inputFastForward.Name = "inputFastForward";
             this.inputFastForward.Size = new System.Drawing.Size(15, 14);
             this.inputFastForward.TabIndex = 44;
@@ -925,6 +931,27 @@ namespace WalkerSim.Editor
             0,
             0,
             0});
+            // 
+            // label26
+            // 
+            this.label26.AutoSize = true;
+            this.label26.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label26.Location = new System.Drawing.Point(563, 95);
+            this.label26.Name = "label26";
+            this.label26.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
+            this.label26.Size = new System.Drawing.Size(159, 30);
+            this.label26.TabIndex = 55;
+            this.label26.Text = "Enhanced sound awareness";
+            this.label26.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // inputSoundAware
+            // 
+            this.inputSoundAware.AutoSize = true;
+            this.inputSoundAware.Location = new System.Drawing.Point(728, 98);
+            this.inputSoundAware.Name = "inputSoundAware";
+            this.inputSoundAware.Size = new System.Drawing.Size(15, 14);
+            this.inputSoundAware.TabIndex = 56;
+            this.inputSoundAware.UseVisualStyleBackColor = true;
             // 
             // tabPage2
             // 
@@ -1546,6 +1573,13 @@ namespace WalkerSim.Editor
             // 
             this.colorPickerDlg.AnyColor = true;
             // 
+            // viewBiomes
+            // 
+            this.viewBiomes.CheckOnClick = true;
+            this.viewBiomes.Name = "viewBiomes";
+            this.viewBiomes.Size = new System.Drawing.Size(180, 22);
+            this.viewBiomes.Text = "Biomes";
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1722,6 +1756,9 @@ namespace WalkerSim.Editor
         private System.Windows.Forms.ToolStripMenuItem saveStateToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripMenuItem resetToolStripMenuItem;
+        private System.Windows.Forms.Label label26;
+        private System.Windows.Forms.CheckBox inputSoundAware;
+        private System.Windows.Forms.ToolStripMenuItem viewBiomes;
     }
 }
 

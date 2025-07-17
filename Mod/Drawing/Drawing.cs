@@ -23,6 +23,14 @@ namespace WalkerSim.Unity.Drawing
             }
         }
 
+        public void LockPixels()
+        {
+        }
+
+        public void UnlockPixels()
+        {
+        }
+
         public WalkerSim.Drawing.Color GetPixel(int x, int y)
         {
             if (Inner == null)

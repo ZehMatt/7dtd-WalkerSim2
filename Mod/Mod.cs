@@ -429,18 +429,32 @@ namespace WalkerSim
                 return;
             }
 
+            if (instigator == null)
+            {
+                return;
+            }
+
             if (!AIDirectorData.FindNoise(clipName, out AIDirectorData.Noise noise) || instigator is EntityEnemy)
             {
                 return;
             }
 
-            if (noise.heatMapStrength == 0.0f)
+            var simulation = Simulation.Instance;
+            if (simulation == null)
             {
                 return;
             }
 
+            var config = simulation.Config;
+            if (config == null)
+            {
+                return;
+            }
+
+            var logEvents = config.LoggingOpts.Events;
+
             // Log all variables from noise.
-            Logging.DbgInfo("Noise: {0}, Volume: {1}, Duration: {2}, MuffledWhenCrouched: {3}, HeatMapStrength: {4}, HeatMapWorldTimeToLive: {5}, volumeScale: {6}.",
+            Logging.CondInfo(logEvents, "Noise: {0}, Volume: {1}, Duration: {2}, MuffledWhenCrouched: {3}, HeatMapStrength: {4}, HeatMapWorldTimeToLive: {5}, volumeScale: {6}.",
                                clipName,
                                noise.volume,
                                noise.duration,
@@ -448,6 +462,11 @@ namespace WalkerSim
                                noise.heatMapStrength,
                                noise.heatMapWorldTimeToLive,
                                volumeScale);
+
+            if (noise.heatMapStrength == 0.0f)
+            {
+                return;
+            }
 
             if (instigator != null)
             {
@@ -457,10 +476,58 @@ namespace WalkerSim
                 }
             }
 
-            var simulation = Simulation.Instance;
             var distance = noise.volume * volumeScale * 3.8f;
 
             simulation.AddSoundEvent(VectorUtils.ToSim(position), distance, noise.duration * 20);
+
+            if (simulation.Config.EnhancedSoundAwareness)
+            {
+                NotifyNearbyEnemies(simulation, instigator, position, distance);
+            }
+        }
+
+        internal static void NotifyNearbyEnemies(Simulation simulation, Entity instigator, UnityEngine.Vector3 position, float distance)
+        {
+            if (!IsHost())
+            {
+                return;
+            }
+
+            if (instigator is EntityEnemy)
+            {
+                return;
+            }
+
+            var world = GameManager.Instance.World;
+            var logEvents = simulation.Config.LoggingOpts.Events;
+
+            // Notify all nearby enemies in idle state.
+            foreach (var active in Simulation.Instance.Active)
+            {
+                var ent = world.GetEntity(active.Key) as EntityEnemy;
+                if (ent == null || ent.IsDead())
+                {
+                    continue;
+                }
+
+                if (ent.attackTarget != null || ent.IsAlert)
+                {
+                    continue;
+                }
+
+                var entPos = ent.GetPosition();
+                var entDist = UnityEngine.Vector3.Distance(entPos, position);
+                if (entDist > distance)
+                {
+                    continue;
+                }
+
+                Logging.CondInfo(logEvents, "Alerting enemy {0} at {1} to noise at {2}, distance: {3}.",
+                             ent.entityId, entPos, position, entDist);
+
+                // Have them interested for for 2~ min, assuming 30 ticks a second.
+                ent.SetInvestigatePosition(position, 3600, true);
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace WalkerSim
 {
@@ -17,10 +18,10 @@ namespace WalkerSim
 
         public const int CellSize = 32;
 
-        RoadType[] _data;
-        int _width;
-        int _height;
-        string _name;
+        RoadType[,] _data = new RoadType[0, 0];
+        int _width = 0;
+        int _height = 0;
+        string _name = string.Empty;
 
         public string Name
         {
@@ -46,9 +47,9 @@ namespace WalkerSim
             public List<RoadPoint> Points;
         }
 
-        Cell[] _roadGrid;
-        int _columnCount;
-        int _rowCount;
+        Cell[] _roadGrid = new Cell[0];
+        int _columnCount = 0;
+        int _rowCount = 0;
 
         public int Width
         {
@@ -88,23 +89,24 @@ namespace WalkerSim
             var height = scaled.Height;
             var width = scaled.Width;
 
-            var data = new RoadType[width * height];
+            var data = new RoadType[width, height];
 
-            for (int y = 0; y < height; y++)
+            scaled.LockPixels();
+            Parallel.For(0, height * width, index =>
             {
-                for (int x = 0; x < width; x++)
+                int y = index / width;
+                int x = index % width;
+                var pixel = scaled.GetPixel(x, y);
+                if (pixel.R != 0)
                 {
-                    var pixel = scaled.GetPixel(x, y);
-                    if (pixel.R != 0)
-                    {
-                        data[y * width + x] = RoadType.Asphalt;
-                    }
-                    else if (pixel.G != 0)
-                    {
-                        data[y * width + x] = RoadType.Offroad;
-                    }
+                    data[x, y] = RoadType.Asphalt;
                 }
-            }
+                else if (pixel.G != 0)
+                {
+                    data[x, y] = RoadType.Offroad;
+                }
+            });
+            scaled.UnlockPixels();
 
             var res = new Roads();
             res._name = name;
@@ -129,7 +131,7 @@ namespace WalkerSim
             {
                 for (int x = 0; x < width; x++)
                 {
-                    var roadType = data[y * width + x];
+                    var roadType = data[x, y];
                     if (roadType == RoadType.None)
                         continue;
 
@@ -179,7 +181,7 @@ namespace WalkerSim
             if (index < 0 || index >= _data.Length)
                 return RoadType.None;
 
-            return _data[index];
+            return _data[x, y];
         }
 
 

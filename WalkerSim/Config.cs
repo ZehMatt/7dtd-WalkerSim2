@@ -148,6 +148,9 @@ namespace WalkerSim
         [XmlElement("StartAgentsGrouped")]
         public bool StartAgentsGrouped = true;
 
+        [XmlElement("EnhancedSoundAwareness")]
+        public bool EnhancedSoundAwareness = true;
+
         [XmlElement("FastForwardAtStart")]
         public bool FastForwardAtStart = true;
 
@@ -181,6 +184,16 @@ namespace WalkerSim
                 config.PopulationDensity = MathEx.Clamp(config.PopulationDensity,
                     Simulation.Limits.MinDensity,
                     Simulation.Limits.MaxDensity);
+            }
+
+            if (config.LoggingOpts == null)
+            {
+                config.LoggingOpts = new LoggingOptions();
+            }
+
+            if (config.Processors == null)
+            {
+                config.Processors = new List<MovementProcessorGroup>();
             }
         }
 

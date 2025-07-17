@@ -14,9 +14,34 @@ namespace WalkerSim.Editor.Drawing
 
         public readonly System.Drawing.Bitmap Inner;
 
+        private System.Drawing.Imaging.BitmapData _bmpData = null;
+
         public SystemDrawingImpl(Bitmap bitmap)
         {
             Inner = bitmap;
+        }
+
+        public void LockPixels()
+        {
+            if (_bmpData != null)
+            {
+                throw new InvalidOperationException("Already locked");
+            }
+
+            _bmpData = Inner.LockBits(
+                new Rectangle(0, 0, Inner.Width, Inner.Height),
+                ImageLockMode.ReadWrite,
+                Inner.PixelFormat);
+        }
+
+        public void UnlockPixels()
+        {
+            if (_bmpData == null)
+            {
+                throw new InvalidOperationException("Not locked");
+            }
+            Inner.UnlockBits(_bmpData);
+            _bmpData = null;
         }
 
         public void Dispose()
@@ -26,9 +51,45 @@ namespace WalkerSim.Editor.Drawing
 
         public WalkerSim.Drawing.Color GetPixel(int x, int y)
         {
-            var src = Inner.GetPixel(x, y);
-            return new WalkerSim.Drawing.Color(
-                src.R, src.G, src.B, src.A);
+            if (_bmpData != null)
+            {
+                if (x < 0 || x >= _bmpData.Width || y < 0 || y >= _bmpData.Height)
+                {
+                    throw new ArgumentOutOfRangeException("Coordinates are out of bounds");
+                }
+
+                int bytesPerPixel = Image.GetPixelFormatSize(_bmpData.PixelFormat) / 8;
+                int offset = y * _bmpData.Stride + x * bytesPerPixel;
+                byte[] pixelData = new byte[bytesPerPixel];
+                Marshal.Copy(_bmpData.Scan0 + offset, pixelData, 0, bytesPerPixel);
+                if (bytesPerPixel == 3)
+                {
+                    // For 24bpp RGB images
+                    return new WalkerSim.Drawing.Color(
+                        pixelData[2], pixelData[1], pixelData[0], 255);
+                }
+                else if (bytesPerPixel == 4)
+                {
+                    // For 32bpp RGBA images
+                    return new WalkerSim.Drawing.Color(
+                        pixelData[2], pixelData[1], pixelData[0], pixelData[3]);
+                }
+                else
+                {
+                    throw new NotSupportedException("Unsupported pixel format");
+                }
+            }
+            else
+            {
+                if (x < 0 || x >= Inner.Width || y < 0 || y >= Inner.Height)
+                {
+                    throw new ArgumentOutOfRangeException("Coordinates are out of bounds");
+                }
+
+                var src = Inner.GetPixel(x, y);
+                return new WalkerSim.Drawing.Color(
+                    src.R, src.G, src.B, src.A);
+            }
         }
 
         public void RemoveTransparency()

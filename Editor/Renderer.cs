@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Drawing;
 
 namespace WalkerSim.Editor
@@ -6,6 +7,10 @@ namespace WalkerSim.Editor
     {
         private static Bitmap _cachedRoads;
         private static string _cachedRoadsPath;
+
+        private static Bitmap _cachedBiomes;
+        private static string _cachedBiomesPath;
+
         private static Brush _activeAgentColor = new SolidBrush(Color.Green);
 
         private static Vector3 SimPosToBitmapPos(System.Drawing.Graphics gr, Simulation simulation, Vector3 pos)
@@ -39,12 +44,12 @@ namespace WalkerSim.Editor
                     _cachedRoads = null;
                 }
 
-                roadBitmap = new Bitmap(roads.Width, roads.Height);
+                roadBitmap = new Bitmap(roads.Width, roads.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
                 using (var gr2 = System.Drawing.Graphics.FromImage(roadBitmap))
                 {
                     // Should probably be transparent.
-                    gr2.Clear(System.Drawing.Color.Black);
+                    gr2.Clear(System.Drawing.Color.Transparent);
 
                     var brushMain = new SolidBrush(Color.FromArgb(100, 255, 255, 255));
                     var brushOffroad = new SolidBrush(Color.FromArgb(50, 255, 255, 255));
@@ -80,6 +85,84 @@ namespace WalkerSim.Editor
             gr.DrawImage(roadBitmap, 0, 0, width, height);
 
             return;
+        }
+
+        public static void RenderBiomes(System.Drawing.Graphics gr, Simulation simulation)
+        {
+            var mapData = simulation.MapData;
+            if (mapData == null)
+                return;
+
+            var biomes = mapData.Biomes;
+            if (biomes == null)
+                return;
+
+            Bitmap biomeBitmap;
+            if (_cachedBiomes != null && _cachedBiomesPath == biomes.Name)
+            {
+                biomeBitmap = _cachedBiomes;
+            }
+            else
+            {
+                if (_cachedBiomes != null)
+                {
+                    _cachedBiomes.Dispose();
+                    _cachedBiomes = null;
+                }
+
+                biomeBitmap = new Bitmap(biomes.Width, biomes.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                using (var gr2 = System.Drawing.Graphics.FromImage(biomeBitmap))
+                {
+                    // Should probably be transparent.
+                    gr2.Clear(System.Drawing.Color.Transparent);
+
+                    // Render each region with fill and optional boundary
+                    foreach (var region in biomes.Regions)
+                    {
+                        if (region.Type == Biomes.Type.Invalid)
+                            continue;
+
+                        var color = Biomes.GetColorForType(region.Type);
+                        var color2 = System.Drawing.Color.FromArgb(128, color.R, color.G, color.B);
+
+                        // Fill the region
+                        using (var brush = new SolidBrush(color2))
+                        {
+                            foreach (var (x, y) in region.Points)
+                            {
+                                gr2.FillRectangle(brush, x, y, 1, 1);
+                            }
+                        }
+
+                        // Optional: thin black pen for boundaries; set to null if not needed
+                        using (var pen = new System.Drawing.Pen(System.Drawing.Color.Black, 0.1f))
+                        {
+                            if (pen != null) // Remove this check and the using statement if boundaries are not desired
+                            {
+                                var pointSet = new HashSet<(int, int)>(region.Points);
+                                foreach (var (x, y) in region.Points)
+                                {
+                                    if (!pointSet.Contains((x - 1, y)))
+                                        gr2.DrawLine(pen, x, y, x, y + 1); // left
+                                    if (!pointSet.Contains((x + 1, y)))
+                                        gr2.DrawLine(pen, x + 1, y, x + 1, y + 1); // right
+                                    if (!pointSet.Contains((x, y - 1)))
+                                        gr2.DrawLine(pen, x, y, x + 1, y); // top
+                                    if (!pointSet.Contains((x, y + 1)))
+                                        gr2.DrawLine(pen, x, y + 1, x + 1, y + 1); // bottom
+                                }
+                            }
+                        }
+                    }
+                }
+                _cachedBiomes = biomeBitmap;
+                _cachedBiomesPath = biomes.Name;
+            }
+
+            // Copy into dst, we take the width and height from dst
+            var width = gr.VisibleClipBounds.Width;
+            var height = gr.VisibleClipBounds.Height;
+            gr.DrawImage(biomeBitmap, 0, 0, width, height);
         }
 
         public static void RenderAgents(System.Drawing.Graphics gr, Simulation simulation, Brush[] groupColors)
