@@ -6,50 +6,75 @@ The base parameters are defined as child elements of the `<WalkerSim>` root elem
 
 Below is a list of all base parameters, their descriptions, types, constraints, and usage details.
 
-### 1. `DebugOptions`
+### `Logging`
 
-- **Type**: Complex (Optional)
-- **Description**: Configures debugging options to assist with troubleshooting the simulation.
-- **Child Element**:
-  - `LogSpawnDespawn` (Type: Boolean, Description: If `true`, logs when agents are spawned or despawned, useful for tracking agent lifecycle).
-- **Default**: Not included (debugging disabled unless specified).
-- **Example Use Case**: Enabling spawn/despawn logging to debug agent population issues.
+- **Type**: Complex (Optional)  
+- **Description**: Enables detailed debug logging for various parts of the simulation. This is useful for tracking system behavior and diagnosing issues.
 
-### 2. `RandomSeed`
+- **Child Elements**:
 
-- **Type**: Integer
-- **Description**: Sets the seed for random number generation to ensure reproducible simulation results. Use the same seed for consistent outcomes across runs.
-- **Constraints**: Any valid integer.
+    - **`General`** (Boolean)  
+      Logs general simulation information. Useful for a broad overview of system activity.
+
+    - **`Spawns`** (Boolean)  
+      Logs when entities are spawned into the simulation. Helps track population growth or placement logic.
+
+    - **`Despawns`** (Boolean)  
+      Logs when entities are removed from the simulation. Useful for understanding lifecycle cleanup or despawn triggers.
+
+    - **`EntityClassSelection`** (Boolean)  
+      Logs how entity classes are selected during simulation. Helps verify configuration and randomness behavior.
+
+    - **`Events`** (Boolean)  
+      Logs world events triggered during simulation. Useful for tracking interactions and triggers over time.
+
+- **Default**: Not included (all logging is disabled unless explicitly specified).
+
+- **Example Use Case**:  
+  Enable `Spawns`, `Despawns`, and `Events` to monitor agent lifecycle and key simulation triggers during test runs.
+
+### `RandomSeed`
+
+- **Type**: Integer  
+- **Description**: Sets the seed for random number generation to ensure reproducible simulation results. Use the same seed for consistent outcomes across runs.  
+- **Constraints**: Any valid integer.  
 - **Example Use Case**: Setting a fixed seed (e.g., `12345`) to test specific scenarios repeatedly.
 
-### 3. `PopulationDensity`
+### `PopulationDensity`
 
 - **Type**: Integer
 - **Description**: Specifies the number of agents per square kilometer in the simulation area, controlling the overall agent population.
 - **Constraints**: Minimum: 1, Maximum: 4000.
 - **Example Use Case**: Setting a density of `200` for a moderately populated zombie simulation.
 
-### 4. `SpawnActivationRadius`
+### `SpawnActivationRadius`
 
 - **Type**: Integer
 - **Description**: The radius for the player in blocks/meters for when agents will spawn/despawn in the game world. This should not exceed the maximum view distance from serversettings.xml, view distance is specified in chunks and each chunk is 16x16x16.
 - **Constraints**: Minimum: 48, Maximum: 196.
 - **Note**: The default is set to 96, setting this too high can cause a lot of spawn failures, setting it to a lower value is not recommended. 
 
-### 5. `StartAgentsGrouped`
+### `StartAgentsGrouped`
 
 - **Type**: Boolean
 - **Description**: Determines whether agents start the simulation grouped together. If `true`, agents are placed in clusters based on the `GroupSize` parameter; if `false`, they are distributed individually.
 - **Example Use Case**: Setting to `true` to simulate zombies starting in tight-knit hordes.
 
-### 6. `GroupSize`
+### `EnhancedSoundAwareness`
+
+- **Type**: Boolean
+- **Description**: When enabled this will make zombies aware of loud noises that are nearby such as gun fire or explosions which causes them to walk towards
+the location where the noise came from. The game seems to have a very small radius where zombies quite often do not react, the new distance will be the same as
+the one the simulation calculates for `WorldEvents`.
+
+### `GroupSize`
 
 - **Type**: Integer
 - **Description**: Defines the size of each agent group when `StartAgentsGrouped` is `true`. The total number of groups is calculated as the total number of agents divided by this value.
 - **Constraints**: Minimum: 1.
 - **Example Use Case**: Setting to `20` to create groups of 20 zombies each.
 
-### 7. `AgentStartPosition`
+### `AgentStartPosition`
 
 - **Type**: Enumeration (`SpawnPosition`)
 - **Description**: Specifies where agents are placed at the start of the simulation.
@@ -60,7 +85,7 @@ Below is a list of all base parameters, their descriptions, types, constraints, 
   - `Mixed`: Agents start at a mix of border locations, random locations, and POIs.
 - **Example Use Case**: Using `RandomPOI` to simulate zombies spawning near key locations.
 
-### 8. `AgentRespawnPosition`
+### `AgentRespawnPosition`
 
 - **Type**: Enumeration (`RespawnPosition`)
 - **Description**: Specifies where agents respawn after being removed (e.g., due to death or despawning).
@@ -72,7 +97,7 @@ Below is a list of all base parameters, their descriptions, types, constraints, 
   - `Mixed`: Agents respawn at a mix of border locations, random locations, and POIs.
 - **Example Use Case**: Setting to `RandomBorderLocation` to simulate zombies re-entering from the edges.
 
-### 9. `PauseDuringBloodmoon`
+### `PauseDuringBloodmoon`
 
 - **Type**: Boolean
 - **Description**: Determines whether the simulation pauses during specific events, such as a "Bloodmoon" (a predefined event that may intensify zombie activity). If `true`, the simulation halts during these events.
@@ -97,9 +122,13 @@ Below is an example XML configuration snippet for the base parameters within the
 
 ```xml
 <WalkerSim>
-  <DebugOptions>
-    <LogSpawnDespawn>true</LogSpawnDespawn>
-  </DebugOptions>
+  <Logging>
+    <General>true</General>
+    <Spawns>false</Spawns>
+    <Despawns>false</Despawns>
+    <EntityClassSelection>false</EntityClassSelection>
+    <Events>false</Events>
+  </Logging>
   <RandomSeed>12345</RandomSeed>
   <PopulationDensity>200</PopulationDensity>
   <StartAgentsGrouped>true</StartAgentsGrouped>
