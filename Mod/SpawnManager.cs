@@ -255,12 +255,23 @@ namespace WalkerSim
                                 continue;
                             }
 
+                            var entityClassInfo = EntityClass.GetEntityClass(entry.entityClassId);
+                            if (!entityClassInfo.entityFlags.HasFlag(EntityFlags.Zombie))
+                            {
+                                // NOTE: This is to have better compatibility with mods that mess around with NPC's.
+                                Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                                    "Ignoring entity class {0}:{1}, entity is not a zombie",
+                                    entityClassInfo.entityClassName,
+                                    entry.entityClassId);
+                                continue;
+                            }
+
                             if (group.daytime == EDaytime.Day || group.daytime == EDaytime.Any)
                             {
                                 entityClassesDay.Add(new BiomeEntitySpawnData
                                 {
                                     entityClassId = entry.entityClassId,
-                                    className = EntityClass.GetEntityClassName(entry.entityClassId),
+                                    className = entityClassInfo.entityClassName,
                                     prob = entry.prob
                                 });
                             }
@@ -270,7 +281,7 @@ namespace WalkerSim
                                 entityClassesNight.Add(new BiomeEntitySpawnData
                                 {
                                     entityClassId = entry.entityClassId,
-                                    className = EntityClass.GetEntityClassName(entry.entityClassId),
+                                    className = entityClassInfo.entityClassName,
                                     prob = entry.prob
                                 });
                             }
