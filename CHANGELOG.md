@@ -1,6 +1,7 @@
-# 1.0.0 (in progress)
+# 0.9.10 (in progress)
 - Fix: Better compatibility with NPC mods, simulation only spawns zombie based entities now.
 - Improve: Editor can now load and save the state, this allows inspecting the saved `walkersim.bin`.
+- Feature: Added `EnhancedSoundAwareness`, this improves the distance to where spawned zombies react to noises.
  
 # 0.9.9
 - Fix: Clients without admin permission can restart the simulation with the console command.
