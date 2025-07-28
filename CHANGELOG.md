@@ -1,4 +1,5 @@
 # 1.0.0 (in progress)
+- Fix: Better compatibility with NPC mods, simulation only spawns zombie based entities now.
 - Improve: Editor can now load and save the state, this allows inspecting the saved `walkersim.bin`.
  
 # 0.9.9
