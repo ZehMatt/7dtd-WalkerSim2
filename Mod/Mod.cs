@@ -306,6 +306,7 @@ namespace WalkerSim
             simulation.SetEnableAgentSpawn(GamePrefs.GetBool(EnumGamePrefs.EnemySpawnMode));
             simulation.SetIsBloodmoon(world.isEventBloodMoon);
             simulation.SetIsDayTime(world.IsDaytime());
+            simulation.SetGamePaused(GameManager.Instance.IsPaused());
 
             try
             {

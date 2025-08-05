@@ -1,4 +1,5 @@
 # 0.9.11 (in progress)
+- Fix: Simulation not pausing when the game is paused.
 
 # 0.9.10
 - Fix: Better compatibility with NPC mods, simulation only spawns zombie based entities now.

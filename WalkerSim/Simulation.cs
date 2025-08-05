@@ -67,6 +67,7 @@ namespace WalkerSim
         private bool _running = false;
         private bool _shouldStop = false;
         private bool _pauseRequested = false;
+        private bool _gamePaused = false;
         private bool _isFastAdvancing = false;
 
         private Vector3[] _groupStarts = new Vector3[0];
@@ -425,7 +426,7 @@ namespace WalkerSim
 
         private bool IsPaused()
         {
-            if (_pauseRequested)
+            if (_pauseRequested || _gamePaused)
             {
                 return true;
             }
@@ -589,6 +590,11 @@ namespace WalkerSim
         public void SetIsDayTime(bool isDay)
         {
             _state.IsDayTime = isDay;
+        }
+
+        public void SetGamePaused(bool paused)
+        {
+            _gamePaused = paused;
         }
     }
 
