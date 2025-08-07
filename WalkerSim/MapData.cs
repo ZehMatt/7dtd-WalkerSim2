@@ -67,6 +67,8 @@ namespace WalkerSim
 
         public Vector3 WorldMaxs { get; private set; }
 
+        public SpawnGroups SpawnGroups { get; private set; }
+
         private static MapInfo LoadMapInfo(string path)
         {
             var info = new MapInfo();
@@ -294,7 +296,15 @@ namespace WalkerSim
                 Logging.Exception(ex);
                 return Vector3.Zero;
             }
+        }
 
+        public static SpawnGroups LoadSpawnGroups(string folderPath, Vector3 worldSize)
+        {
+            var spawnGroups = new SpawnGroups();
+
+            spawnGroups.Load(folderPath, (int)worldSize.X, (int)worldSize.Y);
+
+            return spawnGroups;
         }
 
         public static MapData LoadFromFolder(string folderPath)
@@ -312,6 +322,8 @@ namespace WalkerSim
             var sizeY = worldSize.Y / 2;
             var sizeZ = worldSize.Z;
 
+            var spawnGroups = LoadSpawnGroups(folderPath, worldSize);
+
             var res = new MapData();
             res.Info = mapInfo;
             res.Roads = roads;
@@ -320,6 +332,7 @@ namespace WalkerSim
             res.WorldSize = worldSize;
             res.WorldMins = new Vector3(-sizeX, -sizeY, 0);
             res.WorldMaxs = new Vector3(sizeX, sizeY, sizeZ);
+            res.SpawnGroups = spawnGroups;
 
             return res;
         }
