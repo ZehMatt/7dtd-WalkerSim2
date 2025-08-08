@@ -177,7 +177,7 @@ namespace WalkerSim
             var worldMaxs = mapData.WorldMaxs;
             var worldSize = mapData.WorldSize;
             var x = (int)MathEx.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, worldSize.X);
-            var y = (int)MathEx.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, worldSize.Y);
+            var y = (int)worldSize.Y - (int)MathEx.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, worldSize.Y);
 
             // Get the spawn group mask for this position.
             var spawnGroup = spawnGroups.GetSpawnGroup(x, y);
