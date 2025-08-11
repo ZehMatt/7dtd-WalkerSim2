@@ -571,8 +571,11 @@ namespace WalkerSim
                 }
                 else
                 {
-                    Logging.Info("Selected entity class id {0} from mask for agent {1} at position {2}",
-                        entityClassId, agent.Index, worldPos);
+                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                        "Selected entity class id {0} from mask for agent {1} at position {2}",
+                        entityClassId,
+                        agent.Index,
+                        worldPos);
                 }
 
                 if (entityClassId == -1 || entityClassId == 0)
