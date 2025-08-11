@@ -29,6 +29,8 @@ namespace WalkerSim.Editor
 
         public static void FindWorlds()
         {
+            var worldFolders = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
             var installPaths = GameLocator.FindGamePaths();
             foreach (var installPath in installPaths)
             {
@@ -38,7 +40,7 @@ namespace WalkerSim.Editor
                 {
                     foreach (var worldPath in Directory.EnumerateDirectories(worldsPath))
                     {
-                        _worldFolders.Add(worldPath);
+                        worldFolders.Add(worldPath);
                     }
                 }
 
@@ -50,7 +52,7 @@ namespace WalkerSim.Editor
                 {
                     foreach (var worldPath in Directory.EnumerateDirectories(pathToGeneratedWorlds))
                     {
-                        _worldFolders.Add(worldPath);
+                        worldFolders.Add(worldPath);
                     }
                 }
 
@@ -65,12 +67,14 @@ namespace WalkerSim.Editor
                         {
                             foreach (var world in Directory.EnumerateDirectories(worldPath))
                             {
-                                _worldFolders.Add(world);
+                                worldFolders.Add(world);
                             }
                         }
                     }
                 }
             }
+
+            _worldFolders = new List<string>(worldFolders);
 
             // Sort the list by folder name.
             _worldFolders.Sort((a, b) =>

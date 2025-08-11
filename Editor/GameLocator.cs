@@ -59,6 +59,14 @@ namespace WalkerSim.Editor
             return path;
         }
 
+        private static string GetExecutablePath()
+        {
+            string currentPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            string currentDirectory = Path.GetDirectoryName(currentPath);
+
+            return currentDirectory;
+        }
+
         public static List<string> FindGamePaths()
         {
             var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -88,6 +96,18 @@ namespace WalkerSim.Editor
                             }
                         }
                     }
+                }
+            }
+
+            // Check if the editor is located in Mods/WalkerSim then we add the relative path by adding ../../
+            var executablePath = GetExecutablePath();
+            if (executablePath != null)
+            {
+                var potentialPath = Path.Combine(executablePath, "..", "..");
+                var resolvedPath = Path.GetFullPath(potentialPath);
+                if (Directory.Exists(resolvedPath))
+                {
+                    paths.Add(resolvedPath);
                 }
             }
 
