@@ -481,7 +481,7 @@ namespace WalkerSim
 
             // Update attributes.
             spawnedAgent.bIsChunkObserver = true;
-            spawnedAgent.SetSpawnerSource(EnumSpawnerSource.StaticSpawner);
+            spawnedAgent.SetSpawnerSource(EnumSpawnerSource.Biome);
             spawnedAgent.ticksNoPlayerAdjacent = 130;
 
             // Because some Mods use the entitygroups.xml to do normal NPCs, we have to check this first.
