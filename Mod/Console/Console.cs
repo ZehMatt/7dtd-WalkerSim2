@@ -14,7 +14,7 @@ namespace WalkerSim.Console
             {
                 Name = "show",
                 Description = "Opens a new window with the simulation rendering, works only in singleplayer games.",
-                Handler = new Action(() =>
+                Handler = new Action<CommandSenderInfo>((sender) =>
                 {
                     LocalPlayerUI.primaryUI.windowManager.Open("walkersim", true);
                 }),
@@ -23,7 +23,7 @@ namespace WalkerSim.Console
             {
                 Name = "pause",
                 Description = "Pauses the simulation which also stops spawning and despawning.",
-                Handler = new Action(() =>
+                Handler = new Action<CommandSenderInfo>((sender) =>
                 {
                     Simulation.Instance.SetPaused(true);
                 }),
@@ -32,7 +32,7 @@ namespace WalkerSim.Console
             {
                 Name = "resume",
                 Description = "Resumes the simulation and also the spawning/despawning.",
-                Handler = new Action(() =>
+                Handler = new Action<CommandSenderInfo>((sender) =>
                 {
                     Simulation.Instance.SetPaused(false);
                 }),
@@ -41,7 +41,7 @@ namespace WalkerSim.Console
             {
                 Name = "restart",
                 Description = "Reloads the configuration and restarts the simulation.",
-                Handler = new Action(() =>
+                Handler = new Action<CommandSenderInfo>((sender) =>
                 {
                     WalkerSimMod.RestartSimulation();
                 }),
@@ -50,7 +50,7 @@ namespace WalkerSim.Console
             {
                 Name = "stats",
                 Description = "Print out some statistics from the simulation.",
-                Handler = new Action(() =>
+                Handler = new Action<CommandSenderInfo>((sender) =>
                 {
                     var sim = Simulation.Instance;
 
@@ -79,11 +79,56 @@ namespace WalkerSim.Console
             {
                 Name = "timescale",
                 Description = "Sets the timescale of the simulation, can be used to speed it up or slow it down.",
-                Handler = new Action<float>(timeScale =>
+                Handler = new Action<CommandSenderInfo, float>((sender, timeScale) =>
                 {
                     Simulation.Instance.TimeScale = timeScale;
                 }),
             },
+            new SubCommand
+            {
+                Name = "maskinfo",
+                Description = "",
+                Handler = new Action<CommandSenderInfo>((sender) =>
+                {
+                    EntityPlayer player = null;
+                    if(sender.RemoteClientInfo == null)
+                    {
+                        player = GameManager.Instance.World.GetPrimaryPlayer() as EntityPlayer;
+                    }
+                    else
+                    {
+                        var entityId = sender.RemoteClientInfo.entityId;
+                        player = GameManager.Instance.World.GetEntity(entityId) as EntityPlayer;
+                    }
+
+                    if (player == null)
+                    {
+                        SdtdConsole.Instance.Output("No player found for this command.");
+                        return;
+                    }
+
+                    var mapData = Simulation.Instance.MapData;
+                    var spawnGroups = mapData.SpawnGroups;
+
+                    var pos = VectorUtils.ToSim(player.position);
+                    var worldMins = mapData.WorldMins;
+                    var worldMaxs = mapData.WorldMaxs;
+                    var worldSize = mapData.WorldSize;
+                    var x = (int)MathEx.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, worldSize.X);
+                    var y = (int)worldSize.Y - (int)MathEx.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, worldSize.Y);
+
+                    // Get the spawn group mask for this position.
+                    var spawnGroup = spawnGroups.GetSpawnGroup(x, y);
+                    if (spawnGroup == null)
+                    {
+                        SdtdConsole.Instance.Output("No spawn group found at position {0}, {1} ({2}).", x, y, pos);
+                    }
+
+                    SdtdConsole.Instance.Output("Spawn group at position {0}, {1} ({2}): {3} - {4}, {5}",
+                        x, y, pos,
+                        spawnGroup.EntityGroupDay, spawnGroup.EntityGroupNight, spawnGroup.ColorString);
+                }),
+            }
         };
     }
 
@@ -101,7 +146,6 @@ namespace WalkerSim.Console
             _params.RemoveAt(0);
 
             SubCommand subCommand = null;
-
             for (int i = 0; i < SubCommand.Commands.Length; i++)
             {
                 if (SubCommand.Commands[i].Name == command)
@@ -120,26 +164,38 @@ namespace WalkerSim.Console
             // Get parameter info from the handler
             var parameters = subCommand.Handler.Method.GetParameters();
 
+            // Determine if the handler expects CommandSenderInfo as the first parameter
+            bool requiresSenderInfo = parameters.Length > 0 && parameters[0].ParameterType == typeof(CommandSenderInfo);
+            int expectedParamCount = requiresSenderInfo ? parameters.Length - 1 : parameters.Length;
+
             // Validate parameter count
-            if (_params.Count != parameters.Length)
+            if (_params.Count != expectedParamCount)
             {
                 string usage = command;
-                for (int i = 0; i < parameters.Length; i++)
+                int startIndex = requiresSenderInfo ? 1 : 0;
+                for (int i = startIndex; i < parameters.Length; i++)
                 {
                     usage += $" <{parameters[i].ParameterType.Name}>";
                 }
-                ShowHelpText($"Invalid number of parameters. Expected {parameters.Length}, got {_params.Count}. Usage: {usage}");
+                ShowHelpText($"Invalid number of parameters. Expected {expectedParamCount}, got {_params.Count}. Usage: {usage}");
                 return;
             }
 
-            // Parse parameters
-            object[] parsedArgs = new object[parameters.Length];
-            for (int i = 0; i < parameters.Length; i++)
+            // Prepare arguments for invocation
+            object[] invokeArgs = new object[parameters.Length];
+            if (requiresSenderInfo)
+            {
+                invokeArgs[0] = _senderInfo;
+            }
+
+            // Parse user-provided parameters
+            int paramStart = requiresSenderInfo ? 1 : 0;
+            for (int i = paramStart; i < parameters.Length; i++)
             {
                 var param = parameters[i];
                 try
                 {
-                    parsedArgs[i] = Convert.ChangeType(_params[i], param.ParameterType);
+                    invokeArgs[i] = Convert.ChangeType(_params[i - paramStart], param.ParameterType);
                 }
                 catch (Exception ex)
                 {
@@ -150,7 +206,7 @@ namespace WalkerSim.Console
 
             try
             {
-                subCommand.Handler.DynamicInvoke(parsedArgs);
+                subCommand.Handler.DynamicInvoke(invokeArgs);
             }
             catch (Exception ex)
             {
