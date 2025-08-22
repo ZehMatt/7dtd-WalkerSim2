@@ -5,15 +5,15 @@ namespace WalkerSim
 {
     internal class SpawnManager
     {
-        struct BiomeEntitySpawnData
+        struct EntitySpawnData
         {
             public int entityClassId;
             public string className;
             public float prob;
         }
 
-        static Dictionary<long, List<BiomeEntitySpawnData>> _spawnDataNight = new Dictionary<long, List<BiomeEntitySpawnData>>();
-        static Dictionary<long, List<BiomeEntitySpawnData>> _spawnDataDay = new Dictionary<long, List<BiomeEntitySpawnData>>();
+        static Dictionary<long, List<EntitySpawnData>> _spawnDataNight = new Dictionary<long, List<EntitySpawnData>>();
+        static Dictionary<long, List<EntitySpawnData>> _spawnDataDay = new Dictionary<long, List<EntitySpawnData>>();
         static Dictionary<int, int> _classIdCounter = new Dictionary<int, int>();
 
         static private bool CanSpawnZombie()
@@ -70,10 +70,9 @@ namespace WalkerSim
             }
         }
 
-        static float GetEntityClassProbability(BiomeEntitySpawnData entry)
+        static float GetEntityClassProbability(float prob, int entityClassId)
         {
-            var prob = entry.prob;
-            var classIdCount = GetSpawnedClassIdCount(entry.entityClassId);
+            var classIdCount = GetSpawnedClassIdCount(entityClassId);
 
             if (classIdCount > 0)
             {
@@ -107,7 +106,7 @@ namespace WalkerSim
             return true;
         }
 
-        static List<BiomeEntitySpawnData> GetBiomeEntityClasses(long chunkKey)
+        static List<EntitySpawnData> GetBiomeEntityClasses(long chunkKey)
         {
             var world = GameManager.Instance.World;
             if (world.IsDaytime())
@@ -127,7 +126,7 @@ namespace WalkerSim
             return null;
         }
 
-        static void DeduplicateSpawnList(List<BiomeEntitySpawnData> list)
+        static void DeduplicateSpawnList(List<EntitySpawnData> list)
         {
             list.Sort((a, b) => a.entityClassId.CompareTo(b.entityClassId));
 
@@ -150,6 +149,126 @@ namespace WalkerSim
             }
         }
 
+        static private int GetEntityClassIdFromMask(Simulation simulation, Chunk chunk, UnityEngine.Vector3 worldPos)
+        {
+            var config = simulation.Config;
+
+            var world = GameManager.Instance.World;
+            if (world == null)
+            {
+                return -1;
+            }
+
+            var mapData = simulation.MapData;
+            if (mapData == null)
+            {
+                return -1;
+            }
+
+            var spawnGroups = simulation.MapData.SpawnGroups;
+            if (spawnGroups == null)
+            {
+                return -1;
+            }
+
+            // Remap the position
+            var pos = VectorUtils.ToSim(worldPos);
+            var worldMins = mapData.WorldMins;
+            var worldMaxs = mapData.WorldMaxs;
+            var worldSize = mapData.WorldSize;
+            var x = (int)MathEx.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, worldSize.X);
+            var y = (int)worldSize.Y - (int)MathEx.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, worldSize.Y);
+
+            // Get the spawn group mask for this position.
+            var spawnGroup = spawnGroups.GetSpawnGroup(x, y);
+            if (spawnGroup == null)
+            {
+                return -1;
+            }
+
+            var groupName = world.IsDaytime() ? spawnGroup.EntityGroupDay : spawnGroup.EntityGroupNight;
+            if (string.IsNullOrEmpty(groupName))
+            {
+                Logging.CondInfo(simulation.Config.LoggingOpts.EntityClassSelection,
+                    "No entity group found for position {0}, spawn group: {1}",
+                    worldPos, spawnGroup);
+                return -1;
+            }
+
+            if (!EntityGroups.list.TryGetValue(groupName, out var entityGroupData))
+            {
+                Logging.CondInfo(simulation.Config.LoggingOpts.EntityClassSelection,
+                    "Entity group not found: {0} for position {1}, spawn group: {2}",
+                    groupName, worldPos, spawnGroup);
+                return -1;
+            }
+
+            // Select a random entity class id from the group.
+
+            // Calculate the total probability.
+            float totalProb = 0;
+            for (int i = 0; i < entityGroupData.Count; i++)
+            {
+                var entry = entityGroupData[i];
+                if (entry.entityClassId == 0)
+                    continue;
+
+                var prob = GetEntityClassProbability(entry.prob, entry.entityClassId);
+                totalProb += prob;
+            }
+
+            // Select a random class id, it also attempts to avoid spawning duplicates.
+            var selectedClassId = -1;
+            var selectedClassName = string.Empty;
+            for (int attempt = 0; attempt < 3; attempt++)
+            {
+                var rand = Simulation.Instance.PRNG;
+                var randomValue = rand.NextSingle() * totalProb;
+
+                for (int i = 0; i < entityGroupData.Count; i++)
+                {
+                    var entry = entityGroupData[i];
+                    if (entry.entityClassId == 0)
+                        continue;
+
+                    var prob = GetEntityClassProbability(entry.prob, entry.entityClassId);
+
+                    randomValue -= prob;
+
+                    if (randomValue <= 0)
+                    {
+                        selectedClassId = entry.entityClassId;
+                        selectedClassName = "";
+                        break;
+                    }
+                }
+
+                if (selectedClassId == -1)
+                    continue;
+
+                var existingCount = GetSpawnedClassIdCount(selectedClassId);
+                if (existingCount >= 2)
+                {
+                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                        "Selected entity class {0} ({1}) exists too often, instances: {2}, retrying...",
+                        selectedClassName,
+                        selectedClassId,
+                        existingCount);
+                }
+                else
+                {
+                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                        "Selected entity class {0} ({1}) from {2} attempts",
+                        selectedClassName,
+                        selectedClassId,
+                        attempt + 1);
+                    break;
+                }
+            }
+
+            return selectedClassId;
+        }
+
         static private int GetEntityClassId(Simulation simulation, Chunk chunk, UnityEngine.Vector3 worldPos)
         {
             var world = GameManager.Instance.World;
@@ -160,7 +279,7 @@ namespace WalkerSim
 
             var config = simulation.Config;
 
-            List<BiomeEntitySpawnData> spawnList = GetBiomeEntityClasses(chunk.Key);
+            List<EntitySpawnData> spawnList = GetBiomeEntityClasses(chunk.Key);
             if (spawnList == null)
             {
                 int worldX = Mathf.FloorToInt(worldPos.x);
@@ -232,8 +351,8 @@ namespace WalkerSim
                 }
 
                 // Gather all possible groups.
-                var entityClassesDay = new List<BiomeEntitySpawnData>();
-                var entityClassesNight = new List<BiomeEntitySpawnData>();
+                var entityClassesDay = new List<EntitySpawnData>();
+                var entityClassesNight = new List<EntitySpawnData>();
 
                 // Extract possible groups from the bit mask.
                 for (int i = 0; i < biomeList.list.Count; i++)
@@ -268,7 +387,7 @@ namespace WalkerSim
 
                             if (group.daytime == EDaytime.Day || group.daytime == EDaytime.Any)
                             {
-                                entityClassesDay.Add(new BiomeEntitySpawnData
+                                entityClassesDay.Add(new EntitySpawnData
                                 {
                                     entityClassId = entry.entityClassId,
                                     className = entityClassInfo.entityClassName,
@@ -278,7 +397,7 @@ namespace WalkerSim
 
                             if (group.daytime == EDaytime.Night || group.daytime == EDaytime.Any)
                             {
-                                entityClassesNight.Add(new BiomeEntitySpawnData
+                                entityClassesNight.Add(new EntitySpawnData
                                 {
                                     entityClassId = entry.entityClassId,
                                     className = entityClassInfo.entityClassName,
@@ -339,7 +458,7 @@ namespace WalkerSim
             for (int i = 0; i < spawnList.Count; i++)
             {
                 var entry = spawnList[i];
-                var prob = GetEntityClassProbability(entry);
+                var prob = GetEntityClassProbability(entry.prob, entry.entityClassId);
 
                 totalProb += prob;
             }
@@ -355,7 +474,7 @@ namespace WalkerSim
                 for (int i = 0; i < spawnList.Count; i++)
                 {
                     var entry = spawnList[i];
-                    var prob = GetEntityClassProbability(entry);
+                    var prob = GetEntityClassProbability(entry.prob, entry.entityClassId);
 
                     randomValue -= prob;
 
@@ -443,7 +562,22 @@ namespace WalkerSim
             int entityClassId = agent.EntityClassId;
             if (entityClassId == -1 || entityClassId == 0)
             {
-                entityClassId = GetEntityClassId(simulation, chunk, worldPos);
+                // Try first from mask.
+                entityClassId = GetEntityClassIdFromMask(simulation, chunk, worldPos);
+                if (entityClassId == -1)
+                {
+                    // Select from biome.
+                    entityClassId = GetEntityClassId(simulation, chunk, worldPos);
+                }
+                else
+                {
+                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                        "Selected entity class id {0} from mask for agent {1} at position {2}",
+                        entityClassId,
+                        agent.Index,
+                        worldPos);
+                }
+
                 if (entityClassId == -1 || entityClassId == 0)
                 {
                     if (entityClassId == -1)
