@@ -582,7 +582,8 @@ namespace WalkerSim
                 {
                     if (entityClassId == -1)
                     {
-                        Logging.Err("Failed to get entity class id for chunk {0} at position {1}", chunk.Key, worldPos);
+                        Logging.CondErr(config.LoggingOpts.Spawns,
+                            "Failed to get entity class id for chunk {0} at position {1}", chunk.Key, worldPos);
                     }
 
                     // 0 signals to not spawn, this is on purpose to change the weights, comes from entitygroups.xml.
