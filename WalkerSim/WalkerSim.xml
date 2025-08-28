@@ -8,7 +8,7 @@
         <Events>false</Events>
     </Logging>
     <RandomSeed>665992037</RandomSeed>
-    <PopulationDensity>130</PopulationDensity>
+    <PopulationDensity>170</PopulationDensity>
     <SpawnActivationRadius>96</SpawnActivationRadius>
     <StartAgentsGrouped>true</StartAgentsGrouped>
     <EnhancedSoundAwareness>true</EnhancedSoundAwareness>
