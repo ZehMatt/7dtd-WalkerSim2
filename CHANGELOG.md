@@ -2,6 +2,7 @@
 - Fix: Simulation not pausing when the game is paused.
 - Fix: Spawned zombies will never die on their own because the spawner source was set to static.
 - Improve: The editor will now consider the path it is started from as a game path, should help find worlds with odd installation paths.
+- Improve: Change the calculation to how far sounds travel, the distance was too big for some simple things such as opening a gate.
 - Feature: Ability to override biome spawn groups per world with `ws_spawngroupsmask.png` combined with `ws_spawngroups.xml`.
 
 # 0.9.10
