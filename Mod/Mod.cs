@@ -454,16 +454,6 @@ namespace WalkerSim
 
             var logEvents = config.LoggingOpts.Events;
 
-            // Log all variables from noise.
-            Logging.CondInfo(logEvents, "Noise: {0}, Volume: {1}, Duration: {2}, MuffledWhenCrouched: {3}, HeatMapStrength: {4}, HeatMapWorldTimeToLive: {5}, volumeScale: {6}.",
-                               clipName,
-                               noise.volume,
-                               noise.duration,
-                               noise.muffledWhenCrouched,
-                               noise.heatMapStrength,
-                               noise.heatMapWorldTimeToLive,
-                               volumeScale);
-
             if (noise.heatMapStrength == 0.0f)
             {
                 return;
@@ -478,12 +468,35 @@ namespace WalkerSim
             }
 
             var distance = noise.volume * volumeScale * 3.8f;
+            var normalizedHeatmapStrength = Math.Min(noise.heatMapStrength, 1.0f);
+            var distanceScaled = distance * normalizedHeatmapStrength;
+            var eventDuration = noise.heatMapWorldTimeToLive / 60;
 
-            simulation.AddSoundEvent(VectorUtils.ToSim(position), distance, noise.duration * 20);
+            // Log all variables from noise.
+            Logging.CondInfo(logEvents, "Noise: {0}, " +
+                " Volume: {1}, " +
+                "Duration: {2}, " +
+                "MuffledWhenCrouched: {3}, " +
+                "HeatMapStrength: {4}, " +
+                "HeatMapWorldTimeToLive: {5}, " +
+                "volumeScale: {6}, " +
+                "Travel Distance: {7}, " +
+                "Scaled Travel Distance: {8}",
+                               clipName,
+                               noise.volume,
+                               noise.duration,
+                               noise.muffledWhenCrouched,
+                               noise.heatMapStrength,
+                               noise.heatMapWorldTimeToLive,
+                               volumeScale,
+                               distance,
+                               distanceScaled);
+
+            simulation.AddSoundEvent(VectorUtils.ToSim(position), distanceScaled, eventDuration);
 
             if (simulation.Config.EnhancedSoundAwareness)
             {
-                NotifyNearbyEnemies(simulation, instigator, position, distance);
+                NotifyNearbyEnemies(simulation, instigator, position, distanceScaled);
             }
         }
 
