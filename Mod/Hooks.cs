@@ -44,6 +44,28 @@ namespace WalkerSim
         }
     }
 
+    [HarmonyPatch(typeof(XUiC_MapArea))]
+    [HarmonyPatch("updateMapSection")]
+    class MapAreaDrawHook
+    {
+        // public void updateMapSection(int mapStartX, int mapStartZ, int mapEndX, int mapEndZ, int drawnMapStartX, int drawnMapStartZ, int drawnMapEndX, int drawnMapEndZ)
+        static void Postfix(XUiC_MapArea __instance, int mapStartX, int mapStartZ, int mapEndX, int mapEndZ, int drawnMapStartX, int drawnMapStartZ, int drawnMapEndX, int drawnMapEndZ)
+        {
+            MapDrawing.DrawMapSection(__instance, mapStartX, mapStartZ, mapEndX, mapEndZ, drawnMapStartX, drawnMapStartZ, drawnMapEndX, drawnMapEndZ);
+        }
+    }
+
+    [HarmonyPatch(typeof(XUiC_MapArea))]
+    [HarmonyPatch("OnClose")]
+    class MapAreaCloseHook
+    {
+        // public void updateMapSection(int mapStartX, int mapStartZ, int mapEndX, int mapEndZ, int drawnMapStartX, int drawnMapStartZ, int drawnMapEndX, int drawnMapEndZ)
+        static void Postfix(XUiC_MapArea __instance)
+        {
+            MapDrawing.OnClose(__instance);
+        }
+    }
+
     static class Hooks
     {
         public static void Init()

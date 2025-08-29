@@ -13,10 +13,35 @@ namespace WalkerSim.Console
             new SubCommand
             {
                 Name = "show",
-                Description = "Opens a new window with the simulation rendering, works only in singleplayer games.",
+                Description = "Opens the map window and temporarily enables the overlay. To keep the overlay enabled use `walkersim map enable`.",
                 Handler = new Action<CommandSenderInfo>((sender) =>
                 {
-                    LocalPlayerUI.primaryUI.windowManager.Open("walkersim", true);
+                    MapDrawing.IsTemporarilyEnabled = true;
+
+                    EntityPlayerLocal primaryPlayer = GameManager.Instance.World.GetPrimaryPlayer();
+                    if (primaryPlayer != null)
+                    {
+                        LocalPlayerUI uiforPlayer = LocalPlayerUI.GetUIForPlayer(primaryPlayer);
+                        XUiC_WindowSelector.OpenSelectorAndWindow(uiforPlayer.entityPlayer, "map");
+                    }
+                }),
+            },
+            new SubCommand
+            {
+                Name = "map",
+                Description = "Enables or disables the overlay in the map window, the argument is `enable` or `disable` or a boolean.",
+                Handler = new Action<CommandSenderInfo, string>((sender, option) =>
+                {
+                    if(option.ToLowerInvariant() == "enable" || option == "1" || option.ToLowerInvariant() == "true")
+                    {
+                        MapDrawing.IsEnabled = true;
+                        SdtdConsole.Instance.Output("Overlay for map window enabled.");
+                    }
+                    else
+                    {
+                        MapDrawing.IsEnabled = false;
+                        SdtdConsole.Instance.Output("Overlay for map window disabled.");
+                    }
                 }),
             },
             new SubCommand
