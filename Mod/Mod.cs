@@ -15,9 +15,6 @@ namespace WalkerSim
             Logging.AddSink(new LogFileSink("WalkerSim"));
             Logging.AddSink(new LogGameConsoleSink());
 
-            // Setup the simulation window.
-            SimulationWindow.Init();
-
             Hooks.Init();
 
             // Register for events.

@@ -392,11 +392,7 @@ namespace WalkerSim
             var maxAgents = (int)System.Math.Ceiling(sqrKm * config.PopulationDensity);
             maxAgents = MathEx.Clamp(maxAgents, 1, Limits.MaxAgents);
 
-            _state.GroupCount = maxAgents / config.GroupSize;
-            if (maxAgents % config.GroupSize != 0)
-            {
-                _state.GroupCount++;
-            }
+            _state.GroupCount = (maxAgents + (config.GroupSize - 1)) / config.GroupSize;
 
             _groupStarts = new Vector3[_state.GroupCount];
             for (int i = 0; i < _groupStarts.Length; i++)
@@ -491,7 +487,7 @@ namespace WalkerSim
                     continue;
                 }
 
-                accumulator = System.Math.Min(accumulator + scaledDt, 2.0f);
+                accumulator = System.Math.Min(accumulator + scaledDt, 5.0f);
 
                 if (accumulator < TickRate)
                 {

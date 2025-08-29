@@ -48,6 +48,7 @@ namespace WalkerSim.Editor
             this.inToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.outToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.viewBiomes = new System.Windows.Forms.ToolStripMenuItem();
             this.viewRoads = new System.Windows.Forms.ToolStripMenuItem();
             this.viewAgents = new System.Windows.Forms.ToolStripMenuItem();
             this.viewActiveAgents = new System.Windows.Forms.ToolStripMenuItem();
@@ -102,6 +103,7 @@ namespace WalkerSim.Editor
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.buttonDuplicateGroup = new System.Windows.Forms.Button();
             this.groupProps = new System.Windows.Forms.GroupBox();
+            this.inputAffectedGroup = new System.Windows.Forms.ComboBox();
             this.inputPostSpawnBehavior = new System.Windows.Forms.ComboBox();
             this.label15 = new System.Windows.Forms.Label();
             this.lblAffected = new System.Windows.Forms.Label();
@@ -111,7 +113,6 @@ namespace WalkerSim.Editor
             this.inputMovementSpeed = new System.Windows.Forms.NumericUpDown();
             this.label7 = new System.Windows.Forms.Label();
             this.lblAffectedGroup = new System.Windows.Forms.Label();
-            this.inputMovementGroup = new System.Windows.Forms.NumericUpDown();
             this.groupProcessors = new System.Windows.Forms.GroupBox();
             this.buttonRemoveProcessor = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
@@ -152,7 +153,6 @@ namespace WalkerSim.Editor
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorPickerDlg = new System.Windows.Forms.ColorDialog();
             this.toolTipGroupSize = new System.Windows.Forms.ToolTip(this.components);
-            this.viewBiomes = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -172,7 +172,6 @@ namespace WalkerSim.Editor
             this.groupProps.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.boxGroupColor)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputMovementSpeed)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.inputMovementGroup)).BeginInit();
             this.groupProcessors.SuspendLayout();
             this.groupParameter.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.inputProcessorPower)).BeginInit();
@@ -282,7 +281,7 @@ namespace WalkerSim.Editor
             this.inToolStripMenuItem,
             this.outToolStripMenuItem});
             this.zoomSubMenu.Name = "zoomSubMenu";
-            this.zoomSubMenu.Size = new System.Drawing.Size(180, 22);
+            this.zoomSubMenu.Size = new System.Drawing.Size(155, 22);
             this.zoomSubMenu.Text = "Zoom";
             // 
             // xToolStripMenuItem1
@@ -318,7 +317,14 @@ namespace WalkerSim.Editor
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(152, 6);
+            // 
+            // viewBiomes
+            // 
+            this.viewBiomes.CheckOnClick = true;
+            this.viewBiomes.Name = "viewBiomes";
+            this.viewBiomes.Size = new System.Drawing.Size(155, 22);
+            this.viewBiomes.Text = "Biomes";
             // 
             // viewRoads
             // 
@@ -326,7 +332,7 @@ namespace WalkerSim.Editor
             this.viewRoads.CheckOnClick = true;
             this.viewRoads.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewRoads.Name = "viewRoads";
-            this.viewRoads.Size = new System.Drawing.Size(180, 22);
+            this.viewRoads.Size = new System.Drawing.Size(155, 22);
             this.viewRoads.Text = "Roads";
             // 
             // viewAgents
@@ -335,7 +341,7 @@ namespace WalkerSim.Editor
             this.viewAgents.CheckOnClick = true;
             this.viewAgents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewAgents.Name = "viewAgents";
-            this.viewAgents.Size = new System.Drawing.Size(180, 22);
+            this.viewAgents.Size = new System.Drawing.Size(155, 22);
             this.viewAgents.Text = "Inactive Agents";
             // 
             // viewActiveAgents
@@ -344,7 +350,7 @@ namespace WalkerSim.Editor
             this.viewActiveAgents.CheckOnClick = true;
             this.viewActiveAgents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewActiveAgents.Name = "viewActiveAgents";
-            this.viewActiveAgents.Size = new System.Drawing.Size(180, 22);
+            this.viewActiveAgents.Size = new System.Drawing.Size(155, 22);
             this.viewActiveAgents.Text = "Active Agents";
             // 
             // viewEvents
@@ -353,14 +359,14 @@ namespace WalkerSim.Editor
             this.viewEvents.CheckOnClick = true;
             this.viewEvents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewEvents.Name = "viewEvents";
-            this.viewEvents.Size = new System.Drawing.Size(180, 22);
+            this.viewEvents.Size = new System.Drawing.Size(155, 22);
             this.viewEvents.Text = "Events";
             // 
             // viewPrefabs
             // 
             this.viewPrefabs.CheckOnClick = true;
             this.viewPrefabs.Name = "viewPrefabs";
-            this.viewPrefabs.Size = new System.Drawing.Size(180, 22);
+            this.viewPrefabs.Size = new System.Drawing.Size(155, 22);
             this.viewPrefabs.Text = "Prefabs";
             // 
             // simulationToolStripMenuItem
@@ -982,6 +988,7 @@ namespace WalkerSim.Editor
             // 
             // groupProps
             // 
+            this.groupProps.Controls.Add(this.inputAffectedGroup);
             this.groupProps.Controls.Add(this.inputPostSpawnBehavior);
             this.groupProps.Controls.Add(this.label15);
             this.groupProps.Controls.Add(this.lblAffected);
@@ -991,7 +998,6 @@ namespace WalkerSim.Editor
             this.groupProps.Controls.Add(this.inputMovementSpeed);
             this.groupProps.Controls.Add(this.label7);
             this.groupProps.Controls.Add(this.lblAffectedGroup);
-            this.groupProps.Controls.Add(this.inputMovementGroup);
             this.groupProps.Location = new System.Drawing.Point(225, 6);
             this.groupProps.Name = "groupProps";
             this.groupProps.Size = new System.Drawing.Size(237, 155);
@@ -999,6 +1005,16 @@ namespace WalkerSim.Editor
             this.groupProps.TabStop = false;
             this.groupProps.Text = "Properties";
             this.groupProps.Visible = false;
+            // 
+            // inputAffectedGroup
+            // 
+            this.inputAffectedGroup.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.inputAffectedGroup.FormattingEnabled = true;
+            this.inputAffectedGroup.Location = new System.Drawing.Point(119, 19);
+            this.inputAffectedGroup.Name = "inputAffectedGroup";
+            this.inputAffectedGroup.Size = new System.Drawing.Size(112, 21);
+            this.inputAffectedGroup.TabIndex = 12;
+            this.inputAffectedGroup.SelectionChangeCommitted += new System.EventHandler(this.OnGroupIdChanged);
             // 
             // inputPostSpawnBehavior
             // 
@@ -1098,24 +1114,6 @@ namespace WalkerSim.Editor
             this.lblAffectedGroup.Size = new System.Drawing.Size(79, 13);
             this.lblAffectedGroup.TabIndex = 1;
             this.lblAffectedGroup.Text = "Affected Group";
-            // 
-            // inputMovementGroup
-            // 
-            this.inputMovementGroup.Location = new System.Drawing.Point(119, 21);
-            this.inputMovementGroup.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            -2147483648});
-            this.inputMovementGroup.Name = "inputMovementGroup";
-            this.inputMovementGroup.Size = new System.Drawing.Size(112, 20);
-            this.inputMovementGroup.TabIndex = 4;
-            this.inputMovementGroup.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            -2147483648});
-            this.inputMovementGroup.ValueChanged += new System.EventHandler(this.OnGroupIdChanged);
             // 
             // groupProcessors
             // 
@@ -1573,13 +1571,6 @@ namespace WalkerSim.Editor
             // 
             this.colorPickerDlg.AnyColor = true;
             // 
-            // viewBiomes
-            // 
-            this.viewBiomes.CheckOnClick = true;
-            this.viewBiomes.Name = "viewBiomes";
-            this.viewBiomes.Size = new System.Drawing.Size(180, 22);
-            this.viewBiomes.Text = "Biomes";
-            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1619,7 +1610,6 @@ namespace WalkerSim.Editor
             this.groupProps.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.boxGroupColor)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputMovementSpeed)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.inputMovementGroup)).EndInit();
             this.groupProcessors.ResumeLayout(false);
             this.groupParameter.ResumeLayout(false);
             this.groupParameter.PerformLayout();
@@ -1674,7 +1664,6 @@ namespace WalkerSim.Editor
         private System.Windows.Forms.NumericUpDown inputMovementSpeed;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label lblAffectedGroup;
-        private System.Windows.Forms.NumericUpDown inputMovementGroup;
         private System.Windows.Forms.GroupBox groupParameter;
         private System.Windows.Forms.NumericUpDown inputProcessorPower;
         private System.Windows.Forms.Label label8;
@@ -1759,6 +1748,7 @@ namespace WalkerSim.Editor
         private System.Windows.Forms.Label label26;
         private System.Windows.Forms.CheckBox inputSoundAware;
         private System.Windows.Forms.ToolStripMenuItem viewBiomes;
+        private System.Windows.Forms.ComboBox inputAffectedGroup;
     }
 }
 

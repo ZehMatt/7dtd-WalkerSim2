@@ -79,6 +79,17 @@ namespace WalkerSim
             {
                 var processors = new List<Processor>();
 
+                if (processorGroup.Group != -1)
+                {
+                    if (processorGroup.Group >= _state.GroupCount)
+                    {
+                        Logging.Err("A processor group specifies an invalid group index, available groups: {0}, specified: {1}, fallback to any.", _state.GroupCount, processorGroup.Group);
+
+                        // Fallback to any group.
+                        processorGroup.Group = -1;
+                    }
+                }
+
                 foreach (var processor in processorGroup.Entries)
                 {
                     var entry = new Processor();
