@@ -1,8 +1,10 @@
 # 0.9.11 (in progress)
 - Fix: Simulation not pausing when the game is paused.
 - Fix: Spawned zombies will never die on their own because the spawner source was set to static.
+- Fix: Sound events would be sometimes ignored when one already existed making louder noises sometimes not do anything.
 - Improve: The editor will now consider the path it is started from as a game path, should help find worlds with odd installation paths.
 - Improve: Change the calculation to how far sounds travel, the distance was too big for some simple things such as opening a gate.
+- Improve: `walkersim show` will now render into the existing map window, the overlay will be disabled once the window is closed. To enable it permanently a new console command `walkersim map` was added.
 - Feature: Ability to override biome spawn groups per world with `ws_spawngroupsmask.png` combined with `ws_spawngroups.xml`.
 
 # 0.9.10
