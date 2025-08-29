@@ -1,3 +1,5 @@
+# 0.9.12 (in progress)
+
 # 0.9.11
 - Fix: Simulation not pausing when the game is paused.
 - Fix: Spawned zombies will never die on their own because the spawner source was set to static.
