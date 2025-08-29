@@ -244,7 +244,7 @@ namespace WalkerSim.Editor
             speedToolStripMenuItem.DropDownItems.Clear();
 
             int speed = 1;
-            for (int i = 0; i < 9; i++)
+            for (int i = 0; i < 6; i++)
             {
                 var item = speedToolStripMenuItem.DropDownItems.Add(String.Format("{0}x", speed)) as ToolStripMenuItem;
                 item.Checked = i == 0;

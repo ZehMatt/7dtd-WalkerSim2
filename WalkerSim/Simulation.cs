@@ -491,7 +491,7 @@ namespace WalkerSim
                     continue;
                 }
 
-                accumulator = System.Math.Min(accumulator + scaledDt, 2.0f);
+                accumulator = System.Math.Min(accumulator + scaledDt, 5.0f);
 
                 if (accumulator < TickRate)
                 {
