@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace WalkerSim
@@ -29,31 +30,54 @@ namespace WalkerSim
             }
         }
 
+        private const float MaxMergeDistance = 25f;
+        private const float MaxAllowedRadius = 500f;
+
         private void AddEvent(EventData data)
         {
             var events = _state.Events;
             lock (events)
             {
-                // Check if we can merge with an existing event.
-                foreach (var ev in _state.Events)
+                EventData mergeTarget = null;
+
+                // Try to find a merge candidate
+                foreach (var ev in events)
                 {
                     if (ev.Type != data.Type)
-                    {
                         continue;
-                    }
 
-                    var dist = Vector3.Distance2D(ev.Position, data.Position);
+                    float dist = Vector3.Distance2D(ev.Position, data.Position);
 
-                    // If the new event is within the existing event's radius we add to the duration.
-                    if (dist <= ev.Radius)
+                    if (dist <= MaxMergeDistance)
                     {
-                        ev.Duration = System.Math.Max(ev.Duration, data.Duration);
-                        return;
+                        mergeTarget = ev;
+                        break;
                     }
 
+                    if (data.Radius > ev.Radius && dist <= data.Radius)
+                    {
+                        mergeTarget = ev;
+                        break;
+                    }
                 }
 
-                events.Add(data);
+                if (mergeTarget != null)
+                {
+                    mergeTarget.Duration = Math.Max(mergeTarget.Duration, data.Duration);
+
+                    mergeTarget.Radius = Math.Min(
+                        Math.Max(mergeTarget.Radius, data.Radius),
+                        MaxAllowedRadius);
+
+                    mergeTarget.Position = Vector3.Lerp(
+                        mergeTarget.Position,
+                        data.Position,
+                        0.2f);
+                }
+                else
+                {
+                    events.Add(data);
+                }
             }
         }
 
