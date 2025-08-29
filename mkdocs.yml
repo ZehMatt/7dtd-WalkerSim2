@@ -24,18 +24,21 @@ theme:
     name: material
     logo: img/logo.png
     palette:
-      - scheme: preference
-        primary: black
-        accent: deep orange
-        toggle:
-          icon: material/toggle-switch-off-outline
-          name: Switch to dark mode
-      - scheme: slate
-        primary: black
-        accent: deep orange
-        toggle:
-          icon: material/toggle-switch
-          name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: black
+      accent: deep orange
+      toggle:
+        icon: material/brightness-7 
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: deep orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+          
     highlightjs: true
     hljs_languages:
         - cmake
