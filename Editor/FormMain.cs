@@ -42,9 +42,14 @@ namespace WalkerSim.Editor
         Brush[] GroupColors;
         Brush[] PlayerColors;
 
+        int GetTotalGroupCount()
+        {
+            return (simulation.Agents.Count + (CurrentConfig.GroupSize - 1)) / CurrentConfig.GroupSize;
+        }
+
         void GenerateColorTable()
         {
-            var groupCount = simulation.Agents.Count / CurrentConfig.GroupSize;
+            var groupCount = GetTotalGroupCount();
             GroupColors = new Brush[groupCount];
 
             for (int i = 0; i < groupCount; i++)
@@ -168,7 +173,7 @@ namespace WalkerSim.Editor
             SetToolTip(inputRespawnPosition, "Specifies the position of where agents will respawn when killed.\n\nNOTE: When specifying 'None' it will disable their respawn.");
             SetToolTip(inputStartGrouped, "If enabled the agents will start close to members of their own group, this means the starting position is per group, if disabled the starting position is per agent.");
             SetToolTip(inputPauseDuringBloodmoon, "If enabled the simulation will pause during blood moon which means no new in-game zombies will spawn and will be resumed afterwards, this does not affect blood moon spawns.");
-            SetToolTip(inputMovementGroup, "This specifies the group that this processor will affect, if set to -1 then all groups will be affected.\n\nNOTE: This is the index of the group.");
+            SetToolTip(inputAffectedGroup, "This specifies the group that this processor group will affect, if set to `Any` then all groups that don't specify this will be affected.");
             SetToolTip(inputSpawnProtectionTime, "The amount of seconds the player requires to be alive before any agents will spawn.\n\nNOTE: This only applies to starting a new game and spawning for the first time.");
             SetToolTip(inputActivationRadius, "The radius for the player in blocks/meters for when agents will spawn/despawn in the game world.\nDefault is 96, setting this too high can cause a lot of spawn failures, setting it to a lower value is not recommended.\n\nNOTE: This should not exceed the maximum view distance from serversettings.xml, view distance is specified in chunks and each chunk is 16x16x16.");
             SetToolTip(inputSoundAware, "Increases the awareness of \"spawned zombies\" to sound, this will make them react to sound such as gun shots causing them to wander towards the source.\n\nNOTE: Recommended to be enabled, the game is doing a poor job at this.");
@@ -204,6 +209,12 @@ namespace WalkerSim.Editor
             rtbLog.AppendText($"{message}{Environment.NewLine}");
             rtbLog.ScrollToCaret();
             rtbLog.ResumeLayout();
+
+            if (level == Logging.Level.Error)
+            {
+                // Switch to the log tab.
+                tabSimulation.SelectedTab = tabSimulation.TabPages[3];
+            }
         }
 
         private void SetupLogging()
@@ -235,7 +246,6 @@ namespace WalkerSim.Editor
             inputGroupSize.MouseWheel += ScrollHandlerFunction;
             inputProcessorDistance.MouseWheel += ScrollHandlerFunction;
             inputProcessorPower.MouseWheel += ScrollHandlerFunction;
-            inputMovementGroup.MouseWheel += ScrollHandlerFunction;
             inputMovementSpeed.MouseWheel += ScrollHandlerFunction;
             inputSpawnProtectionTime.MouseWheel += ScrollHandlerFunction;
             inputActivationRadius.MouseWheel += ScrollHandlerFunction;
@@ -353,7 +363,7 @@ namespace WalkerSim.Editor
             CheckMaxAgents();
         }
 
-        private void SetConfigValues()
+        private void SetConfigValues(bool resetSimulation)
         {
             if (CurrentConfig == null || _updatingConfig)
             {
@@ -382,21 +392,27 @@ namespace WalkerSim.Editor
             }
 
             CheckMaxAgents();
+            PopulateAffectedGroups();
+
+            if (resetSimulation)
+            {
+                ReconfigureSimulation(true);
+            }
         }
 
         private void SetupConfigChangeHandlers()
         {
-            inputRandomSeed.ValueChanged += (sender, arg) => SetConfigValues();
-            inputMaxAgents.ValueChanged += (sender, arg) => SetConfigValues();
-            inputGroupSize.ValueChanged += (sender, arg) => SetConfigValues();
-            inputSpawnProtectionTime.ValueChanged += (sender, arg) => SetConfigValues();
-            inputStartGrouped.CheckedChanged += (sender, arg) => SetConfigValues();
-            inputFastForward.CheckedChanged += (sender, arg) => SetConfigValues();
-            inputPauseDuringBloodmoon.CheckedChanged += (sender, arg) => SetConfigValues();
-            inputStartPosition.SelectedIndexChanged += (sender, arg) => SetConfigValues();
-            inputRespawnPosition.SelectedIndexChanged += (sender, arg) => SetConfigValues();
-            inputPostSpawnBehavior.SelectedIndexChanged += (sender, arg) => SetConfigValues();
-            inputActivationRadius.ValueChanged += (sender, arg) => SetConfigValues();
+            inputRandomSeed.ValueChanged += (sender, arg) => SetConfigValues(false);
+            inputMaxAgents.ValueChanged += (sender, arg) => SetConfigValues(true);
+            inputGroupSize.ValueChanged += (sender, arg) => SetConfigValues(true);
+            inputSpawnProtectionTime.ValueChanged += (sender, arg) => SetConfigValues(false);
+            inputStartGrouped.CheckedChanged += (sender, arg) => SetConfigValues(true);
+            inputFastForward.CheckedChanged += (sender, arg) => SetConfigValues(false);
+            inputPauseDuringBloodmoon.CheckedChanged += (sender, arg) => SetConfigValues(false);
+            inputStartPosition.SelectedIndexChanged += (sender, arg) => SetConfigValues(true);
+            inputRespawnPosition.SelectedIndexChanged += (sender, arg) => SetConfigValues(true);
+            inputPostSpawnBehavior.SelectedIndexChanged += (sender, arg) => SetConfigValues(false);
+            inputActivationRadius.ValueChanged += (sender, arg) => SetConfigValues(false);
         }
 
         private void UpdateConfigFields()
@@ -427,7 +443,7 @@ namespace WalkerSim.Editor
             var groups = CurrentConfig.Processors;
             for (int i = 0; i < groups.Count; i++)
             {
-                listProcessorGroups.Items.Add("Group #" + i);
+                listProcessorGroups.Items.Add("Processor Group #" + i);
             }
 
             _updatingConfig = false;
@@ -586,9 +602,19 @@ namespace WalkerSim.Editor
                 return;
             }
 
-            var selectedGroup = CurrentConfig.Processors[groupIdx];
+            PopulateAffectedGroups();
 
-            inputMovementGroup.Value = selectedGroup.Group;
+            var selectedGroup = CurrentConfig.Processors[groupIdx];
+            var itemText = "Any";
+
+            if (selectedGroup.Group != -1)
+            {
+                itemText = selectedGroup.Group.ToString();
+            }
+
+            // Select the index corresponding to itemText.
+            inputAffectedGroup.SelectedIndex = inputAffectedGroup.FindString(itemText);
+
             inputMovementSpeed.Value = (decimal)selectedGroup.SpeedScale;
             if (selectedGroup.Color == "")
             {
@@ -609,10 +635,34 @@ namespace WalkerSim.Editor
 
             buttonRemoveProcessor.Enabled = false;
 
-            inputMovementGroup.Minimum = -1;
-            inputMovementGroup.Maximum = simulation.GroupCount - 1;
-
             UpdateAffectedAgentsCount();
+        }
+
+        private void PopulateAffectedGroups()
+        {
+            inputAffectedGroup.Items.Clear();
+            inputAffectedGroup.Items.Add("Any");
+
+            var currentGoup = GetSelectedGroupEntry();
+            var processors = CurrentConfig.Processors;
+
+            var totalGroups = GetTotalGroupCount();
+            for (int i = 0; i < totalGroups; i++)
+            {
+                // See if any processors already has this.
+                if (processors.Any(group => group.Group == i) && currentGoup.Group != i)
+                    continue;
+
+                inputAffectedGroup.Items.Add(i.ToString());
+            }
+
+            var itemText = "Any";
+            if (currentGoup != null && currentGoup.Group != -1)
+            {
+                itemText = currentGoup.Group.ToString();
+            }
+
+            inputAffectedGroup.SelectedIndex = inputAffectedGroup.FindString(itemText);
         }
 
         private void OnProcessorSelectionChanged(object sender, EventArgs e)
@@ -815,11 +865,16 @@ namespace WalkerSim.Editor
             }
         }
 
-        private void ReconfigureSimulation()
+        private void ReconfigureSimulation(bool reset = false)
         {
-            simulation.ReloadConfig(CurrentConfig);
+            if (reset)
+                simulation.Reset(CurrentConfig);
+            else
+                simulation.ReloadConfig(CurrentConfig);
+
             GenerateColorTable();
             UpdateStats();
+            RenderSimulation();
         }
 
         private void OnAddGroupClick(object sender, EventArgs e)
@@ -836,7 +891,7 @@ namespace WalkerSim.Editor
             };
             groups.Add(newGroup);
 
-            listProcessorGroups.Items.Add("Group #" + idx);
+            listProcessorGroups.Items.Add("Processor Group #" + idx);
 
             ReconfigureSimulation();
             UpdateAffectedAgentsCount();
@@ -855,6 +910,7 @@ namespace WalkerSim.Editor
 
             var groups = CurrentConfig.Processors;
             groups.RemoveAt(groupIdx);
+
             listProcessorGroups.Items.RemoveAt(groupIdx);
 
             if (groupIdx > 0)
@@ -885,7 +941,14 @@ namespace WalkerSim.Editor
                 return;
             }
 
-            group.Group = (int)inputMovementGroup.Value;
+            int selectedGroupId = -1;
+            var selectedItem = inputAffectedGroup.Items[inputAffectedGroup.SelectedIndex] as string;
+            if (selectedItem != "Any")
+            {
+                selectedGroupId = int.Parse(selectedItem);
+            }
+
+            group.Group = selectedGroupId;
 
             ReconfigureSimulation();
             UpdateAffectedAgentsCount();
@@ -901,7 +964,8 @@ namespace WalkerSim.Editor
                     if (proc.Group == group.Group)
                     {
                         lblAffectedGroup.ForeColor = Color.Red;
-                        SetToolTip(lblAffectedGroup, "There is another group with the same index, if you want to influence non-specific groups set it to -1.");
+                        SetToolTip(lblAffectedGroup, "There is another group with the same index, if you want to influence non-specific groups set it to 'Any'.");
+                        break;
                     }
                     else
                     {
@@ -1160,7 +1224,7 @@ namespace WalkerSim.Editor
 
             groups.Add(newGroup);
 
-            listProcessorGroups.Items.Add("Group #" + idx);
+            listProcessorGroups.Items.Add("Processor Group #" + idx);
 
             ReconfigureSimulation();
         }
