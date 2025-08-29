@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
+using WalkerSim.Editor.Properties;
 
 namespace WalkerSim.Editor
 {
@@ -18,7 +20,7 @@ namespace WalkerSim.Editor
         static readonly Vector3 WorldMins = new Vector3(-(WorldSizeX * 0.5f), -(WorldSizeY * 0.5f), 0);
         static readonly Vector3 WorldMaxs = new Vector3(WorldSizeX * 0.5f, WorldSizeY * 0.5f, 256);
 
-        static WalkerSim.Config CurrentConfig = Config.GetDefault();
+        static WalkerSim.Config CurrentConfig;
 
         private int _selectedGroup = -1;
         private int _selectedProcessor = -1;
@@ -70,7 +72,9 @@ namespace WalkerSim.Editor
 
             this.Text = $"WalkerSim Editor v{BuildInfo.Version}";
 
-            CurrentConfig = Config.GetDefault();
+            var defaultConfig = Encoding.UTF8.GetString(Resources.WalkerSimConfig);
+            CurrentConfig = Config.LoadFromText(defaultConfig);
+
             UpdateConfigFields();
 
             SetupLogging();
@@ -82,8 +86,6 @@ namespace WalkerSim.Editor
             SetupChoices();
             ScrollWheelHack();
             SetupToolTips();
-
-            CurrentConfig = Config.GetDefault();
 
             // Set world size to 6k as the default thing until the world is changed.
             simulation.SetWorldSize(WorldMins, WorldMaxs);
@@ -725,6 +727,8 @@ namespace WalkerSim.Editor
             var worldPath = Worlds.WorldFolders[worldIdx];
             var worldName = Path.GetFileName(worldPath);
             simulation.LoadMapData(worldPath, worldName);
+
+            simulation.Reset(CurrentConfig);
 
             ZoomReset();
         }

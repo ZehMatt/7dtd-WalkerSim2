@@ -199,18 +199,30 @@ namespace WalkerSim
 
         public static Config LoadFromFile(string filePath)
         {
-            var serializer = new XmlSerializer(typeof(Config));
+            using (var reader = new System.IO.StreamReader(filePath))
+            {
+                return LoadFromStream(reader);
+            }
+        }
+
+        public static Config LoadFromText(string text)
+        {
+            var stream = new StringReader(text);
+            return LoadFromStream(stream);
+        }
+
+        public static Config LoadFromStream(System.IO.TextReader reader)
+        {
             try
             {
-                using (var reader = new System.IO.StreamReader(filePath))
-                {
-                    var config = (Config)serializer.Deserialize(reader);
-                    if (config == null)
-                        return null;
+                var serializer = new XmlSerializer(typeof(Config));
 
-                    SanitizeConfig(config);
-                    return config;
-                }
+                var config = (Config)serializer.Deserialize(reader);
+                if (config == null)
+                    return null;
+
+                SanitizeConfig(config);
+                return config;
             }
             catch (System.Exception ex)
             {
