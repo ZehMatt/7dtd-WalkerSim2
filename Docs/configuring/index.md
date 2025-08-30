@@ -4,7 +4,7 @@ WalkerSim 2 comes with a default configuration file named `WalkerSim.xml`.
 Whenever a game is started, the mod attempts to load the configuration using the following priority:
 
 1. **World-Specific Configuration**
-    - First, WalkerSim 2 looks for a `WalkerSim.xml` inside the world’s save directory.
+    - First, WalkerSim 2 looks for a `WalkerSim.xml` inside the world directory, ex.: `<7 Days to Die>\Data\Worlds\<World>` or `%APPDATA%\GeneratedWorlds\<Your World>`.
     - This allows you to create custom WalkerSim 2 configurations tied specifically to individual worlds.
     - For example, pre-generated worlds from 7 Days to Die (typically found under `Data/Worlds`) can include a custom `WalkerSim.xml`.
 
