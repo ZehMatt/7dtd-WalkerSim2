@@ -618,6 +618,7 @@ namespace WalkerSim
             spawnedAgent.bIsChunkObserver = true;
             spawnedAgent.SetSpawnerSource(EnumSpawnerSource.Biome);
             spawnedAgent.ticksNoPlayerAdjacent = 130;
+            spawnedAgent.bMovementRunning = false;
 
             // Because some Mods use the entitygroups.xml to do normal NPCs, we have to check this first.
             if (spawnedAgent is EntityZombie spawnedZombie)
