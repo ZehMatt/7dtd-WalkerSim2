@@ -633,6 +633,8 @@ namespace WalkerSim.Editor
 
             inputPostSpawnBehavior.SelectedIndex = (int)CurrentConfig.Processors[groupIdx].PostSpawnBehavior;
 
+            inputWanderSpeed.SelectedIndex = (int)CurrentConfig.Processors[groupIdx].PostSpawnWanderSpeed;
+
             buttonRemoveProcessor.Enabled = false;
 
             UpdateAffectedAgentsCount();
@@ -1187,6 +1189,23 @@ namespace WalkerSim.Editor
             if (postSpawnChoice != -1)
             {
                 selectedGroup.PostSpawnBehavior = (Config.PostSpawnBehavior)postSpawnChoice;
+            }
+
+            ReconfigureSimulation();
+        }
+
+        private void OnPostSpawnWanderSpeedSelectionChanged(object sender, EventArgs e)
+        {
+            var selectedGroup = GetSelectedGroupEntry();
+            if (selectedGroup == null)
+            {
+                return;
+            }
+
+            var wanderSpeedChoice = inputWanderSpeed.SelectedIndex;
+            if (wanderSpeedChoice != -1)
+            {
+                selectedGroup.PostSpawnWanderSpeed = (Config.WanderingSpeed)wanderSpeedChoice;
             }
 
             ReconfigureSimulation();
