@@ -617,7 +617,7 @@ namespace WalkerSim
             // Update attributes.
             spawnedAgent.bIsChunkObserver = true;
             spawnedAgent.SetSpawnerSource(EnumSpawnerSource.Biome);
-            spawnedAgent.ticksNoPlayerAdjacent = 130;
+            spawnedAgent.ticksNoPlayerAdjacent = 0;
             spawnedAgent.bMovementRunning = false;
 
             // Because some Mods use the entitygroups.xml to do normal NPCs, we have to check this first.
@@ -641,7 +641,12 @@ namespace WalkerSim
 
                 // Adjust position by getting terrain height at the destination, they might dig if the destination is
                 // below the terrain.
-                destPos.y = world.GetTerrainHeight(Mathf.FloorToInt(destPos.x), Mathf.FloorToInt(destPos.z)) + 1;
+                // Following logic was taken from SpawnQuestEntity
+                var targetTerrainHeight = world.GetTerrainHeight(Mathf.FloorToInt(destPos.x), Mathf.FloorToInt(destPos.z));
+                var targetHeight = world.GetHeight(Mathf.FloorToInt(destPos.x), Mathf.FloorToInt(destPos.z));
+                var combinedTargetHeight = (targetTerrainHeight + targetHeight) / 2f + 1.5f;
+
+                destPos.y = combinedTargetHeight;
 
                 spawnedAgent.SetInvestigatePosition(destPos, 6000, false);
                 Logging.CondInfo(config.LoggingOpts.Spawns,
