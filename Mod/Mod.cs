@@ -541,12 +541,6 @@ namespace WalkerSim
             }
         }
 
-        internal static bool IsStorming(BiomeDefinition.BiomeType _type)
-        {
-            WeatherManager.BiomeWeather biomeWeather = WeatherManager.Instance.FindBiomeWeather(_type);
-            return biomeWeather != null && biomeWeather.stormState >= 2;
-        }
-
         internal static void GetZombieWanderingSpeed(EntityHuman entity, ref float speed)
         {
             var simulation = Simulation.Instance;
@@ -569,14 +563,9 @@ namespace WalkerSim
                     return;
                 }
 
-                Logging.Info("Selected wandering speed override {0} for entity {1}.", wanderSpeed, entity.entityId);
+                Logging.DbgInfo("Selected wandering speed override {0} for entity {1}.", wanderSpeed, entity.entityId);
 
-                // 0: walk
-                // 1: jog
-                // 2: run
-                // 3: sprint
-                // 4: nightmare
-                int walkSpeedSetting = (int)wanderSpeed - 1; //GamePrefs.GetInt(enumGamePrefs);
+                int walkSpeedSetting = (int)wanderSpeed - 1;
 
                 float moveSpeed = EntityHuman.moveSpeeds[walkSpeedSetting];
                 if (entity.moveSpeedRagePer > 1f)
@@ -592,22 +581,17 @@ namespace WalkerSim
                 if (moveSpeed < 1f)
                 {
                     moveSpeed = entity.moveSpeedAggro * (1f - moveSpeed) + entity.moveSpeed * moveSpeed;
-
-                    Logging.Info("moveSpeed: {0}", entity.moveSpeed);
-                    Logging.Info("moveSpeedAggro: {0}", entity.moveSpeedAggro);
                 }
                 else
                 {
                     moveSpeed = entity.moveSpeedAggroMax * moveSpeed;
-
-                    Logging.Info("moveSpeedAggroMax: {0}", entity.moveSpeedAggroMax);
                 }
 
                 moveSpeed *= entity.moveSpeedPatternScale;
 
                 var newSpeed = EffectManager.GetValue(PassiveEffects.RunSpeed, null, moveSpeed, entity, null, default(FastTags<TagGroup.Global>), true, true, true, true, true, 1, true, false);
 
-                Logging.Info("Overriding wandering speed for entity {0} from {1} to {2}.", entity.entityId, speed, newSpeed);
+                Logging.DbgInfo("Overriding wandering speed for entity {0} from {1} to {2}.", entity.entityId, speed, newSpeed);
 
                 speed = newSpeed;
             }
