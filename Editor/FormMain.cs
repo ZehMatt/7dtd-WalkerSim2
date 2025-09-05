@@ -47,7 +47,7 @@ namespace WalkerSim.Editor
             return (simulation.Agents.Count + (CurrentConfig.GroupSize - 1)) / CurrentConfig.GroupSize;
         }
 
-        void GenerateColorTable()
+        void GenerateGroupColors()
         {
             var groupCount = GetTotalGroupCount();
             GroupColors = new Brush[groupCount];
@@ -80,25 +80,22 @@ namespace WalkerSim.Editor
             var defaultConfig = Encoding.UTF8.GetString(Resources.WalkerSimConfig);
             CurrentConfig = Config.LoadFromText(defaultConfig);
 
-            UpdateConfigFields();
+            // Set world size to 6k as the default thing until the world is changed.
+            simulation.EditorMode = true;
+            simulation.SetWorldSize(WorldMins, WorldMaxs);
+            simulation.Reset(CurrentConfig);
 
             SetupLogging();
+            SetupChoices();
+            UpdateConfigFields();
+
             SetupConfigChangeHandlers();
             SetupSpeedModifiers();
             SetupDrawingContext();
             SetupWorlds();
             SetupLimits();
-            SetupChoices();
             ScrollWheelHack();
             SetupToolTips();
-
-            // Set world size to 6k as the default thing until the world is changed.
-            simulation.SetWorldSize(WorldMins, WorldMaxs);
-            simulation.Reset(CurrentConfig);
-            simulation.EditorMode = true;
-
-            UpdateConfigFields();
-            ReconfigureSimulation();
 
             CenterCanvas();
 
@@ -285,6 +282,7 @@ namespace WalkerSim.Editor
             simCanvas.Image = bitmap;
 
             // Draw current state.
+            GenerateGroupColors();
             RenderSimulation();
         }
 
@@ -433,10 +431,10 @@ namespace WalkerSim.Editor
             inputSpawnProtectionTime.Value = CurrentConfig.SpawnProtectionTime;
 
             var spawnChoice = Utils.GetWorldLocationString(CurrentConfig.StartPosition);
-            inputStartPosition.SelectedItem = spawnChoice;
+            inputStartPosition.SelectedIndex = inputStartPosition.FindString(spawnChoice);
 
             var respawnChoice = Utils.GetWorldLocationString(CurrentConfig.RespawnPosition);
-            inputRespawnPosition.SelectedItem = respawnChoice;
+            inputRespawnPosition.SelectedIndex = inputRespawnPosition.FindString(respawnChoice);
 
             listProcessorGroups.Items.Clear();
 
@@ -449,12 +447,35 @@ namespace WalkerSim.Editor
             _updatingConfig = false;
         }
 
-        private void StartSimulation()
+        private bool StartSimulation()
         {
-            GenerateColorTable();
+            if (CurrentConfig.Processors.Count == 0)
+            {
+                MessageBox.Show("No processor groups are defined, simulation can not be started.", "No Processor Groups", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+            // Validate that all processors have valid entries.
+            foreach (var group in CurrentConfig.Processors)
+            {
+                if (group.Entries.Count == 0)
+                {
+                    MessageBox.Show("One or more processor groups have no processors defined, simulation can not be started.", "No Processors", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+            }
+
+            if (inputWorld.Text == "")
+            {
+                MessageBox.Show("No world was selected, the preview will not be accurate.", "No World Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
+            GenerateGroupColors();
             simulation.Start();
 
             updateTimer.Start();
+
+            return true;
         }
 
         private void StopSimulation()
@@ -715,6 +736,11 @@ namespace WalkerSim.Editor
 
         private void OnRestartClick(object sender, EventArgs e)
         {
+            if (!StartSimulation())
+            {
+                return;
+            }
+
             inputRandomSeed.Enabled = false;
             inputMaxAgents.Enabled = false;
             inputGroupSize.Enabled = false;
@@ -723,8 +749,6 @@ namespace WalkerSim.Editor
             pauseToolStripMenuItem.Enabled = true;
             startToolStripMenuItem.Enabled = false;
             stopToolStripMenuItem.Enabled = true;
-
-            StartSimulation();
         }
 
         private void OnStopClick(object sender, EventArgs e)
@@ -762,6 +786,10 @@ namespace WalkerSim.Editor
             else if (size > 6000)
             {
                 _canvasScale = 0.68f;
+            }
+            else
+            {
+                _canvasScale = 0.5f;
             }
 
             SetupDrawingContext();
@@ -862,7 +890,7 @@ namespace WalkerSim.Editor
 
                 simulation.Reset(CurrentConfig);
 
-                GenerateColorTable();
+                GenerateGroupColors();
                 RenderSimulation();
             }
         }
@@ -874,7 +902,7 @@ namespace WalkerSim.Editor
             else
                 simulation.ReloadConfig(CurrentConfig);
 
-            GenerateColorTable();
+            GenerateGroupColors();
             UpdateStats();
             RenderSimulation();
         }
@@ -1032,6 +1060,54 @@ namespace WalkerSim.Editor
             ReconfigureSimulation();
         }
 
+        Config.MovementProcessor CreateMovementProcessor(Config.MovementProcessorType type)
+        {
+            var processor = new Config.MovementProcessor();
+            processor.Type = type;
+
+            // Set some defaults based on type.
+            switch (type)
+            {
+                case Config.MovementProcessorType.FlockAnyGroup:
+                case Config.MovementProcessorType.AlignAnyGroup:
+                case Config.MovementProcessorType.AvoidAnyGroup:
+                case Config.MovementProcessorType.FlockSameGroup:
+                case Config.MovementProcessorType.AlignSameGroup:
+                case Config.MovementProcessorType.AvoidSameGroup:
+                case Config.MovementProcessorType.FlockOtherGroup:
+                case Config.MovementProcessorType.AlignOtherGroup:
+                case Config.MovementProcessorType.AvoidOtherGroup:
+                    processor.Distance = 30.0f;
+                    processor.Power = 0.01f;
+                    break;
+                case Config.MovementProcessorType.Wind:
+                    processor.Power = 0.01f;
+                    break;
+                case Config.MovementProcessorType.WindInverted:
+                    processor.Power = 0.01f;
+                    break;
+                case Config.MovementProcessorType.StickToRoads:
+                    processor.Power = 0.01f;
+                    break;
+                case Config.MovementProcessorType.AvoidRoads:
+                    processor.Power = 0.01f;
+                    break;
+                case Config.MovementProcessorType.StickToPOIs:
+                    processor.Power = 0.01f;
+                    break;
+                case Config.MovementProcessorType.AvoidPOIs:
+                    processor.Power = 0.01f;
+                    break;
+                case Config.MovementProcessorType.WorldEvents:
+                    processor.Power = 0.01f;
+                    break;
+                default:
+                    break;
+            }
+
+            return processor;
+        }
+
         private void OnAddProcessorClick(object sender, EventArgs e)
         {
             var group = GetSelectedGroupEntry();
@@ -1048,9 +1124,7 @@ namespace WalkerSim.Editor
                 return;
             }
 
-            var processor = new Config.MovementProcessor();
-            processor.Type = processorSelectDlg.Choice;
-
+            var processor = CreateMovementProcessor(processorSelectDlg.Choice);
             var newIdx = group.Entries.Count;
 
             group.Entries.Add(processor);
@@ -1408,7 +1482,7 @@ namespace WalkerSim.Editor
                 UpdateConfigFields();
                 CheckMaxAgents();
 
-                GenerateColorTable();
+                GenerateGroupColors();
                 RenderSimulation();
                 ZoomReset();
                 UpdateStats();
@@ -1421,7 +1495,7 @@ namespace WalkerSim.Editor
 
             simulation.Reset(CurrentConfig);
 
-            GenerateColorTable();
+            GenerateGroupColors();
             RenderSimulation();
             ZoomReset();
             UpdateStats();

@@ -165,6 +165,9 @@ namespace WalkerSim.Editor
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorPickerDlg = new System.Windows.Forms.ColorDialog();
             this.toolTipGroupSize = new System.Windows.Forms.ToolTip(this.components);
+            this.btZoomIn = new System.Windows.Forms.Label();
+            this.btZoomOut = new System.Windows.Forms.Label();
+            this.label29 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -303,27 +306,27 @@ namespace WalkerSim.Editor
             this.inToolStripMenuItem,
             this.outToolStripMenuItem});
             this.zoomSubMenu.Name = "zoomSubMenu";
-            this.zoomSubMenu.Size = new System.Drawing.Size(155, 22);
+            this.zoomSubMenu.Size = new System.Drawing.Size(180, 22);
             this.zoomSubMenu.Text = "Zoom";
             // 
             // xToolStripMenuItem1
             // 
             this.xToolStripMenuItem1.Name = "xToolStripMenuItem1";
-            this.xToolStripMenuItem1.Size = new System.Drawing.Size(159, 22);
+            this.xToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
             this.xToolStripMenuItem1.Text = "Reset";
             this.xToolStripMenuItem1.Click += new System.EventHandler(this.OnZoomResetClick);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(156, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
             // 
             // inToolStripMenuItem
             // 
             this.inToolStripMenuItem.Name = "inToolStripMenuItem";
             this.inToolStripMenuItem.ShortcutKeyDisplayString = "";
             this.inToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Up)));
-            this.inToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.inToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.inToolStripMenuItem.Text = "In";
             this.inToolStripMenuItem.Click += new System.EventHandler(this.OnZoomInClick);
             // 
@@ -332,20 +335,20 @@ namespace WalkerSim.Editor
             this.outToolStripMenuItem.Name = "outToolStripMenuItem";
             this.outToolStripMenuItem.ShortcutKeyDisplayString = "";
             this.outToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Down)));
-            this.outToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.outToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.outToolStripMenuItem.Text = "Out";
             this.outToolStripMenuItem.Click += new System.EventHandler(this.OnZoomOutClick);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(152, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
             // 
             // viewBiomes
             // 
             this.viewBiomes.CheckOnClick = true;
             this.viewBiomes.Name = "viewBiomes";
-            this.viewBiomes.Size = new System.Drawing.Size(155, 22);
+            this.viewBiomes.Size = new System.Drawing.Size(180, 22);
             this.viewBiomes.Text = "Biomes";
             // 
             // viewRoads
@@ -354,7 +357,7 @@ namespace WalkerSim.Editor
             this.viewRoads.CheckOnClick = true;
             this.viewRoads.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewRoads.Name = "viewRoads";
-            this.viewRoads.Size = new System.Drawing.Size(155, 22);
+            this.viewRoads.Size = new System.Drawing.Size(180, 22);
             this.viewRoads.Text = "Roads";
             // 
             // viewAgents
@@ -363,7 +366,7 @@ namespace WalkerSim.Editor
             this.viewAgents.CheckOnClick = true;
             this.viewAgents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewAgents.Name = "viewAgents";
-            this.viewAgents.Size = new System.Drawing.Size(155, 22);
+            this.viewAgents.Size = new System.Drawing.Size(180, 22);
             this.viewAgents.Text = "Inactive Agents";
             // 
             // viewActiveAgents
@@ -372,7 +375,7 @@ namespace WalkerSim.Editor
             this.viewActiveAgents.CheckOnClick = true;
             this.viewActiveAgents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewActiveAgents.Name = "viewActiveAgents";
-            this.viewActiveAgents.Size = new System.Drawing.Size(155, 22);
+            this.viewActiveAgents.Size = new System.Drawing.Size(180, 22);
             this.viewActiveAgents.Text = "Active Agents";
             // 
             // viewEvents
@@ -381,14 +384,14 @@ namespace WalkerSim.Editor
             this.viewEvents.CheckOnClick = true;
             this.viewEvents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.viewEvents.Name = "viewEvents";
-            this.viewEvents.Size = new System.Drawing.Size(155, 22);
+            this.viewEvents.Size = new System.Drawing.Size(180, 22);
             this.viewEvents.Text = "Events";
             // 
             // viewPrefabs
             // 
             this.viewPrefabs.CheckOnClick = true;
             this.viewPrefabs.Name = "viewPrefabs";
-            this.viewPrefabs.Size = new System.Drawing.Size(155, 22);
+            this.viewPrefabs.Size = new System.Drawing.Size(180, 22);
             this.viewPrefabs.Text = "Prefabs";
             // 
             // simulationToolStripMenuItem
@@ -1074,6 +1077,7 @@ namespace WalkerSim.Editor
             this.button1.TabIndex = 9;
             this.button1.Text = "Add";
             this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.OnAddGroupClick);
             // 
             // buttonRemoveGroup
             // 
@@ -1085,6 +1089,7 @@ namespace WalkerSim.Editor
             this.buttonRemoveGroup.TabIndex = 10;
             this.buttonRemoveGroup.Text = "Remove";
             this.buttonRemoveGroup.UseVisualStyleBackColor = true;
+            this.buttonRemoveGroup.Click += new System.EventHandler(this.OnRemoveGroupClick);
             // 
             // buttonDuplicateGroup
             // 
@@ -1096,6 +1101,7 @@ namespace WalkerSim.Editor
             this.buttonDuplicateGroup.TabIndex = 11;
             this.buttonDuplicateGroup.Text = "Duplicate";
             this.buttonDuplicateGroup.UseVisualStyleBackColor = true;
+            this.buttonDuplicateGroup.Click += new System.EventHandler(this.OnDuplicateGroupClick);
             // 
             // groupProcessors
             // 
@@ -1784,11 +1790,62 @@ namespace WalkerSim.Editor
             // 
             this.colorPickerDlg.AnyColor = true;
             // 
+            // btZoomIn
+            // 
+            this.btZoomIn.BackColor = System.Drawing.Color.Black;
+            this.btZoomIn.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.btZoomIn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btZoomIn.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btZoomIn.ForeColor = System.Drawing.Color.White;
+            this.btZoomIn.Location = new System.Drawing.Point(35, 35);
+            this.btZoomIn.Margin = new System.Windows.Forms.Padding(0);
+            this.btZoomIn.Name = "btZoomIn";
+            this.btZoomIn.Size = new System.Drawing.Size(22, 22);
+            this.btZoomIn.TabIndex = 7;
+            this.btZoomIn.Text = "+";
+            this.btZoomIn.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.btZoomIn.Click += new System.EventHandler(this.OnZoomInClick);
+            // 
+            // btZoomOut
+            // 
+            this.btZoomOut.BackColor = System.Drawing.Color.Black;
+            this.btZoomOut.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.btZoomOut.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btZoomOut.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btZoomOut.ForeColor = System.Drawing.Color.White;
+            this.btZoomOut.Location = new System.Drawing.Point(10, 35);
+            this.btZoomOut.Margin = new System.Windows.Forms.Padding(0);
+            this.btZoomOut.Name = "btZoomOut";
+            this.btZoomOut.Size = new System.Drawing.Size(22, 22);
+            this.btZoomOut.TabIndex = 8;
+            this.btZoomOut.Text = "-";
+            this.btZoomOut.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.btZoomOut.Click += new System.EventHandler(this.OnZoomOutClick);
+            // 
+            // label29
+            // 
+            this.label29.BackColor = System.Drawing.Color.Black;
+            this.label29.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.label29.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.label29.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label29.ForeColor = System.Drawing.Color.White;
+            this.label29.Location = new System.Drawing.Point(60, 35);
+            this.label29.Margin = new System.Windows.Forms.Padding(0);
+            this.label29.Name = "label29";
+            this.label29.Size = new System.Drawing.Size(22, 22);
+            this.label29.TabIndex = 9;
+            this.label29.Text = "R";
+            this.label29.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.label29.Click += new System.EventHandler(this.OnZoomResetClick);
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(840, 716);
+            this.Controls.Add(this.label29);
+            this.Controls.Add(this.btZoomOut);
+            this.Controls.Add(this.btZoomIn);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.menuStrip1);
             this.DoubleBuffered = true;
@@ -1796,6 +1853,7 @@ namespace WalkerSim.Editor
             this.KeyPreview = true;
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "FormMain";
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.Text = "WalkerSim";
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.OnKeyDown);
             this.menuStrip1.ResumeLayout(false);
@@ -1984,6 +2042,9 @@ namespace WalkerSim.Editor
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.NumericUpDown inputProcessorDistance;
+        private System.Windows.Forms.Label btZoomIn;
+        private System.Windows.Forms.Label btZoomOut;
+        private System.Windows.Forms.Label label29;
     }
 }
 

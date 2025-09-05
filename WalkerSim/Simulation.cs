@@ -156,6 +156,12 @@ namespace WalkerSim
                 _state.Config = config;
                 _state.PRNG = new WalkerSim.Random(config.RandomSeed);
 
+                if (config.Processors.Count == 0)
+                {
+                    _state.Agents.Clear();
+                    return;
+                }
+
                 SetupGrid();
                 Populate();
                 SetupProcessors();
@@ -394,6 +400,11 @@ namespace WalkerSim
 
             _state.GroupCount = (maxAgents + (config.GroupSize - 1)) / config.GroupSize;
 
+            if (_state.GroupCount == 0)
+            {
+                return;
+            }
+
             _groupStarts = new Vector3[_state.GroupCount];
             for (int i = 0; i < _groupStarts.Length; i++)
             {
@@ -547,6 +558,17 @@ namespace WalkerSim
             lock (_state)
             {
                 _state.Config = config;
+
+                if (config.Processors.Count == 0)
+                {
+                    _state.Agents.Clear();
+                    return;
+                }
+
+                if (_state.Agents.Count == 0)
+                {
+                    Populate();
+                }
 
                 SetupProcessors();
             }
