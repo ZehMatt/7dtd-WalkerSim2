@@ -213,6 +213,14 @@
                                         </xs:annotation>
                                     </xs:attribute>
 
+                                    <xs:attribute name="PostSpawnWanderSpeed" type="PostSpawnWanderSpeed" use="optional" default="NoOverride">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                Overrides the movement speed of the agent after its spawned while wandering, if set to NoOverride it will use the game settings for wander speed
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+
                                     <xs:attribute name="Color" type="xs:string" use="required">
                                         <xs:annotation>
                                             <xs:documentation>
@@ -250,6 +258,44 @@
             <xs:enumeration value="Nothing">
                 <xs:annotation>
                     <xs:documentation>Spawned agents just spawn, they will most likely just stand around</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="PostSpawnWanderSpeed">
+        <xs:annotation>
+            <xs:documentation>Enumeration for wander speed after agent is spawned</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="NoOverride">
+                <xs:annotation>
+                    <xs:documentation>Will use the movement speed set by the game settings</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Walk">
+                <xs:annotation>
+                    <xs:documentation>Sets the spawned agent movement speed to 'Walk' while wandering</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Jog">
+                <xs:annotation>
+                    <xs:documentation>Sets the spawned agent movement speed to 'Jog' while wandering</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Run">
+                <xs:annotation>
+                    <xs:documentation>Sets the spawned agent movement speed to 'Run' while wandering</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Sprint">
+                <xs:annotation>
+                    <xs:documentation>Sets the spawned agent movement speed to 'Sprint' while wandering</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Nightmare">
+                <xs:annotation>
+                    <xs:documentation>Sets the spawned agent movement speed to 'Nightmare' while wandering</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
         </xs:restriction>

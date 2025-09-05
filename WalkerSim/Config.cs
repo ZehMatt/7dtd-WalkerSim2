@@ -23,6 +23,22 @@ namespace WalkerSim
             SchemaLocation = "http://zeh.matt/WalkerSim WalkerSimSchema.xsd";
         }
 
+        public enum WanderingSpeed
+        {
+            [XmlEnum("NoOverride")]
+            NoOverride = 0,
+            [XmlEnum("Walk")]
+            Walk,
+            [XmlEnum("Jog")]
+            Jog,
+            [XmlEnum("Run")]
+            Run,
+            [XmlEnum("Sprint")]
+            Sprint,
+            [XmlEnum("Nightmare")]
+            Nightmare,
+        }
+
         public enum PostSpawnBehavior
         {
             [XmlEnum("Wander")]
@@ -107,6 +123,9 @@ namespace WalkerSim
 
             [XmlAttribute("PostSpawnBehavior")]
             public PostSpawnBehavior PostSpawnBehavior = PostSpawnBehavior.Wander;
+
+            [XmlAttribute("PostSpawnWanderSpeed")]
+            public WanderingSpeed PostSpawnWanderSpeed = WanderingSpeed.NoOverride;
 
             [XmlAttribute("Color")]
             public string Color = "";

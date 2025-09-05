@@ -12,6 +12,7 @@ namespace WalkerSim
             public float SpeedScale = 1.0f;
             public int Group = -1;
             public Config.PostSpawnBehavior PostSpawnBehavior = Config.PostSpawnBehavior.Wander;
+            public Config.WanderingSpeed PostSpawnWanderingSpeed = Config.WanderingSpeed.NoOverride;
             public Drawing.Color Color;
         }
 
@@ -107,6 +108,7 @@ namespace WalkerSim
                     SpeedScale = processorGroup.SpeedScale,
                     Group = processorGroup.Group,
                     PostSpawnBehavior = processorGroup.PostSpawnBehavior,
+                    PostSpawnWanderingSpeed = processorGroup.PostSpawnWanderSpeed,
                 };
 
                 if (processorGroup.Color == "")
@@ -137,7 +139,8 @@ namespace WalkerSim
                         SpeedScale = group.SpeedScale,
                         Group = group.Group,
                         Color = group.Color,
-                        PostSpawnBehavior = group.PostSpawnBehavior
+                        PostSpawnBehavior = group.PostSpawnBehavior,
+                        PostSpawnWanderingSpeed = group.PostSpawnWanderingSpeed,
                     };
                     _processors[i] = newGroup;
                 }
@@ -160,7 +163,8 @@ namespace WalkerSim
                         SpeedScale = group.SpeedScale,
                         Group = group.Group,
                         Color = group.Color,
-                        PostSpawnBehavior = group.PostSpawnBehavior
+                        PostSpawnBehavior = group.PostSpawnBehavior,
+                        PostSpawnWanderingSpeed = group.PostSpawnWanderingSpeed,
                     };
                     _processors[group.Group] = newGroup;
                 }

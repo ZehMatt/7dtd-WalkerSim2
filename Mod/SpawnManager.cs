@@ -619,6 +619,7 @@ namespace WalkerSim
             spawnedAgent.SetSpawnerSource(EnumSpawnerSource.Biome);
             spawnedAgent.ticksNoPlayerAdjacent = 0;
             spawnedAgent.bMovementRunning = false;
+            spawnedAgent.moveSpeed = 1.0f;
 
             // Because some Mods use the entitygroups.xml to do normal NPCs, we have to check this first.
             if (spawnedAgent is EntityZombie spawnedZombie)
