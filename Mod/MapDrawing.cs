@@ -43,6 +43,11 @@ namespace WalkerSim
 
             foreach (var agent in simulation.Agents)
             {
+                if (agent.CurrentState == Agent.State.Dead || agent.CurrentState == Agent.State.Respawning)
+                {
+                    continue;
+                }
+
                 var worldPos = VectorUtils.ToUnity(agent.Position);
 
                 if (worldPos.x < mapStartX || worldPos.x >= mapEndX ||
