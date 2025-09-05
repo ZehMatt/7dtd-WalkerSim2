@@ -9,6 +9,7 @@ This document covers:
   - How group specifications influence movement processors.
   - The role of `SpeedScale` in controlling simulation movement speed.
   - The role of `PostSpawnBehavior` in defining post-spawn actions.
+  - The role of `PostSpawnWanderSpeed` specifies the movement speed that the spawned agents will use.
   - Updated processor types and attributes as per the latest schema.
   - Configuration examples aligned with the schema.
 
@@ -78,10 +79,22 @@ This creates an alternating pattern of behaviors with different simulation movem
 
 ## Influencing Movement Processors with Groups
 
-The `Group` attribute in `<ProcessorGroup>` tailors movement behaviors to specific agent subsets, enabling diverse simulation dynamics. The `SpeedScale` attribute controls how fast agents move within the simulation (e.g., `1.0` for normal speed, `2.0` for double speed), but does not affect the movement speed of spawned entities in the game world. The `PostSpawnBehavior` attribute defines what agents do immediately after spawning in the game world, with two options:
+The `Group` attribute in `<ProcessorGroup>` tailors movement behaviors to specific agent subsets, enabling diverse simulation dynamics.
+The `SpeedScale` attribute controls how fast agents move within the simulation (e.g., `1.0` for normal speed, `2.0` for double speed), but does not affect the movement speed of spawned entities in the game world.
+The `PostSpawnBehavior` attribute defines what agents do immediately after spawning in the game world, with two options:
 
   - **Wander**: Agents move aimlessly in the game world after spawning, following the movement processors defined for their group. This is useful for creating ambient or exploratory behaviors, such as zombies roaming without a specific target.
   - **ChaseActivator**: Agents pursue the entity or event (e.g., a player or world event) that triggered their spawn. This creates aggressive or reactive behaviors, such as zombies chasing a player who caused their spawn.
+
+The `PostSpawnWanderSpeed` attribute defines the movement speed the spawned agents will use for wandering, if set to `NoOverride` it will use the setting from the game. When spawned agents
+are alerted or start attacking the player then they will always use the setting from the game, this only applies for them wandering. The options are identical to those in the game.
+
+  - **NoOverride**: Will use the game setting.
+  - **Walk**: Normal walking speed.
+  - **Jog**: Jogging speed.
+  - **Run**: Running speed.
+  - **Sprint**: Sprinting speed.
+  - **Nightmare**: Pretty fast.
 
 The schema defines the following processor types (`MovementProcessorType`):
 
