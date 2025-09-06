@@ -174,6 +174,7 @@ namespace WalkerSim.Editor
             SetToolTip(inputSpawnProtectionTime, "The amount of seconds the player requires to be alive before any agents will spawn.\n\nNOTE: This only applies to starting a new game and spawning for the first time.");
             SetToolTip(inputActivationRadius, "The radius for the player in blocks/meters for when agents will spawn/despawn in the game world.\nDefault is 96, setting this too high can cause a lot of spawn failures, setting it to a lower value is not recommended.\n\nNOTE: This should not exceed the maximum view distance from serversettings.xml, view distance is specified in chunks and each chunk is 16x16x16.");
             SetToolTip(inputSoundAware, "Increases the awareness of \"spawned zombies\" to sound, this will make them react to sound such as gun shots causing them to wander towards the source.\n\nNOTE: Recommended to be enabled, the game is doing a poor job at this.");
+            SetToolTip(inputWanderSpeed, "When the agent is spawned this can override the game setting for their movement speed, this only applies to them while they are wandering.\nOnce they are alerted or start attacking they will use the game setting, if they start wandering again this will apply again.");
         }
 
         public void Message(Logging.Level level, string message)
