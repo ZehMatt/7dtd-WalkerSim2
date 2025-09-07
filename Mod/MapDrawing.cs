@@ -133,8 +133,6 @@ namespace WalkerSim
                 numPlayers++;
             }
 
-            Logging.Info("MapDrawing: Drawn map section for {0} players, {1} agents, {2} events", numPlayers, simulation.Agents.Count, simulation.Events.Count);
-
             inst.timeToRedrawMap = 0.3f;
         }
 
