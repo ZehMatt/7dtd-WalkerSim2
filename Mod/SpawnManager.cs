@@ -642,10 +642,8 @@ namespace WalkerSim
 
                 // Adjust position by getting terrain height at the destination, they might dig if the destination is
                 // below the terrain.
-                // Following logic was taken from SpawnQuestEntity
                 var targetTerrainHeight = world.GetTerrainHeight(Mathf.FloorToInt(destPos.x), Mathf.FloorToInt(destPos.z));
-                var targetHeight = world.GetHeight(Mathf.FloorToInt(destPos.x), Mathf.FloorToInt(destPos.z));
-                var combinedTargetHeight = (targetTerrainHeight + targetHeight) / 2f + 1.5f;
+                var combinedTargetHeight = targetTerrainHeight + 1.5f;
 
                 destPos.y = combinedTargetHeight;
 
