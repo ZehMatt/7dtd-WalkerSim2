@@ -18,12 +18,9 @@ namespace WalkerSim
 
         static private bool CanSpawnZombie()
         {
-            // NOTE: Sleeper reservation is handled before it reaches the queue.
-            // This just ensures we never go above the maximum count of zombies allowed in the world.
-
-            // Check for maximum count.
-            var alive = GameStats.GetInt(EnumGameStats.EnemyCount);
-            var maxAllowed = GamePrefs.GetInt(EnumGamePrefs.MaxSpawnedZombies);
+            // Check for maximum count, this is ordinarily checked before spawning but to be sure.
+            var alive = Simulation.Instance.ActiveCount;
+            var maxAllowed = Simulation.Instance.MaxAllowedAliveAgents;
 
             if (alive >= maxAllowed)
             {

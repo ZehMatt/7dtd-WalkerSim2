@@ -63,6 +63,12 @@
       <DependentUpon>FormProcessorSelection.cs</DependentUpon>
     </Compile>
     <Compile Include="GameLocator.cs" />
+    <Compile Include="LabelWithHelp.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="LabelWithHelp.Designer.cs">
+      <DependentUpon>LabelWithHelp.cs</DependentUpon>
+    </Compile>
     <Compile Include="PictureBoxExtensions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -75,6 +81,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FormProcessorSelection.resx">
       <DependentUpon>FormProcessorSelection.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LabelWithHelp.resx">
+      <DependentUpon>LabelWithHelp.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

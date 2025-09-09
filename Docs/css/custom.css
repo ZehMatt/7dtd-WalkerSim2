@@ -1,0 +1,51 @@
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4,
+.md-typeset h5,
+.md-typeset h6 {
+}
+
+[data-md-color-scheme="default"] .md-nav__title {
+  color: #f27500 !important;
+}
+
+[data-md-color-scheme="slate"] .md-nav__title {
+  color: #ff8c1a !important;
+}
+
+[data-md-color-scheme="default"] .md-typeset h1,
+[data-md-color-scheme="default"] .md-typeset h2 {
+  color: #f27500;
+}
+[data-md-color-scheme="default"] .md-typeset h3 {
+  color: #ff8c1a !important;
+}
+[data-md-color-scheme="default"] .md-typeset h4,
+[data-md-color-scheme="default"] .md-typeset h5,
+[data-md-color-scheme="default"] .md-typeset h6 {
+  color: #cc6600 !important;
+}
+
+[data-md-color-scheme="slate"] .md-typeset h1,
+[data-md-color-scheme="slate"] .md-typeset h2 {
+  color: #ff8c1a;
+}
+[data-md-color-scheme="slate"] .md-typeset h3 {
+  color: #ffb366 !important;
+}
+[data-md-color-scheme="slate"] .md-typeset h4,
+[data-md-color-scheme="slate"] .md-typeset h5,
+[data-md-color-scheme="slate"] .md-typeset h6 {
+  color: #e69533 !important;
+}
+
+[data-md-color-scheme="default"] .md-nav__link--active,
+[data-md-color-scheme="default"] .md-tabs__link--active {
+  color: #f27500 !important;
+}
+
+[data-md-color-scheme="slate"] .md-nav__link--active,
+[data-md-color-scheme="slate"] .md-tabs__link--active {
+  color: #ff8c1a !important;
+}

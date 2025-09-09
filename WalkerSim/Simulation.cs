@@ -74,6 +74,11 @@ namespace WalkerSim
 
         private int _maxAllowedAliveAgents = 64;
 
+        public int MaxAllowedAliveAgents
+        {
+            get { return _maxAllowedAliveAgents; }
+        }
+
         TimeMeasurement _updateTime = new TimeMeasurement();
 
         public bool EditorMode = false;

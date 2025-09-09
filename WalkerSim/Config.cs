@@ -188,6 +188,9 @@ namespace WalkerSim
         [XmlElement("SpawnProtectionTime")]
         public int SpawnProtectionTime = 300;
 
+        [XmlElement("MaxSpawnedZombies")]
+        public string MaxSpawnedZombies = "75%";
+
         [XmlArray("MovementProcessors")]
         public List<MovementProcessorGroup> Processors;
 

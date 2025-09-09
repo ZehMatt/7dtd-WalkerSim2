@@ -89,6 +89,44 @@ namespace WalkerSim
 
             var config = LoadConfiguration();
             simulation.Reset(config);
+
+
+            {
+                var maxSpawnedSetting = simulation.Config.MaxSpawnedZombies;
+                var gameMaxSpawnedAlive = GamePrefs.GetInt(EnumGamePrefs.MaxSpawnedZombies);
+                var maxAliveAllowed = 0;
+
+                if (maxSpawnedSetting.EndsWith("%"))
+                {
+                    // Perecentage of gameMaxSpawnedAlive
+                    if (int.TryParse(maxSpawnedSetting.TrimEnd('%'), out var perc))
+                    {
+                        perc = Math.Min(Math.Max(perc, 1), 200);
+                        maxAliveAllowed = gameMaxSpawnedAlive * perc / 100;
+                    }
+                    else
+                    {
+                        Logging.Err("Invalid MaxSpawnedZombies percentage setting: {0}, using 75% of game setting.", maxSpawnedSetting);
+                        maxAliveAllowed = gameMaxSpawnedAlive * 75 / 100;
+                    }
+                }
+                else
+                {
+                    if (int.TryParse(maxSpawnedSetting, out var abs))
+                    {
+                        maxAliveAllowed = Math.Min(Math.Max(abs, 1), 200);
+                    }
+                    else
+                    {
+                        Logging.Err("Invalid MaxSpawnedZombies absolute setting: {0}, using 75% of game setting.", maxSpawnedSetting);
+                        maxAliveAllowed = gameMaxSpawnedAlive * 75 / 100;
+                    }
+                }
+
+                simulation.SetMaxAllowedAliveAgents(maxAliveAllowed);
+
+                Logging.Out("Max Allowed Alive Agents: {0}", maxAliveAllowed);
+            }
         }
 
         internal static void RestartSimulation()
@@ -208,16 +246,6 @@ namespace WalkerSim
                 }
 
                 simulation.EnableAutoSave(simFile, 60.0f);
-            }
-
-            {
-                // Leave some room for sleepers and other things.
-                // TODO: Make this a configuration, for now we take 80%.
-                var maxAliveAllowed = GamePrefs.GetInt(EnumGamePrefs.MaxSpawnedZombies) * 80 / 100;
-
-                simulation.SetMaxAllowedAliveAgents(maxAliveAllowed);
-
-                Logging.Out("Max Allowed Alive Agents: {0}", maxAliveAllowed);
             }
 
             Logging.Out("Initialized Simulation World, World Size: {0}, {1}; Agents: {2}",
