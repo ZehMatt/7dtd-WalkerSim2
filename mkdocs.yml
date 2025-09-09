@@ -14,10 +14,10 @@ nav:
     - Configuring the Simulation:
         - Overview: configuring/index.md
         - Editor: configuring/editor.md
-        - Configuration:
+        - XML Configuration:
             - Base Parameters: configuring/configuration/base.md
-            - Movement System:
-                - Systems: configuring/configuration/systems.md
+            - Movement Systems:
+                - Movement Systems: configuring/configuration/systems.md
                 - Processors: configuring/configuration/processors.md
 
 theme: 
