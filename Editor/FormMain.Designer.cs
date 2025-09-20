@@ -1830,7 +1830,7 @@ namespace WalkerSim.Editor
             this.lblPostSpawnWanderSpeed.Margin = new System.Windows.Forms.Padding(3, 8, 3, 3);
             this.lblPostSpawnWanderSpeed.Name = "lblPostSpawnWanderSpeed";
             this.lblPostSpawnWanderSpeed.Padding = new System.Windows.Forms.Padding(4, 0, 0, 2);
-            this.lblPostSpawnWanderSpeed.Size = new System.Drawing.Size(157, 15);
+            this.lblPostSpawnWanderSpeed.Size = new System.Drawing.Size(143, 15);
             this.lblPostSpawnWanderSpeed.TabIndex = 13;
             // 
             // lblMovementSpeed
@@ -1843,7 +1843,7 @@ namespace WalkerSim.Editor
             this.lblMovementSpeed.Margin = new System.Windows.Forms.Padding(3, 8, 3, 3);
             this.lblMovementSpeed.Name = "lblMovementSpeed";
             this.lblMovementSpeed.Padding = new System.Windows.Forms.Padding(4, 0, 0, 2);
-            this.lblMovementSpeed.Size = new System.Drawing.Size(110, 15);
+            this.lblMovementSpeed.Size = new System.Drawing.Size(95, 15);
             this.lblMovementSpeed.TabIndex = 2;
             // 
             // lblGroupColor
@@ -1856,7 +1856,7 @@ namespace WalkerSim.Editor
             this.lblGroupColor.Margin = new System.Windows.Forms.Padding(3, 8, 3, 3);
             this.lblGroupColor.Name = "lblGroupColor";
             this.lblGroupColor.Padding = new System.Windows.Forms.Padding(4, 0, 0, 2);
-            this.lblGroupColor.Size = new System.Drawing.Size(82, 15);
+            this.lblGroupColor.Size = new System.Drawing.Size(67, 15);
             this.lblGroupColor.TabIndex = 6;
             // 
             // lblPostSpawnBehavior
@@ -1869,7 +1869,7 @@ namespace WalkerSim.Editor
             this.lblPostSpawnBehavior.Margin = new System.Windows.Forms.Padding(3, 8, 3, 3);
             this.lblPostSpawnBehavior.Name = "lblPostSpawnBehavior";
             this.lblPostSpawnBehavior.Padding = new System.Windows.Forms.Padding(4, 0, 0, 2);
-            this.lblPostSpawnBehavior.Size = new System.Drawing.Size(128, 15);
+            this.lblPostSpawnBehavior.Size = new System.Drawing.Size(113, 15);
             this.lblPostSpawnBehavior.TabIndex = 10;
             // 
             // lblAffectedGroup
@@ -1882,7 +1882,7 @@ namespace WalkerSim.Editor
             this.lblAffectedGroup.Margin = new System.Windows.Forms.Padding(3, 8, 3, 3);
             this.lblAffectedGroup.Name = "lblAffectedGroup";
             this.lblAffectedGroup.Padding = new System.Windows.Forms.Padding(4, 0, 0, 2);
-            this.lblAffectedGroup.Size = new System.Drawing.Size(98, 15);
+            this.lblAffectedGroup.Size = new System.Drawing.Size(83, 15);
             this.lblAffectedGroup.TabIndex = 17;
             // 
             // FormMain

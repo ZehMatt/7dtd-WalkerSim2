@@ -32,6 +32,10 @@ namespace WalkerSim.Editor
                 Location = new Point(mainLabel.Right, 0)
             };
             helpLink.LinkClicked += HelpLink_LinkClicked;
+            if (string.IsNullOrEmpty(_helpUrl))
+            {
+                helpLink.Visible = false;
+            }
 
             this.Controls.Add(mainLabel);
             this.Controls.Add(helpLink);
@@ -40,6 +44,7 @@ namespace WalkerSim.Editor
             this.Padding = new Padding(4, 0, 0, 2);
             this.Margin = new Padding(4, 0, 0, 2);
             this.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            this.DoubleBuffered = true;
         }
 
         private void HelpLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -68,8 +73,18 @@ namespace WalkerSim.Editor
             }
         }
 
+        private string _helpUrl = "";
+
         [Category("Behavior")]
         [Description("The URL opened when the help link is clicked.")]
-        public string HelpUrl { get; set; }
+        public string HelpUrl
+        {
+            get => _helpUrl;
+            set
+            {
+                _helpUrl = value;
+                helpLink.Visible = !string.IsNullOrEmpty(_helpUrl);
+            }
+        }
     }
 }
