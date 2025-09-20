@@ -14,10 +14,10 @@ nav:
     - Configuring the Simulation:
         - Overview: configuring/index.md
         - Editor: configuring/editor.md
-        - Configuration:
+        - XML Configuration:
             - Base Parameters: configuring/configuration/base.md
-            - Movement:
-                - Groups: configuring/configuration/grouping.md
+            - Movement Systems:
+                - Movement Systems: configuring/configuration/systems.md
                 - Processors: configuring/configuration/processors.md
 
 theme: 
@@ -27,14 +27,14 @@ theme:
     - media: "(prefers-color-scheme: light)"
       scheme: default
       primary: black
-      accent: deep orange
+      accent: amber
       toggle:
         icon: material/brightness-7 
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
       primary: black
-      accent: deep orange
+      accent: amber
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
@@ -49,7 +49,6 @@ theme:
         - navigation.instant.progress
         - navigation.tabs.sticky
         - navigation.sections
-        - toc.integrate
         - navigation.top
         - navigation.footer
         - navigation.indexes
@@ -59,6 +58,10 @@ theme:
         - search.highlight
         - content.code.copy
         - content.code.annotate
+
+extra_css:
+  - css/custom.css
+  
 plugins:
     - offline
     - search:
@@ -71,5 +74,7 @@ markdown_extensions:
     - pymdownx.details
     - attr_list
     - md_in_html
+    - toc:
+        permalink: true
 extra:
     generator: false

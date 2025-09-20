@@ -1,25 +1,19 @@
-In WalkerSim, agents can be organized into groups to create diverse behaviors, such as different zombie hordes moving in unique ways. Each group is identified by a **group ID**, a non-negative integer that determines which agents are affected by specific movement processors. The `<ProcessorGroup>` element within `<MovementProcessors>` in the XML configuration allows you to assign movement processors to a group using the `Group` attribute. A special group ID of `-1` applies processors to all groups or distributes them across groups in a round-robin fashion.
+In WalkerSim, agents are controlled by movement systems to create diverse behaviors, each system defines a set of movement processors that will control the movement of agents.
+Movement systems also specify which groups of agents are controlled and addresses those groups by id.
 
-**Important**: Group IDs are zero-based indices. If the simulation has `N` groups (determined by the total number of agents, derived from `PopulationDensity`, divided by `GroupSize`), valid group IDs range from `0` to `N-1`. For example, with 4 groups, the maximum group ID is 3 (IDs: 0, 1, 2, 3).
-
-This document covers:
-
-  - How group IDs are assigned and used.
-  - The behavior of groups with a `Group` value of `-1`.
-  - How group specifications influence movement processors.
-  - The role of `SpeedScale` in controlling simulation movement speed.
-  - The role of `PostSpawnBehavior` in defining post-spawn actions.
-  - Updated processor types and attributes as per the latest schema.
-  - Configuration examples aligned with the schema.
+The `<ProcessorGroup>` element within `<MovementProcessors>` in the XML configuration allows you to assign movement processors to a group using the `Group` attribute. A special group ID of `-1` applies processors to all groups or distributes them across groups in a round-robin fashion.
 
 ## Understanding Group IDs
 
-Group IDs are integers that identify distinct groups of agents in the simulation. They control which agents are affected by the movement processors defined in a `<ProcessorGroup>` within `<MovementProcessors>`.
+Group IDs are integers that identify distinct groups of agents in the simulation. They control which groups of agents are affected by the movement processors defined in a `<ProcessorGroup>` within `<MovementProcessors>`.
 
   - **Assignment**: The number of groups is determined by dividing the total number of agents (calculated from `PopulationDensity` and the simulation area) by `GroupSize`. For example, if `PopulationDensity` is 100 agents per square kilometer, the simulation area is 1 km², and `GroupSize` is 20, there are 5 groups (IDs 0 through 4).
   - **Usage**: In the XML configuration, the `Group` attribute of a `<ProcessorGroup>` specifies which group the contained `<Processor>` elements apply to. For example, `Group="0"` applies processors to agents in group ID 0.
-  - **Constraints**: Group IDs must be non-negative integers (0 or higher) and cannot exceed `N-1`, where `N` is the total number of groups. If a `Group` value exceeds this limit, a warning is logged, and the processors for that group are ignored.
+  - **Constraints**: Group IDs must be non-negative integers (0 or higher) with the exception of `-1` and cannot exceed `N-1`, where `N` is the total number of groups. If a `Group` value exceeds this limit, a warning is logged, and the processors for that group are ignored.
   - **Grouping Behavior**: The `StartAgentsGrouped` parameter determines if agents in the same group start close together. If `true`, agents are placed near each other based on `AgentStartPosition`.
+
+**Important**: Group IDs are zero-based indices, `-1` is an exception and means it will be distributed evenly to all groups that have no other system assigned. 
+If the simulation has `N` groups of agents (determined by the total number of agents, derived from `PopulationDensity`, divided by `GroupSize`), valid group IDs range from `0` to `N-1`. For example, with 4 groups, the maximum group ID is 3 (IDs: 0, 1, 2, 3).
 
 ### Example
 
@@ -35,7 +29,7 @@ This assigns the `FlockSameGroup` processor to agents in group ID 0, causing the
 
 ## Groups with `Group="-1"`
 
-A `Group` value of `-1` indicates that processors apply to **all groups** or are **distributed across groups** in a round-robin fashion.
+Systems that specify a `Group` value of `-1` will evenly distribute among all groups that have no specific system assigned.
 
   - **Behavior**: When one or more `<ProcessorGroup>` elements have `Group="-1"`, the simulation assigns these processors to all groups, cycling through the `-1` definitions if multiple exist. For example, with 5 groups (IDs 0–4) and two `-1` processor groups, the first `-1` group is assigned to group 0, the second to group 1, the first to group 2, and so on.
   - **Purpose**: This allows applying a common set of processors to all agents or creating varied behaviors across groups without specifying each group individually.
@@ -78,11 +72,30 @@ This creates an alternating pattern of behaviors with different simulation movem
 
 ## Influencing Movement Processors with Groups
 
-The `Group` attribute in `<ProcessorGroup>` tailors movement behaviors to specific agent subsets, enabling diverse simulation dynamics. The `SpeedScale` attribute controls how fast agents move within the simulation (e.g., `1.0` for normal speed, `2.0` for double speed), but does not affect the movement speed of spawned entities in the game world. The `PostSpawnBehavior` attribute defines what agents do immediately after spawning in the game world, with two options:
+### Group
+The `Group` attribute in `<ProcessorGroup>` tailors movement behaviors to specific agent subsets, enabling diverse simulation dynamics.
+
+### SpeedScale
+The `SpeedScale` attribute controls how fast agents move within the simulation (e.g., `1.0` for normal speed, `2.0` for double speed), but does not affect the movement speed of spawned entities in the game world.
+
+### PostSpawnBehavior
+The `PostSpawnBehavior` attribute defines what agents do immediately after spawning in the game world, with two options:
 
   - **Wander**: Agents move aimlessly in the game world after spawning, following the movement processors defined for their group. This is useful for creating ambient or exploratory behaviors, such as zombies roaming without a specific target.
   - **ChaseActivator**: Agents pursue the entity or event (e.g., a player or world event) that triggered their spawn. This creates aggressive or reactive behaviors, such as zombies chasing a player who caused their spawn.
 
+### PostSpawnWanderSpeed
+The `PostSpawnWanderSpeed` attribute defines the movement speed the spawned agents will use for wandering, if set to `NoOverride` it will use the setting from the game. When spawned agents
+are alerted or start attacking the player then they will always use the setting from the game, this only applies for them wandering. The options are identical to those in the game.
+
+  - **NoOverride**: Will use the game setting.
+  - **Walk**: Normal walking speed.
+  - **Jog**: Jogging speed.
+  - **Run**: Running speed.
+  - **Sprint**: Sprinting speed.
+  - **Nightmare**: Pretty fast.
+
+### MovementProcessors
 The schema defines the following processor types (`MovementProcessorType`):
 
   - **FlockAnyGroup**: Agents flock with any group within `Distance`, using `Power`.

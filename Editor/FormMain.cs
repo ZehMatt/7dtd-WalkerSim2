@@ -47,7 +47,7 @@ namespace WalkerSim.Editor
             return (simulation.Agents.Count + (CurrentConfig.GroupSize - 1)) / CurrentConfig.GroupSize;
         }
 
-        void GenerateColorTable()
+        void GenerateGroupColors()
         {
             var groupCount = GetTotalGroupCount();
             GroupColors = new Brush[groupCount];
@@ -80,25 +80,22 @@ namespace WalkerSim.Editor
             var defaultConfig = Encoding.UTF8.GetString(Resources.WalkerSimConfig);
             CurrentConfig = Config.LoadFromText(defaultConfig);
 
-            UpdateConfigFields();
+            // Set world size to 6k as the default thing until the world is changed.
+            simulation.EditorMode = true;
+            simulation.SetWorldSize(WorldMins, WorldMaxs);
+            simulation.Reset(CurrentConfig);
 
             SetupLogging();
+            SetupChoices();
+            UpdateConfigFields();
+
             SetupConfigChangeHandlers();
             SetupSpeedModifiers();
             SetupDrawingContext();
             SetupWorlds();
             SetupLimits();
-            SetupChoices();
             ScrollWheelHack();
             SetupToolTips();
-
-            // Set world size to 6k as the default thing until the world is changed.
-            simulation.SetWorldSize(WorldMins, WorldMaxs);
-            simulation.Reset(CurrentConfig);
-            simulation.EditorMode = true;
-
-            UpdateConfigFields();
-            ReconfigureSimulation();
 
             CenterCanvas();
 
@@ -177,6 +174,7 @@ namespace WalkerSim.Editor
             SetToolTip(inputSpawnProtectionTime, "The amount of seconds the player requires to be alive before any agents will spawn.\n\nNOTE: This only applies to starting a new game and spawning for the first time.");
             SetToolTip(inputActivationRadius, "The radius for the player in blocks/meters for when agents will spawn/despawn in the game world.\nDefault is 96, setting this too high can cause a lot of spawn failures, setting it to a lower value is not recommended.\n\nNOTE: This should not exceed the maximum view distance from serversettings.xml, view distance is specified in chunks and each chunk is 16x16x16.");
             SetToolTip(inputSoundAware, "Increases the awareness of \"spawned zombies\" to sound, this will make them react to sound such as gun shots causing them to wander towards the source.\n\nNOTE: Recommended to be enabled, the game is doing a poor job at this.");
+            SetToolTip(inputWanderSpeed, "When the agent is spawned this can override the game setting for their movement speed, this only applies to them while they are wandering.\nOnce they are alerted or start attacking they will use the game setting, if they start wandering again this will apply again.");
         }
 
         public void Message(Logging.Level level, string message)
@@ -285,6 +283,7 @@ namespace WalkerSim.Editor
             simCanvas.Image = bitmap;
 
             // Draw current state.
+            GenerateGroupColors();
             RenderSimulation();
         }
 
@@ -433,10 +432,10 @@ namespace WalkerSim.Editor
             inputSpawnProtectionTime.Value = CurrentConfig.SpawnProtectionTime;
 
             var spawnChoice = Utils.GetWorldLocationString(CurrentConfig.StartPosition);
-            inputStartPosition.SelectedItem = spawnChoice;
+            inputStartPosition.SelectedIndex = inputStartPosition.FindString(spawnChoice);
 
             var respawnChoice = Utils.GetWorldLocationString(CurrentConfig.RespawnPosition);
-            inputRespawnPosition.SelectedItem = respawnChoice;
+            inputRespawnPosition.SelectedIndex = inputRespawnPosition.FindString(respawnChoice);
 
             listProcessorGroups.Items.Clear();
 
@@ -449,12 +448,35 @@ namespace WalkerSim.Editor
             _updatingConfig = false;
         }
 
-        private void StartSimulation()
+        private bool StartSimulation()
         {
-            GenerateColorTable();
+            if (CurrentConfig.Processors.Count == 0)
+            {
+                MessageBox.Show("No processor groups are defined, simulation can not be started.", "No Processor Groups", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+            // Validate that all processors have valid entries.
+            foreach (var group in CurrentConfig.Processors)
+            {
+                if (group.Entries.Count == 0)
+                {
+                    MessageBox.Show("One or more processor groups have no processors defined, simulation can not be started.", "No Processors", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+            }
+
+            if (inputWorld.Text == "")
+            {
+                MessageBox.Show("No world was selected, the preview will not be accurate.", "No World Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
+            GenerateGroupColors();
             simulation.Start();
 
             updateTimer.Start();
+
+            return true;
         }
 
         private void StopSimulation()
@@ -633,6 +655,8 @@ namespace WalkerSim.Editor
 
             inputPostSpawnBehavior.SelectedIndex = (int)CurrentConfig.Processors[groupIdx].PostSpawnBehavior;
 
+            inputWanderSpeed.SelectedIndex = (int)CurrentConfig.Processors[groupIdx].PostSpawnWanderSpeed;
+
             buttonRemoveProcessor.Enabled = false;
 
             UpdateAffectedAgentsCount();
@@ -713,6 +737,11 @@ namespace WalkerSim.Editor
 
         private void OnRestartClick(object sender, EventArgs e)
         {
+            if (!StartSimulation())
+            {
+                return;
+            }
+
             inputRandomSeed.Enabled = false;
             inputMaxAgents.Enabled = false;
             inputGroupSize.Enabled = false;
@@ -721,8 +750,6 @@ namespace WalkerSim.Editor
             pauseToolStripMenuItem.Enabled = true;
             startToolStripMenuItem.Enabled = false;
             stopToolStripMenuItem.Enabled = true;
-
-            StartSimulation();
         }
 
         private void OnStopClick(object sender, EventArgs e)
@@ -760,6 +787,10 @@ namespace WalkerSim.Editor
             else if (size > 6000)
             {
                 _canvasScale = 0.68f;
+            }
+            else
+            {
+                _canvasScale = 0.5f;
             }
 
             SetupDrawingContext();
@@ -860,7 +891,7 @@ namespace WalkerSim.Editor
 
                 simulation.Reset(CurrentConfig);
 
-                GenerateColorTable();
+                GenerateGroupColors();
                 RenderSimulation();
             }
         }
@@ -872,7 +903,7 @@ namespace WalkerSim.Editor
             else
                 simulation.ReloadConfig(CurrentConfig);
 
-            GenerateColorTable();
+            GenerateGroupColors();
             UpdateStats();
             RenderSimulation();
         }
@@ -1030,6 +1061,54 @@ namespace WalkerSim.Editor
             ReconfigureSimulation();
         }
 
+        Config.MovementProcessor CreateMovementProcessor(Config.MovementProcessorType type)
+        {
+            var processor = new Config.MovementProcessor();
+            processor.Type = type;
+
+            // Set some defaults based on type.
+            switch (type)
+            {
+                case Config.MovementProcessorType.FlockAnyGroup:
+                case Config.MovementProcessorType.AlignAnyGroup:
+                case Config.MovementProcessorType.AvoidAnyGroup:
+                case Config.MovementProcessorType.FlockSameGroup:
+                case Config.MovementProcessorType.AlignSameGroup:
+                case Config.MovementProcessorType.AvoidSameGroup:
+                case Config.MovementProcessorType.FlockOtherGroup:
+                case Config.MovementProcessorType.AlignOtherGroup:
+                case Config.MovementProcessorType.AvoidOtherGroup:
+                    processor.Distance = 30.0f;
+                    processor.Power = 0.01f;
+                    break;
+                case Config.MovementProcessorType.Wind:
+                    processor.Power = 0.01f;
+                    break;
+                case Config.MovementProcessorType.WindInverted:
+                    processor.Power = 0.01f;
+                    break;
+                case Config.MovementProcessorType.StickToRoads:
+                    processor.Power = 0.01f;
+                    break;
+                case Config.MovementProcessorType.AvoidRoads:
+                    processor.Power = 0.01f;
+                    break;
+                case Config.MovementProcessorType.StickToPOIs:
+                    processor.Power = 0.01f;
+                    break;
+                case Config.MovementProcessorType.AvoidPOIs:
+                    processor.Power = 0.01f;
+                    break;
+                case Config.MovementProcessorType.WorldEvents:
+                    processor.Power = 0.01f;
+                    break;
+                default:
+                    break;
+            }
+
+            return processor;
+        }
+
         private void OnAddProcessorClick(object sender, EventArgs e)
         {
             var group = GetSelectedGroupEntry();
@@ -1046,9 +1125,7 @@ namespace WalkerSim.Editor
                 return;
             }
 
-            var processor = new Config.MovementProcessor();
-            processor.Type = processorSelectDlg.Choice;
-
+            var processor = CreateMovementProcessor(processorSelectDlg.Choice);
             var newIdx = group.Entries.Count;
 
             group.Entries.Add(processor);
@@ -1187,6 +1264,23 @@ namespace WalkerSim.Editor
             if (postSpawnChoice != -1)
             {
                 selectedGroup.PostSpawnBehavior = (Config.PostSpawnBehavior)postSpawnChoice;
+            }
+
+            ReconfigureSimulation();
+        }
+
+        private void OnPostSpawnWanderSpeedSelectionChanged(object sender, EventArgs e)
+        {
+            var selectedGroup = GetSelectedGroupEntry();
+            if (selectedGroup == null)
+            {
+                return;
+            }
+
+            var wanderSpeedChoice = inputWanderSpeed.SelectedIndex;
+            if (wanderSpeedChoice != -1)
+            {
+                selectedGroup.PostSpawnWanderSpeed = (Config.WanderingSpeed)wanderSpeedChoice;
             }
 
             ReconfigureSimulation();
@@ -1389,7 +1483,7 @@ namespace WalkerSim.Editor
                 UpdateConfigFields();
                 CheckMaxAgents();
 
-                GenerateColorTable();
+                GenerateGroupColors();
                 RenderSimulation();
                 ZoomReset();
                 UpdateStats();
@@ -1402,7 +1496,7 @@ namespace WalkerSim.Editor
 
             simulation.Reset(CurrentConfig);
 
-            GenerateColorTable();
+            GenerateGroupColors();
             RenderSimulation();
             ZoomReset();
             UpdateStats();

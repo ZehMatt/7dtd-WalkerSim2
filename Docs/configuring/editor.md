@@ -6,13 +6,17 @@ The **WalkerSim Editor** provides a user-friendly interface for setting up and c
 
 ## Base Parameters
 
-The `World` setting is not saved in the configuration file. It loads a map for preview purposes and calculates the number of agents based on the map's size and the configured population density.
+### World
 
-Other settings align with the XML schema. For more details, refer to [Base Parameters](configuration/base.md).
+It loads a map for preview purposes and calculates the number of agents based on the map's size and the configured population density. The `World` setting is not saved in the configuration file. 
 
-## Movement Processors
+### Other
 
-This section allows you to configure [Groups](configuration/grouping.md) and [Movement Processors](configuration/processors.md).
+Majority of the settings align with the XML schema. For more details, refer to [Base Parameters](configuration/base.md).
+
+## Movement Systems
+
+This section allows you to configure [Systems](configuration/systems.md) and the [Movement Processors](configuration/processors.md).
 
 ---
 
@@ -42,5 +46,5 @@ the radius while the tool is selected.
 
 #### `Kill`
 
-Kills all the agents within the radius, this can test the [respawn behavior](configuration/base.md#7-agentrespawnposition), select the `Kill` tool and click anywhere in the preview, it should show 
+Kills all the agents within the radius, this can test the [respawn behavior](configuration/base.md#agentrespawnposition), select the `Kill` tool and click anywhere in the preview, it should show 
 the radius while the tool is selected.

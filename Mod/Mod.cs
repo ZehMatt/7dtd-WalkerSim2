@@ -89,6 +89,44 @@ namespace WalkerSim
 
             var config = LoadConfiguration();
             simulation.Reset(config);
+
+
+            {
+                var maxSpawnedSetting = simulation.Config.MaxSpawnedZombies;
+                var gameMaxSpawnedAlive = GamePrefs.GetInt(EnumGamePrefs.MaxSpawnedZombies);
+                var maxAliveAllowed = 0;
+
+                if (maxSpawnedSetting.EndsWith("%"))
+                {
+                    // Perecentage of gameMaxSpawnedAlive
+                    if (int.TryParse(maxSpawnedSetting.TrimEnd('%'), out var perc))
+                    {
+                        perc = Math.Min(Math.Max(perc, 1), 200);
+                        maxAliveAllowed = gameMaxSpawnedAlive * perc / 100;
+                    }
+                    else
+                    {
+                        Logging.Err("Invalid MaxSpawnedZombies percentage setting: {0}, using 75% of game setting.", maxSpawnedSetting);
+                        maxAliveAllowed = gameMaxSpawnedAlive * 75 / 100;
+                    }
+                }
+                else
+                {
+                    if (int.TryParse(maxSpawnedSetting, out var abs))
+                    {
+                        maxAliveAllowed = Math.Min(Math.Max(abs, 1), 200);
+                    }
+                    else
+                    {
+                        Logging.Err("Invalid MaxSpawnedZombies absolute setting: {0}, using 75% of game setting.", maxSpawnedSetting);
+                        maxAliveAllowed = gameMaxSpawnedAlive * 75 / 100;
+                    }
+                }
+
+                simulation.SetMaxAllowedAliveAgents(maxAliveAllowed);
+
+                Logging.Out("Max Allowed Alive Agents: {0}", maxAliveAllowed);
+            }
         }
 
         internal static void RestartSimulation()
@@ -208,16 +246,6 @@ namespace WalkerSim
                 }
 
                 simulation.EnableAutoSave(simFile, 60.0f);
-            }
-
-            {
-                // Leave some room for sleepers and other things.
-                // TODO: Make this a configuration, for now we take 80%.
-                var maxAliveAllowed = GamePrefs.GetInt(EnumGamePrefs.MaxSpawnedZombies) * 80 / 100;
-
-                simulation.SetMaxAllowedAliveAgents(maxAliveAllowed);
-
-                Logging.Out("Max Allowed Alive Agents: {0}", maxAliveAllowed);
             }
 
             Logging.Out("Initialized Simulation World, World Size: {0}, {1}; Agents: {2}",
@@ -538,6 +566,62 @@ namespace WalkerSim
 
                 // Have them interested for for 2~ min, assuming 30 ticks a second.
                 ent.SetInvestigatePosition(position, 3600, true);
+            }
+        }
+
+        internal static void GetZombieWanderingSpeed(EntityHuman entity, ref float speed)
+        {
+            var simulation = Simulation.Instance;
+            if (simulation == null || simulation.Config == null)
+            {
+                return;
+            }
+
+            if (!simulation.Active.ContainsKey(entity.entityId))
+            {
+                // Apply this only to zombies spawned by the simulation.
+                return;
+            }
+
+            if (!entity.IsAlert && entity.GetAttackTarget() == null)
+            {
+                var wanderSpeed = simulation.GetPostSpawnWanderSpeed(entity.entityId);
+                if (wanderSpeed == Config.WanderingSpeed.NoOverride)
+                {
+                    return;
+                }
+
+                Logging.DbgInfo("Selected wandering speed override {0} for entity {1}.", wanderSpeed, entity.entityId);
+
+                int walkSpeedSetting = (int)wanderSpeed - 1;
+
+                float moveSpeed = EntityHuman.moveSpeeds[walkSpeedSetting];
+                if (entity.moveSpeedRagePer > 1f)
+                {
+                    moveSpeed = EntityHuman.moveSuperRageSpeeds[walkSpeedSetting];
+                }
+                else if (entity.moveSpeedRagePer > 0f)
+                {
+                    float num2 = EntityHuman.moveRageSpeeds[walkSpeedSetting];
+                    moveSpeed = moveSpeed * (1f - entity.moveSpeedRagePer) + num2 * entity.moveSpeedRagePer;
+                }
+
+                if (moveSpeed < 1f)
+                {
+                    moveSpeed = entity.moveSpeedAggro * (1f - moveSpeed) + entity.moveSpeed * moveSpeed;
+                }
+                else
+                {
+                    moveSpeed = entity.moveSpeedAggroMax * moveSpeed;
+                }
+
+                moveSpeed *= entity.moveSpeedPatternScale;
+
+                var newSpeed = EffectManager.GetValue(PassiveEffects.RunSpeed, null, moveSpeed, entity, null, default(FastTags<TagGroup.Global>), true, true, true, true, true, 1, true, false);
+
+                Logging.DbgInfo("Overriding wandering speed for entity {0} from {1} to {2}.", entity.entityId, speed, newSpeed);
+
+                speed = newSpeed;
             }
         }
     }

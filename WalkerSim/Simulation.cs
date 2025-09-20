@@ -74,6 +74,11 @@ namespace WalkerSim
 
         private int _maxAllowedAliveAgents = 64;
 
+        public int MaxAllowedAliveAgents
+        {
+            get { return _maxAllowedAliveAgents; }
+        }
+
         TimeMeasurement _updateTime = new TimeMeasurement();
 
         public bool EditorMode = false;
@@ -155,6 +160,12 @@ namespace WalkerSim
                 _state.SoftReset();
                 _state.Config = config;
                 _state.PRNG = new WalkerSim.Random(config.RandomSeed);
+
+                if (config.Processors.Count == 0)
+                {
+                    _state.Agents.Clear();
+                    return;
+                }
 
                 SetupGrid();
                 Populate();
@@ -394,6 +405,11 @@ namespace WalkerSim
 
             _state.GroupCount = (maxAgents + (config.GroupSize - 1)) / config.GroupSize;
 
+            if (_state.GroupCount == 0)
+            {
+                return;
+            }
+
             _groupStarts = new Vector3[_state.GroupCount];
             for (int i = 0; i < _groupStarts.Length; i++)
             {
@@ -547,6 +563,17 @@ namespace WalkerSim
             lock (_state)
             {
                 _state.Config = config;
+
+                if (config.Processors.Count == 0)
+                {
+                    _state.Agents.Clear();
+                    return;
+                }
+
+                if (_state.Agents.Count == 0)
+                {
+                    Populate();
+                }
 
                 SetupProcessors();
             }

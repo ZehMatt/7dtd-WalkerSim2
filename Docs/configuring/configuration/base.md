@@ -6,7 +6,7 @@ The base parameters are defined as child elements of the `<WalkerSim>` root elem
 
 Below is a list of all base parameters, their descriptions, types, constraints, and usage details.
 
-### `Logging`
+### Logging
 
 - **Type**: Complex (Optional)  
 - **Description**: Enables detailed debug logging for various parts of the simulation. This is useful for tracking system behavior and diagnosing issues.
@@ -33,48 +33,48 @@ Below is a list of all base parameters, their descriptions, types, constraints, 
 - **Example Use Case**:  
   Enable `Spawns`, `Despawns`, and `Events` to monitor agent lifecycle and key simulation triggers during test runs.
 
-### `RandomSeed`
+### RandomSeed
 
 - **Type**: Integer  
 - **Description**: Sets the seed for random number generation to ensure reproducible simulation results. Use the same seed for consistent outcomes across runs.  
 - **Constraints**: Any valid integer.  
 - **Example Use Case**: Setting a fixed seed (e.g., `12345`) to test specific scenarios repeatedly.
 
-### `PopulationDensity`
+### PopulationDensity
 
 - **Type**: Integer
 - **Description**: Specifies the number of agents per square kilometer in the simulation area, controlling the overall agent population.
 - **Constraints**: Minimum: 1, Maximum: 4000.
 - **Example Use Case**: Setting a density of `200` for a moderately populated zombie simulation.
 
-### `SpawnActivationRadius`
+### SpawnActivationRadius
 
 - **Type**: Integer
 - **Description**: The radius for the player in blocks/meters for when agents will spawn/despawn in the game world. This should not exceed the maximum view distance from serversettings.xml, view distance is specified in chunks and each chunk is 16x16x16.
 - **Constraints**: Minimum: 48, Maximum: 196.
 - **Note**: The default is set to 96, setting this too high can cause a lot of spawn failures, setting it to a lower value is not recommended. 
 
-### `StartAgentsGrouped`
+### StartAgentsGrouped
 
 - **Type**: Boolean
 - **Description**: Determines whether agents start the simulation grouped together. If `true`, agents are placed in clusters based on the `GroupSize` parameter; if `false`, they are distributed individually.
 - **Example Use Case**: Setting to `true` to simulate zombies starting in tight-knit hordes.
 
-### `EnhancedSoundAwareness`
+### EnhancedSoundAwareness
 
 - **Type**: Boolean
 - **Description**: When enabled this will make zombies aware of loud noises that are nearby such as gun fire or explosions which causes them to walk towards
 the location where the noise came from. The game seems to have a very small radius where zombies quite often do not react, the new distance will be the same as
 the one the simulation calculates for `WorldEvents`.
 
-### `GroupSize`
+### GroupSize
 
 - **Type**: Integer
-- **Description**: Defines the size of each agent group when `StartAgentsGrouped` is `true`. The total number of groups is calculated as the total number of agents divided by this value.
+- **Description**: Defines the size of how many agents each group will contain. The total number of groups is calculated as the total number of agents divided by this value, the total number of agents depends on population density.
 - **Constraints**: Minimum: 1.
 - **Example Use Case**: Setting to `20` to create groups of 20 zombies each.
 
-### `AgentStartPosition`
+### AgentStartPosition
 
 - **Type**: Enumeration (`SpawnPosition`)
 - **Description**: Specifies where agents are placed at the start of the simulation.
@@ -85,7 +85,7 @@ the one the simulation calculates for `WorldEvents`.
   - `Mixed`: Agents start at a mix of border locations, random locations, and POIs.
 - **Example Use Case**: Using `RandomPOI` to simulate zombies spawning near key locations.
 
-### `AgentRespawnPosition`
+### AgentRespawnPosition
 
 - **Type**: Enumeration (`RespawnPosition`)
 - **Description**: Specifies where agents respawn after being removed (e.g., due to death or despawning).
@@ -97,7 +97,7 @@ the one the simulation calculates for `WorldEvents`.
   - `Mixed`: Agents respawn at a mix of border locations, random locations, and POIs.
 - **Example Use Case**: Setting to `RandomBorderLocation` to simulate zombies re-entering from the edges.
 
-### `PauseDuringBloodmoon`
+### PauseDuringBloodmoon
 
 - **Type**: Boolean
 - **Description**: Determines whether the simulation pauses during specific events, such as a "Bloodmoon" (a predefined event that may intensify zombie activity). If `true`, the simulation halts during these events.

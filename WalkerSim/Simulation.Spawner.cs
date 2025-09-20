@@ -193,6 +193,19 @@ namespace WalkerSim
 #endif
         }
 
+        public Config.WanderingSpeed GetPostSpawnWanderSpeed(int entityId)
+        {
+            if (_state.Active.TryGetValue(entityId, out var agent))
+            {
+                var processorGroup = _processors[agent.Group];
+                if (processorGroup != null)
+                {
+                    return processorGroup.PostSpawnWanderingSpeed;
+                }
+            }
+            return Config.WanderingSpeed.NoOverride;
+        }
+
         private void ProcessSpawnQueue()
         {
             var now = DateTime.Now;

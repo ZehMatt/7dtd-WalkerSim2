@@ -43,6 +43,11 @@ namespace WalkerSim
 
             foreach (var agent in simulation.Agents)
             {
+                if (agent.CurrentState == Agent.State.Dead || agent.CurrentState == Agent.State.Respawning)
+                {
+                    continue;
+                }
+
                 var worldPos = VectorUtils.ToUnity(agent.Position);
 
                 if (worldPos.x < mapStartX || worldPos.x >= mapEndX ||
@@ -71,6 +76,12 @@ namespace WalkerSim
             {
                 var eventWorldPos = VectorUtils.ToUnity(worldEvent.Position);
 
+                if (eventWorldPos.x < mapStartX || eventWorldPos.x >= mapEndX ||
+                    eventWorldPos.z < mapStartZ || eventWorldPos.z >= mapEndZ)
+                {
+                    continue;
+                }
+
                 var baseRadius = worldEvent.Radius;
                 var t = (simulation.Ticks % 50) / 50f;
                 var eventTexX = global::Utils.WrapIndex(textureStartX + (int)(eventWorldPos.x - mapStartX), textureWidth);
@@ -96,9 +107,16 @@ namespace WalkerSim
             // TODO: Expose this from the simulation.
             var activationBorderSize = 8.0f;
 
+            int numPlayers = 0;
             foreach (var ply in simulation.Players)
             {
                 var plyWorldPos = VectorUtils.ToUnity(ply.Value.Position);
+
+                if (plyWorldPos.x < mapStartX || plyWorldPos.x >= mapEndX ||
+                    plyWorldPos.z < mapStartZ || plyWorldPos.z >= mapEndZ)
+                {
+                    continue;
+                }
 
                 var playerTexX = global::Utils.WrapIndex(textureStartX + (int)(plyWorldPos.x - mapStartX), textureWidth);
                 var playerTexZ = global::Utils.WrapIndex(textureStartZ + (int)(plyWorldPos.z - mapStartZ), textureWidth);
@@ -111,6 +129,8 @@ namespace WalkerSim
 
                 DrawCircle(textureData, playerTexX, playerTexZ, (int)config.SpawnActivationRadius, textureWidth, ColorOutterActivation);
                 DrawCircle(textureData, playerTexX, playerTexZ, (int)(config.SpawnActivationRadius - activationBorderSize), textureWidth, ColorInnerActivation);
+
+                numPlayers++;
             }
 
             inst.timeToRedrawMap = 0.3f;

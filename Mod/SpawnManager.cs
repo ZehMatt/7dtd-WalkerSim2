@@ -18,12 +18,9 @@ namespace WalkerSim
 
         static private bool CanSpawnZombie()
         {
-            // NOTE: Sleeper reservation is handled before it reaches the queue.
-            // This just ensures we never go above the maximum count of zombies allowed in the world.
-
-            // Check for maximum count.
-            var alive = GameStats.GetInt(EnumGameStats.EnemyCount);
-            var maxAllowed = GamePrefs.GetInt(EnumGamePrefs.MaxSpawnedZombies);
+            // Check for maximum count, this is ordinarily checked before spawning but to be sure.
+            var alive = Simulation.Instance.ActiveCount;
+            var maxAllowed = Simulation.Instance.MaxAllowedAliveAgents;
 
             if (alive >= maxAllowed)
             {
@@ -617,7 +614,9 @@ namespace WalkerSim
             // Update attributes.
             spawnedAgent.bIsChunkObserver = true;
             spawnedAgent.SetSpawnerSource(EnumSpawnerSource.Biome);
-            spawnedAgent.ticksNoPlayerAdjacent = 130;
+            spawnedAgent.ticksNoPlayerAdjacent = 0;
+            spawnedAgent.bMovementRunning = false;
+            spawnedAgent.moveSpeed = 1.0f;
 
             // Because some Mods use the entitygroups.xml to do normal NPCs, we have to check this first.
             if (spawnedAgent is EntityZombie spawnedZombie)
@@ -640,7 +639,10 @@ namespace WalkerSim
 
                 // Adjust position by getting terrain height at the destination, they might dig if the destination is
                 // below the terrain.
-                destPos.y = world.GetTerrainHeight(Mathf.FloorToInt(destPos.x), Mathf.FloorToInt(destPos.z)) + 1;
+                var targetTerrainHeight = world.GetTerrainHeight(Mathf.FloorToInt(destPos.x), Mathf.FloorToInt(destPos.z));
+                var combinedTargetHeight = targetTerrainHeight + 1.5f;
+
+                destPos.y = combinedTargetHeight;
 
                 spawnedAgent.SetInvestigatePosition(destPos, 6000, false);
                 Logging.CondInfo(config.LoggingOpts.Spawns,

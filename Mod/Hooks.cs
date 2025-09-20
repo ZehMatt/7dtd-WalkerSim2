@@ -66,6 +66,26 @@ namespace WalkerSim
         }
     }
 
+    [HarmonyPatch(typeof(EntityHuman))]
+    [HarmonyPatch("GetMoveSpeed")]
+    class EntityHumanGetMoveSpeedHook
+    {
+        static void Postfix(EntityHuman __instance, ref float __result)
+        {
+            WalkerSimMod.GetZombieWanderingSpeed(__instance, ref __result);
+        }
+    }
+
+    [HarmonyPatch(typeof(EntityHuman))]
+    [HarmonyPatch("GetMoveSpeedAggro")]
+    class EntityHumanGetMoveSpeedAggroHook
+    {
+        static void Postfix(EntityHuman __instance, ref float __result)
+        {
+            WalkerSimMod.GetZombieWanderingSpeed(__instance, ref __result);
+        }
+    }
+
     static class Hooks
     {
         public static void Init()
