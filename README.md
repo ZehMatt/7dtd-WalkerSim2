@@ -1,4 +1,4 @@
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/ZehMatt/zasm/blob/master/LICENSE)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL3-blue.svg)](https://github.com/ZehMatt/zasm/blob/master/LICENSE)
 [![Discord](https://img.shields.io/discord/243577046616375297.svg?logo=discord&label=Discord)](https://discord.gg/9QGHS4wbFu)
 
 # WalkerSim 2
