@@ -1,60 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
 <WalkerSim xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://zeh.matt/WalkerSim WalkerSimSchema.xsd" xmlns="http://zeh.matt/WalkerSim">
-    <Logging>
-        <General>true</General>
-        <Spawns>false</Spawns>
-        <Despawns>false</Despawns>
-        <EntityClassSelection>false</EntityClassSelection>
-        <Events>false</Events>
-    </Logging>
-    <RandomSeed>665992037</RandomSeed>
-    <PopulationDensity>200</PopulationDensity>
-    <SpawnActivationRadius>96</SpawnActivationRadius>
-    <StartAgentsGrouped>true</StartAgentsGrouped>
-    <EnhancedSoundAwareness>true</EnhancedSoundAwareness>
-    <FastForwardAtStart>true</FastForwardAtStart>
-    <GroupSize>16</GroupSize>
-    <AgentStartPosition>RandomLocation</AgentStartPosition>
-    <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>
-    <PauseDuringBloodmoon>true</PauseDuringBloodmoon>
-    <SpawnProtectionTime>300</SpawnProtectionTime>
-    <MaxSpawnedZombies>75%</MaxSpawnedZombies>
-    <MovementProcessors>
-        <ProcessorGroup Group="-1" SpeedScale="1" Color="Red" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk">
-            <Processor Type="StickToRoads" Distance="0" Power="0.01" />
-            <Processor Type="Wind" Distance="0" Power="0.005" />
-            <Processor Type="AvoidOtherGroup" Distance="20" Power="0.01" />
-            <Processor Type="AvoidSameGroup" Distance="5" Power="0.01" />
-            <Processor Type="WorldEvents" Distance="0" Power="0.6" />
-        </ProcessorGroup>
-        <ProcessorGroup Group="-1" SpeedScale="1" Color="Blue" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk">
-            <Processor Type="AvoidRoads" Distance="0" Power="0.01" />
-            <Processor Type="AvoidAnyGroup" Distance="25" Power="0.01" />
-            <Processor Type="Wind" Distance="0" Power="0.2" />
-            <Processor Type="AvoidOtherGroup" Distance="50" Power="0.01" />
-            <Processor Type="AvoidPOIs" Distance="50" Power="0.05" />
-            <Processor Type="WorldEvents" Distance="0" Power="0.6" />
-        </ProcessorGroup>
-        <ProcessorGroup Group="-1" SpeedScale="1" Color="Cyan" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk">
-            <Processor Type="StickToRoads" Distance="0" Power="0.01" />
-            <Processor Type="Wind" Distance="0" Power="0.005" />
-            <Processor Type="AvoidAnyGroup" Distance="5" Power="0.01" />
-            <Processor Type="WorldEvents" Distance="0" Power="0.6" />
-        </ProcessorGroup>
-        <ProcessorGroup Group="-1" SpeedScale="1" Color="Yellow" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk">
-            <Processor Type="StickToPOIs" Distance="0" Power="0.01" />
-            <Processor Type="AvoidSameGroup" Distance="15" Power="0.01" />
-            <Processor Type="Wind" Distance="0" Power="0.004" />
-            <Processor Type="AvoidOtherGroup" Distance="30" Power="0.01" />
-            <Processor Type="WorldEvents" Distance="0" Power="0.6" />
-        </ProcessorGroup>
-        <ProcessorGroup Group="-1" SpeedScale="1" Color="Green" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk">
-            <Processor Type="FlockSameGroup" Distance="15" Power="0.01" />
-            <Processor Type="WindInverted" Distance="0" Power="0.01" />
-            <Processor Type="AlignSameGroup" Distance="5" Power="0.01" />
-            <Processor Type="AvoidOtherGroup" Distance="50" Power="0.15" />
-            <Processor Type="AvoidSameGroup" Distance="10" Power="0.01" />
-            <Processor Type="WorldEvents" Distance="0" Power="0.6" />
-        </ProcessorGroup>
-    </MovementProcessors>
+  <Logging>
+    <General>true</General>
+    <Spawns>false</Spawns>
+    <Despawns>false</Despawns>
+    <EntityClassSelection>false</EntityClassSelection>
+    <Events>false</Events>
+  </Logging>
+  <RandomSeed>665992037</RandomSeed>
+  <PopulationDensity>200</PopulationDensity>
+  <SpawnActivationRadius>96</SpawnActivationRadius>
+  <StartAgentsGrouped>true</StartAgentsGrouped>
+  <EnhancedSoundAwareness>true</EnhancedSoundAwareness>
+  <FastForwardAtStart>true</FastForwardAtStart>
+  <GroupSize>16</GroupSize>
+  <AgentStartPosition>RandomLocation</AgentStartPosition>
+  <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>
+  <PauseDuringBloodmoon>true</PauseDuringBloodmoon>
+  <SpawnProtectionTime>300</SpawnProtectionTime>
+  <MaxSpawnedZombies>75%</MaxSpawnedZombies>
+  <MovementProcessors>
+    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="Red">
+      <Processor Type="StickToRoads" Distance="0" Power="0.01" />
+      <Processor Type="Wind" Distance="0" Power="0.005" />
+      <Processor Type="AvoidOtherGroup" Distance="80" Power="0.01" />
+      <Processor Type="AvoidSameGroup" Distance="5" Power="0.01" />
+      <Processor Type="WorldEvents" Distance="0" Power="0.6" />
+    </ProcessorGroup>
+    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="Blue">
+      <Processor Type="AvoidRoads" Distance="0" Power="0.005" />
+      <Processor Type="AvoidAnyGroup" Distance="25" Power="0.01" />
+      <Processor Type="Wind" Distance="0" Power="0.2" />
+      <Processor Type="AvoidPOIs" Distance="50" Power="0.005" />
+      <Processor Type="WorldEvents" Distance="0" Power="0.6" />
+    </ProcessorGroup>
+    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="Cyan">
+      <Processor Type="StickToRoads" Distance="0" Power="0.01" />
+      <Processor Type="Wind" Distance="0" Power="0.007" />
+      <Processor Type="AvoidAnyGroup" Distance="45" Power="0.01" />
+      <Processor Type="WorldEvents" Distance="0" Power="0.6" />
+    </ProcessorGroup>
+    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="Yellow">
+      <Processor Type="StickToPOIs" Distance="0" Power="0.008" />
+      <Processor Type="AvoidSameGroup" Distance="25" Power="0.01" />
+      <Processor Type="Wind" Distance="0" Power="0.005" />
+      <Processor Type="AvoidOtherGroup" Distance="25" Power="0.001" />
+      <Processor Type="WorldEvents" Distance="0" Power="0.6" />
+      <Processor Type="AlignSameGroup" Distance="45" Power="0.01" />
+    </ProcessorGroup>
+    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="Green">
+      <Processor Type="FlockSameGroup" Distance="15" Power="0.01" />
+      <Processor Type="WindInverted" Distance="0" Power="0.01" />
+      <Processor Type="AlignSameGroup" Distance="5" Power="0.01" />
+      <Processor Type="AvoidOtherGroup" Distance="50" Power="0.15" />
+      <Processor Type="AvoidSameGroup" Distance="10" Power="0.01" />
+      <Processor Type="WorldEvents" Distance="0" Power="0.6" />
+    </ProcessorGroup>
+    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="NoOverride" Color="#FF8000">
+      <Processor Type="FlockSameGroup" Distance="15" Power="0.01" />
+      <Processor Type="AlignSameGroup" Distance="5" Power="0.01" />
+      <Processor Type="AvoidSameGroup" Distance="25" Power="0.01" />
+      <Processor Type="WorldEvents" Distance="0" Power="0.6" />
+      <Processor Type="Wind" Distance="0" Power="0.01" />
+      <Processor Type="AvoidOtherGroup" Distance="70" Power="0.01" />
+    </ProcessorGroup>
+    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="NoOverride" Color="Yellow">
+      <Processor Type="StickToPOIs" Distance="0" Power="0.01" />
+      <Processor Type="AvoidSameGroup" Distance="25" Power="0.01" />
+      <Processor Type="Wind" Distance="0" Power="0.001" />
+      <Processor Type="AvoidOtherGroup" Distance="50" Power="0.01" />
+      <Processor Type="WorldEvents" Distance="0" Power="0.6" />
+    </ProcessorGroup>
+  </MovementProcessors>
 </WalkerSim>
