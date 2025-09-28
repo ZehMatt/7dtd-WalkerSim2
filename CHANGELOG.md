@@ -1,4 +1,11 @@
 # 0.9.12 (in progress)
+- Fix: Zombies digging should be fixed, hopefully.
+- Fix: Editor crash when supplying bad inputs.
+- Improve: Resizing the editor will now resize most elements accordingly.
+- Feature: Each movement system can now specify the walk speed after they are spawned, when agitated they use the specified setting from the game.
+- Feature: The command `walkersim show` now opens the in-game map and draws them there, when closed it will be disabled, use `walkersim map enable` to permanently enable the drawing. This feature still only works offline.
+- Feature: Added the xml setting `MaxSpawnedZombies` which controls how many WalkerSim can spawn, when using a percentage it will be the percentage of games server setting `MaxSpawnedZombies`, absolute values will override it entirely.
+- Change: Renamed `Movement Processors` to `Movement Systems` in the Editor, configuration remains unchanged with `MovementProcessors`.
 
 # 0.9.11
 - Fix: Simulation not pausing when the game is paused.
