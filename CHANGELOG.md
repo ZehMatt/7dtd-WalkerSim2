@@ -3,6 +3,7 @@
 - Fix: Editor crash when supplying bad inputs.
 - Fix: Sound events that have no instigator were ignored, ex.: falling trees now emit an event.
 - Improve: Resizing the editor will now resize most elements accordingly.
+- Improve: Agents that intersect with world/sound events will be no in an alert state for 30 seconds, when they spawn they will continue to be alert and chase to the location.
 - Feature: Each movement system can now specify the walk speed after they are spawned, when agitated they use the specified setting from the game.
 - Feature: The command `walkersim show` now opens the in-game map and draws them there, when closed it will be disabled, use `walkersim map enable` to permanently enable the drawing. This feature still only works offline.
 - Feature: Added the xml setting `MaxSpawnedZombies` which controls how many WalkerSim can spawn, when using a percentage it will be the percentage of games server setting `MaxSpawnedZombies`, absolute values will override it entirely.
