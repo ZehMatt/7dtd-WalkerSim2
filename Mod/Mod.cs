@@ -556,8 +556,11 @@ namespace WalkerSim
                 Logging.CondInfo(logEvents, "Alerting enemy {0} at {1} to noise at {2}, distance: {3}.",
                              ent.entityId, entPos, position, entDist);
 
+                // Prevent them from digging.
+                var heightOffset = new UnityEngine.Vector3(0, 1.5f, 0);
+
                 // Have them interested for for 2~ min, assuming 30 ticks a second.
-                ent.SetInvestigatePosition(position, 3600, true);
+                ent.SetInvestigatePosition(position + heightOffset, 3600, true);
             }
         }
 
