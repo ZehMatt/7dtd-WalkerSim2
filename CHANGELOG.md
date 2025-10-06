@@ -1,6 +1,7 @@
 # 0.9.12 (in progress)
 - Fix: Zombies digging should be fixed, hopefully.
 - Fix: Editor crash when supplying bad inputs.
+- Fix: Sound events that have no instigator were ignored, ex.: falling trees now emit an event.
 - Improve: Resizing the editor will now resize most elements accordingly.
 - Feature: Each movement system can now specify the walk speed after they are spawned, when agitated they use the specified setting from the game.
 - Feature: The command `walkersim show` now opens the in-game map and draws them there, when closed it will be disabled, use `walkersim map enable` to permanently enable the drawing. This feature still only works offline.
