@@ -455,16 +455,6 @@ namespace WalkerSim
                 return;
             }
 
-            if (instigator == null)
-            {
-                return;
-            }
-
-            if (!AIDirectorData.FindNoise(clipName, out AIDirectorData.Noise noise) || instigator is EntityEnemy)
-            {
-                return;
-            }
-
             var simulation = Simulation.Instance;
             if (simulation == null)
             {
@@ -479,20 +469,12 @@ namespace WalkerSim
 
             var logEvents = config.LoggingOpts.Events;
 
-            if (noise.heatMapStrength == 0.0f)
+            if (!AIDirectorData.FindNoise(clipName, out AIDirectorData.Noise noise))
             {
                 return;
             }
 
-            if (instigator != null)
-            {
-                if (instigator.IsIgnoredByAI())
-                {
-                    return;
-                }
-            }
-
-            var distance = noise.volume * volumeScale * 3.8f;
+            var distance = noise.volume * volumeScale * 3.3f;
             var normalizedHeatmapStrength = Math.Min(noise.heatMapStrength, 1.0f);
             var distanceScaled = distance * normalizedHeatmapStrength;
             var eventDuration = noise.heatMapWorldTimeToLive / 60;
@@ -516,6 +498,16 @@ namespace WalkerSim
                                volumeScale,
                                distance,
                                distanceScaled);
+
+            if (noise.heatMapStrength == 0.0f)
+            {
+                return;
+            }
+
+            if (instigator != null && instigator.IsIgnoredByAI())
+            {
+                return;
+            }
 
             simulation.AddSoundEvent(VectorUtils.ToSim(position), distanceScaled, eventDuration);
 
