@@ -1,4 +1,4 @@
-# 0.9.12 (in progress)
+# 0.9.12
 - Fix: Zombies digging should be fixed, hopefully.
 - Fix: Editor crash when supplying bad inputs.
 - Fix: Sound events that have no instigator were ignored, ex.: falling trees now emit an event.
