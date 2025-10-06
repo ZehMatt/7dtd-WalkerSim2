@@ -10,6 +10,8 @@ namespace WalkerSim
             public Agent Agent;
             public Config.PostSpawnBehavior PostSpawnBehavior;
             public int ActivatorEntityId;
+            public Agent.SubState SubState;
+            public Vector3 AlertPosition;
         }
 
         public delegate int AgentSpawnHandler(Simulation simulation, SpawnData agent);
@@ -175,7 +177,9 @@ namespace WalkerSim
                     {
                         Agent = agent,
                         PostSpawnBehavior = processorGroup != null ? processorGroup.PostSpawnBehavior : Config.PostSpawnBehavior.Wander,
-                        ActivatorEntityId = player.EntityId
+                        ActivatorEntityId = player.EntityId,
+                        SubState = agent.CurrentSubState,
+                        AlertPosition = agent.AlertPosition,
                     };
                     _pendingSpawns.Enqueue(spawnData);
 

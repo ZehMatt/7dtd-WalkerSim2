@@ -633,9 +633,10 @@ namespace WalkerSim
             }
 
             // Post spawn behavior.
-            if (spawnData.PostSpawnBehavior == Config.PostSpawnBehavior.Wander)
+            var isAlerted = spawnData.SubState == Agent.SubState.Alerted;
+            if (spawnData.PostSpawnBehavior == Config.PostSpawnBehavior.Wander || isAlerted)
             {
-                var destPos = worldPos + (rot * 80);
+                var destPos = isAlerted ? VectorUtils.ToUnity(spawnData.AlertPosition) : worldPos + (rot * 80);
 
                 // Adjust position by getting terrain height at the destination, they might dig if the destination is
                 // below the terrain.
@@ -644,12 +645,14 @@ namespace WalkerSim
 
                 destPos.y = combinedTargetHeight;
 
-                spawnedAgent.SetInvestigatePosition(destPos, 6000, false);
+                spawnedAgent.SetInvestigatePosition(destPos, 6000, isAlerted);
                 Logging.CondInfo(config.LoggingOpts.Spawns,
-                    "Spawned agent {0}, entity id: {1} wandering to {2}",
+                    "Spawned agent {0}, entity id: {1} wandering to {2}, alert: {3}",
                     agent.Index,
                     spawnedAgent.entityId,
-                    destPos);
+                    destPos,
+                    isAlerted
+                    );
             }
             else if (spawnData.PostSpawnBehavior == Config.PostSpawnBehavior.ChaseActivator)
             {

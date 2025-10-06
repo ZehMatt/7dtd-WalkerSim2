@@ -5,6 +5,16 @@ namespace WalkerSim
 {
     internal static class Serialization
     {
+
+        public static void WriteByte(BinaryWriter writer, byte value, bool compressed = true)
+        {
+            writer.Write(value);
+        }
+        public static byte ReadByte(BinaryReader reader, bool compressed = true)
+        {
+            return reader.ReadByte();
+        }
+
         public static void WriteUInt32(BinaryWriter writer, UInt32 value, bool compressed = true)
         {
             // TODO: Variable length integer encoding.

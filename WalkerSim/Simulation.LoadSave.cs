@@ -14,7 +14,7 @@ namespace WalkerSim
         private const uint SaveMagic = 0x4D534B57; // WKSM
 
         // Increment this in case of a breaking change in the save format.
-        private const uint SaveVersion = 6;
+        private const uint SaveVersion = 7;
 
         private void SaveState(State state, BinaryWriter writer)
         {
@@ -101,6 +101,9 @@ namespace WalkerSim
                 Serialization.WriteInt32(writer, (int)agentState);
                 Serialization.WriteUInt32(writer, agent.LastUpdateTick);
                 Serialization.WriteUInt32(writer, agent.LastSpawnTick);
+                Serialization.WriteByte(writer, (byte)agent.CurrentSubState);
+                Serialization.WriteUInt32(writer, agent.AlertedTick);
+                Serialization.WriteVector3(writer, agent.AlertPosition);
             }
         }
 
@@ -242,6 +245,9 @@ namespace WalkerSim
                 agent.CurrentState = (Agent.State)Serialization.ReadInt32(reader);
                 agent.LastUpdateTick = Serialization.ReadUInt32(reader);
                 agent.LastSpawnTick = Serialization.ReadUInt32(reader);
+                agent.CurrentSubState = (Agent.SubState)Serialization.ReadByte(reader);
+                agent.AlertedTick = Serialization.ReadUInt32(reader);
+                agent.AlertPosition = Serialization.ReadVector3(reader);
                 agents.Add(agent);
 
                 if (agent.CurrentState == Agent.State.Active)

@@ -592,7 +592,7 @@ namespace WalkerSim
             var events = state.EventsTemp;
 
             Vector3 sum = Vector3.Zero;
-
+            Vector3 eventCenter = Vector3.Zero;
             float n = 0;
             for (int i = 0; i < events.Count; i++)
             {
@@ -605,6 +605,7 @@ namespace WalkerSim
                         continue;
                     }
 
+                    eventCenter += ev.Position;
                     var delta = ev.Position - agent.Position;
                     delta.Z = 0;
 
@@ -617,6 +618,11 @@ namespace WalkerSim
             if (n > 0)
             {
                 sum /= n;
+                eventCenter /= n;
+
+                agent.CurrentSubState = Agent.SubState.Alerted;
+                agent.AlertedTick = state.Ticks;
+                agent.AlertPosition = eventCenter;
             }
 
             return sum * power;

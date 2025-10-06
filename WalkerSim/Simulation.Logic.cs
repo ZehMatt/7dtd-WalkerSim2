@@ -205,9 +205,23 @@ namespace WalkerSim
                 deltaTime *= 2.0f;
             }
 
+            UpdateAwareness(agent);
             ApplyMovement(agent, deltaTime, processorGroup.SpeedScale);
 
             Warp(agent);
+        }
+
+        public void UpdateAwareness(Agent agent)
+        {
+            if (agent.CurrentSubState == Agent.SubState.Alerted)
+            {
+                var ticksAlerted = _state.Ticks - agent.AlertedTick;
+
+                if (ticksAlerted > SecondsToTicks(30))
+                {
+                    agent.CurrentSubState = Agent.SubState.None;
+                }
+            }
         }
 
         public void ApplyMovement(Agent agent, float deltaTime, float speedScale)

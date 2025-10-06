@@ -11,6 +11,12 @@ namespace WalkerSim
             Respawning,
         }
 
+        public enum SubState
+        {
+            None,
+            Alerted,
+        }
+
         public int Index;
         public int Group;
         public Vector3 Velocity;
@@ -20,6 +26,9 @@ namespace WalkerSim
         public State CurrentState = State.Dead;
         public uint LastUpdateTick = 0;
         public uint LastSpawnTick = 0;
+        public SubState CurrentSubState = SubState.None;
+        public uint AlertedTick = 0;
+        public Vector3 AlertPosition;
 
         public Agent()
         {
