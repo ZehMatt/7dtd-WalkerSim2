@@ -1,7 +1,7 @@
 # 0.9.14 (in progress)
 
 # 0.9.13
-- Fix: Ferals not dying at 4 AM, the spawner source was set too late.
+- Fix: Ferals not dying at sunrise, the spawner source was set too late.
 
 # 0.9.12
 - Fix: Zombies digging should be fixed, hopefully.
