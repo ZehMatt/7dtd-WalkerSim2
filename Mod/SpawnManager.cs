@@ -608,15 +608,15 @@ namespace WalkerSim
                 return -1;
             }
 
-            // Spawn.
-            world.SpawnEntityInWorld(spawnedAgent);
-
             // Update attributes.
             spawnedAgent.bIsChunkObserver = true;
             spawnedAgent.SetSpawnerSource(EnumSpawnerSource.Biome);
             spawnedAgent.ticksNoPlayerAdjacent = 0;
             spawnedAgent.bMovementRunning = false;
             spawnedAgent.moveSpeed = 1.0f;
+
+            // Spawn.
+            world.SpawnEntityInWorld(spawnedAgent);
 
             // Because some Mods use the entitygroups.xml to do normal NPCs, we have to check this first.
             if (spawnedAgent is EntityZombie spawnedZombie)
