@@ -1,4 +1,4 @@
-# 0.9.13 (in progress)
+# 0.9.13
 - Fix: Ferals not dying at 4 AM, the spawner source was set too late.
 
 # 0.9.12
