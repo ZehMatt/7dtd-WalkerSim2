@@ -575,20 +575,20 @@ namespace WalkerSim
             if (!simulation.Active.ContainsKey(entity.entityId))
             {
                 // Apply this only to zombies spawned by the simulation.
-                Logging.Info("Entity {0} is not managed by the simulation, skipping wandering speed override.", entity.entityId);
+                Logging.DbgInfo("Entity {0} is not managed by the simulation, skipping wandering speed override.", entity.entityId);
 
                 return;
             }
 
             if (entity.IsAlert)
             {
-                Logging.Info("Entity {0} is alert, skipping wandering speed override.", entity.entityId);
+                Logging.DbgInfo("Entity {0} is alert, skipping wandering speed override.", entity.entityId);
                 return;
             }
 
             if (entity.GetAttackTarget() != null)
             {
-                Logging.Info("Entity {0} has an attack target, skipping wandering speed override.", entity.entityId);
+                Logging.DbgInfo("Entity {0} has an attack target, skipping wandering speed override.", entity.entityId);
                 return;
             }
 
@@ -599,7 +599,7 @@ namespace WalkerSim
                 return;
             }
 
-            //Logging.Info("Selected wandering speed override {0} for entity {1}.", wanderSpeed, entity.entityId);
+            Logging.DbgInfo("Selected wandering speed override {0} for entity {1}.", wanderSpeed, entity.entityId);
 
             int walkSpeedSetting = (int)wanderSpeed - 1;
 
@@ -627,7 +627,7 @@ namespace WalkerSim
 
             var newSpeed = EffectManager.GetValue(PassiveEffects.RunSpeed, null, moveSpeed, entity, null, default(FastTags<TagGroup.Global>), true, true, true, true, true, 1, true, false);
 
-            //Logging.Info("Overriding wandering speed for entity {0} from {1} to {2}.", entity.entityId, speed, newSpeed);
+            Logging.DbgInfo("Overriding wandering speed for entity {0} from {1} to {2}.", entity.entityId, speed, newSpeed);
 
             speed = newSpeed;
         }

@@ -56,7 +56,7 @@
       <Processor Type="AvoidSameGroup" Distance="10" Power="0.01" />
       <Processor Type="WorldEvents" Distance="0" Power="0.6" />
     </ProcessorGroup>
-    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="NoOverride" Color="#FF8000">
+    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#FF8000">
       <Processor Type="FlockSameGroup" Distance="15" Power="0.01" />
       <Processor Type="AlignSameGroup" Distance="5" Power="0.01" />
       <Processor Type="AvoidSameGroup" Distance="25" Power="0.01" />
@@ -64,7 +64,7 @@
       <Processor Type="Wind" Distance="0" Power="0.01" />
       <Processor Type="AvoidOtherGroup" Distance="70" Power="0.01" />
     </ProcessorGroup>
-    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="NoOverride" Color="Yellow">
+    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="Yellow">
       <Processor Type="StickToPOIs" Distance="0" Power="0.01" />
       <Processor Type="AvoidSameGroup" Distance="25" Power="0.01" />
       <Processor Type="Wind" Distance="0" Power="0.001" />
