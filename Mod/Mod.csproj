@@ -74,10 +74,6 @@
       <HintPath>..\Binaries\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.IMGUIModule">
-      <HintPath>..\Binaries\UnityEngine.IMGUIModule.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="UnityEngine.ImageConversionModule">
       <HintPath>..\Binaries\UnityEngine.ImageConversionModule.dll</HintPath>
       <Private>False</Private>
