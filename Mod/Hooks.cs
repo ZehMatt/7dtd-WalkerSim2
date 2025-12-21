@@ -2,8 +2,7 @@ using HarmonyLib;
 
 namespace WalkerSim
 {
-    [HarmonyPatch(typeof(AIDirectorWanderingHordeComponent))]
-    [HarmonyPatch("StartSpawning")]
+    [HarmonyPatch(typeof(AIDirectorWanderingHordeComponent), nameof(AIDirectorWanderingHordeComponent.StartSpawning))]
     class HordeSpawnHook
     {
         static bool Prefix(AIDirectorWanderingHordeComponent __instance, AIWanderingHordeSpawner.SpawnType _spawnType)
@@ -20,8 +19,7 @@ namespace WalkerSim
         }
     }
 
-    [HarmonyPatch(typeof(SpawnManagerBiomes))]
-    [HarmonyPatch("SpawnUpdate")]
+    [HarmonyPatch(typeof(SpawnManagerBiomes), nameof(SpawnManagerBiomes.SpawnUpdate))]
     class BiomeSpawnerHook
     {
         static void Prefix(string _spawnerName, ref bool _isSpawnEnemy, ChunkAreaBiomeSpawnData _spawnData)
@@ -34,8 +32,7 @@ namespace WalkerSim
         }
     }
 
-    [HarmonyPatch(typeof(AIDirector))]
-    [HarmonyPatch("NotifyNoise")]
+    [HarmonyPatch(typeof(AIDirector), nameof(AIDirector.NotifyNoise))]
     class NotifyNoiseHook
     {
         static void Prefix(Entity instigator, UnityEngine.Vector3 position, string clipName, float volumeScale)
@@ -44,8 +41,7 @@ namespace WalkerSim
         }
     }
 
-    [HarmonyPatch(typeof(XUiC_MapArea))]
-    [HarmonyPatch("updateMapSection")]
+    [HarmonyPatch(typeof(XUiC_MapArea), nameof(XUiC_MapArea.updateMapSection))]
     class MapAreaDrawHook
     {
         // public void updateMapSection(int mapStartX, int mapStartZ, int mapEndX, int mapEndZ, int drawnMapStartX, int drawnMapStartZ, int drawnMapEndX, int drawnMapEndZ)
@@ -55,8 +51,7 @@ namespace WalkerSim
         }
     }
 
-    [HarmonyPatch(typeof(XUiC_MapArea))]
-    [HarmonyPatch("OnClose")]
+    [HarmonyPatch(typeof(XUiC_MapArea), nameof(XUiC_MapArea.OnClose))]
     class MapAreaCloseHook
     {
         // public void updateMapSection(int mapStartX, int mapStartZ, int mapEndX, int mapEndZ, int drawnMapStartX, int drawnMapStartZ, int drawnMapEndX, int drawnMapEndZ)
@@ -66,8 +61,7 @@ namespace WalkerSim
         }
     }
 
-    [HarmonyPatch(typeof(EntityHuman))]
-    [HarmonyPatch("GetMoveSpeed")]
+    [HarmonyPatch(typeof(EntityHuman), nameof(EntityHuman.GetMoveSpeed))]
     class EntityHumanGetMoveSpeedHook
     {
         static void Postfix(EntityHuman __instance, ref float __result)
@@ -76,9 +70,35 @@ namespace WalkerSim
         }
     }
 
-    [HarmonyPatch(typeof(EntityHuman))]
-    [HarmonyPatch("GetMoveSpeedAggro")]
+    [HarmonyPatch(typeof(EntityAlive), nameof(EntityAlive.GetMoveSpeed))]
+    class EntityAliveGetMoveSpeedHook
+    {
+        static void Postfix(EntityHuman __instance, ref float __result)
+        {
+            WalkerSimMod.GetZombieWanderingSpeed(__instance, ref __result);
+        }
+    }
+
+    [HarmonyPatch(typeof(EntityHuman), nameof(EntityHuman.GetMoveSpeedAggro))]
     class EntityHumanGetMoveSpeedAggroHook
+    {
+        static void Postfix(EntityHuman __instance, ref float __result)
+        {
+            WalkerSimMod.GetZombieWanderingSpeed(__instance, ref __result);
+        }
+    }
+
+    [HarmonyPatch(typeof(EntityAlive), nameof(EntityAlive.GetMoveSpeedAggro))]
+    class EntityAliveGetMoveSpeedAggroHook
+    {
+        static void Postfix(EntityHuman __instance, ref float __result)
+        {
+            WalkerSimMod.GetZombieWanderingSpeed(__instance, ref __result);
+        }
+    }
+
+    [HarmonyPatch(typeof(EntityAlive), nameof(EntityAlive.GetMoveSpeedPanic))]
+    class EntityAliveGetMoveSpeedPanic
     {
         static void Postfix(EntityHuman __instance, ref float __result)
         {
