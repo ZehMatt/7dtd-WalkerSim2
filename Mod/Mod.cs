@@ -474,7 +474,7 @@ namespace WalkerSim
                 return;
             }
 
-            var distance = noise.volume * volumeScale * 3.3f;
+            var distance = (noise.volume * volumeScale * 3.0f) * config.SoundDistanceScale;
             var normalizedHeatmapStrength = Math.Min(noise.heatMapStrength, 1.0f);
             var distanceScaled = distance * normalizedHeatmapStrength;
             var eventDuration = noise.heatMapWorldTimeToLive / 60;

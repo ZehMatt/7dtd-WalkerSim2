@@ -1,4 +1,6 @@
 # 0.9.14 (in progress)
+- Change: Support for the new 2.5 version of the game.
+- Improved: The provided WalkerSim.xml has now all groups set `PostSpawnWanderSpeed` to `Walk` for consistency.
 
 # 0.9.13
 - Fix: Ferals not dying at sunrise, the spawner source was set too late.

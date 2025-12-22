@@ -175,6 +175,7 @@ namespace WalkerSim.Editor
             SetToolTip(inputActivationRadius, "The radius for the player in blocks/meters for when agents will spawn/despawn in the game world.\nDefault is 96, setting this too high can cause a lot of spawn failures, setting it to a lower value is not recommended.\n\nNOTE: This should not exceed the maximum view distance from serversettings.xml, view distance is specified in chunks and each chunk is 16x16x16.");
             SetToolTip(inputSoundAware, "Increases the awareness of \"spawned zombies\" to sound, this will make them react to sound such as gun shots causing them to wander towards the source.\n\nNOTE: Recommended to be enabled, the game is doing a poor job at this.");
             SetToolTip(inputWanderSpeed, "When the agent is spawned this can override the game setting for their movement speed, this only applies to them while they are wandering.\nOnce they are alerted or start attacking they will use the game setting, if they start wandering again this will apply again.");
+            SetToolTip(inputSoundDistanceScale, "Scale for the distance the sounds travel in the simulation.");
         }
 
         public void Message(Logging.Level level, string message)
@@ -247,6 +248,7 @@ namespace WalkerSim.Editor
             inputMovementSpeed.MouseWheel += ScrollHandlerFunction;
             inputSpawnProtectionTime.MouseWheel += ScrollHandlerFunction;
             inputActivationRadius.MouseWheel += ScrollHandlerFunction;
+            inputSoundDistanceScale.MouseWheel += ScrollHandlerFunction;
         }
 
         private void SetupSpeedModifiers()
@@ -377,6 +379,7 @@ namespace WalkerSim.Editor
             CurrentConfig.StartAgentsGrouped = inputStartGrouped.Checked;
             CurrentConfig.FastForwardAtStart = inputFastForward.Checked;
             CurrentConfig.PauseDuringBloodmoon = inputPauseDuringBloodmoon.Checked;
+            CurrentConfig.SoundDistanceScale = (float)inputSoundDistanceScale.Value;
 
             var startChoice = inputStartPosition.SelectedIndex;
             if (startChoice != -1)
@@ -412,6 +415,8 @@ namespace WalkerSim.Editor
             inputRespawnPosition.SelectedIndexChanged += (sender, arg) => SetConfigValues(true);
             inputPostSpawnBehavior.SelectedIndexChanged += (sender, arg) => SetConfigValues(false);
             inputActivationRadius.ValueChanged += (sender, arg) => SetConfigValues(false);
+            inputSoundAware.CheckedChanged += (sender, arg) => SetConfigValues(false);
+            inputSoundDistanceScale.ValueChanged += (sender, arg) => SetConfigValues(false);
         }
 
         private void UpdateConfigFields()
@@ -430,6 +435,7 @@ namespace WalkerSim.Editor
             inputFastForward.Checked = CurrentConfig.FastForwardAtStart;
             inputPauseDuringBloodmoon.Checked = CurrentConfig.PauseDuringBloodmoon;
             inputSpawnProtectionTime.Value = CurrentConfig.SpawnProtectionTime;
+            inputSoundDistanceScale.Value = (decimal)CurrentConfig.SoundDistanceScale;
 
             var spawnChoice = Utils.GetWorldLocationString(CurrentConfig.StartPosition);
             inputStartPosition.SelectedIndex = inputStartPosition.FindString(spawnChoice);

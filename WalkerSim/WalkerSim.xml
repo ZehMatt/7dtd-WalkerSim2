@@ -8,10 +8,11 @@
     <Events>false</Events>
   </Logging>
   <RandomSeed>665992037</RandomSeed>
-  <PopulationDensity>200</PopulationDensity>
+  <PopulationDensity>180</PopulationDensity>
   <SpawnActivationRadius>96</SpawnActivationRadius>
   <StartAgentsGrouped>true</StartAgentsGrouped>
   <EnhancedSoundAwareness>true</EnhancedSoundAwareness>
+  <SoundDistanceScale>1.0</SoundDistanceScale>
   <FastForwardAtStart>true</FastForwardAtStart>
   <GroupSize>16</GroupSize>
   <AgentStartPosition>RandomLocation</AgentStartPosition>
