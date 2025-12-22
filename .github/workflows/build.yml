@@ -3,7 +3,7 @@ on: [push, pull_request]
 permissions:
   contents: write
 env:
-  DEPOT_DOWNLOADER_VERSION: "2.7.4"
+  DEPOT_DOWNLOADER_VERSION: "3.4.0"
   APP_ID: "294420"
   DEPOT_ID: "294422"
   MANIFEST_ID: "4777960841829662519"
