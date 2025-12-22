@@ -1,6 +1,8 @@
 # 0.9.14 (in progress)
-- Change: Support for the new 2.5 version of the game.
 - Improved: The provided WalkerSim.xml has now all groups set `PostSpawnWanderSpeed` to `Walk` for consistency.
+- Feature: Added `SoundDistanceScale`, this can control the distance to how far sounds reach, 1.0 is default, 0.5 would be half the distance.
+- Change: Support for the new 2.5 version of the game.
+- Change: Decreased population density from 200 to 180 in the provided configuration.
 
 # 0.9.13
 - Fix: Ferals not dying at sunrise, the spawner source was set too late.
