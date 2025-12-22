@@ -170,6 +170,9 @@ namespace WalkerSim
         [XmlElement("EnhancedSoundAwareness")]
         public bool EnhancedSoundAwareness = true;
 
+        [XmlElement("SoundDistanceScale")]
+        public float SoundDistanceScale = 1.0f;
+
         [XmlElement("FastForwardAtStart")]
         public bool FastForwardAtStart = true;
 
@@ -272,6 +275,12 @@ namespace WalkerSim
                 StartPosition = WorldLocation.RandomLocation,
                 RespawnPosition = WorldLocation.RandomBorderLocation,
                 StartAgentsGrouped = true,
+                EnhancedSoundAwareness = true,
+                SoundDistanceScale = 1.0f,
+                FastForwardAtStart = true,
+                PauseDuringBloodmoon = true,
+                SpawnProtectionTime = 300,
+                MaxSpawnedZombies = "75%",
                 Processors = new List<MovementProcessorGroup>
                 {
                     new MovementProcessorGroup {

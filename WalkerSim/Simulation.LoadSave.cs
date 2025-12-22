@@ -14,7 +14,8 @@ namespace WalkerSim
         private const uint SaveMagic = 0x4D534B57; // WKSM
 
         // Increment this in case of a breaking change in the save format.
-        private const uint SaveVersion = 7;
+        // Version 8: New configuration SoundDistanceScale.
+        private const uint SaveVersion = 8;
 
         private void SaveState(State state, BinaryWriter writer)
         {
