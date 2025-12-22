@@ -1,3 +1,5 @@
+# 0.9.15 (in progress)
+
 # 0.9.14
 - Improved: The provided WalkerSim.xml has now all groups set `PostSpawnWanderSpeed` to `Walk` for consistency.
 - Feature: Added `SoundDistanceScale`, this can control the distance to how far sounds reach, 1.0 is default, 0.5 would be half the distance.
