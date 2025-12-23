@@ -1,21 +1,12 @@
 using System.Diagnostics;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace WalkerSim
 {
     internal partial class Simulation
     {
-        // Singleton instances to avoid GCing.
-        private FixedBufferList<Agent> _nearby = new FixedBufferList<Agent>(Limits.MaxQuerySize);
-
         // If DeterministicLoop is set to true this will be the amount of how many agents it will update per tick.
         private const uint MaxUpdateCountPerTick = 2000;
-
-        private ThreadLocal<FixedBufferList<Agent>> QueryBuffer = new ThreadLocal<FixedBufferList<Agent>>(() =>
-        {
-            return new FixedBufferList<Agent>(Limits.MaxQuerySize);
-        });
 
         private TimeMeasurement _simTime = new TimeMeasurement();
 
@@ -150,27 +141,6 @@ namespace WalkerSim
             // Sanity check, omitted for release builds.
             CheckPositionInBounds(agent.Position);
 
-            float maxNeighborDistance = _state.MaxNeighbourDistance;
-
-            // When single threaded we use the local buffer.
-            FixedBufferList<Agent> nearby = _nearby;
-
-            if (EditorMode)
-            {
-                // Use the thread local buffer for editor mode.
-                nearby = QueryBuffer.Value;
-            }
-            else if (_isFastAdvancing)
-            {
-                // It seems we can't use QueryBuffer for Unity/Mono, this doesn't seem to be working,
-                // and the instance is never set, allocate temporary one.
-                nearby = new FixedBufferList<Agent>(Limits.MaxQuerySize);
-            }
-
-            nearby.Clear();
-
-            QueryCellsLockFree(agent.Position, agent.Index, maxNeighborDistance, nearby);
-
             var curVel = agent.Velocity * 0.97f;
 
             // Check if curVel is near zero.
@@ -186,7 +156,7 @@ namespace WalkerSim
                 {
                     var processor = processorGroup.Entries[i];
 
-                    var addVel = processor.Handler(_state, agent, nearby, processor.DistanceSqr, processor.Power);
+                    var addVel = processor.Handler(this, _state, agent, processor.Distance, processor.Power);
                     addVel.Validate();
 
                     curVel += addVel;
@@ -263,22 +233,23 @@ namespace WalkerSim
 
             if (_state.Ticks >= _state.TickNextWindChange)
             {
-                // Calculate new direction within 90 degrees of current direction
+                // Use Gaussian-like distribution for more natural wind changes
+                // Combine two random values to approximate normal distribution (central limit theorem)
                 var currentAngle = System.Math.Atan2(_state.WindDir.Y, _state.WindDir.X);
-                var maxAngleChange = System.Math.PI / 2; // 90 degrees max
-                var newAngle = currentAngle + (prng.NextDouble() - 0.5) * maxAngleChange;
+                var rand1 = prng.NextDouble() - 0.5; // [-0.5, 0.5]
+                var rand2 = prng.NextDouble() - 0.5; // [-0.5, 0.5]
+                var gaussianLike = (rand1 + rand2) * 2.0; // Approximate normal distribution centered at 0, range ~[-2, 2] but mostly [-1, 1]
+
+                var maxAngleChange = System.Math.PI / 3; // 60 degrees max
+                var angleOffset = gaussianLike * maxAngleChange;
+                var newAngle = currentAngle + angleOffset;
 
                 _state.WindDirTarget.X = (float)System.Math.Cos(newAngle);
                 _state.WindDirTarget.Y = (float)System.Math.Sin(newAngle);
 
-                // Keep original timing logic
-#if true
-                var minWindTime = MinutesToTicks(4);
-                var maxWindTime = MinutesToTicks(8);
-#else
-                var minWindTime = SecondsToTicks(5);
-                var maxWindTime = SecondsToTicks(10);
-#endif
+                var minWindTime = MinutesToTicks(1);
+                var maxWindTime = MinutesToTicks(3);
+
                 _state.TickNextWindChange = _state.Ticks + (uint)prng.Next(minWindTime, maxWindTime);
             }
 
