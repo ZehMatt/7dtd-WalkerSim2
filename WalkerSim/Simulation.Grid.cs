@@ -5,12 +5,13 @@ namespace WalkerSim
     internal partial class Simulation
     {
         const int CellSize = 96;
+        private int _cellCountY;
 
         void SetupGrid()
         {
             var cellCountX = (int)System.Math.Ceiling(WorldSize.X / CellSize);
-            var cellCountY = (int)System.Math.Ceiling(WorldSize.Y / CellSize);
-            var totalCells = cellCountX * cellCountY;
+            _cellCountY = (int)System.Math.Ceiling(WorldSize.Y / CellSize);
+            var totalCells = cellCountX * _cellCountY;
 
             var grid = new List<int>[totalCells];
             for (int i = 0; i < totalCells; i++)
@@ -41,8 +42,7 @@ namespace WalkerSim
             int cellX = (int)(remapX / CellSize);
             int cellY = (int)(remapY / CellSize);
 
-            var cellCountY = (int)System.Math.Ceiling(WorldSize.Y / CellSize);
-            return cellX * cellCountY + cellY;
+            return cellX * _cellCountY + cellY;
         }
 
         int GetCellIndex(Vector3 pos)
@@ -63,15 +63,20 @@ namespace WalkerSim
             {
                 if (agent.CellIndex != -1)
                 {
-                    // Remove from old cell.
                     var oldCellList = grid[agent.CellIndex];
+                    var indexInList = oldCellList.IndexOf(agent.Index);
 #if DEBUG
-                    if (!oldCellList.Contains(agent.Index))
+                    if (indexInList == -1)
                     {
                         throw new System.Exception("Bug");
                     }
 #endif
-                    oldCellList.Remove(agent.Index);
+                    var lastIndex = oldCellList.Count - 1;
+                    if (indexInList != lastIndex)
+                    {
+                        oldCellList[indexInList] = oldCellList[lastIndex];
+                    }
+                    oldCellList.RemoveAt(lastIndex);
                 }
 
                 if (newCellIndex < 0)
@@ -130,8 +135,7 @@ namespace WalkerSim
         {
             var grid = _state.Grid;
 
-            var cellCountY = (int)System.Math.Ceiling(WorldSize.Y / CellSize);
-            var cellIndex = cellX * cellCountY + cellY;
+            var cellIndex = cellX * _cellCountY + cellY;
             if (cellIndex < 0 || cellIndex >= grid.Length)
             {
                 return;
@@ -212,8 +216,7 @@ namespace WalkerSim
         {
             var grid = _state.Grid;
 
-            var cellCountY = (int)System.Math.Ceiling(WorldSize.Y / CellSize);
-            var cellIndex = cellX * cellCountY + cellY;
+            var cellIndex = cellX * _cellCountY + cellY;
             if (cellIndex < 0 || cellIndex >= grid.Length)
             {
                 return count;
@@ -296,14 +299,13 @@ namespace WalkerSim
             int cellRadius = (int)(maxDistance / CellSize) + 1;
 
             var maxDistSqr = maxDistance * maxDistance;
-            var cellCountY = (int)System.Math.Ceiling(WorldSize.Y / CellSize);
 
             // Iterate over all cells in the bounding box defined by maxDistance
             for (int x = -cellRadius; x <= cellRadius; x++)
             {
                 for (int y = -cellRadius; y <= cellRadius; y++)
                 {
-                    var cellIndex = (cellX + x) * cellCountY + (cellY + y);
+                    var cellIndex = (cellX + x) * _cellCountY + (cellY + y);
                     if (cellIndex < 0 || cellIndex >= grid.Length)
                         continue;
 
@@ -346,14 +348,13 @@ namespace WalkerSim
             int cellRadius = (int)(maxDistance / CellSize) + 1;
 
             var maxDistSqr = maxDistance * maxDistance;
-            var cellCountY = (int)System.Math.Ceiling(WorldSize.Y / CellSize);
 
             // Iterate over all cells in the bounding box defined by maxDistance
             for (int x = -cellRadius; x <= cellRadius; x++)
             {
                 for (int y = -cellRadius; y <= cellRadius; y++)
                 {
-                    var cellIndex = (cellX + x) * cellCountY + (cellY + y);
+                    var cellIndex = (cellX + x) * _cellCountY + (cellY + y);
                     if (cellIndex < 0 || cellIndex >= grid.Length)
                         continue;
 
