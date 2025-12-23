@@ -353,6 +353,9 @@ namespace WalkerSim
                 state.MapData = _state.MapData;
                 _state = state;
 
+                // Recalculate cached grid dimensions
+                _cellCountY = (int)System.Math.Ceiling(WorldSize.Y / CellSize);
+
                 SetupProcessors();
             }
             catch (Exception ex)
