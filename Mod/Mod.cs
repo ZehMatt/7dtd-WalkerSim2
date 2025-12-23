@@ -38,8 +38,53 @@ namespace WalkerSim
         {
         }
 
+        internal static string GetModFolder()
+        {
+            try
+            {
+                // Get the assembly path.
+                var executingAssembly = System.Reflection.Assembly.GetExecutingAssembly();
+                Logging.Out("Executing Assembly: {0}", executingAssembly.FullName);
+
+                var assemblyLocation = executingAssembly.Location;
+                Logging.Out("Assembly Location: {0}", assemblyLocation);
+
+                if (!string.IsNullOrEmpty(assemblyLocation))
+                {
+                    var assemblyPath = System.IO.Path.GetDirectoryName(assemblyLocation);
+
+                    return assemblyPath;
+                }
+                else
+                {
+                    Logging.Warn("Assembly location is empty, trying to get path via ModManager...");
+
+                    var modInfo = ModManager.GetModForAssembly(executingAssembly);
+                    if (modInfo == null)
+                    {
+                        Logging.Err("Failed to get mod info for assembly, this is strange, bother TFP to fix this.");
+                        return string.Empty;
+                    }
+
+                    // Normalize the mod path.
+                    var modPath = System.IO.Path.GetFullPath(modInfo.Path);
+                    Logging.Out("Mod Info Path: {0}", modPath);
+
+                    return modPath;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logging.Out("Getting the path to the mod failed.");
+                Logging.Exception(ex);
+
+                return string.Empty;
+            }
+        }
+
         internal static Config LoadConfiguration()
         {
+            // Attempt to load world specific config first.
             var worldFolder = PathAbstractions.WorldsSearchPaths.GetLocation(GamePrefs.GetString(EnumGamePrefs.GameWorld)).FullPath;
             Logging.Out("World Folder: {0}", worldFolder);
 
@@ -49,10 +94,14 @@ namespace WalkerSim
                 Logging.Out("Found WalkerSim config for world, loading configuration from: {0}", worldFolderConfig);
                 return Config.LoadFromFile(worldFolderConfig);
             }
+            else
+            {
+                Logging.Out("No world specific WalkerSim config found at: {0}", worldFolderConfig);
+            }
 
-            // Get the assembly path.
-            var assemblyPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            var defaultConfigPath = System.IO.Path.Combine(assemblyPath, "WalkerSim.xml");
+            // Load default config from mod folder.
+            var modPath = GetModFolder();
+            var defaultConfigPath = System.IO.Path.Combine(modPath, "WalkerSim.xml");
 
             if (System.IO.File.Exists(defaultConfigPath))
             {
@@ -66,6 +115,7 @@ namespace WalkerSim
                 return config;
             }
 
+            // Everything failed, use defaults, this will not be great for the user.
             Logging.Warn("No config found, using defaults.");
             return Config.GetDefault();
         }

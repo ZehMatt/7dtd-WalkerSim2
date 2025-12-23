@@ -95,7 +95,7 @@ namespace WalkerSim.Tests
                 var randomPos = Utils.GetRandomVector3(prng, simA.WorldMins, simA.WorldMaxs);
 
                 var queryA = simA.QueryCells(randomPos, -1, 500.0f);
-                var queryB = simA.QueryCells(randomPos, -1, 500.0f);
+                var queryB = simB.QueryCells(randomPos, -1, 500.0f);
 
                 Assert.AreEqual(queryA.Count, queryB.Count);
                 for (int x = 0; x < queryA.Count; x++)

@@ -5,12 +5,13 @@ namespace WalkerSim
     internal partial class Simulation
     {
         const int CellSize = 96;
+        private int _cellCountY;
 
         void SetupGrid()
         {
             var cellCountX = (int)System.Math.Ceiling(WorldSize.X / CellSize);
-            var cellCountY = (int)System.Math.Ceiling(WorldSize.Y / CellSize);
-            var totalCells = cellCountX * cellCountY;
+            _cellCountY = (int)System.Math.Ceiling(WorldSize.Y / CellSize);
+            var totalCells = cellCountX * _cellCountY;
 
             var grid = new List<int>[totalCells];
             for (int i = 0; i < totalCells; i++)
@@ -41,8 +42,7 @@ namespace WalkerSim
             int cellX = (int)(remapX / CellSize);
             int cellY = (int)(remapY / CellSize);
 
-            var cellCountY = (int)System.Math.Ceiling(WorldSize.Y / CellSize);
-            return cellX * cellCountY + cellY;
+            return cellX * _cellCountY + cellY;
         }
 
         int GetCellIndex(Vector3 pos)
@@ -63,15 +63,20 @@ namespace WalkerSim
             {
                 if (agent.CellIndex != -1)
                 {
-                    // Remove from old cell.
                     var oldCellList = grid[agent.CellIndex];
+                    var indexInList = oldCellList.IndexOf(agent.Index);
 #if DEBUG
-                    if (!oldCellList.Contains(agent.Index))
+                    if (indexInList == -1)
                     {
                         throw new System.Exception("Bug");
                     }
 #endif
-                    oldCellList.Remove(agent.Index);
+                    var lastIndex = oldCellList.Count - 1;
+                    if (indexInList != lastIndex)
+                    {
+                        oldCellList[indexInList] = oldCellList[lastIndex];
+                    }
+                    oldCellList.RemoveAt(lastIndex);
                 }
 
                 if (newCellIndex < 0)
@@ -130,8 +135,7 @@ namespace WalkerSim
         {
             var grid = _state.Grid;
 
-            var cellCountY = (int)System.Math.Ceiling(WorldSize.Y / CellSize);
-            var cellIndex = cellX * cellCountY + cellY;
+            var cellIndex = cellX * _cellCountY + cellY;
             if (cellIndex < 0 || cellIndex >= grid.Length)
             {
                 return;
@@ -212,8 +216,7 @@ namespace WalkerSim
         {
             var grid = _state.Grid;
 
-            var cellCountY = (int)System.Math.Ceiling(WorldSize.Y / CellSize);
-            var cellIndex = cellX * cellCountY + cellY;
+            var cellIndex = cellX * _cellCountY + cellY;
             if (cellIndex < 0 || cellIndex >= grid.Length)
             {
                 return count;
@@ -270,6 +273,111 @@ namespace WalkerSim
             }
 
             return count;
+        }
+
+        public delegate void NeighborCallback(Agent neighbor);
+
+        public interface INeighborProcessor
+        {
+            void Process(Agent neighbor);
+        }
+
+        public void ForEachNearby<T>(Vector3 pos, int excludeIndex, float maxDistance, ref T processor) where T : struct, INeighborProcessor
+        {
+            var worldMins = _state.WorldMins;
+            var worldMaxs = _state.WorldMaxs;
+            var grid = _state.Grid;
+
+            // The grid uses 0, 0 as starting origin.
+            float remapX = MathEx.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, WorldSize.X);
+            float remapY = MathEx.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, WorldSize.Y);
+
+            int cellX = (int)(remapX / CellSize);
+            int cellY = (int)(remapY / CellSize);
+
+            // Calculate the number of cells to search in each direction based on maxDistance
+            int cellRadius = (int)(maxDistance / CellSize) + 1;
+
+            var maxDistSqr = maxDistance * maxDistance;
+
+            // Iterate over all cells in the bounding box defined by maxDistance
+            for (int x = -cellRadius; x <= cellRadius; x++)
+            {
+                for (int y = -cellRadius; y <= cellRadius; y++)
+                {
+                    var cellIndex = (cellX + x) * _cellCountY + (cellY + y);
+                    if (cellIndex < 0 || cellIndex >= grid.Length)
+                        continue;
+
+                    var cell = grid[cellIndex];
+                    for (int i = 0; i < cell.Count; i++)
+                    {
+                        var idx = cell[i];
+                        var other = _state.Agents[idx];
+
+                        if (other.CurrentState != Agent.State.Wandering)
+                            continue;
+
+                        if (other.Index == excludeIndex)
+                            continue;
+
+                        var distance = Vector3.Distance2DSqr(pos, other.Position);
+                        if (distance < maxDistSqr)
+                        {
+                            processor.Process(other);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void ForEachNearby(Vector3 pos, int excludeIndex, float maxDistance, NeighborCallback callback)
+        {
+            var worldMins = _state.WorldMins;
+            var worldMaxs = _state.WorldMaxs;
+            var grid = _state.Grid;
+
+            // The grid uses 0, 0 as starting origin.
+            float remapX = MathEx.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, WorldSize.X);
+            float remapY = MathEx.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, WorldSize.Y);
+
+            int cellX = (int)(remapX / CellSize);
+            int cellY = (int)(remapY / CellSize);
+
+            // Calculate the number of cells to search in each direction based on maxDistance
+            int cellRadius = (int)(maxDistance / CellSize) + 1;
+
+            var maxDistSqr = maxDistance * maxDistance;
+
+            // Iterate over all cells in the bounding box defined by maxDistance
+            for (int x = -cellRadius; x <= cellRadius; x++)
+            {
+                for (int y = -cellRadius; y <= cellRadius; y++)
+                {
+                    var cellIndex = (cellX + x) * _cellCountY + (cellY + y);
+                    if (cellIndex < 0 || cellIndex >= grid.Length)
+                        continue;
+
+                    var cell = grid[cellIndex];
+                    for (int i = 0; i < cell.Count; i++)
+                    {
+                        var idx = cell[i];
+                        var other = _state.Agents[idx];
+
+                        if (other.CurrentState != Agent.State.Wandering)
+                            continue;
+
+                        if (other.Index == excludeIndex)
+                            continue;
+
+                        var distance = Vector3.Distance2DSqr(pos, other.Position);
+                        if (distance < maxDistSqr)
+                        {
+                            callback(other);
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -1,4 +1,7 @@
 # 0.9.15 (in progress)
+- Fix: Dedicated servers not getting the file location for the mod causing an error on startup.
+- Improve: Some performance optimizations.
+- Improve: Some of the documentation has been rewritten and re-organized.
 
 # 0.9.14
 - Improved: The provided WalkerSim.xml has now all groups set `PostSpawnWanderSpeed` to `Walk` for consistency.
