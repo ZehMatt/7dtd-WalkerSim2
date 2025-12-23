@@ -4,6 +4,7 @@ site_dir: DocsBuild
 nav:
     - Overview: index.md
     - Installation:
+        - installation/index.md
         - Client:
             - Windows: installation/client/windows.md
             - Linux: installation/client/linux.md

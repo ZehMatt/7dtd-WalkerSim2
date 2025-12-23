@@ -1,157 +1,154 @@
-Movement processors determine the movement and interactions of agents in the simulation. They can be applied to specific groups of agents or all agents, as defined in the XML configuration. Each processor uses a `Power` parameter to control the strength of its effect and, in some cases, a `Distance` parameter to define the range of influence (in meters).
+# Processors
 
-**Important**: Not all processors use the `Distance` parameter. When configuring processors in the XML, the `Distance` attribute is optional and ignored by processors that do not use it.
+These control how zombies move around on the virtual map. Each processor has a **Power** setting (how strong it is) and some have a **Distance** setting (how far away it works).
 
----
+## Behaviors That Make Zombies Group Together
 
-## Common Parameters
+### FlockAnyGroup
+Zombies move toward any nearby zombies.
 
-- **`Power`**: A decimal value that scales the strength of the processor’s effect. Higher values result in stronger movement influences (e.g., 0.5 for moderate, 2.0 for strong).
-- **`Distance`**: A decimal value (in meters) defining the range within which the processor affects nearby agents or objects. **Not all processors use this parameter** (see individual descriptions).
+- Uses Distance: Yes
+- Example: Makes all zombies cluster together into one big group
 
----
+### FlockSameGroup
+Zombies move toward other zombies in their own group only.
 
-## Processors
+- Uses Distance: Yes
+- Example: Keeps zombies with the same behavior together
 
-Below is a list of all movement processors, their purposes, behaviors, and whether they use the `Distance` parameter.
+### FlockOtherGroup
+Zombies move toward zombies in different groups.
 
-### 1. `FlockAnyGroup`
+- Uses Distance: Yes
+- Example: Makes different zombie groups merge together
 
-- **Description**: Moves the agent toward the center of all nearby agents, regardless of their group.
-- **Behavior**: Attracts the agent to the average position of nearby agents within the specified distance, creating a clustering effect.
-- **Uses Distance**: **Yes** (meters).
-- **Example Use Case**: Simulating zombies grouping together in a crowd.
+## Behaviors That Make Zombies Move the Same Direction
 
-### 2. `FlockSameGroup`
+### AlignAnyGroup
+Zombies face the same direction as nearby zombies.
 
-- **Description**: Moves the agent toward the center of nearby agents in the same group.
-- **Behavior**: Similar to `FlockAnyGroup`, but only affects agents in the same group, promoting group cohesion.
-- **Uses Distance**: **Yes** (meters).
-- **Example Use Case**: Keeping zombies of the same type together.
+- Uses Distance: Yes
+- Example: Creates a horde all walking the same way
 
-### 3. `FlockOtherGroup`
+### AlignSameGroup
+Zombies face the same direction as zombies in their group.
 
-- **Description**: Moves the agent toward the center of nearby agents in different groups.
-- **Behavior**: Attracts the agent to the average position of agents in other groups within the specified distance.
-- **Uses Distance**: **Yes** (meters).
-- **Example Use Case**: Simulating zombies drawn to rival groups.
+- Uses Distance: Yes
+- Example: Makes group members move together like a unit
 
-### 4. `AlignAnyGroup`
+### AlignOtherGroup
+Zombies face the same direction as zombies in other groups.
 
-- **Description**: Aligns the agent’s movement direction with that of all nearby agents.
-- **Behavior**: Adjusts the agent’s direction to match the average direction of nearby agents within the specified distance, creating synchronized movement.
-- **Uses Distance**: **Yes** (meters).
-- **Example Use Case**: Simulating a unified movement pattern in a zombie horde.
+- Uses Distance: Yes
+- Example: Makes different groups copy each other's direction
 
-### 5. `AlignSameGroup`
+## Behaviors That Make Zombies Spread Out
 
-- **Description**: Aligns the agent’s movement direction with that of nearby agents in the same group.
-- **Behavior**: Similar to `AlignAnyGroup`, but only considers agents in the same group.
-- **Uses Distance**: **Yes** (meters).
-- **Example Use Case**: Ensuring group members move in the same direction.
+### AvoidAnyGroup
+Zombies move away from any nearby zombies.
 
-### 6. `AlignOtherGroup`
+- Uses Distance: Yes
+- Example: Spreads zombies out across the map
 
-- **Description**: Aligns the agent’s movement direction with that of nearby agents in different groups.
-- **Behavior**: Adjusts the agent’s direction to match the average direction of agents in other groups within the specified distance.
-- **Uses Distance**: **Yes** (meters).
-- **Example Use Case**: Simulating zombies mimicking the movement of other groups.
+### AvoidSameGroup
+Zombies move away from zombies in their own group.
 
-### 7. `AvoidAnyGroup`
+- Uses Distance: Yes
+- Example: Makes groups spread out without bunching up
 
-- **Description**: Moves the agent away from all nearby agents.
-- **Behavior**: Pushes the agent away from nearby agents within the specified distance, with stronger repulsion for closer agents, preventing overcrowding.
-- **Uses Distance**: **Yes** (meters).
-- **Example Use Case**: Spreading out zombies to avoid clustering.
+### AvoidOtherGroup
+Zombies move away from zombies in different groups.
 
-### 8. `AvoidSameGroup`
+- Uses Distance: Yes
+- Example: Makes groups stay separate from each other
 
-- **Description**: Moves the agent away from nearby agents in the same group.
-- **Behavior**: Similar to `AvoidAnyGroup`, but only affects agents in the same group.
-- **Uses Distance**: **Yes** (meters).
-- **Example Use Case**: Preventing zombies in the same group from bunching up.
+## Behaviors Using Wind
 
-### 9. `AvoidOtherGroup`
+### Wind
+Zombies move in the direction the wind is blowing.
 
-- **Description**: Moves the agent away from nearby agents in different groups.
-- **Behavior**: Pushes the agent away from agents in other groups within the specified distance.
-- **Uses Distance**: **Yes** (meters).
-- **Example Use Case**: Simulating territorial behavior between zombie groups.
+- Uses Distance: No
+- Example: Zombies drift with the wind
 
-### 10. `Wind`
+### WindInverted
+Zombies move against the wind direction.
 
-- **Description**: Moves the agent in the direction of the wind.
-- **Behavior**: Applies a constant movement influence in the wind’s direction, scaled by `Power`. The `Distance` parameter is ignored.
-- **Uses Distance**: **No**.
-- **Example Use Case**: Simulating zombies drifting with the wind.
+- Uses Distance: No
+- Example: Zombies push against the wind
 
-### 11. `WindInverted`
+## Behaviors Using Roads
 
-- **Description**: Moves the agent against the direction of the wind.
-- **Behavior**: Applies a movement influence opposite to the wind’s direction, scaled by `Power`. The `Distance` parameter is ignored.
-- **Uses Distance**: **No**.
-- **Example Use Case**: Simulating zombies resisting the wind.
+### StickToRoads
+Zombies move toward the nearest road and follow it.
 
-### 12. `StickToRoads` 
+- Uses Distance: No
+- Example: Zombies walk along roads and highways
 
-- **Description**: Moves the agent toward the nearest road.
-- **Behavior**: Attracts the agent to the closest road, with stronger attraction to asphalt roads than offroad paths. The `Distance` parameter is ignored.
-- **Uses Distance**: **No**.
-- **Example Use Case**: Simulating zombies following roads or paths.
+### AvoidRoads
+Zombies move away from roads.
 
-### 13. `AvoidRoads`
+- Uses Distance: No
+- Example: Zombies stay in the wilderness away from roads
 
-- **Description**: Moves the agent away from the nearest road.
-- **Behavior**: Repels the agent from the closest road, with stronger repulsion for asphalt roads. The `Distance` parameter is ignored.
-- **Uses Distance**: **No**.
-- **Example Use Case**: Simulating zombies avoiding infrastructure.
+## Behaviors Using Buildings
 
-### 14. `StickToPOIs`
+### StickToPOIs
+Zombies move toward the nearest building or landmark.
 
-- **Description**: Moves the agent toward the nearest point of interest (POI), such as a building or landmark.
-- **Behavior**: Attracts the agent to the closest POI, ignoring POIs already crowded with agents. The `Distance` parameter is ignored.
-- **Uses Distance**: **No**.
-- **Example Use Case**: Simulating zombies gathering at key locations.
+- Uses Distance: No
+- Example: Zombies gather at towns, gas stations, and houses
 
-### 15. `AvoidPOIs`
+### AvoidPOIs
+Zombies move away from buildings.
 
-- **Description**: Moves the agent away from nearby points of interest (POIs).
-- **Behavior**: Repels the agent from POIs within the specified distance, with stronger repulsion for closer POIs.
-- **Uses Distance**: **Yes** (meters).
-- **Example Use Case**: Simulating zombies avoiding populated areas.
+- Uses Distance: Yes
+- Example: Zombies avoid populated areas
 
-### 16. `WorldEvents`
+## Behaviors Using Sound
 
-- **Description**: Moves the agent toward noise-based events, such as explosions or disturbances.
-- **Behavior**: Attracts the agent to the location of noise events, with stronger attraction closer to the event. The `Distance` parameter is ignored (uses the event’s radius instead).
-- **Uses Distance**: **No**.
-- **Example Use Case**: Simulating zombies drawn to loud noises.
+### WorldEvents
+Zombies move toward loud noises like gunshots and explosions.
 
----
+- Uses Distance: No (uses the sound's distance instead)
+- Example: Zombies walk toward where you're shooting
 
-## Usage Notes
+## Example Settings
 
-- **Distance Parameter**: The `Distance` parameter is measured in meters and defines the range of influence for processors like `FlockAnyGroup` or `AvoidPOIs`. For processors that do not use `Distance` (e.g., `Wind`, `StickToRoads`), the attribute is optional and ignored in the XML configuration.
-- **Power Balancing**: Use the `Power` parameter to control the strength of each processor. For example, a `Power` of 0.5 creates a moderate effect, while 2.0 creates a strong effect. Test different values to balance behaviors.
-- **Group Interactions**: Combine processors like `FlockSameGroup`, `AlignOtherGroup`, and `AvoidAnyGroup` to create complex group dynamics, such as cohesive groups that avoid rivals.
-- **Environmental Dependencies**: Processors like `StickToRoads`, `AvoidRoads`, `StickToPOIs`, and `AvoidPOIs` require map data (roads and POIs) to function. Ensure the simulation environment is properly configured.
-- **Event-Based Movement**: The `WorldEvents` processor depends on noise events being present in the simulation. Use this for dynamic, event-driven behavior.
-
----
-
-## Example XML Configuration
-
-Below is an example XML snippet for configuring movement processors in the `<MovementProcessors>` section of the WalkerSim configuration:
+Here's how to set up zombie behaviors in your config file:
 
 ```xml
 <MovementProcessors>
-  <ProcessorGroup Group="0" SpeedScale="1.0" Color="#FF0000">
+  <ProcessorGroup Group="0" SpeedScale="1.0" PostSpawnBehavior="Wander" Color="#FF0000">
     <Processor Type="FlockSameGroup" Distance="15.0" Power="0.6" />
     <Processor Type="AvoidRoads" Power="0.4" />
   </ProcessorGroup>
-  <ProcessorGroup Group="1" SpeedScale="1.5" Color="#00FF00">
+  <ProcessorGroup Group="1" SpeedScale="1.5" PostSpawnBehavior="ChaseActivator" Color="#00FF00">
     <Processor Type="WorldEvents" Power="0.8" />
     <Processor Type="StickToPOIs" Power="0.5" />
   </ProcessorGroup>
 </MovementProcessors>
 ```
+
+This creates:
+
+- Group 0: Zombies stick together in groups, avoid roads, and wander randomly
+- Group 1: Zombies go to buildings, chase loud noises, move faster, and chase you when they spawn
+
+## Understanding Power and Distance
+
+**Power**: How strong the behavior is
+- 0.5 = weak effect
+- 1.0 = medium effect
+- 2.0 = strong effect
+
+**Distance**: How far away (in meters) the behavior works
+- 10.0 = only affects very close zombies
+- 50.0 = affects zombies far away
+- Only some behaviors use this setting
+
+## Tips
+
+- Start with Power values around 0.5 to 1.0, then adjust
+- You can combine multiple behaviors (like FlockSameGroup + StickToPOIs)
+- Higher Power values = stronger behavior
+- Behaviors without Distance work on the whole map or use their own range

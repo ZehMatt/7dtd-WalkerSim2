@@ -1,124 +1,128 @@
-The base parameters are defined as child elements of the `<WalkerSim>` root element in the XML configuration. They control essential aspects of the simulation, such as the random seed for reproducibility, the number of agents, their initial and respawn positions, and whether the simulation pauses during specific events. These settings provide the foundation for how the simulation initializes and operates.
+These are the main settings that control how your zombie simulation works. You can edit these in the XML file or using the Editor tool.
 
----
+## Settings List
 
-## Parameters
-
-Below is a list of all base parameters, their descriptions, types, constraints, and usage details.
+Here are all the settings you can change:
 
 ### Logging
 
-- **Type**: Complex (Optional)  
-- **Description**: Enables detailed debug logging for various parts of the simulation. This is useful for tracking system behavior and diagnosing issues.
+**What it does**: Makes the mod write information to log files. This helps you see what the mod is doing.
 
-- **Child Elements**:
+**Options**:
 
-    - **`General`** (Boolean)  
-      Logs general simulation information. Useful for a broad overview of system activity.
+- **General**: Writes basic information about the simulation
+- **Spawns**: Writes when zombies appear
+- **Despawns**: Writes when zombies disappear
+- **EntityClassSelection**: Writes which zombie types are chosen
+- **Events**: Writes when loud noises or other events happen
 
-    - **`Spawns`** (Boolean)  
-      Logs when entities are spawned into the simulation. Helps track population growth or placement logic.
+**Default**: All logging is turned off
 
-    - **`Despawns`** (Boolean)  
-      Logs when entities are removed from the simulation. Useful for understanding lifecycle cleanup or despawn triggers.
-
-    - **`EntityClassSelection`** (Boolean)  
-      Logs how entity classes are selected during simulation. Helps verify configuration and randomness behavior.
-
-    - **`Events`** (Boolean)  
-      Logs world events triggered during simulation. Useful for tracking interactions and triggers over time.
-
-- **Default**: Not included (all logging is disabled unless explicitly specified).
-
-- **Example Use Case**:  
-  Enable `Spawns`, `Despawns`, and `Events` to monitor agent lifecycle and key simulation triggers during test runs.
+**When to use it**: Turn on logging when you want to understand what the mod is doing or fix problems.
 
 ### RandomSeed
 
-- **Type**: Integer  
-- **Description**: Sets the seed for random number generation to ensure reproducible simulation results. Use the same seed for consistent outcomes across runs.  
-- **Constraints**: Any valid integer.  
-- **Example Use Case**: Setting a fixed seed (e.g., `12345`) to test specific scenarios repeatedly.
+**What it does**: Controls the randomness of the simulation. Using the same number makes zombies behave the same way every time.
+
+**Value**: Any number
+
+**When to use it**: Use the same number to test things repeatedly. Change the number to get different zombie behavior.
 
 ### PopulationDensity
 
-- **Type**: Integer
-- **Description**: Specifies the number of agents per square kilometer in the simulation area, controlling the overall agent population.
-- **Constraints**: Minimum: 1, Maximum: 4000.
-- **Example Use Case**: Setting a density of `200` for a moderately populated zombie simulation.
+**What it does**: Controls how many zombies exist on your map.
+
+**Value**: A number between 1 and 4000. This is how many zombies per square kilometer.
+
+**Example**: Setting this to 200 creates a medium amount of zombies.
 
 ### SpawnActivationRadius
 
-- **Type**: Integer
-- **Description**: The radius for the player in blocks/meters for when agents will spawn/despawn in the game world. This should not exceed the maximum view distance from serversettings.xml, view distance is specified in chunks and each chunk is 16x16x16.
-- **Constraints**: Minimum: 48, Maximum: 196.
-- **Note**: The default is set to 96, setting this too high can cause a lot of spawn failures, setting it to a lower value is not recommended. 
+**What it does**: How close a virtual zombie must be to you before it becomes real.
+
+**Value**: A number between 48 and 196 meters. Default is 96.
+
+**Important**: Don't set this higher than how far you can see in the game. Setting it too high can cause problems. 
 
 ### StartAgentsGrouped
 
-- **Type**: Boolean
-- **Description**: Determines whether agents start the simulation grouped together. If `true`, agents are placed in clusters based on the `GroupSize` parameter; if `false`, they are distributed individually.
-- **Example Use Case**: Setting to `true` to simulate zombies starting in tight-knit hordes.
+**What it does**: Makes zombies start together in groups, or spread out individually.
+
+**Value**: True (start in groups) or False (start spread out)
+
+**Example**: Set to True to make zombies start in clumps like a horde.
 
 ### EnhancedSoundAwareness
 
-- **Type**: Boolean
-- **Description**: When enabled this will make zombies aware of loud noises that are nearby such as gun fire or explosions which causes them to walk towards
-the location where the noise came from. The game seems to have a very small radius where zombies quite often do not react, the new distance will be the same as
-the one the simulation calculates for `WorldEvents`.
+**What it does**: Makes zombies hear loud sounds from farther away.
+
+**Value**: True (zombies hear better) or False (normal hearing)
+
+**Example**: When True, zombies will walk toward gunshots and explosions from much farther away than normal.
+
+### SoundDistanceScale
+
+**What it does**: Makes sounds travel farther or shorter to attract zombies.
+
+**Value**: A number between 0.1 and 10.0
+- 1.0 = normal sound distance
+- 2.0 = sounds travel twice as far
+- 0.5 = sounds only travel half as far
+
+**Default**: 1.0
+
+**Example**: Set to 1.5 to make zombies react to sounds from farther away.
 
 ### GroupSize
 
-- **Type**: Integer
-- **Description**: Defines the size of how many agents each group will contain. The total number of groups is calculated as the total number of agents divided by this value, the total number of agents depends on population density.
-- **Constraints**: Minimum: 1.
-- **Example Use Case**: Setting to `20` to create groups of 20 zombies each.
+**What it does**: How many zombies are in each group.
+
+**Value**: Any number 1 or higher
+
+**Example**: Setting this to 20 means each zombie group has 20 zombies.
+
+**Note**: The total number of groups is: (Total zombies) divided by (GroupSize)
 
 ### AgentStartPosition
 
-- **Type**: Enumeration (`SpawnPosition`)
-- **Description**: Specifies where agents are placed at the start of the simulation.
-- **Values**:
-  - `RandomBorderLocation`: Agents start at random locations along the simulation area’s borders.
-  - `RandomLocation`: Agents start at random locations throughout the simulation area.
-  - `RandomPOI`: Agents start at random points of interest (e.g., buildings or landmarks).
-  - `Mixed`: Agents start at a mix of border locations, random locations, and POIs.
-- **Example Use Case**: Using `RandomPOI` to simulate zombies spawning near key locations.
+**What it does**: Where zombies start when the simulation begins.
+
+**Options**:
+
+- **RandomBorderLocation**: Zombies start around the edges of the map
+- **RandomLocation**: Zombies start anywhere on the map
+- **RandomPOI**: Zombies start at buildings and landmarks
+- **Mixed**: A mix of all the above
+
+**Example**: Use RandomPOI to make zombies start at towns and buildings.
 
 ### AgentRespawnPosition
 
-- **Type**: Enumeration (`RespawnPosition`)
-- **Description**: Specifies where agents respawn after being removed (e.g., due to death or despawning).
-- **Values**:
-  - `None`: Agents do not respawn.
-  - `RandomBorderLocation`: Agents respawn at random border locations.
-  - `RandomLocation`: Agents respawn at random locations.
-  - `RandomPOI`: Agents respawn at random points of interest.
-  - `Mixed`: Agents respawn at a mix of border locations, random locations, and POIs.
-- **Example Use Case**: Setting to `RandomBorderLocation` to simulate zombies re-entering from the edges.
+**What it does**: Where zombies come back after they die.
+
+**Options**:
+
+- **None**: Dead zombies don't come back
+- **RandomBorderLocation**: Zombies come back at the edges of the map
+- **RandomLocation**: Zombies come back anywhere on the map
+- **RandomPOI**: Zombies come back at buildings
+- **Mixed**: A mix of all the above
+
+**Example**: Use RandomBorderLocation to make zombies return from the edges of the map.
 
 ### PauseDuringBloodmoon
 
-- **Type**: Boolean
-- **Description**: Determines whether the simulation pauses during specific events, such as a "Bloodmoon" (a predefined event that may intensify zombie activity). If `true`, the simulation halts during these events.
-- **Example Use Case**: Setting to `true` to pause during high-intensity events for performance or gameplay reasons.
+**What it does**: Stops the simulation during Blood Moon nights.
+
+**Value**: True (stop during Blood Moon) or False (keep running)
+
+**Example**: Set to True so the normal Blood Moon zombies work without interference from this mod.
 
 ---
 
-## Usage Notes
+## Example Settings
 
-- **DebugOptions**: Use `LogSpawnDespawn` sparingly, as excessive logging may impact performance. Only include `<DebugOptions>` when debugging is needed.
-- **RandomSeed**: Choose a specific seed for testing or debugging to ensure consistent results. For varied simulations, change the seed or omit it to use a random one.
-- **PopulationDensity**: Balance density with performance. High values (e.g., 4000) may slow down the simulation on less powerful systems.
-- **GroupSize and StartAgentsGrouped**: These parameters work together. Ensure `GroupSize` is reasonable relative to the total number of agents to avoid creating too few or too many groups.
-- **AgentStartPosition and AgentRespawnPosition**: Choose values that align with the simulation’s narrative. For example, `RandomPOI` for starts and `None` for respawns can simulate zombies gathering at key locations without replenishing.
-- **PauseDuringBloodmoon**: Use this to manage simulation intensity during special events, especially in scenarios with high agent activity.
-
----
-
-## Example XML Configuration
-
-Below is an example XML configuration snippet for the base parameters within the `<WalkerSim>` root element:
+Here's a basic example you can copy and paste:
 
 ```xml
 <WalkerSim>
@@ -131,7 +135,10 @@ Below is an example XML configuration snippet for the base parameters within the
   </Logging>
   <RandomSeed>12345</RandomSeed>
   <PopulationDensity>200</PopulationDensity>
+  <SpawnActivationRadius>96</SpawnActivationRadius>
   <StartAgentsGrouped>true</StartAgentsGrouped>
+  <EnhancedSoundAwareness>true</EnhancedSoundAwareness>
+  <SoundDistanceScale>1.0</SoundDistanceScale>
   <GroupSize>20</GroupSize>
   <AgentStartPosition>RandomPOI</AgentStartPosition>
   <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>

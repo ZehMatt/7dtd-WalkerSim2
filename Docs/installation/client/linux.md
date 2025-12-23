@@ -1,10 +1,7 @@
-!!! warning
-    EAC has to be turned off.
+## What You Need
 
-## Prerequisites
-
-- **7 Days to Die** installed via **Steam** (latest supported version).
-- **WalkerSim2** mod files (e.g., `WalkerSim2-0.9.3.zip`).
+- 7 Days to Die installed through Steam
+- WalkerSim2 mod downloaded (like `WalkerSim2-0.9.3.zip`)
 
 ---
 

@@ -1,7 +1,7 @@
-## Prerequisites
+## What You Need
 
-- **7 Days to Die Dedicated Server** installed via **Steam** or **SteamCMD** (latest supported version).
-- **WalkerSim2** mod files (e.g., WalkerSim2-0.9.3.zip).
+- 7 Days to Die Dedicated Server installed through Steam or SteamCMD
+- WalkerSim2 mod downloaded (like `WalkerSim2-0.9.3.zip`)
 
 ---
 
