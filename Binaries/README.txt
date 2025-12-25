@@ -7,6 +7,7 @@ You need to copy following binaries to this folder:
 - "7 Days To Die/7DaysToDie_Data/Managed/System.Drawing.dll"
 - "7 Days To Die/7DaysToDie_Data/Managed/System.Xml.dll"
 - "7 Days To Die/7DaysToDie_Data/Managed/UnityEngine.CoreModule.dll"
+- "7 Days To Die/7DaysToDie_Data/Managed/UnityEngine.ImageConversionModule.dll"
 - "7 Days To Die/7DaysToDie_Data/Managed/UnityEngine.dll"
 - "7 Days To Die/7DaysToDie_Data/Managed/UnityEngine.IMGUIModule.dll"
 - "7 Days To Die/7DaysToDie_Data/Managed/UnityEngine.UI.dll"
