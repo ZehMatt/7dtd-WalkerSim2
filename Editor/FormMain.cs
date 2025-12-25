@@ -97,6 +97,8 @@ namespace WalkerSim.Editor
             ScrollWheelHack();
             SetupToolTips();
 
+            SetupBlacklistedEnemies();
+
             CenterCanvas();
 
 #if DEBUG
@@ -134,6 +136,60 @@ namespace WalkerSim.Editor
                 ((HandledMouseEventArgs)e).Handled = true;
             };
         }
+
+        #region Blacklist Enemies
+        private void SetupBlacklistedEnemies()
+        {
+            // Not all enemy types added here. Need to test to see if this is even possible first.
+            string[] enemyTypes = new string[]
+            {
+                "Big Mama",
+                "Feral",
+                "Dire Wolf", 
+                "Vulture", 
+            };
+
+            var comboBoxItems = blacklistedEnemiesComboBox.Items;
+            comboBoxItems.AddRange(enemyTypes);
+            blacklistedEnemiesComboBox.SelectedItem = "Feral";
+
+            addBlacklistEnemyBtn.Click += OnAddEnemyToBlacklist;
+            removeBlacklistEnemyBtn.Click += OnRemoveEnemyFromBlacklist;
+            blacklistedEnemiesListBox.KeyDown += OnDeleteEnemyFromBlacklist;
+        }
+
+        private void OnDeleteEnemyFromBlacklist(object sender, KeyEventArgs e)
+        {
+            var enemy = blacklistedEnemiesListBox.SelectedItem;
+
+            if (e.KeyCode == Keys.Delete && enemy != null)
+            {
+                blacklistedEnemiesListBox.Items.Remove(enemy);
+            }
+        }
+
+        private void OnAddEnemyToBlacklist(object sender, EventArgs e)
+        {
+            var enemy = blacklistedEnemiesComboBox.SelectedItem;
+            var blacklist = blacklistedEnemiesListBox.Items;
+
+            if (!blacklist.Contains(enemy))
+            {
+                blacklist.Add(enemy);
+            }
+        }
+
+        private void OnRemoveEnemyFromBlacklist(object sender, EventArgs e)
+        {
+            var enemy = blacklistedEnemiesComboBox.SelectedItem;
+            var blacklist = blacklistedEnemiesListBox.Items;
+
+            if (blacklist.Contains(enemy))
+            {
+                blacklist.Remove(enemy);
+            }
+        }
+        #endregion
 
         private void SetToolTip(Control ctrl, string helpText)
         {
