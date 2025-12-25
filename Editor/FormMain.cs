@@ -446,6 +446,14 @@ namespace WalkerSim.Editor
             {
                 return;
             }
+
+            List<string> enemies = new List<string>();
+            for (int i = 0; i < blacklistedEnemiesListBox.Items.Count; i++)
+            {
+                enemies.Add(blacklistedEnemiesListBox.Items[i].ToString().ToLower());
+            }
+
+            CurrentConfig.BlacklistedZombies = enemies.ToArray();
             CurrentConfig.RandomSeed = (int)inputRandomSeed.Value;
             CurrentConfig.PopulationDensity = (int)inputMaxAgents.Value;
             CurrentConfig.SpawnActivationRadius = (int)inputActivationRadius.Value;

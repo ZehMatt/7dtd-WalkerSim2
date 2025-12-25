@@ -155,6 +155,9 @@ namespace WalkerSim
         [XmlElement("Logging")]
         public LoggingOptions LoggingOpts;
 
+        [XmlElement(nameof(BlacklistedZombies))]
+        public string[] BlacklistedZombies = new string[] { };
+
         [XmlElement("RandomSeed")]
         public int RandomSeed = 1337;
 
@@ -268,6 +271,7 @@ namespace WalkerSim
                     EntityClassSelection = false,
                     Events = false,
                 },
+                BlacklistedZombies = new string[] {},
                 RandomSeed = 1337,
                 PopulationDensity = 300,
                 SpawnActivationRadius = 96,
