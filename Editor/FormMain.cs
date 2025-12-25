@@ -155,13 +155,16 @@ namespace WalkerSim.Editor
                 "Dire Wolf",
                 "Joe",
                 "Janitor",
+                "Lumberjack",
                 "Moe",
                 "Party Girl",
                 "Spider",
                 "Steve",
                 "Thug",
+                "Tom Clark",
                 "Tourist",
                 "Utility Worker",
+                "Yo",
                 "Zombie Dog",
                 "Zombie Vulture"
             };
