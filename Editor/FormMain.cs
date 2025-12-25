@@ -453,7 +453,7 @@ namespace WalkerSim.Editor
                 enemies.Add(blacklistedEnemiesListBox.Items[i].ToString().ToLower());
             }
 
-            CurrentConfig.BlacklistedZombies = enemies.ToArray();
+            CurrentConfig.BlacklistedZombies = enemies;
             CurrentConfig.RandomSeed = (int)inputRandomSeed.Value;
             CurrentConfig.PopulationDensity = (int)inputMaxAgents.Value;
             CurrentConfig.SpawnActivationRadius = (int)inputActivationRadius.Value;
@@ -511,7 +511,7 @@ namespace WalkerSim.Editor
             _updatingConfig = true;
 
             blacklistedEnemiesListBox.Items.Clear();
-            blacklistedEnemiesListBox.Items.AddRange(CurrentConfig.BlacklistedZombies);
+            blacklistedEnemiesListBox.Items.AddRange(CurrentConfig.BlacklistedZombies.ToArray());
             inputRandomSeed.Value = CurrentConfig.RandomSeed;
             inputMaxAgents.Value = CurrentConfig.PopulationDensity;
             inputActivationRadius.Value = CurrentConfig.SpawnActivationRadius;

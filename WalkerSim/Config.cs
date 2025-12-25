@@ -155,10 +155,9 @@ namespace WalkerSim
         [XmlElement("Logging")]
         public LoggingOptions LoggingOpts;
 
-        // https://stackoverflow.com/questions/1052556/how-do-i-add-a-attribute-to-a-xmlarray-element-xml-serialization
         [XmlArray(nameof(BlacklistedZombies))]
         [XmlArrayItem("BlacklistedZombie")]
-        public string[] BlacklistedZombies = new string[] { };
+        public List<string> BlacklistedZombies;
 
         [XmlElement("RandomSeed")]
         public int RandomSeed = 1337;
@@ -273,7 +272,7 @@ namespace WalkerSim
                     EntityClassSelection = false,
                     Events = false,
                 },
-                BlacklistedZombies = new string[] {},
+                BlacklistedZombies = new List<string>(),
                 RandomSeed = 1337,
                 PopulationDensity = 300,
                 SpawnActivationRadius = 96,
