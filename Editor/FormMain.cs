@@ -140,18 +140,35 @@ namespace WalkerSim.Editor
         #region Blacklist Enemies
         private void SetupBlacklistedEnemies()
         {
-            // Not all enemy types added here. Need to test to see if this is even possible first.
+            // List of LocalizedEntityName's from EntityAlive.LocalizedEntityName field.
+            // Not all enemy types added here. Some are missing and need to be added.
             string[] enemyTypes = new string[]
             {
-                "Big Mama",
-                "Feral",
-                "Dire Wolf", 
-                "Vulture", 
+                "All Feral Zombies",
+                "Arlene",
+                "Boe",
+                "Bowler",
+                "Biker",
+                "Burnt",
+                "Crawler",
+                "Feral Burnt",
+                "Dire Wolf",
+                "Joe",
+                "Janitor",
+                "Moe",
+                "Party Girl",
+                "Spider",
+                "Steve",
+                "Thug",
+                "Tourist",
+                "Utility Worker",
+                "Zombie Dog",
+                "Zombie Vulture"
             };
 
             var comboBoxItems = blacklistedEnemiesComboBox.Items;
             comboBoxItems.AddRange(enemyTypes);
-            blacklistedEnemiesComboBox.SelectedItem = "Feral";
+            blacklistedEnemiesComboBox.SelectedIndex = 0;
 
             addBlacklistEnemyBtn.Click += OnAddEnemyToBlacklist;
             removeBlacklistEnemyBtn.Click += OnRemoveEnemyFromBlacklist;
