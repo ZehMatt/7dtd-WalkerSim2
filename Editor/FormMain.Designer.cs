@@ -173,11 +173,11 @@ namespace WalkerSim.Editor
             this.btZoomOut = new System.Windows.Forms.Label();
             this.label29 = new System.Windows.Forms.Label();
             this.tabPage5 = new System.Windows.Forms.TabPage();
-            this.listBox1 = new System.Windows.Forms.ListBox();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.blacklistedEnemiesListBox = new System.Windows.Forms.ListBox();
+            this.blacklistedEnemiesComboBox = new System.Windows.Forms.ComboBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
+            this.addBlacklistEnemyBtn = new System.Windows.Forms.Button();
+            this.removeBlacklistEnemyBtn = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -1940,10 +1940,10 @@ namespace WalkerSim.Editor
             // 
             // tabPage5
             // 
-            this.tabPage5.Controls.Add(this.button3);
-            this.tabPage5.Controls.Add(this.button2);
+            this.tabPage5.Controls.Add(this.removeBlacklistEnemyBtn);
+            this.tabPage5.Controls.Add(this.addBlacklistEnemyBtn);
             this.tabPage5.Controls.Add(this.groupBox2);
-            this.tabPage5.Controls.Add(this.comboBox1);
+            this.tabPage5.Controls.Add(this.blacklistedEnemiesComboBox);
             this.tabPage5.Location = new System.Drawing.Point(4, 22);
             this.tabPage5.Name = "tabPage5";
             this.tabPage5.Size = new System.Drawing.Size(832, 201);
@@ -1951,26 +1951,26 @@ namespace WalkerSim.Editor
             this.tabPage5.Text = "Blacklist Enemies";
             this.tabPage5.UseVisualStyleBackColor = true;
             // 
-            // listBox1
+            // blacklistedEnemiesListBox
             // 
-            this.listBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listBox1.FormattingEnabled = true;
-            this.listBox1.Location = new System.Drawing.Point(3, 16);
-            this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(206, 176);
-            this.listBox1.TabIndex = 0;
+            this.blacklistedEnemiesListBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.blacklistedEnemiesListBox.FormattingEnabled = true;
+            this.blacklistedEnemiesListBox.Location = new System.Drawing.Point(3, 16);
+            this.blacklistedEnemiesListBox.Name = "blacklistedEnemiesListBox";
+            this.blacklistedEnemiesListBox.Size = new System.Drawing.Size(206, 176);
+            this.blacklistedEnemiesListBox.TabIndex = 0;
             // 
-            // comboBox1
+            // blacklistedEnemiesComboBox
             // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(226, 19);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(158, 21);
-            this.comboBox1.TabIndex = 1;
+            this.blacklistedEnemiesComboBox.FormattingEnabled = true;
+            this.blacklistedEnemiesComboBox.Location = new System.Drawing.Point(226, 19);
+            this.blacklistedEnemiesComboBox.Name = "blacklistedEnemiesComboBox";
+            this.blacklistedEnemiesComboBox.Size = new System.Drawing.Size(158, 21);
+            this.blacklistedEnemiesComboBox.TabIndex = 1;
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.listBox1);
+            this.groupBox2.Controls.Add(this.blacklistedEnemiesListBox);
             this.groupBox2.Location = new System.Drawing.Point(8, 3);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(212, 195);
@@ -1978,23 +1978,23 @@ namespace WalkerSim.Editor
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Blacklisted Enemies";
             // 
-            // button2
+            // addBlacklistEnemyBtn
             // 
-            this.button2.Location = new System.Drawing.Point(227, 47);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 23);
-            this.button2.TabIndex = 3;
-            this.button2.Text = "Add";
-            this.button2.UseVisualStyleBackColor = true;
+            this.addBlacklistEnemyBtn.Location = new System.Drawing.Point(227, 47);
+            this.addBlacklistEnemyBtn.Name = "addBlacklistEnemyBtn";
+            this.addBlacklistEnemyBtn.Size = new System.Drawing.Size(75, 23);
+            this.addBlacklistEnemyBtn.TabIndex = 3;
+            this.addBlacklistEnemyBtn.Text = "Add";
+            this.addBlacklistEnemyBtn.UseVisualStyleBackColor = true;
             // 
-            // button3
+            // removeBlacklistEnemyBtn
             // 
-            this.button3.Location = new System.Drawing.Point(309, 46);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(75, 23);
-            this.button3.TabIndex = 4;
-            this.button3.Text = "Remove";
-            this.button3.UseVisualStyleBackColor = true;
+            this.removeBlacklistEnemyBtn.Location = new System.Drawing.Point(309, 46);
+            this.removeBlacklistEnemyBtn.Name = "removeBlacklistEnemyBtn";
+            this.removeBlacklistEnemyBtn.Size = new System.Drawing.Size(75, 23);
+            this.removeBlacklistEnemyBtn.TabIndex = 4;
+            this.removeBlacklistEnemyBtn.Text = "Remove";
+            this.removeBlacklistEnemyBtn.UseVisualStyleBackColor = true;
             // 
             // FormMain
             // 
@@ -2211,10 +2211,10 @@ namespace WalkerSim.Editor
         private LabelWithHelp labelWithHelp1;
         private System.Windows.Forms.NumericUpDown inputSoundDistanceScale;
         private System.Windows.Forms.TabPage tabPage5;
-        private System.Windows.Forms.ListBox listBox1;
-        private System.Windows.Forms.ComboBox comboBox1;
-        private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.ListBox blacklistedEnemiesListBox;
+        private System.Windows.Forms.ComboBox blacklistedEnemiesComboBox;
+        private System.Windows.Forms.Button removeBlacklistEnemyBtn;
+        private System.Windows.Forms.Button addBlacklistEnemyBtn;
         private System.Windows.Forms.GroupBox groupBox2;
     }
 }
