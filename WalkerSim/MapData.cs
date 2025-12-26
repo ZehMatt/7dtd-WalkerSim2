@@ -185,6 +185,10 @@ namespace WalkerSim
             {
                 res = Biomes.LoadFromFile(biomePath);
             }
+            if (res == null)
+            {
+                res = new Biomes();
+            }
 
             GC.Collect();
 
@@ -193,27 +197,38 @@ namespace WalkerSim
 
         private static PrefabsData LoadPrefabs(string folderPath)
         {
-            PrefabsData res = null;
+            PrefabsData res;
+
             var filePath = System.IO.Path.Combine(folderPath, "prefabs.xml");
-            var serializer = new XmlSerializer(typeof(PrefabsData));
+
+            if (!System.IO.File.Exists(filePath))
+            {
+                res = new PrefabsData();
+                res.Decorations = new Decoration[0];
+                return res;
+            }
+
             try
             {
+                var serializer = new XmlSerializer(typeof(PrefabsData));
                 using (var reader = new System.IO.StreamReader(filePath))
                 {
                     res = (PrefabsData)serializer.Deserialize(reader);
                 }
+
+                if (res.Decorations == null)
+                {
+                    res.Decorations = new Decoration[0];
+                }
+                else
+                {
+                    MergePrefabs(res);
+                }
             }
             catch (System.Exception)
             {
-            }
-
-            if (res.Decorations == null)
-            {
+                res = new PrefabsData();
                 res.Decorations = new Decoration[0];
-            }
-            else
-            {
-                MergePrefabs(res);
             }
 
             GC.Collect();
@@ -283,6 +298,12 @@ namespace WalkerSim
         {
             // The only way to tell at the moment is to use the file size of dtm.raw.
             var dtmFile = System.IO.Path.Combine(folderPath, "dtm.raw");
+            if (!System.IO.File.Exists(dtmFile))
+            {
+                Logging.Err("DTM file '{0}' does not exist.", dtmFile);
+                return Vector3.Zero;
+            }
+
             try
             {
                 var fileInfo = new System.IO.FileInfo(dtmFile);

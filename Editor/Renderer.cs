@@ -31,6 +31,9 @@ namespace WalkerSim.Editor
             if (roads == null)
                 return;
 
+            if (roads.Width == 0 || roads.Height == 0)
+                return;
+
             Bitmap roadBitmap;
             if (_cachedRoads != null && _cachedRoadsPath == roads.Name)
             {
