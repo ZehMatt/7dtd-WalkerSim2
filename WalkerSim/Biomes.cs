@@ -30,7 +30,7 @@ namespace WalkerSim
             { WalkerSim.Drawing.Color.FromHtml("#001234"), Type.Underwater }
         };
 
-        public Type[,] BiomeMap { get; private set; }
+        public Type[,] BiomeMap { get; private set; } = new Type[0, 0];
 
         public class BiomeRegion
         {
@@ -40,7 +40,7 @@ namespace WalkerSim
             // TODO: Trace along the edges to create a shape for more efficient lookups.
         }
 
-        public List<BiomeRegion> Regions { get; private set; }
+        public List<BiomeRegion> Regions { get; private set; } = new List<BiomeRegion>();
 
         public int Width { get; private set; }
         public int Height { get; private set; }

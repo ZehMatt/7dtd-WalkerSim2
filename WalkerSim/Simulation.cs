@@ -400,6 +400,11 @@ namespace WalkerSim
             agents.Clear();
 
             var sqrKm = (WorldSize.X / 1000.0f) * (WorldSize.Y / 1000.0f);
+            if (sqrKm == 0)
+            {
+                return;
+            }
+
             var maxAgents = (int)System.Math.Ceiling(sqrKm * config.PopulationDensity);
             maxAgents = MathEx.Clamp(maxAgents, 1, Limits.MaxAgents);
 
