@@ -1,4 +1,5 @@
 # 0.9.16 (in progress)
+- Fix: Potential crash in the Editor with corrupted or malformed generated worlds.
 
 # 0.9.15
 - Fix: Dedicated servers not getting the file location for the mod causing an error on startup.
