@@ -400,6 +400,7 @@ namespace WalkerSim
             var simulation = Simulation.Instance;
             simulation.Stop();
             simulation.AutoSave();
+            simulation.Shutdown();
         }
 
         static void GameShutdown(ref ModEvents.SGameShutdownData data)
