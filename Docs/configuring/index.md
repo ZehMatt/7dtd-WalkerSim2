@@ -42,6 +42,7 @@ You have two options:
 ---
 
 **Next Steps:**
+
 - Learn about [Base Settings](configuration/base.md) - the main options
 - Learn about [Movement Systems](configuration/systems.md) - how to organize zombies
 - Learn about [Processors](configuration/processors.md) - how zombies move
