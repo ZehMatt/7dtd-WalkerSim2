@@ -141,11 +141,9 @@
                 <xs:element name="MaxSpawnedZombies">
                     <xs:annotation>
                         <xs:documentation>
-                            The maximum amount of zombies WalkerSim is allowed to spawn.
-                            If this is a percentage (e.g. "50%") it will be the percentage of the
-                            maximum the game allows.
-                            If this is an integer, it will be treated as an absolute value. It is recommended to
-                            to use a percentage to allow sleepers to be still spawned as WalkerSim could otherwise exhaust the maximum allowed.
+                            The maximum amount of zombies WalkerSim is allowed to spawn. This can be the percentage of the maximum allowed by the game settings or an absolute number.
+                            For example, if the game settings allow a maximum of 64 zombies and this is set to "50%", WalkerSim will only spawn up to 32 zombies.
+                            The percentage can be above 100% to allow WalkerSim to spawn more than the game settings allow, but this may lead to performance issues.
                         </xs:documentation>
                     </xs:annotation>
                     <xs:simpleType>
@@ -321,13 +319,13 @@
             </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
-    
+
     <xs:simpleType name="PercentType">
         <xs:restriction base="xs:string">
             <xs:pattern value="[0-9]+%"/>
         </xs:restriction>
     </xs:simpleType>
-    
+
     <xs:simpleType name="SpawnPosition">
         <xs:annotation>
             <xs:documentation>Enumeration for agent starting positions</xs:documentation>

@@ -96,6 +96,7 @@ namespace WalkerSim.Editor
             SetupLimits();
             ScrollWheelHack();
             SetupToolTips();
+            UpdateHelpLinks();
 
             CenterCanvas();
 
@@ -176,6 +177,37 @@ namespace WalkerSim.Editor
             SetToolTip(inputSoundAware, "Increases the awareness of \"spawned zombies\" to sound, this will make them react to sound such as gun shots causing them to wander towards the source.\n\nNOTE: Recommended to be enabled, the game is doing a poor job at this.");
             SetToolTip(inputWanderSpeed, "When the agent is spawned this can override the game setting for their movement speed, this only applies to them while they are wandering.\nOnce they are alerted or start attacking they will use the game setting, if they start wandering again this will apply again.");
             SetToolTip(inputSoundDistanceScale, "Scale for the distance the sounds travel in the simulation.");
+            SetToolTip(inputPostSpawnBehavior, "Specifies the behavior of the agent after it has spawned in the game world.");
+            SetToolTip(inputFastForward, "Fast forwards the simulation at a new start. This helps spread the agents out when they start as groups.");
+            SetToolTip(inputMaxSpawnedZombies, "The maximum amount of zombies WalkerSim is allowed to spawn.\nThis is the percentage of the maximum allowed by the game settings.\nFor example, if the game settings allow a maximum of 64 zombies and this is set to \"50%\", WalkerSim will only spawn up to 32 zombies.\nThe percentage can be above 100% to allow WalkerSim to spawn more than the game settings allow, but this may lead to performance issues.\n\nNOTE: The recommended setting is between 40% and 75% as this can prevent sleepers from spawning since the game will still follow the configured maximum.");
+        }
+
+        public IEnumerable<T> FindControls<T>(Control control) where T : Control
+        {
+            // we can't cast here because some controls in here will most likely not be <T>
+            var controls = control.Controls.Cast<Control>();
+
+            return controls.SelectMany(ctrl => FindControls<T>(ctrl))
+                                      .Concat(controls)
+                                      .Where(c => c.GetType() == typeof(T)).Cast<T>();
+        }
+
+        private void UpdateHelpLinks()
+        {
+            var helpLabels = FindControls<LabelWithHelp>(this);
+            var currentVersion = BuildInfo.Version == "0.0.0" ? "nightly" : BuildInfo.Version;
+
+            foreach (var helpLabel in helpLabels)
+            {
+                var urlTemplate = helpLabel.HelpUrl;
+                if (string.IsNullOrEmpty(urlTemplate))
+                {
+                    continue;
+                }
+
+                var url = urlTemplate.Replace("<version>", currentVersion);
+                helpLabel.HelpUrl = url;
+            }
         }
 
         public void Message(Logging.Level level, string message)
@@ -249,6 +281,7 @@ namespace WalkerSim.Editor
             inputSpawnProtectionTime.MouseWheel += ScrollHandlerFunction;
             inputActivationRadius.MouseWheel += ScrollHandlerFunction;
             inputSoundDistanceScale.MouseWheel += ScrollHandlerFunction;
+            inputMaxSpawnedZombies.MouseWheel += ScrollHandlerFunction;
         }
 
         private void SetupSpeedModifiers()
@@ -1525,6 +1558,16 @@ namespace WalkerSim.Editor
                     Logging.Exception(ex);
                 }
             }
+        }
+
+        private void OnDocOpen(object sender, EventArgs e)
+        {
+            var currentVersion = BuildInfo.Version == "0.0.0" ? "nightly" : BuildInfo.Version;
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = $"https://7dtd-walkersim2.readthedocs.io/{currentVersion}/",
+                UseShellExecute = true
+            });
         }
     }
 }

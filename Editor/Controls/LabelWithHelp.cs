@@ -56,7 +56,29 @@ namespace WalkerSim.Editor
         public event EventHandler HelpClicked;
         protected virtual void OnHelpClicked(EventArgs e)
         {
-            HelpClicked?.Invoke(this, e);
+            if (HelpClicked != null)
+            {
+                HelpClicked(this, e);
+            }
+            else
+            {
+                // Default behavior: open the URL if set
+                if (!string.IsNullOrEmpty(_helpUrl))
+                {
+                    try
+                    {
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = _helpUrl,
+                            UseShellExecute = true
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Unable to open help link: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
         }
 
         // Property to set the label text

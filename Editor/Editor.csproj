@@ -48,6 +48,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\PercentageUpDown.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\PercentageUpDown.Designer.cs">
+      <DependentUpon>PercentageUpDown.cs</DependentUpon>
+    </Compile>
     <Compile Include="DrawingUtils.cs" />
     <Compile Include="Drawing\Drawing.cs" />
     <Compile Include="FormMain.cs">
@@ -63,10 +69,10 @@
       <DependentUpon>FormProcessorSelection.cs</DependentUpon>
     </Compile>
     <Compile Include="GameLocator.cs" />
-    <Compile Include="LabelWithHelp.cs">
+    <Compile Include="Controls\LabelWithHelp.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="LabelWithHelp.Designer.cs">
+    <Compile Include="Controls\LabelWithHelp.Designer.cs">
       <DependentUpon>LabelWithHelp.cs</DependentUpon>
     </Compile>
     <Compile Include="PictureBoxExtensions.cs" />
@@ -82,7 +88,7 @@
     <EmbeddedResource Include="FormProcessorSelection.resx">
       <DependentUpon>FormProcessorSelection.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="LabelWithHelp.resx">
+    <EmbeddedResource Include="Controls\LabelWithHelp.resx">
       <DependentUpon>LabelWithHelp.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
