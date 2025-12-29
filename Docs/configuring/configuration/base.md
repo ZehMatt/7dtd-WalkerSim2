@@ -73,6 +73,18 @@ Here are all the settings you can change:
 
 **Example**: Set to 1.5 to make zombies react to sounds from farther away.
 
+### FastForwardAtStart
+
+**What it does**: Speeds up the simulation when you first start a new game, so zombies spread out across the map quickly instead of all starting in the same spots.
+
+**Value**: True (fast forward enabled) or False (start normally)
+
+**Default**: True
+
+**How it works**: When enabled, the simulation runs 2000 ticks at 128x speed during initial startup. This makes zombies move away from their starting positions before the game begins, creating a more natural distribution across the map.
+
+**Example**: Set to True to have zombies already spread out when you start playing. Set to False if you want all zombies to start at their exact starting positions.
+
 ### GroupSize
 
 **What it does**: How many zombies are in each group.
@@ -118,6 +130,35 @@ Here are all the settings you can change:
 
 **Example**: Set to True so the normal Blood Moon zombies work without interference from this mod.
 
+### SpawnProtectionTime
+
+**What it does**: Gives you time to get ready before zombies start spawning when you first start a new game.
+
+**Value**: Number of seconds to wait before spawning zombies. Default is 300 (5 minutes).
+
+**How it works**: When you start a brand new game for the first time, the mod waits this many seconds before spawning any zombies near you. This only applies when spawning for the very first time after starting a new game, not after dying or respawning.
+
+**Example**: Set to 600 (10 minutes) to give yourself more time to gather supplies. Set to 0 to start with zombies immediately.
+
+### MaxSpawnedZombies
+
+**What it does**: Limits how many zombies WalkerSim can spawn in the game world at once.
+
+**Value**: Can be a percentage (like "75%") or an absolute number (like "48").
+
+**How it works**: 
+- If you use a percentage, it's based on the game's MaxSpawnedZombies setting from your server settings
+- For example, if the game allows 64 zombies and you set "50%", WalkerSim will only spawn up to 32 zombies
+- You can use percentages above 100% (like "150%") but this may cause performance issues
+- If you use an absolute number, that's the maximum zombies WalkerSim will spawn, capped between 1 and 200
+- This limit ensures WalkerSim doesn't use up all the zombie spawn slots, leaving room for other zombie spawns
+
+**Default**: "75%" (75% of game's MaxSpawnedZombies setting)
+
+**Note**: The Editor tool only supports setting this as a percentage. To use an absolute number value, you must edit the XML file directly.
+
+**Example**: Set to "50%" for fewer zombies, "100%" to use the full game limit, or "32" to always spawn a maximum of 32 zombies regardless of game settings.
+
 ---
 
 ## Example Settings
@@ -139,9 +180,12 @@ Here's a basic example you can copy and paste:
   <StartAgentsGrouped>true</StartAgentsGrouped>
   <EnhancedSoundAwareness>true</EnhancedSoundAwareness>
   <SoundDistanceScale>1.0</SoundDistanceScale>
+  <FastForwardAtStart>true</FastForwardAtStart>
   <GroupSize>20</GroupSize>
   <AgentStartPosition>RandomPOI</AgentStartPosition>
   <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>
   <PauseDuringBloodmoon>true</PauseDuringBloodmoon>
+  <SpawnProtectionTime>300</SpawnProtectionTime>
+  <MaxSpawnedZombies>75%</MaxSpawnedZombies>
 </WalkerSim>
 ```
