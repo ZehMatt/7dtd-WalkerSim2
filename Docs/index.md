@@ -51,7 +51,8 @@ The zombie that appears matches your area:
 - Snow zombies in the snow
 - Uses the game's normal zombie spawn rules
 
----
+!!! note "Important"
+    There is no guarantee that zombies will spawn when they enter the activation zone. If the virtual zombie's location is inside a POI or otherwise obstructed, the spawn will not occur and the zombie will continue advancing in the simulation as a virtual agent.
 
 ## When Do Zombies Disappear?
 
