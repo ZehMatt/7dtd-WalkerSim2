@@ -22,9 +22,14 @@ These agents roam the virtual 2D world by following simple, configurable behavio
  - Grouping together in herds
  - Staying near Points of Interest (POIs)
  - Wandering freely based on environmental factors
+ - Reacting to sounds like gunfire, explosions, and breaking materials
 
 Agents move constantly within the simulation, completely independent of whether players are nearby.  
 Only when they come close to a player will they cross into the real game world as actual zombies.
+
+### Sound Awareness
+
+Virtual zombies react to the sounds you make in the game world. Gunshots, explosions, and breaking materials draw zombies toward the source of the noise. This means your actions have lasting consequences - fire a gun in an area, and zombies will converge on that location even if they can't spawn immediately. When you return later, you might find a horde waiting where you made noise before.
 
 Below is a visual example of the simulation in action (sped up 16x for better demonstration):
 

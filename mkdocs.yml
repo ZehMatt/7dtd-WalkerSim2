@@ -21,6 +21,7 @@ nav:
                 - Movement Systems: configuring/configuration/systems.md
                 - Processors: configuring/configuration/processors.md
         - Spawn Group Masks (Advanced): configuring/spawn-groups.md
+    - Sound System: sounds.md
     - Console Commands: commands.md
     - FAQ: faq.md
 
