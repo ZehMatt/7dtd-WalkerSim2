@@ -99,6 +99,19 @@ namespace WalkerSim
             _nextAutoSave = DateTime.MaxValue;
         }
 
+        public void Shutdown()
+        {
+            Stop();
+
+            _state.Players.Clear();
+            _state.Agents.Clear();
+            _state.Active.Clear();
+            _state.Events.Clear();
+            _state.POIIterator = 0;
+            _state.IsBloodmoon = false;
+            _state.IsDayTime = true;
+        }
+
         public void Advance(uint numTicks)
         {
             if (_running)
