@@ -20,6 +20,9 @@ nav:
             - Movement Systems:
                 - Movement Systems: configuring/configuration/systems.md
                 - Processors: configuring/configuration/processors.md
+        - Spawn Group Masks (Advanced): configuring/spawn-groups.md
+    - Console Commands: commands.md
+    - FAQ: faq.md
 
 theme: 
     name: material
@@ -49,7 +52,6 @@ theme:
         - navigation.instant
         - navigation.instant.progress
         - navigation.tabs.sticky
-        - navigation.sections
         - navigation.top
         - navigation.footer
         - navigation.indexes
