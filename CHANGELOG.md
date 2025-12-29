@@ -1,4 +1,4 @@
-# 0.9.16 (in progress)
+# 0.9.16
 - Fix: Potential crash in the Editor with corrupted or malformed generated worlds.
 - Fix: Stopping a game and starting a new one contained old state from previous game.
 - Improve: Added a missing option to the editor, added help links to the documentation.
