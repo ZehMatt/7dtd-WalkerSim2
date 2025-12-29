@@ -35,7 +35,7 @@ namespace WalkerSim.Editor
         private float _canvasScale = 0.5f;
 
         Simulation simulation = Simulation.Instance;
-        Random prng;
+        Random prng = new Random((int)DateTime.Now.Ticks);
         Bitmap bitmap;
         System.Drawing.Graphics gr;
 
@@ -99,14 +99,6 @@ namespace WalkerSim.Editor
             UpdateHelpLinks();
 
             CenterCanvas();
-
-#if DEBUG
-            prng = new Random(1);
-#else
-            prng = new Random((int)DateTime.Now.Ticks);
-#endif
-
-            inputRandomSeed.Value = prng.Next();
 
             viewAgents.Click += (sender, e) => RenderSimulation();
             viewRoads.Click += (sender, e) => RenderSimulation();
@@ -378,11 +370,6 @@ namespace WalkerSim.Editor
             }
         }
 
-        private void LoadDefaultConfiguration()
-        {
-            LoadConfiguration("WalkerSim.xml");
-        }
-
         private void LoadConfiguration(string file)
         {
             var loadedConfig = Config.LoadFromFile(file);
@@ -426,6 +413,9 @@ namespace WalkerSim.Editor
                 CurrentConfig.RespawnPosition = _respawnPositions[respawnChoice];
             }
 
+            var maxSpawnedPercent = (int)inputMaxSpawnedZombies.Value;
+            CurrentConfig.MaxSpawnedZombies = maxSpawnedPercent.ToString() + "%";
+
             CheckMaxAgents();
             PopulateAffectedGroups();
 
@@ -450,6 +440,7 @@ namespace WalkerSim.Editor
             inputActivationRadius.ValueChanged += (sender, arg) => SetConfigValues(false);
             inputSoundAware.CheckedChanged += (sender, arg) => SetConfigValues(false);
             inputSoundDistanceScale.ValueChanged += (sender, arg) => SetConfigValues(false);
+            inputMaxSpawnedZombies.ValueChanged += (sender, arg) => SetConfigValues(false);
         }
 
         private void UpdateConfigFields()
@@ -469,6 +460,25 @@ namespace WalkerSim.Editor
             inputPauseDuringBloodmoon.Checked = CurrentConfig.PauseDuringBloodmoon;
             inputSpawnProtectionTime.Value = CurrentConfig.SpawnProtectionTime;
             inputSoundDistanceScale.Value = (decimal)CurrentConfig.SoundDistanceScale;
+
+            var maxSpawnedSetting = CurrentConfig.MaxSpawnedZombies;
+            if (maxSpawnedSetting.EndsWith("%"))
+            {
+                var percentString = maxSpawnedSetting.Substring(0, maxSpawnedSetting.Length - 1);
+                if (int.TryParse(percentString, out var percentValue))
+                {
+                    inputMaxSpawnedZombies.Value = (decimal)percentValue;
+                }
+            }
+            else
+            {
+                // Absolute number, convert to percentage by using 64 as max.
+                if (int.TryParse(maxSpawnedSetting, out var absoluteValue))
+                {
+                    var percentValue = (absoluteValue * 100) / 64;
+                    inputMaxSpawnedZombies.Value = (decimal)percentValue;
+                }
+            }
 
             var spawnChoice = Utils.GetWorldLocationString(CurrentConfig.StartPosition);
             inputStartPosition.SelectedIndex = inputStartPosition.FindString(spawnChoice);
