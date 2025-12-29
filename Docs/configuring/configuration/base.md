@@ -130,6 +130,9 @@ Here are all the settings you can change:
 
 **Example**: Set to True so the normal Blood Moon zombies work without interference from this mod.
 
+!!! note
+    Even with this set to True, any zombies already spawned by WalkerSim when Blood Moon starts will remain in the game world. However, they won't behave like Blood Moon horde zombies - they won't automatically seek out players. Only the zombies spawned by the Blood Moon event itself will hunt you down. WalkerSim zombies will continue following their normal behavior.
+
 ### SpawnProtectionTime
 
 **What it does**: Gives you time to get ready before zombies start spawning when you first start a new game.

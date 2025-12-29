@@ -62,10 +62,22 @@ When zombies walk too far away from you, they turn back into virtual zombies. Th
 
 So if that same zombie comes back later, it will still be hurt if you damaged it before.
 
+## When Do Zombies Respawn?
+
+Zombies will only truly respawn if they are killed.
+
+## Where Do Zombies Respawn?
+
+Where zombies respawn in the simulation depends on the configuration, see [AgentRespawnPosition](configuring/configuration/base.md#agentrrespawnposition).
+
+## Will I have to keep the Editor running?
+
+No. The Editor is a tool to help create a configuration and export it to the xml.
+
 ## Does This Change Animals?
 
 No. Animals work exactly the same as in the normal game.
 
 ## What About Blood Moon?
 
-You can choose in the settings. By default, the mod stops during Blood Moon nights so the normal Blood Moon zombies work as usual.
+You can choose in the settings. By default, the mod stops during Blood Moon nights so the normal Blood Moon zombies work as usual, see [PauseDuringBloodmoon](configuring/configuration/base.html#pauseduringbloodmoon)
