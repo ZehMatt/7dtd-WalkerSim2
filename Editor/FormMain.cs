@@ -1529,18 +1529,6 @@ namespace WalkerSim.Editor
             }
         }
 
-        private void OnResetClick(object sender, EventArgs e)
-        {
-            OnStopClick(sender, e);
-
-            simulation.Reset(CurrentConfig);
-
-            GenerateGroupColors();
-            RenderSimulation();
-            ZoomReset();
-            UpdateStats();
-        }
-
         private void OnSaveStateClick(object sender, EventArgs e)
         {
             var browseFileDlg = new SaveFileDialog();
@@ -1558,6 +1546,18 @@ namespace WalkerSim.Editor
                     Logging.Exception(ex);
                 }
             }
+        }
+
+        private void OnResetClick(object sender, EventArgs e)
+        {
+            OnStopClick(sender, e);
+
+            simulation.Reset(CurrentConfig);
+
+            GenerateGroupColors();
+            RenderSimulation();
+            ZoomReset();
+            UpdateStats();
         }
 
         private void OnDocOpen(object sender, EventArgs e)

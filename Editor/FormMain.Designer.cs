@@ -39,8 +39,6 @@ namespace WalkerSim.Editor
             this.loadConfigurationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportConfigurationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
-            this.loadStateSaveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.saveStateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -78,21 +76,36 @@ namespace WalkerSim.Editor
             this.tabSimulation = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.lblPauseDuringBloodmoon = new WalkerSim.Editor.LabelWithHelp();
+            this.lblStartAgentsGrouped = new WalkerSim.Editor.LabelWithHelp();
             this.inputSpawnProtectionTime = new System.Windows.Forms.NumericUpDown();
             this.panel1 = new System.Windows.Forms.Panel();
             this.inputRandomSeed = new System.Windows.Forms.NumericUpDown();
             this.btRand = new System.Windows.Forms.Button();
             this.inputRespawnPosition = new System.Windows.Forms.ComboBox();
+            this.lblSpawnProtectionTime = new WalkerSim.Editor.LabelWithHelp();
+            this.lblRespawnPosition = new WalkerSim.Editor.LabelWithHelp();
             this.inputWorld = new System.Windows.Forms.ComboBox();
             this.inputStartPosition = new System.Windows.Forms.ComboBox();
+            this.lblWorld = new WalkerSim.Editor.LabelWithHelp();
+            this.lblStartPosition = new WalkerSim.Editor.LabelWithHelp();
+            this.lblRandomSeed = new WalkerSim.Editor.LabelWithHelp();
+            this.lblGroupSize = new WalkerSim.Editor.LabelWithHelp();
             this.inputGroupSize = new System.Windows.Forms.NumericUpDown();
+            this.lblPopulationDensity = new WalkerSim.Editor.LabelWithHelp();
             this.inputStartGrouped = new System.Windows.Forms.CheckBox();
             this.inputPauseDuringBloodmoon = new System.Windows.Forms.CheckBox();
+            this.lblFastForward = new WalkerSim.Editor.LabelWithHelp();
             this.inputFastForward = new System.Windows.Forms.CheckBox();
             this.inputMaxAgents = new System.Windows.Forms.NumericUpDown();
+            this.lblActivationRadius = new WalkerSim.Editor.LabelWithHelp();
             this.inputActivationRadius = new System.Windows.Forms.NumericUpDown();
+            this.lblEnhancedSoundAwareness = new WalkerSim.Editor.LabelWithHelp();
             this.inputSoundAware = new System.Windows.Forms.CheckBox();
+            this.labelWithHelp1 = new WalkerSim.Editor.LabelWithHelp();
             this.inputSoundDistanceScale = new System.Windows.Forms.NumericUpDown();
+            this.labelWithHelp2 = new WalkerSim.Editor.LabelWithHelp();
+            this.inputMaxSpawnedZombies = new WalkerSim.Editor.Controls.PercentageUpDown();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -122,9 +135,14 @@ namespace WalkerSim.Editor
             this.buttonGroupColor = new System.Windows.Forms.Button();
             this.inputPostSpawnBehavior = new System.Windows.Forms.ComboBox();
             this.inputAffectedGroup = new System.Windows.Forms.ComboBox();
+            this.lblPostSpawnWanderSpeed = new WalkerSim.Editor.LabelWithHelp();
+            this.lblMovementSpeed = new WalkerSim.Editor.LabelWithHelp();
             this.inputMovementSpeed = new System.Windows.Forms.NumericUpDown();
             this.lblAffected = new System.Windows.Forms.Label();
+            this.lblGroupColor = new WalkerSim.Editor.LabelWithHelp();
+            this.lblPostSpawnBehavior = new WalkerSim.Editor.LabelWithHelp();
             this.inputWanderSpeed = new System.Windows.Forms.ComboBox();
+            this.lblAffectedGroup = new WalkerSim.Editor.LabelWithHelp();
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.lblStatGroups = new System.Windows.Forms.Label();
             this.label24 = new System.Windows.Forms.Label();
@@ -156,26 +174,10 @@ namespace WalkerSim.Editor
             this.btZoomIn = new System.Windows.Forms.Label();
             this.btZoomOut = new System.Windows.Forms.Label();
             this.label29 = new System.Windows.Forms.Label();
-            this.lblPauseDuringBloodmoon = new WalkerSim.Editor.LabelWithHelp();
-            this.lblStartAgentsGrouped = new WalkerSim.Editor.LabelWithHelp();
-            this.lblSpawnProtectionTime = new WalkerSim.Editor.LabelWithHelp();
-            this.lblRespawnPosition = new WalkerSim.Editor.LabelWithHelp();
-            this.lblWorld = new WalkerSim.Editor.LabelWithHelp();
-            this.lblStartPosition = new WalkerSim.Editor.LabelWithHelp();
-            this.lblRandomSeed = new WalkerSim.Editor.LabelWithHelp();
-            this.lblGroupSize = new WalkerSim.Editor.LabelWithHelp();
-            this.lblPopulationDensity = new WalkerSim.Editor.LabelWithHelp();
-            this.lblFastForward = new WalkerSim.Editor.LabelWithHelp();
-            this.lblActivationRadius = new WalkerSim.Editor.LabelWithHelp();
-            this.lblEnhancedSoundAwareness = new WalkerSim.Editor.LabelWithHelp();
-            this.labelWithHelp1 = new WalkerSim.Editor.LabelWithHelp();
-            this.labelWithHelp2 = new WalkerSim.Editor.LabelWithHelp();
-            this.inputMaxSpawnedZombies = new WalkerSim.Editor.Controls.PercentageUpDown();
-            this.lblPostSpawnWanderSpeed = new WalkerSim.Editor.LabelWithHelp();
-            this.lblMovementSpeed = new WalkerSim.Editor.LabelWithHelp();
-            this.lblGroupColor = new WalkerSim.Editor.LabelWithHelp();
-            this.lblPostSpawnBehavior = new WalkerSim.Editor.LabelWithHelp();
-            this.lblAffectedGroup = new WalkerSim.Editor.LabelWithHelp();
+            this.debugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            this.loadStateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveStateToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -192,6 +194,7 @@ namespace WalkerSim.Editor
             ((System.ComponentModel.ISupportInitialize)(this.inputMaxAgents)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputActivationRadius)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputSoundDistanceScale)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.inputMaxSpawnedZombies)).BeginInit();
             this.tabPage2.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -213,7 +216,6 @@ namespace WalkerSim.Editor
             this.tabPage4.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.contextLog.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.inputMaxSpawnedZombies)).BeginInit();
             this.SuspendLayout();
             // 
             // updateTimer
@@ -241,8 +243,6 @@ namespace WalkerSim.Editor
             this.loadConfigurationToolStripMenuItem,
             this.exportConfigurationToolStripMenuItem,
             this.toolStripMenuItem1,
-            this.loadStateSaveToolStripMenuItem,
-            this.saveStateToolStripMenuItem,
             this.toolStripSeparator4,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
@@ -267,20 +267,6 @@ namespace WalkerSim.Editor
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
             this.toolStripMenuItem1.Size = new System.Drawing.Size(184, 6);
-            // 
-            // loadStateSaveToolStripMenuItem
-            // 
-            this.loadStateSaveToolStripMenuItem.Name = "loadStateSaveToolStripMenuItem";
-            this.loadStateSaveToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
-            this.loadStateSaveToolStripMenuItem.Text = "Load State";
-            this.loadStateSaveToolStripMenuItem.Click += new System.EventHandler(this.OnLoadStateClick);
-            // 
-            // saveStateToolStripMenuItem
-            // 
-            this.saveStateToolStripMenuItem.Name = "saveStateToolStripMenuItem";
-            this.saveStateToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
-            this.saveStateToolStripMenuItem.Text = "Save State";
-            this.saveStateToolStripMenuItem.Click += new System.EventHandler(this.OnSaveStateClick);
             // 
             // toolStripSeparator4
             // 
@@ -415,7 +401,9 @@ namespace WalkerSim.Editor
             this.pauseToolStripMenuItem,
             this.resumeToolStripMenuItem,
             this.speedToolStripMenuItem,
-            this.advanceOneTickToolStripMenuItem});
+            this.advanceOneTickToolStripMenuItem,
+            this.toolStripSeparator5,
+            this.debugToolStripMenuItem});
             this.simulationToolStripMenuItem.Name = "simulationToolStripMenuItem";
             this.simulationToolStripMenuItem.Size = new System.Drawing.Size(76, 20);
             this.simulationToolStripMenuItem.Text = "Simulation";
@@ -497,33 +485,33 @@ namespace WalkerSim.Editor
             // emitSoundToolStripMenuItem
             // 
             this.emitSoundToolStripMenuItem.Name = "emitSoundToolStripMenuItem";
-            this.emitSoundToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.emitSoundToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.emitSoundToolStripMenuItem.Text = "Emit Sound";
             this.emitSoundToolStripMenuItem.Click += new System.EventHandler(this.OnClickSoundEmit);
             // 
             // killToolStripMenuItem
             // 
             this.killToolStripMenuItem.Name = "killToolStripMenuItem";
-            this.killToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.killToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.killToolStripMenuItem.Text = "Kill";
             this.killToolStripMenuItem.Click += new System.EventHandler(this.OnClickKill);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(168, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(177, 6);
             // 
             // addPlayerToolStripMenuItem
             // 
             this.addPlayerToolStripMenuItem.Name = "addPlayerToolStripMenuItem";
-            this.addPlayerToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.addPlayerToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.addPlayerToolStripMenuItem.Text = "Add Player";
             this.addPlayerToolStripMenuItem.Click += new System.EventHandler(this.OnAddPlayerClick);
             // 
             // setPlayerPositionToolStripMenuItem
             // 
             this.setPlayerPositionToolStripMenuItem.Name = "setPlayerPositionToolStripMenuItem";
-            this.setPlayerPositionToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.setPlayerPositionToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.setPlayerPositionToolStripMenuItem.Text = "Set Player Position";
             this.setPlayerPositionToolStripMenuItem.Click += new System.EventHandler(this.OnSetPlayerPosClick);
             // 
@@ -655,6 +643,36 @@ namespace WalkerSim.Editor
             this.tableLayoutPanel1.Size = new System.Drawing.Size(826, 195);
             this.tableLayoutPanel1.TabIndex = 47;
             // 
+            // lblPauseDuringBloodmoon
+            // 
+            this.lblPauseDuringBloodmoon.AutoSize = true;
+            this.lblPauseDuringBloodmoon.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.lblPauseDuringBloodmoon.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblPauseDuringBloodmoon.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
+    "tml#pauseduringbloodmoon";
+            this.lblPauseDuringBloodmoon.LabelText = "Pause during Bloodmoon";
+            this.lblPauseDuringBloodmoon.Location = new System.Drawing.Point(581, 36);
+            this.lblPauseDuringBloodmoon.Margin = new System.Windows.Forms.Padding(16, 1, 0, 2);
+            this.lblPauseDuringBloodmoon.Name = "lblPauseDuringBloodmoon";
+            this.lblPauseDuringBloodmoon.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
+            this.lblPauseDuringBloodmoon.Size = new System.Drawing.Size(171, 27);
+            this.lblPauseDuringBloodmoon.TabIndex = 50;
+            // 
+            // lblStartAgentsGrouped
+            // 
+            this.lblStartAgentsGrouped.AutoSize = true;
+            this.lblStartAgentsGrouped.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.lblStartAgentsGrouped.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblStartAgentsGrouped.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
+    "tml#startagentsgrouped";
+            this.lblStartAgentsGrouped.LabelText = "Start Agents Grouped";
+            this.lblStartAgentsGrouped.Location = new System.Drawing.Point(581, 6);
+            this.lblStartAgentsGrouped.Margin = new System.Windows.Forms.Padding(16, 1, 0, 2);
+            this.lblStartAgentsGrouped.Name = "lblStartAgentsGrouped";
+            this.lblStartAgentsGrouped.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
+            this.lblStartAgentsGrouped.Size = new System.Drawing.Size(171, 27);
+            this.lblStartAgentsGrouped.TabIndex = 49;
+            // 
             // inputSpawnProtectionTime
             // 
             this.inputSpawnProtectionTime.Location = new System.Drawing.Point(143, 125);
@@ -730,6 +748,36 @@ namespace WalkerSim.Editor
             this.inputRespawnPosition.Size = new System.Drawing.Size(140, 21);
             this.inputRespawnPosition.TabIndex = 37;
             // 
+            // lblSpawnProtectionTime
+            // 
+            this.lblSpawnProtectionTime.AutoSize = true;
+            this.lblSpawnProtectionTime.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.lblSpawnProtectionTime.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblSpawnProtectionTime.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
+    "tml#spawnprotectiontime";
+            this.lblSpawnProtectionTime.LabelText = "Spawn Protection Time";
+            this.lblSpawnProtectionTime.Location = new System.Drawing.Point(0, 126);
+            this.lblSpawnProtectionTime.Margin = new System.Windows.Forms.Padding(0, 1, 0, 0);
+            this.lblSpawnProtectionTime.Name = "lblSpawnProtectionTime";
+            this.lblSpawnProtectionTime.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
+            this.lblSpawnProtectionTime.Size = new System.Drawing.Size(143, 29);
+            this.lblSpawnProtectionTime.TabIndex = 46;
+            // 
+            // lblRespawnPosition
+            // 
+            this.lblRespawnPosition.AutoSize = true;
+            this.lblRespawnPosition.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.lblRespawnPosition.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblRespawnPosition.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
+    "tml#agentrespawnposition";
+            this.lblRespawnPosition.LabelText = "Respawn Position";
+            this.lblRespawnPosition.Location = new System.Drawing.Point(288, 36);
+            this.lblRespawnPosition.Margin = new System.Windows.Forms.Padding(16, 1, 0, 2);
+            this.lblRespawnPosition.Name = "lblRespawnPosition";
+            this.lblRespawnPosition.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
+            this.lblRespawnPosition.Size = new System.Drawing.Size(137, 27);
+            this.lblRespawnPosition.TabIndex = 36;
+            // 
             // inputWorld
             // 
             this.inputWorld.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -752,6 +800,66 @@ namespace WalkerSim.Editor
             this.inputStartPosition.Name = "inputStartPosition";
             this.inputStartPosition.Size = new System.Drawing.Size(140, 21);
             this.inputStartPosition.TabIndex = 35;
+            // 
+            // lblWorld
+            // 
+            this.lblWorld.AutoSize = true;
+            this.lblWorld.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.lblWorld.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblWorld.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
+    "tml#startagentsgrouped";
+            this.lblWorld.LabelText = "World";
+            this.lblWorld.Location = new System.Drawing.Point(0, 6);
+            this.lblWorld.Margin = new System.Windows.Forms.Padding(0, 1, 0, 0);
+            this.lblWorld.Name = "lblWorld";
+            this.lblWorld.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
+            this.lblWorld.Size = new System.Drawing.Size(143, 29);
+            this.lblWorld.TabIndex = 40;
+            // 
+            // lblStartPosition
+            // 
+            this.lblStartPosition.AutoSize = true;
+            this.lblStartPosition.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.lblStartPosition.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblStartPosition.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
+    "tml#agentstartposition";
+            this.lblStartPosition.LabelText = "Start Position";
+            this.lblStartPosition.Location = new System.Drawing.Point(288, 6);
+            this.lblStartPosition.Margin = new System.Windows.Forms.Padding(16, 1, 0, 2);
+            this.lblStartPosition.Name = "lblStartPosition";
+            this.lblStartPosition.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
+            this.lblStartPosition.Size = new System.Drawing.Size(137, 27);
+            this.lblStartPosition.TabIndex = 34;
+            // 
+            // lblRandomSeed
+            // 
+            this.lblRandomSeed.AutoSize = true;
+            this.lblRandomSeed.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.lblRandomSeed.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblRandomSeed.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
+    "tml#randomseed";
+            this.lblRandomSeed.LabelText = "Random Seed";
+            this.lblRandomSeed.Location = new System.Drawing.Point(0, 36);
+            this.lblRandomSeed.Margin = new System.Windows.Forms.Padding(0, 1, 0, 0);
+            this.lblRandomSeed.Name = "lblRandomSeed";
+            this.lblRandomSeed.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
+            this.lblRandomSeed.Size = new System.Drawing.Size(143, 29);
+            this.lblRandomSeed.TabIndex = 29;
+            // 
+            // lblGroupSize
+            // 
+            this.lblGroupSize.AutoSize = true;
+            this.lblGroupSize.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.lblGroupSize.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblGroupSize.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
+    "tml";
+            this.lblGroupSize.LabelText = "Group Size";
+            this.lblGroupSize.Location = new System.Drawing.Point(0, 66);
+            this.lblGroupSize.Margin = new System.Windows.Forms.Padding(0, 1, 0, 0);
+            this.lblGroupSize.Name = "lblGroupSize";
+            this.lblGroupSize.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
+            this.lblGroupSize.Size = new System.Drawing.Size(143, 29);
+            this.lblGroupSize.TabIndex = 33;
             // 
             // inputGroupSize
             // 
@@ -777,6 +885,21 @@ namespace WalkerSim.Editor
             0,
             0});
             // 
+            // lblPopulationDensity
+            // 
+            this.lblPopulationDensity.AutoSize = true;
+            this.lblPopulationDensity.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.lblPopulationDensity.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblPopulationDensity.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
+    "tml#populationdensity";
+            this.lblPopulationDensity.LabelText = "Population Density";
+            this.lblPopulationDensity.Location = new System.Drawing.Point(0, 96);
+            this.lblPopulationDensity.Margin = new System.Windows.Forms.Padding(0, 1, 0, 0);
+            this.lblPopulationDensity.Name = "lblPopulationDensity";
+            this.lblPopulationDensity.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
+            this.lblPopulationDensity.Size = new System.Drawing.Size(143, 29);
+            this.lblPopulationDensity.TabIndex = 31;
+            // 
             // inputStartGrouped
             // 
             this.inputStartGrouped.AutoSize = true;
@@ -794,6 +917,21 @@ namespace WalkerSim.Editor
             this.inputPauseDuringBloodmoon.Size = new System.Drawing.Size(15, 14);
             this.inputPauseDuringBloodmoon.TabIndex = 39;
             this.inputPauseDuringBloodmoon.UseVisualStyleBackColor = true;
+            // 
+            // lblFastForward
+            // 
+            this.lblFastForward.AutoSize = true;
+            this.lblFastForward.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.lblFastForward.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblFastForward.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
+    "tml#fastforwardatstart";
+            this.lblFastForward.LabelText = "Fast forward at start";
+            this.lblFastForward.Location = new System.Drawing.Point(581, 66);
+            this.lblFastForward.Margin = new System.Windows.Forms.Padding(16, 1, 0, 2);
+            this.lblFastForward.Name = "lblFastForward";
+            this.lblFastForward.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
+            this.lblFastForward.Size = new System.Drawing.Size(171, 27);
+            this.lblFastForward.TabIndex = 51;
             // 
             // inputFastForward
             // 
@@ -829,6 +967,21 @@ namespace WalkerSim.Editor
             0,
             0});
             // 
+            // lblActivationRadius
+            // 
+            this.lblActivationRadius.AutoSize = true;
+            this.lblActivationRadius.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.lblActivationRadius.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblActivationRadius.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
+    "tml#spawnactivationradius";
+            this.lblActivationRadius.LabelText = "Activation Radius";
+            this.lblActivationRadius.Location = new System.Drawing.Point(288, 66);
+            this.lblActivationRadius.Margin = new System.Windows.Forms.Padding(16, 1, 0, 2);
+            this.lblActivationRadius.Name = "lblActivationRadius";
+            this.lblActivationRadius.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
+            this.lblActivationRadius.Size = new System.Drawing.Size(137, 27);
+            this.lblActivationRadius.TabIndex = 53;
+            // 
             // inputActivationRadius
             // 
             this.inputActivationRadius.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -858,6 +1011,21 @@ namespace WalkerSim.Editor
             0,
             0});
             // 
+            // lblEnhancedSoundAwareness
+            // 
+            this.lblEnhancedSoundAwareness.AutoSize = true;
+            this.lblEnhancedSoundAwareness.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.lblEnhancedSoundAwareness.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblEnhancedSoundAwareness.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
+    "tml#enhancedsoundawareness";
+            this.lblEnhancedSoundAwareness.LabelText = "Enhanced sound awareness";
+            this.lblEnhancedSoundAwareness.Location = new System.Drawing.Point(581, 96);
+            this.lblEnhancedSoundAwareness.Margin = new System.Windows.Forms.Padding(16, 1, 0, 2);
+            this.lblEnhancedSoundAwareness.Name = "lblEnhancedSoundAwareness";
+            this.lblEnhancedSoundAwareness.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
+            this.lblEnhancedSoundAwareness.Size = new System.Drawing.Size(171, 27);
+            this.lblEnhancedSoundAwareness.TabIndex = 55;
+            // 
             // inputSoundAware
             // 
             this.inputSoundAware.AutoSize = true;
@@ -866,6 +1034,21 @@ namespace WalkerSim.Editor
             this.inputSoundAware.Size = new System.Drawing.Size(15, 14);
             this.inputSoundAware.TabIndex = 56;
             this.inputSoundAware.UseVisualStyleBackColor = true;
+            // 
+            // labelWithHelp1
+            // 
+            this.labelWithHelp1.AutoSize = true;
+            this.labelWithHelp1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.labelWithHelp1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.labelWithHelp1.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
+    "tml#sounddistancescale";
+            this.labelWithHelp1.LabelText = "Sound Distance Scale";
+            this.labelWithHelp1.Location = new System.Drawing.Point(288, 96);
+            this.labelWithHelp1.Margin = new System.Windows.Forms.Padding(16, 1, 0, 2);
+            this.labelWithHelp1.Name = "labelWithHelp1";
+            this.labelWithHelp1.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
+            this.labelWithHelp1.Size = new System.Drawing.Size(137, 27);
+            this.labelWithHelp1.TabIndex = 57;
             // 
             // inputSoundDistanceScale
             // 
@@ -891,6 +1074,45 @@ namespace WalkerSim.Editor
             0,
             0,
             65536});
+            // 
+            // labelWithHelp2
+            // 
+            this.labelWithHelp2.AutoSize = true;
+            this.labelWithHelp2.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.labelWithHelp2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.labelWithHelp2.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
+    "tml#maxspawnedzombies";
+            this.labelWithHelp2.LabelText = "Max Spawned Zombies";
+            this.labelWithHelp2.Location = new System.Drawing.Point(288, 126);
+            this.labelWithHelp2.Margin = new System.Windows.Forms.Padding(16, 1, 0, 2);
+            this.labelWithHelp2.Name = "labelWithHelp2";
+            this.labelWithHelp2.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
+            this.labelWithHelp2.Size = new System.Drawing.Size(137, 27);
+            this.labelWithHelp2.TabIndex = 59;
+            // 
+            // inputMaxSpawnedZombies
+            // 
+            this.inputMaxSpawnedZombies.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.inputMaxSpawnedZombies.Location = new System.Drawing.Point(425, 125);
+            this.inputMaxSpawnedZombies.Margin = new System.Windows.Forms.Padding(0);
+            this.inputMaxSpawnedZombies.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            this.inputMaxSpawnedZombies.Minimum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.inputMaxSpawnedZombies.Name = "inputMaxSpawnedZombies";
+            this.inputMaxSpawnedZombies.Size = new System.Drawing.Size(140, 20);
+            this.inputMaxSpawnedZombies.TabIndex = 60;
+            this.inputMaxSpawnedZombies.Value = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
             // 
             // tabPage2
             // 
@@ -1289,6 +1511,34 @@ namespace WalkerSim.Editor
             this.inputAffectedGroup.TabIndex = 12;
             this.inputAffectedGroup.SelectionChangeCommitted += new System.EventHandler(this.OnGroupIdChanged);
             // 
+            // lblPostSpawnWanderSpeed
+            // 
+            this.lblPostSpawnWanderSpeed.AutoSize = true;
+            this.lblPostSpawnWanderSpeed.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.lblPostSpawnWanderSpeed.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/system" +
+    "s.html#postspawnwanderspeed";
+            this.lblPostSpawnWanderSpeed.LabelText = "Post Spawn Wander Speed";
+            this.lblPostSpawnWanderSpeed.Location = new System.Drawing.Point(3, 116);
+            this.lblPostSpawnWanderSpeed.Margin = new System.Windows.Forms.Padding(3, 8, 3, 3);
+            this.lblPostSpawnWanderSpeed.Name = "lblPostSpawnWanderSpeed";
+            this.lblPostSpawnWanderSpeed.Padding = new System.Windows.Forms.Padding(4, 0, 0, 2);
+            this.lblPostSpawnWanderSpeed.Size = new System.Drawing.Size(157, 15);
+            this.lblPostSpawnWanderSpeed.TabIndex = 13;
+            // 
+            // lblMovementSpeed
+            // 
+            this.lblMovementSpeed.AutoSize = true;
+            this.lblMovementSpeed.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.lblMovementSpeed.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/system" +
+    "s.html#speedscale";
+            this.lblMovementSpeed.LabelText = "Movement Speed";
+            this.lblMovementSpeed.Location = new System.Drawing.Point(3, 35);
+            this.lblMovementSpeed.Margin = new System.Windows.Forms.Padding(3, 8, 3, 3);
+            this.lblMovementSpeed.Name = "lblMovementSpeed";
+            this.lblMovementSpeed.Padding = new System.Windows.Forms.Padding(4, 0, 0, 2);
+            this.lblMovementSpeed.Size = new System.Drawing.Size(110, 15);
+            this.lblMovementSpeed.TabIndex = 2;
+            // 
             // inputMovementSpeed
             // 
             this.inputMovementSpeed.DecimalPlaces = 5;
@@ -1323,6 +1573,34 @@ namespace WalkerSim.Editor
             this.lblAffected.TabIndex = 9;
             this.lblAffected.Text = "Affected Agents: 0";
             // 
+            // lblGroupColor
+            // 
+            this.lblGroupColor.AutoSize = true;
+            this.lblGroupColor.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.lblGroupColor.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/system" +
+    "s.html#color";
+            this.lblGroupColor.LabelText = "Group Color";
+            this.lblGroupColor.Location = new System.Drawing.Point(3, 61);
+            this.lblGroupColor.Margin = new System.Windows.Forms.Padding(3, 8, 3, 3);
+            this.lblGroupColor.Name = "lblGroupColor";
+            this.lblGroupColor.Padding = new System.Windows.Forms.Padding(4, 0, 0, 2);
+            this.lblGroupColor.Size = new System.Drawing.Size(82, 15);
+            this.lblGroupColor.TabIndex = 6;
+            // 
+            // lblPostSpawnBehavior
+            // 
+            this.lblPostSpawnBehavior.AutoSize = true;
+            this.lblPostSpawnBehavior.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.lblPostSpawnBehavior.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/system" +
+    "s.html#postspawnbehavior";
+            this.lblPostSpawnBehavior.LabelText = "Post Spawn Behavior";
+            this.lblPostSpawnBehavior.Location = new System.Drawing.Point(3, 89);
+            this.lblPostSpawnBehavior.Margin = new System.Windows.Forms.Padding(3, 8, 3, 3);
+            this.lblPostSpawnBehavior.Name = "lblPostSpawnBehavior";
+            this.lblPostSpawnBehavior.Padding = new System.Windows.Forms.Padding(4, 0, 0, 2);
+            this.lblPostSpawnBehavior.Size = new System.Drawing.Size(128, 15);
+            this.lblPostSpawnBehavior.TabIndex = 10;
+            // 
             // inputWanderSpeed
             // 
             this.inputWanderSpeed.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -1339,6 +1617,20 @@ namespace WalkerSim.Editor
             this.inputWanderSpeed.Size = new System.Drawing.Size(99, 21);
             this.inputWanderSpeed.TabIndex = 16;
             this.inputWanderSpeed.SelectedIndexChanged += new System.EventHandler(this.OnPostSpawnWanderSpeedSelectionChanged);
+            // 
+            // lblAffectedGroup
+            // 
+            this.lblAffectedGroup.AutoSize = true;
+            this.lblAffectedGroup.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.lblAffectedGroup.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/system" +
+    "s.html#group-number";
+            this.lblAffectedGroup.LabelText = "Affected Group";
+            this.lblAffectedGroup.Location = new System.Drawing.Point(3, 8);
+            this.lblAffectedGroup.Margin = new System.Windows.Forms.Padding(3, 8, 3, 3);
+            this.lblAffectedGroup.Name = "lblAffectedGroup";
+            this.lblAffectedGroup.Padding = new System.Windows.Forms.Padding(4, 0, 0, 2);
+            this.lblAffectedGroup.Size = new System.Drawing.Size(98, 15);
+            this.lblAffectedGroup.TabIndex = 17;
             // 
             // tabPage4
             // 
@@ -1696,309 +1988,33 @@ namespace WalkerSim.Editor
             this.label29.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.label29.Click += new System.EventHandler(this.OnZoomResetClick);
             // 
-            // lblPauseDuringBloodmoon
+            // debugToolStripMenuItem
             // 
-            this.lblPauseDuringBloodmoon.AutoSize = true;
-            this.lblPauseDuringBloodmoon.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.lblPauseDuringBloodmoon.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblPauseDuringBloodmoon.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
-    "tml#pauseduringbloodmoon";
-            this.lblPauseDuringBloodmoon.LabelText = "Pause during Bloodmoon";
-            this.lblPauseDuringBloodmoon.Location = new System.Drawing.Point(581, 36);
-            this.lblPauseDuringBloodmoon.Margin = new System.Windows.Forms.Padding(16, 1, 0, 2);
-            this.lblPauseDuringBloodmoon.Name = "lblPauseDuringBloodmoon";
-            this.lblPauseDuringBloodmoon.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.lblPauseDuringBloodmoon.Size = new System.Drawing.Size(171, 27);
-            this.lblPauseDuringBloodmoon.TabIndex = 50;
+            this.debugToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.loadStateToolStripMenuItem,
+            this.saveStateToolStripMenuItem1});
+            this.debugToolStripMenuItem.Name = "debugToolStripMenuItem";
+            this.debugToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
+            this.debugToolStripMenuItem.Text = "Debug";
             // 
-            // lblStartAgentsGrouped
+            // toolStripSeparator5
             // 
-            this.lblStartAgentsGrouped.AutoSize = true;
-            this.lblStartAgentsGrouped.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.lblStartAgentsGrouped.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblStartAgentsGrouped.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
-    "tml#startagentsgrouped";
-            this.lblStartAgentsGrouped.LabelText = "Start Agents Grouped";
-            this.lblStartAgentsGrouped.Location = new System.Drawing.Point(581, 6);
-            this.lblStartAgentsGrouped.Margin = new System.Windows.Forms.Padding(16, 1, 0, 2);
-            this.lblStartAgentsGrouped.Name = "lblStartAgentsGrouped";
-            this.lblStartAgentsGrouped.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.lblStartAgentsGrouped.Size = new System.Drawing.Size(171, 27);
-            this.lblStartAgentsGrouped.TabIndex = 49;
+            this.toolStripSeparator5.Name = "toolStripSeparator5";
+            this.toolStripSeparator5.Size = new System.Drawing.Size(190, 6);
             // 
-            // lblSpawnProtectionTime
+            // loadStateToolStripMenuItem
             // 
-            this.lblSpawnProtectionTime.AutoSize = true;
-            this.lblSpawnProtectionTime.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.lblSpawnProtectionTime.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblSpawnProtectionTime.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
-    "tml#spawnprotectiontime";
-            this.lblSpawnProtectionTime.LabelText = "Spawn Protection Time";
-            this.lblSpawnProtectionTime.Location = new System.Drawing.Point(0, 126);
-            this.lblSpawnProtectionTime.Margin = new System.Windows.Forms.Padding(0, 1, 0, 0);
-            this.lblSpawnProtectionTime.Name = "lblSpawnProtectionTime";
-            this.lblSpawnProtectionTime.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.lblSpawnProtectionTime.Size = new System.Drawing.Size(143, 29);
-            this.lblSpawnProtectionTime.TabIndex = 46;
+            this.loadStateToolStripMenuItem.Name = "loadStateToolStripMenuItem";
+            this.loadStateToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.loadStateToolStripMenuItem.Text = "Load State";
+            this.loadStateToolStripMenuItem.Click += new System.EventHandler(this.OnLoadStateClick);
             // 
-            // lblRespawnPosition
+            // saveStateToolStripMenuItem1
             // 
-            this.lblRespawnPosition.AutoSize = true;
-            this.lblRespawnPosition.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.lblRespawnPosition.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblRespawnPosition.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
-    "tml#agentrespawnposition";
-            this.lblRespawnPosition.LabelText = "Respawn Position";
-            this.lblRespawnPosition.Location = new System.Drawing.Point(288, 36);
-            this.lblRespawnPosition.Margin = new System.Windows.Forms.Padding(16, 1, 0, 2);
-            this.lblRespawnPosition.Name = "lblRespawnPosition";
-            this.lblRespawnPosition.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.lblRespawnPosition.Size = new System.Drawing.Size(137, 27);
-            this.lblRespawnPosition.TabIndex = 36;
-            // 
-            // lblWorld
-            // 
-            this.lblWorld.AutoSize = true;
-            this.lblWorld.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.lblWorld.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblWorld.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
-    "tml#startagentsgrouped";
-            this.lblWorld.LabelText = "World";
-            this.lblWorld.Location = new System.Drawing.Point(0, 6);
-            this.lblWorld.Margin = new System.Windows.Forms.Padding(0, 1, 0, 0);
-            this.lblWorld.Name = "lblWorld";
-            this.lblWorld.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.lblWorld.Size = new System.Drawing.Size(143, 29);
-            this.lblWorld.TabIndex = 40;
-            // 
-            // lblStartPosition
-            // 
-            this.lblStartPosition.AutoSize = true;
-            this.lblStartPosition.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.lblStartPosition.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblStartPosition.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
-    "tml#agentstartposition";
-            this.lblStartPosition.LabelText = "Start Position";
-            this.lblStartPosition.Location = new System.Drawing.Point(288, 6);
-            this.lblStartPosition.Margin = new System.Windows.Forms.Padding(16, 1, 0, 2);
-            this.lblStartPosition.Name = "lblStartPosition";
-            this.lblStartPosition.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.lblStartPosition.Size = new System.Drawing.Size(137, 27);
-            this.lblStartPosition.TabIndex = 34;
-            // 
-            // lblRandomSeed
-            // 
-            this.lblRandomSeed.AutoSize = true;
-            this.lblRandomSeed.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.lblRandomSeed.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblRandomSeed.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
-    "tml#randomseed";
-            this.lblRandomSeed.LabelText = "Random Seed";
-            this.lblRandomSeed.Location = new System.Drawing.Point(0, 36);
-            this.lblRandomSeed.Margin = new System.Windows.Forms.Padding(0, 1, 0, 0);
-            this.lblRandomSeed.Name = "lblRandomSeed";
-            this.lblRandomSeed.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.lblRandomSeed.Size = new System.Drawing.Size(143, 29);
-            this.lblRandomSeed.TabIndex = 29;
-            // 
-            // lblGroupSize
-            // 
-            this.lblGroupSize.AutoSize = true;
-            this.lblGroupSize.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.lblGroupSize.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblGroupSize.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
-    "tml";
-            this.lblGroupSize.LabelText = "Group Size";
-            this.lblGroupSize.Location = new System.Drawing.Point(0, 66);
-            this.lblGroupSize.Margin = new System.Windows.Forms.Padding(0, 1, 0, 0);
-            this.lblGroupSize.Name = "lblGroupSize";
-            this.lblGroupSize.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.lblGroupSize.Size = new System.Drawing.Size(143, 29);
-            this.lblGroupSize.TabIndex = 33;
-            // 
-            // lblPopulationDensity
-            // 
-            this.lblPopulationDensity.AutoSize = true;
-            this.lblPopulationDensity.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.lblPopulationDensity.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblPopulationDensity.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
-    "tml#populationdensity";
-            this.lblPopulationDensity.LabelText = "Population Density";
-            this.lblPopulationDensity.Location = new System.Drawing.Point(0, 96);
-            this.lblPopulationDensity.Margin = new System.Windows.Forms.Padding(0, 1, 0, 0);
-            this.lblPopulationDensity.Name = "lblPopulationDensity";
-            this.lblPopulationDensity.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.lblPopulationDensity.Size = new System.Drawing.Size(143, 29);
-            this.lblPopulationDensity.TabIndex = 31;
-            // 
-            // lblFastForward
-            // 
-            this.lblFastForward.AutoSize = true;
-            this.lblFastForward.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.lblFastForward.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblFastForward.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
-    "tml#fastforwardatstart";
-            this.lblFastForward.LabelText = "Fast forward at start";
-            this.lblFastForward.Location = new System.Drawing.Point(581, 66);
-            this.lblFastForward.Margin = new System.Windows.Forms.Padding(16, 1, 0, 2);
-            this.lblFastForward.Name = "lblFastForward";
-            this.lblFastForward.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.lblFastForward.Size = new System.Drawing.Size(171, 27);
-            this.lblFastForward.TabIndex = 51;
-            // 
-            // lblActivationRadius
-            // 
-            this.lblActivationRadius.AutoSize = true;
-            this.lblActivationRadius.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.lblActivationRadius.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblActivationRadius.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
-    "tml#spawnactivationradius";
-            this.lblActivationRadius.LabelText = "Activation Radius";
-            this.lblActivationRadius.Location = new System.Drawing.Point(288, 66);
-            this.lblActivationRadius.Margin = new System.Windows.Forms.Padding(16, 1, 0, 2);
-            this.lblActivationRadius.Name = "lblActivationRadius";
-            this.lblActivationRadius.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.lblActivationRadius.Size = new System.Drawing.Size(137, 27);
-            this.lblActivationRadius.TabIndex = 53;
-            // 
-            // lblEnhancedSoundAwareness
-            // 
-            this.lblEnhancedSoundAwareness.AutoSize = true;
-            this.lblEnhancedSoundAwareness.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.lblEnhancedSoundAwareness.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblEnhancedSoundAwareness.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
-    "tml#enhancedsoundawareness";
-            this.lblEnhancedSoundAwareness.LabelText = "Enhanced sound awareness";
-            this.lblEnhancedSoundAwareness.Location = new System.Drawing.Point(581, 96);
-            this.lblEnhancedSoundAwareness.Margin = new System.Windows.Forms.Padding(16, 1, 0, 2);
-            this.lblEnhancedSoundAwareness.Name = "lblEnhancedSoundAwareness";
-            this.lblEnhancedSoundAwareness.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.lblEnhancedSoundAwareness.Size = new System.Drawing.Size(171, 27);
-            this.lblEnhancedSoundAwareness.TabIndex = 55;
-            // 
-            // labelWithHelp1
-            // 
-            this.labelWithHelp1.AutoSize = true;
-            this.labelWithHelp1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.labelWithHelp1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.labelWithHelp1.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
-    "tml#sounddistancescale";
-            this.labelWithHelp1.LabelText = "Sound Distance Scale";
-            this.labelWithHelp1.Location = new System.Drawing.Point(288, 96);
-            this.labelWithHelp1.Margin = new System.Windows.Forms.Padding(16, 1, 0, 2);
-            this.labelWithHelp1.Name = "labelWithHelp1";
-            this.labelWithHelp1.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.labelWithHelp1.Size = new System.Drawing.Size(137, 27);
-            this.labelWithHelp1.TabIndex = 57;
-            // 
-            // labelWithHelp2
-            // 
-            this.labelWithHelp2.AutoSize = true;
-            this.labelWithHelp2.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.labelWithHelp2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.labelWithHelp2.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/base.h" +
-    "tml#maxspawnedzombies";
-            this.labelWithHelp2.LabelText = "Max Spawned Zombies";
-            this.labelWithHelp2.Location = new System.Drawing.Point(288, 126);
-            this.labelWithHelp2.Margin = new System.Windows.Forms.Padding(16, 1, 0, 2);
-            this.labelWithHelp2.Name = "labelWithHelp2";
-            this.labelWithHelp2.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.labelWithHelp2.Size = new System.Drawing.Size(137, 27);
-            this.labelWithHelp2.TabIndex = 59;
-            // 
-            // inputMaxSpawnedZombies
-            // 
-            this.inputMaxSpawnedZombies.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.inputMaxSpawnedZombies.Location = new System.Drawing.Point(425, 125);
-            this.inputMaxSpawnedZombies.Margin = new System.Windows.Forms.Padding(0);
-            this.inputMaxSpawnedZombies.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-            this.inputMaxSpawnedZombies.Minimum = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            this.inputMaxSpawnedZombies.Name = "inputMaxSpawnedZombies";
-            this.inputMaxSpawnedZombies.Size = new System.Drawing.Size(140, 20);
-            this.inputMaxSpawnedZombies.TabIndex = 60;
-            this.inputMaxSpawnedZombies.Value = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            // 
-            // lblPostSpawnWanderSpeed
-            // 
-            this.lblPostSpawnWanderSpeed.AutoSize = true;
-            this.lblPostSpawnWanderSpeed.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.lblPostSpawnWanderSpeed.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/system" +
-    "s.html#postspawnwanderspeed";
-            this.lblPostSpawnWanderSpeed.LabelText = "Post Spawn Wander Speed";
-            this.lblPostSpawnWanderSpeed.Location = new System.Drawing.Point(3, 116);
-            this.lblPostSpawnWanderSpeed.Margin = new System.Windows.Forms.Padding(3, 8, 3, 3);
-            this.lblPostSpawnWanderSpeed.Name = "lblPostSpawnWanderSpeed";
-            this.lblPostSpawnWanderSpeed.Padding = new System.Windows.Forms.Padding(4, 0, 0, 2);
-            this.lblPostSpawnWanderSpeed.Size = new System.Drawing.Size(157, 15);
-            this.lblPostSpawnWanderSpeed.TabIndex = 13;
-            // 
-            // lblMovementSpeed
-            // 
-            this.lblMovementSpeed.AutoSize = true;
-            this.lblMovementSpeed.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.lblMovementSpeed.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/system" +
-    "s.html#speedscale";
-            this.lblMovementSpeed.LabelText = "Movement Speed";
-            this.lblMovementSpeed.Location = new System.Drawing.Point(3, 35);
-            this.lblMovementSpeed.Margin = new System.Windows.Forms.Padding(3, 8, 3, 3);
-            this.lblMovementSpeed.Name = "lblMovementSpeed";
-            this.lblMovementSpeed.Padding = new System.Windows.Forms.Padding(4, 0, 0, 2);
-            this.lblMovementSpeed.Size = new System.Drawing.Size(110, 15);
-            this.lblMovementSpeed.TabIndex = 2;
-            // 
-            // lblGroupColor
-            // 
-            this.lblGroupColor.AutoSize = true;
-            this.lblGroupColor.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.lblGroupColor.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/system" +
-    "s.html#color";
-            this.lblGroupColor.LabelText = "Group Color";
-            this.lblGroupColor.Location = new System.Drawing.Point(3, 61);
-            this.lblGroupColor.Margin = new System.Windows.Forms.Padding(3, 8, 3, 3);
-            this.lblGroupColor.Name = "lblGroupColor";
-            this.lblGroupColor.Padding = new System.Windows.Forms.Padding(4, 0, 0, 2);
-            this.lblGroupColor.Size = new System.Drawing.Size(82, 15);
-            this.lblGroupColor.TabIndex = 6;
-            // 
-            // lblPostSpawnBehavior
-            // 
-            this.lblPostSpawnBehavior.AutoSize = true;
-            this.lblPostSpawnBehavior.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.lblPostSpawnBehavior.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/system" +
-    "s.html#postspawnbehavior";
-            this.lblPostSpawnBehavior.LabelText = "Post Spawn Behavior";
-            this.lblPostSpawnBehavior.Location = new System.Drawing.Point(3, 89);
-            this.lblPostSpawnBehavior.Margin = new System.Windows.Forms.Padding(3, 8, 3, 3);
-            this.lblPostSpawnBehavior.Name = "lblPostSpawnBehavior";
-            this.lblPostSpawnBehavior.Padding = new System.Windows.Forms.Padding(4, 0, 0, 2);
-            this.lblPostSpawnBehavior.Size = new System.Drawing.Size(128, 15);
-            this.lblPostSpawnBehavior.TabIndex = 10;
-            // 
-            // lblAffectedGroup
-            // 
-            this.lblAffectedGroup.AutoSize = true;
-            this.lblAffectedGroup.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.lblAffectedGroup.HelpUrl = "https://7dtd-walkersim2.readthedocs.io/<version>/configuring/configuration/system" +
-    "s.html#group-number";
-            this.lblAffectedGroup.LabelText = "Affected Group";
-            this.lblAffectedGroup.Location = new System.Drawing.Point(3, 8);
-            this.lblAffectedGroup.Margin = new System.Windows.Forms.Padding(3, 8, 3, 3);
-            this.lblAffectedGroup.Name = "lblAffectedGroup";
-            this.lblAffectedGroup.Padding = new System.Windows.Forms.Padding(4, 0, 0, 2);
-            this.lblAffectedGroup.Size = new System.Drawing.Size(98, 15);
-            this.lblAffectedGroup.TabIndex = 17;
+            this.saveStateToolStripMenuItem1.Name = "saveStateToolStripMenuItem1";
+            this.saveStateToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            this.saveStateToolStripMenuItem1.Text = "Save State";
+            this.saveStateToolStripMenuItem1.Click += new System.EventHandler(this.OnSaveStateClick);
             // 
             // FormMain
             // 
@@ -2039,6 +2055,7 @@ namespace WalkerSim.Editor
             ((System.ComponentModel.ISupportInitialize)(this.inputMaxAgents)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputActivationRadius)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputSoundDistanceScale)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.inputMaxSpawnedZombies)).EndInit();
             this.tabPage2.ResumeLayout(false);
             this.tableLayoutPanel2.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
@@ -2063,7 +2080,6 @@ namespace WalkerSim.Editor
             this.tabPage4.PerformLayout();
             this.tabPage3.ResumeLayout(false);
             this.contextLog.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.inputMaxSpawnedZombies)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -2172,8 +2188,6 @@ namespace WalkerSim.Editor
         private System.Windows.Forms.Label label24;
         private LabelWithHelp lblActivationRadius;
         private System.Windows.Forms.NumericUpDown inputActivationRadius;
-        private System.Windows.Forms.ToolStripMenuItem loadStateSaveToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem saveStateToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripMenuItem resetToolStripMenuItem;
         private LabelWithHelp lblEnhancedSoundAwareness;
@@ -2215,6 +2229,10 @@ namespace WalkerSim.Editor
         private System.Windows.Forms.NumericUpDown inputSoundDistanceScale;
         private LabelWithHelp labelWithHelp2;
         private PercentageUpDown inputMaxSpawnedZombies;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
+        private System.Windows.Forms.ToolStripMenuItem debugToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem loadStateToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveStateToolStripMenuItem1;
     }
 }
 
