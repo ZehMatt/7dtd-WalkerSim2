@@ -15,7 +15,8 @@ namespace WalkerSim
 
         // Increment this in case of a breaking change in the save format.
         // Version 8: New configuration SoundDistanceScale.
-        private const uint SaveVersion = 8;
+        // Version 9: Might have saved an empty state, skip loading the old one.
+        private const uint SaveVersion = 9;
 
         private void SaveState(State state, BinaryWriter writer)
         {

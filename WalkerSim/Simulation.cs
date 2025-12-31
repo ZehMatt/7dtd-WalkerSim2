@@ -110,6 +110,9 @@ namespace WalkerSim
             _state.POIIterator = 0;
             _state.IsBloodmoon = false;
             _state.IsDayTime = true;
+
+            // Prevent auto save writing empty state.
+            _autoSaveFile = null;
         }
 
         public void Advance(uint numTicks)

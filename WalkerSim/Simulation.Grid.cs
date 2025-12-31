@@ -227,6 +227,14 @@ namespace WalkerSim
             for (int i = 0; i < cell.Count; i++)
             {
                 var idx = cell[i];
+#if DEBUG
+                if (idx < 0 || idx >= _state.Agents.Count)
+                {
+                    Logging.DbgErr($"Agent index out of bounds in grid cell: {idx}, Total Agents: {_state.Agents.Count}");
+                    continue;
+                }
+#endif
+
                 var other = _state.Agents[idx];
 
                 if (other.CurrentState != Agent.State.Wandering)

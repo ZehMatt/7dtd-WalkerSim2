@@ -283,6 +283,12 @@ namespace WalkerSim
                             "This should never happen, make sure the save folder does not contain a 'walkersim.bin' save file from another game.");
                         resetSim = true;
                     }
+
+                    Logging.Out("Simulation loaded");
+                    Logging.Out(" World Name: {0}", simulation.WorldName);
+                    Logging.Out(" World Size: {0}, {1}", simulation.WorldMins, simulation.WorldMaxs);
+                    Logging.Out(" Agents: {0}", simulation.AgentCount);
+                    Logging.Out(" Active Agents: {0}", simulation.Active.Count);
                 }
                 else
                 {
