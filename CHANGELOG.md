@@ -1,4 +1,4 @@
-# 0.9.17 (in progress)
+# 0.9.17
 - Fix: WalkerSim saved state can become corrupted on game shutdown causing a lot of errors when loading the saved game.
 
 # 0.9.16
