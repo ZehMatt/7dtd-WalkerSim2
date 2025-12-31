@@ -1,4 +1,5 @@
 # 0.9.17 (in progress)
+- Fix: WalkerSim saved state can become corrupted on game shutdown causing a lot of errors when loading the saved game.
 
 # 0.9.16
 - Fix: Potential crash in the Editor with corrupted or malformed generated worlds.
