@@ -100,7 +100,7 @@ namespace WalkerSim
 
         private void UpdateEvents()
         {
-            var dt = TickRate;
+            var dt = Constants.TickRate;
             var events = _state.Events;
 
             lock (events)

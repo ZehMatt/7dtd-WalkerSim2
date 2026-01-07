@@ -59,10 +59,6 @@ namespace WalkerSim
 
         public float TimeScale = 1.0f;
 
-        public const int TicksPerSecond = 30;
-        public const float TickRate = 1f / TicksPerSecond;
-        public const int TickRateMs = 1000 / TicksPerSecond;
-
         private Thread _thread;
         private bool _running = false;
         private bool _shouldStop = false;
@@ -389,7 +385,7 @@ namespace WalkerSim
             var config = _state.Config;
 
             // Give each agent 2 meters distance to each other.
-            var maxDistance = MathEx.Clamp((float)_state.Config.GroupSize * 2.0f, 10.0f, 500.0f);
+            var maxDistance = MathEx.Clamp((float)_state.Config.GroupSize * 6.0f, 16.0f, 500.0f);
 
             if (config.StartAgentsGrouped)
             {
@@ -526,7 +522,7 @@ namespace WalkerSim
 
                 accumulator = System.Math.Min(accumulator + scaledDt, 5.0f);
 
-                if (accumulator < TickRate)
+                if (accumulator < Constants.TickRate)
                 {
                     if (_shouldStop)
                         break;
@@ -535,11 +531,11 @@ namespace WalkerSim
                     continue;
                 }
 
-                while (accumulator >= TickRate)
+                while (accumulator >= Constants.TickRate)
                 {
                     Tick();
 
-                    accumulator -= TickRate;
+                    accumulator -= Constants.TickRate;
 
                     if (_shouldStop)
                         break;
@@ -618,7 +614,7 @@ namespace WalkerSim
 
         private int SecondsToTicks(int seconds)
         {
-            return seconds * TicksPerSecond;
+            return seconds * Constants.TicksPerSecond;
         }
 
         private int MinutesToTicks(int minutes)

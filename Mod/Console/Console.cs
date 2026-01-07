@@ -78,6 +78,9 @@ namespace WalkerSim.Console
                 Handler = new Action<CommandSenderInfo>((sender) =>
                 {
                     var sim = Simulation.Instance;
+                    var numDead = sim.NumAgentsDead;
+                    var numTotal = sim.Agents.Count;
+                    var numAlive = numTotal - numDead;
 
                     SdtdConsole.Instance.Output("--- Simulation Statistics ---");
                     SdtdConsole.Instance.Output("  World Size: {0}", sim.WorldSize);
@@ -85,7 +88,9 @@ namespace WalkerSim.Console
                     SdtdConsole.Instance.Output("  Active: {0}", sim.Running);
                     SdtdConsole.Instance.Output("  Paused: {0}", sim.Paused);
                     SdtdConsole.Instance.Output("  Players: {0}", sim.PlayerCount);
-                    SdtdConsole.Instance.Output("  Total Agents: {0}", sim.Agents.Count);
+                    SdtdConsole.Instance.Output("  Total Agents: {0}", numTotal);
+                    SdtdConsole.Instance.Output("  Alive Agents: {0} {1}%", numAlive, (numAlive / (float)numTotal) * 100.0f);
+                    SdtdConsole.Instance.Output("  Dead Agents: {0} {1}%", numDead, (numDead / (float)numTotal) * 100.0f);
                     SdtdConsole.Instance.Output("  Total Groups: {0}", sim.GroupCount);
                     SdtdConsole.Instance.Output("  Successful Spawns: {0}", sim.SuccessfulSpawns);
                     SdtdConsole.Instance.Output("  Failed Spawns: {0}", sim.FailedSpawns);

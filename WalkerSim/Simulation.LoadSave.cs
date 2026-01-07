@@ -11,13 +11,6 @@ namespace WalkerSim
         private string _autoSaveFile;
         private float _autoSaveInterval = -1;
 
-        private const uint SaveMagic = 0x4D534B57; // WKSM
-
-        // Increment this in case of a breaking change in the save format.
-        // Version 8: New configuration SoundDistanceScale.
-        // Version 9: Might have saved an empty state, skip loading the old one.
-        private const uint SaveVersion = 9;
-
         private void SaveState(State state, BinaryWriter writer)
         {
             SaveHeader(state, writer);
@@ -32,8 +25,8 @@ namespace WalkerSim
 
         private void SaveHeader(State state, BinaryWriter writer)
         {
-            Serialization.WriteUInt32(writer, SaveMagic, false);
-            Serialization.WriteUInt32(writer, SaveVersion, false);
+            Serialization.WriteUInt32(writer, Constants.SaveMagic, false);
+            Serialization.WriteUInt32(writer, Constants.SaveVersion, false);
         }
 
         private void SaveInfo(State state, BinaryWriter writer)
@@ -163,13 +156,13 @@ namespace WalkerSim
         private bool LoadHeader(State state, BinaryReader reader)
         {
             var magic = Serialization.ReadUInt32(reader, false);
-            if (magic != SaveMagic)
+            if (magic != Constants.SaveMagic)
             {
                 throw new Exception("Invalid magic value, file is probably corrupted.");
             }
 
             state.Version = Serialization.ReadUInt32(reader, false);
-            if (state.Version != SaveVersion)
+            if (state.Version != Constants.SaveVersion)
             {
                 Logging.Info("Saved state is using a different version, skipping load.");
                 return false;

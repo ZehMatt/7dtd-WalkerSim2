@@ -98,6 +98,12 @@ namespace WalkerSim
             AvoidPOIs,
             [XmlEnum("WorldEvents")]
             WorldEvents,
+            [XmlEnum("PreferCities")]
+            PreferCities,
+            [XmlEnum("AvoidCities")]
+            AvoidCities,
+            [XmlEnum("CityVisitor")]
+            CityVisitor,
         }
 
         public class MovementProcessor

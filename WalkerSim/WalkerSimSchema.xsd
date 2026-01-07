@@ -478,6 +478,21 @@
                     <xs:documentation>Agents react to world events</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
+            <xs:enumeration value="PreferCities">
+                <xs:annotation>
+                    <xs:documentation>Agents prefer to stay within city boundaries</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="AvoidCities">
+                <xs:annotation>
+                    <xs:documentation>Agents avoid city boundaries</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="CityVisitor">
+                <xs:annotation>
+                    <xs:documentation>Agents visit cities in sequence, staying for a period before moving to the next city</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
 

@@ -73,7 +73,7 @@ namespace WalkerSim
 
             if (classIdCount > 0)
             {
-                var penalty = 0.35f + (float)System.Math.Pow(classIdCount, 3.5);
+                var penalty = 0.75f + (float)System.Math.Pow(classIdCount, 7.5);
                 prob /= penalty;
             }
 
@@ -244,10 +244,10 @@ namespace WalkerSim
                     continue;
 
                 var existingCount = GetSpawnedClassIdCount(selectedClassId);
-                if (existingCount >= 2)
+                if (existingCount >= 1)
                 {
                     Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
-                        "Selected entity class {0} ({1}) exists too often, instances: {2}, retrying...",
+                        "Selected entity class {0} ({1}) already exists, instances: {2}, retrying...",
                         selectedClassName,
                         selectedClassId,
                         existingCount);
@@ -484,10 +484,10 @@ namespace WalkerSim
                 }
 
                 var existingCount = GetSpawnedClassIdCount(selectedClassId);
-                if (existingCount >= 2)
+                if (existingCount >= 1)
                 {
                     Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
-                        "Selected entity class {0} ({1}) exists too often, instances: {2}, retrying...",
+                        "Selected entity class {0} ({1}) already exists, instances: {2}, retrying...",
                         selectedClassName,
                         selectedClassId,
                         existingCount);
