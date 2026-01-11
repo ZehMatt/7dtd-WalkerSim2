@@ -133,7 +133,7 @@ namespace WalkerSim
             public PostSpawnBehavior PostSpawnBehavior = PostSpawnBehavior.Wander;
 
             [XmlAttribute("PostSpawnWanderSpeed")]
-            public WanderingSpeed PostSpawnWanderSpeed = WanderingSpeed.NoOverride;
+            public WanderingSpeed PostSpawnWanderSpeed = WanderingSpeed.Walk;
 
             [XmlAttribute("Color")]
             public string Color = "";
