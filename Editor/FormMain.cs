@@ -105,6 +105,7 @@ namespace WalkerSim.Editor
             viewPrefabs.Click += (sender, e) => RenderSimulation();
             viewEvents.Click += (sender, e) => RenderSimulation();
             viewBiomes.Click += (sender, e) => RenderSimulation();
+            viewCities.Click += (sender, e) => RenderSimulation();
 
             splitContainer1.Panel1.AutoScroll = true;
             splitContainer1.Panel1.MouseWheel += (sender, e) =>
@@ -576,6 +577,11 @@ namespace WalkerSim.Editor
             if (viewRoads.Checked)
             {
                 Renderer.RenderRoads(gr, simulation);
+            }
+
+            if (viewCities.Checked)
+            {
+                Renderer.RenderCities(gr, simulation);
             }
 
             if (viewPrefabs.Checked)
@@ -1151,6 +1157,18 @@ namespace WalkerSim.Editor
                 case Config.MovementProcessorType.WorldEvents:
                     processor.Power = 0.01f;
                     break;
+                case Config.MovementProcessorType.PreferCities:
+                    processor.Distance = 100.0f;
+                    processor.Power = 0.5f;
+                    break;
+                case Config.MovementProcessorType.AvoidCities:
+                    processor.Distance = 100.0f;
+                    processor.Power = 0.5f;
+                    break;
+                case Config.MovementProcessorType.CityVisitor:
+                    processor.Distance = 0.0f;
+                    processor.Power = 0.8f;
+                    break;
                 default:
                     break;
             }
@@ -1536,6 +1554,15 @@ namespace WalkerSim.Editor
                 RenderSimulation();
                 ZoomReset();
                 UpdateStats();
+
+                int numDead = 0;
+                foreach (var agent in simulation.Agents)
+                {
+                    if (agent.CurrentState == Agent.State.Dead)
+                        numDead++;
+                }
+
+                Logging.Info($"Loaded state save with {simulation.AgentCount} agents, {numDead} dead.");
             }
         }
 

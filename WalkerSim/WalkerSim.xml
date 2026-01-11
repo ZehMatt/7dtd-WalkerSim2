@@ -8,69 +8,96 @@
     <Events>false</Events>
   </Logging>
   <RandomSeed>665992037</RandomSeed>
-  <PopulationDensity>180</PopulationDensity>
+  <PopulationDensity>140</PopulationDensity>
   <SpawnActivationRadius>96</SpawnActivationRadius>
   <StartAgentsGrouped>true</StartAgentsGrouped>
   <EnhancedSoundAwareness>true</EnhancedSoundAwareness>
-  <SoundDistanceScale>1.0</SoundDistanceScale>
+  <SoundDistanceScale>1</SoundDistanceScale>
   <FastForwardAtStart>true</FastForwardAtStart>
   <GroupSize>16</GroupSize>
-  <AgentStartPosition>RandomLocation</AgentStartPosition>
+  <AgentStartPosition>RandomCity</AgentStartPosition>
   <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>
   <PauseDuringBloodmoon>true</PauseDuringBloodmoon>
-  <SpawnProtectionTime>300</SpawnProtectionTime>
+  <SpawnProtectionTime>140</SpawnProtectionTime>
   <MaxSpawnedZombies>75%</MaxSpawnedZombies>
   <MovementProcessors>
+    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="Lime">
+      <Processor Type="CityVisitor" Distance="0" Power="0.06" />
+      <Processor Type="AvoidSameGroup" Distance="15" Power="0.01" />
+      <Processor Type="AlignSameGroup" Distance="20" Power="0.005" />
+      <Processor Type="WorldEvents" Distance="0" Power="0.01" />
+      <Processor Type="StickToRoads" Distance="0" Power="0.001" />
+    </ProcessorGroup>
     <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="Red">
-      <Processor Type="StickToRoads" Distance="0" Power="0.01" />
-      <Processor Type="Wind" Distance="0" Power="0.005" />
-      <Processor Type="AvoidOtherGroup" Distance="80" Power="0.01" />
-      <Processor Type="AvoidSameGroup" Distance="5" Power="0.01" />
-      <Processor Type="WorldEvents" Distance="0" Power="0.6" />
-    </ProcessorGroup>
-    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="Blue">
-      <Processor Type="AvoidRoads" Distance="0" Power="0.005" />
-      <Processor Type="AvoidAnyGroup" Distance="25" Power="0.01" />
-      <Processor Type="Wind" Distance="0" Power="0.2" />
-      <Processor Type="AvoidPOIs" Distance="50" Power="0.005" />
-      <Processor Type="WorldEvents" Distance="0" Power="0.6" />
-    </ProcessorGroup>
-    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="Cyan">
-      <Processor Type="StickToRoads" Distance="0" Power="0.01" />
-      <Processor Type="Wind" Distance="0" Power="0.007" />
-      <Processor Type="AvoidAnyGroup" Distance="45" Power="0.01" />
-      <Processor Type="WorldEvents" Distance="0" Power="0.6" />
-    </ProcessorGroup>
-    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="Yellow">
-      <Processor Type="StickToPOIs" Distance="0" Power="0.008" />
-      <Processor Type="AvoidSameGroup" Distance="25" Power="0.01" />
-      <Processor Type="Wind" Distance="0" Power="0.005" />
-      <Processor Type="AvoidOtherGroup" Distance="25" Power="0.001" />
-      <Processor Type="WorldEvents" Distance="0" Power="0.6" />
-      <Processor Type="AlignSameGroup" Distance="45" Power="0.01" />
-    </ProcessorGroup>
-    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="Green">
       <Processor Type="FlockSameGroup" Distance="15" Power="0.01" />
-      <Processor Type="WindInverted" Distance="0" Power="0.01" />
-      <Processor Type="AlignSameGroup" Distance="5" Power="0.01" />
-      <Processor Type="AvoidOtherGroup" Distance="50" Power="0.15" />
+      <Processor Type="AlignSameGroup" Distance="30" Power="0.01" />
+      <Processor Type="AvoidOtherGroup" Distance="30" Power="0.01" />
       <Processor Type="AvoidSameGroup" Distance="10" Power="0.01" />
-      <Processor Type="WorldEvents" Distance="0" Power="0.6" />
+      <Processor Type="WorldEvents" Distance="0" Power="0.01" />
     </ProcessorGroup>
-    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#FF8000">
+    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="Lime">
+      <Processor Type="CityVisitor" Distance="0" Power="0.06" />
+      <Processor Type="AvoidSameGroup" Distance="15" Power="0.01" />
+      <Processor Type="AvoidOtherGroup" Distance="30" Power="1E-05" />
+      <Processor Type="AlignSameGroup" Distance="20" Power="0.005" />
+      <Processor Type="WorldEvents" Distance="0" Power="0.01" />
+      <Processor Type="StickToRoads" Distance="0" Power="0.001" />
+    </ProcessorGroup>
+    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="Lime">
+      <Processor Type="CityVisitor" Distance="0" Power="0.06" />
+      <Processor Type="AvoidSameGroup" Distance="15" Power="0.01" />
+      <Processor Type="AlignSameGroup" Distance="20" Power="0.005" />
+      <Processor Type="WorldEvents" Distance="0" Power="0.01" />
+      <Processor Type="StickToRoads" Distance="0" Power="0.001" />
+    </ProcessorGroup>
+    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="Lime">
+      <Processor Type="CityVisitor" Distance="0" Power="0.06" />
+      <Processor Type="AvoidSameGroup" Distance="15" Power="0.01" />
+      <Processor Type="AvoidOtherGroup" Distance="30" Power="1E-05" />
+      <Processor Type="AlignSameGroup" Distance="35" Power="0.005" />
+      <Processor Type="WorldEvents" Distance="0" Power="0.01" />
+      <Processor Type="StickToRoads" Distance="0" Power="0.001" />
+    </ProcessorGroup>
+    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="Red">
       <Processor Type="FlockSameGroup" Distance="15" Power="0.01" />
-      <Processor Type="AlignSameGroup" Distance="5" Power="0.01" />
-      <Processor Type="AvoidSameGroup" Distance="25" Power="0.01" />
-      <Processor Type="WorldEvents" Distance="0" Power="0.6" />
-      <Processor Type="Wind" Distance="0" Power="0.01" />
-      <Processor Type="AvoidOtherGroup" Distance="70" Power="0.01" />
+      <Processor Type="AlignSameGroup" Distance="30" Power="0.01" />
+      <Processor Type="AvoidOtherGroup" Distance="30" Power="0.01" />
+      <Processor Type="AvoidSameGroup" Distance="10" Power="0.01" />
+      <Processor Type="WorldEvents" Distance="0" Power="0.01" />
     </ProcessorGroup>
-    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="Yellow">
-      <Processor Type="StickToPOIs" Distance="0" Power="0.01" />
+    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="Aqua">
+      <Processor Type="FlockSameGroup" Distance="25" Power="0.01" />
+      <Processor Type="AlignSameGroup" Distance="25" Power="0.01" />
+      <Processor Type="AvoidSameGroup" Distance="10" Power="0.01" />
+      <Processor Type="WorldEvents" Distance="0" Power="0.01" />
+      <Processor Type="StickToRoads" Distance="0" Power="0.006" />
+      <Processor Type="Wind" Distance="0" Power="0.05" />
+      <Processor Type="AvoidOtherGroup" Distance="20" Power="0.01" />
+    </ProcessorGroup>
+    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="Lime">
+      <Processor Type="CityVisitor" Distance="0" Power="0.06" />
+      <Processor Type="AvoidSameGroup" Distance="15" Power="0.01" />
+      <Processor Type="AvoidOtherGroup" Distance="30" Power="1E-05" />
+      <Processor Type="AlignSameGroup" Distance="35" Power="0.005" />
+      <Processor Type="WorldEvents" Distance="0" Power="0.01" />
+      <Processor Type="StickToRoads" Distance="0" Power="0.001" />
+    </ProcessorGroup>
+    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="Lime">
+      <Processor Type="CityVisitor" Distance="0" Power="0.03" />
+      <Processor Type="AvoidSameGroup" Distance="15" Power="0.01" />
+      <Processor Type="AvoidOtherGroup" Distance="30" Power="1E-05" />
+      <Processor Type="AlignSameGroup" Distance="35" Power="0.005" />
+      <Processor Type="WorldEvents" Distance="0" Power="0.01" />
+      <Processor Type="StickToRoads" Distance="0" Power="0.01" />
+    </ProcessorGroup>
+    <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="Aqua">
+      <Processor Type="FlockSameGroup" Distance="20" Power="0.01" />
+      <Processor Type="AlignSameGroup" Distance="30" Power="0.01" />
       <Processor Type="AvoidSameGroup" Distance="25" Power="0.01" />
-      <Processor Type="Wind" Distance="0" Power="0.001" />
-      <Processor Type="AvoidOtherGroup" Distance="50" Power="0.01" />
-      <Processor Type="WorldEvents" Distance="0" Power="0.6" />
+      <Processor Type="WorldEvents" Distance="0" Power="0.01" />
+      <Processor Type="StickToRoads" Distance="0" Power="0.006" />
+      <Processor Type="WindInverted" Distance="0" Power="0.05" />
+      <Processor Type="AvoidOtherGroup" Distance="20" Power="0.01" />
     </ProcessorGroup>
   </MovementProcessors>
 </WalkerSim>

@@ -29,6 +29,7 @@ namespace WalkerSim
         public SubState CurrentSubState = SubState.None;
         public uint AlertedTick = 0;
         public Vector3 AlertPosition;
+        public ulong TimeToDie = ulong.MaxValue;
 
         public Agent()
         {

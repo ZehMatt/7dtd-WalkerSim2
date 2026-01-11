@@ -33,6 +33,16 @@ namespace WalkerSim
             writer.Write(value);
         }
 
+        public static void WriteUInt64(BinaryWriter writer, UInt64 value, bool compressed = true)
+        {
+            writer.Write(value);
+        }
+
+        public static UInt64 ReadUInt64(BinaryReader reader, bool compressed = true)
+        {
+            return reader.ReadUInt64();
+        }
+
         public static Int32 ReadInt32(BinaryReader reader, bool compressed = true)
         {
             // TODO: Variable length integer encoding.

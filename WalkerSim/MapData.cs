@@ -69,6 +69,8 @@ namespace WalkerSim
 
         public SpawnGroups SpawnGroups { get; private set; }
 
+        public Cities Cities { get; private set; }
+
         private static MapInfo LoadMapInfo(string path)
         {
             var info = new MapInfo();
@@ -222,7 +224,7 @@ namespace WalkerSim
                 }
                 else
                 {
-                    MergePrefabs(res);
+                    //MergePrefabs(res);
                 }
             }
             catch (System.Exception)
@@ -345,6 +347,9 @@ namespace WalkerSim
 
             var spawnGroups = LoadSpawnGroups(folderPath, worldSize);
 
+            // Generate city boundaries from POI clusters
+            var cities = Cities.GenerateFromPOIs(prefabs.Decorations);
+
             var res = new MapData();
             res.Info = mapInfo;
             res.Roads = roads;
@@ -354,6 +359,7 @@ namespace WalkerSim
             res.WorldMins = new Vector3(-sizeX, -sizeY, 0);
             res.WorldMaxs = new Vector3(sizeX, sizeY, sizeZ);
             res.SpawnGroups = spawnGroups;
+            res.Cities = cities;
 
             return res;
         }

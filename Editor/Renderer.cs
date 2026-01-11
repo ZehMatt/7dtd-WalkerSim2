@@ -263,6 +263,45 @@ namespace WalkerSim.Editor
             }
         }
 
+        public static void RenderCities(System.Drawing.Graphics gr, Simulation simulation)
+        {
+            var width = gr.VisibleClipBounds.Width;
+            var height = gr.VisibleClipBounds.Height;
+            var worldSize = simulation.WorldSize;
+
+            var mapData = simulation.MapData;
+            if (mapData == null)
+                return;
+
+            var cities = mapData.Cities;
+            if (cities == null || cities.CityList == null)
+                return;
+
+            // Use a semi-transparent yellow pen for city boundaries
+            using (var cityPen = new System.Drawing.Pen(System.Drawing.Color.FromArgb(200, 255, 255, 0), 2.0f))
+            {
+                // Use a semi-transparent yellow brush for city fill
+                using (var cityBrush = new System.Drawing.SolidBrush(System.Drawing.Color.FromArgb(40, 255, 255, 0)))
+                {
+                    foreach (var city in cities.CityList)
+                    {
+                        var imagePos = SimPosToBitmapPos(gr, simulation, city.Position);
+
+                        var sizeW = MathEx.Remap(city.Bounds.X, 0, worldSize.X, 0, width);
+                        var sizeH = MathEx.Remap(city.Bounds.Y, 0, worldSize.Y, 0, height);
+
+                        // Rectangle for city boundary
+                        var rect = new RectangleF(imagePos.X - sizeW / 2, imagePos.Y - sizeH / 2, sizeW, sizeH);
+
+                        // Draw filled rectangle
+                        gr.FillRectangle(cityBrush, rect);
+                        // Draw border
+                        gr.DrawRectangle(cityPen, rect.X, rect.Y, rect.Width, rect.Height);
+                    }
+                }
+            }
+        }
+
         public static void DrawInformation(System.Drawing.Graphics gr, Simulation simulation)
         {
             // Wind arrow.

@@ -129,7 +129,7 @@ namespace WalkerSim
         private void UpdateAgent(Agent agent)
         {
             var ticksDelta = _state.Ticks - agent.LastUpdateTick;
-            var deltaTime = ticksDelta * TickRate;
+            var deltaTime = ticksDelta * Constants.TickRate;
             agent.LastUpdateTick = _state.Ticks;
 
             // Might be cleared while its running.
@@ -209,7 +209,16 @@ namespace WalkerSim
             var vel = agent.Velocity;
             vel.Validate();
 
-            var walkSpeed = 1.4f; // Roughly 1.4m/s
+            var walkSpeed = Constants.WalkSpeed;
+            if (_isFastAdvancing)
+            {
+                walkSpeed *= 16.0f;
+            }
+            else
+            {
+                walkSpeed *= MathEx.Clamp(TimeScale, 1.0f, 16.0f);
+            }
+
             var realPower = speedScale * walkSpeed;
 
             var dir = Vector3.Normalize(vel);

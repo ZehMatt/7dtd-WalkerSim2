@@ -59,6 +59,8 @@ namespace WalkerSim
             RandomLocation,
             [XmlEnum("RandomPOI")]
             RandomPOI,
+            [XmlEnum("RandomCity")]
+            RandomCity,
             [XmlEnum("Mixed")]
             Mixed,
         }
@@ -98,6 +100,12 @@ namespace WalkerSim
             AvoidPOIs,
             [XmlEnum("WorldEvents")]
             WorldEvents,
+            [XmlEnum("PreferCities")]
+            PreferCities,
+            [XmlEnum("AvoidCities")]
+            AvoidCities,
+            [XmlEnum("CityVisitor")]
+            CityVisitor,
         }
 
         public class MovementProcessor
@@ -125,7 +133,7 @@ namespace WalkerSim
             public PostSpawnBehavior PostSpawnBehavior = PostSpawnBehavior.Wander;
 
             [XmlAttribute("PostSpawnWanderSpeed")]
-            public WanderingSpeed PostSpawnWanderSpeed = WanderingSpeed.NoOverride;
+            public WanderingSpeed PostSpawnWanderSpeed = WanderingSpeed.Walk;
 
             [XmlAttribute("Color")]
             public string Color = "";

@@ -59,10 +59,6 @@ namespace WalkerSim
 
         public float TimeScale = 1.0f;
 
-        public const int TicksPerSecond = 30;
-        public const float TickRate = 1f / TicksPerSecond;
-        public const int TickRateMs = 1000 / TicksPerSecond;
-
         private Thread _thread;
         private bool _running = false;
         private bool _shouldStop = false;
@@ -339,6 +335,57 @@ namespace WalkerSim
             return pos + offset;
         }
 
+        Vector3 GetRandomCityPosition()
+        {
+            var mapData = _state.MapData;
+            if (mapData == null)
+            {
+                // Can be null in viewer.
+                return GetRandomBorderPosition();
+            }
+
+            var cities = mapData.Cities;
+            if (cities.CityList.Count == 0)
+            {
+                // No cities, fallback to random border position.
+                return GetRandomBorderPosition();
+            }
+
+            // Weighted selection, the bigger the city, the more likely it is to be selected.
+            var totalArea = 0.0f;
+            foreach (var city in cities.CityList)
+            {
+                totalArea += city.Bounds.X * city.Bounds.Y;
+            }
+
+            var prng = _state.PRNG;
+            var selectedArea = 0.0f;
+            var selectedCity = cities.CityList[0];
+            var rand = (float)prng.NextDouble() * totalArea;
+
+            for (int i = 0; i < cities.CityList.Count; i++)
+            {
+                var city = cities.CityList[i];
+                var area = city.Bounds.X * city.Bounds.Y;
+                selectedArea += area;
+                if (selectedArea >= rand)
+                {
+                    selectedCity = city;
+                    break;
+                }
+            }
+
+            var bounds = selectedCity.Bounds;
+            var pos = selectedCity.Position;
+
+            var offset = new Vector3(
+                -(bounds.X / 2) + ((float)prng.NextDouble() * bounds.X),
+                -(bounds.Y / 2) + ((float)prng.NextDouble() * bounds.Y)
+                );
+
+            return pos + offset;
+        }
+
         Vector3 GetGroupPosition(int groupIndex)
         {
             return _groupStarts[groupIndex];
@@ -352,7 +399,7 @@ namespace WalkerSim
             if (worldLoc == Config.WorldLocation.Mixed)
             {
                 var min = Config.WorldLocation.RandomBorderLocation;
-                var max = Config.WorldLocation.RandomPOI;
+                var max = Config.WorldLocation.RandomCity;
                 worldLoc = (Config.WorldLocation)prng.Next((int)min, (int)max + 1);
             }
 
@@ -366,6 +413,8 @@ namespace WalkerSim
                     return GetRandomPosition();
                 case Config.WorldLocation.RandomPOI:
                     return GetRandomPOIPosition();
+                case Config.WorldLocation.RandomCity:
+                    return GetRandomCityPosition();
             }
 
             // This should never happen.
@@ -389,7 +438,7 @@ namespace WalkerSim
             var config = _state.Config;
 
             // Give each agent 2 meters distance to each other.
-            var maxDistance = MathEx.Clamp((float)_state.Config.GroupSize * 2.0f, 10.0f, 500.0f);
+            var maxDistance = MathEx.Clamp((float)_state.Config.GroupSize * 6.0f, 16.0f, 500.0f);
 
             if (config.StartAgentsGrouped)
             {
@@ -526,7 +575,7 @@ namespace WalkerSim
 
                 accumulator = System.Math.Min(accumulator + scaledDt, 5.0f);
 
-                if (accumulator < TickRate)
+                if (accumulator < Constants.TickRate)
                 {
                     if (_shouldStop)
                         break;
@@ -535,11 +584,11 @@ namespace WalkerSim
                     continue;
                 }
 
-                while (accumulator >= TickRate)
+                while (accumulator >= Constants.TickRate)
                 {
                     Tick();
 
-                    accumulator -= TickRate;
+                    accumulator -= Constants.TickRate;
 
                     if (_shouldStop)
                         break;
@@ -618,7 +667,7 @@ namespace WalkerSim
 
         private int SecondsToTicks(int seconds)
         {
-            return seconds * TicksPerSecond;
+            return seconds * Constants.TicksPerSecond;
         }
 
         private int MinutesToTicks(int minutes)

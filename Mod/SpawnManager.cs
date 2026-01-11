@@ -15,6 +15,7 @@ namespace WalkerSim
         static Dictionary<long, List<EntitySpawnData>> _spawnDataNight = new Dictionary<long, List<EntitySpawnData>>();
         static Dictionary<long, List<EntitySpawnData>> _spawnDataDay = new Dictionary<long, List<EntitySpawnData>>();
         static Dictionary<int, int> _classIdCounter = new Dictionary<int, int>();
+        const int MaxSpawnRetryAttempts = 10;
 
         static private bool CanSpawnZombie()
         {
@@ -73,7 +74,7 @@ namespace WalkerSim
 
             if (classIdCount > 0)
             {
-                var penalty = 0.35f + (float)System.Math.Pow(classIdCount, 3.5);
+                var penalty = 1.75f + (float)System.Math.Pow(classIdCount, 7.5);
                 prob /= penalty;
             }
 
@@ -217,7 +218,8 @@ namespace WalkerSim
             // Select a random class id, it also attempts to avoid spawning duplicates.
             var selectedClassId = -1;
             var selectedClassName = string.Empty;
-            for (int attempt = 0; attempt < 3; attempt++)
+            var maxRetryAttempts = System.Math.Min(MaxSpawnRetryAttempts, entityGroupData.Count);
+            for (int attempt = 0; attempt < maxRetryAttempts; attempt++)
             {
                 var rand = Simulation.Instance.PRNG;
                 var randomValue = rand.NextSingle() * totalProb;
@@ -244,10 +246,10 @@ namespace WalkerSim
                     continue;
 
                 var existingCount = GetSpawnedClassIdCount(selectedClassId);
-                if (existingCount >= 2)
+                if (existingCount >= 1)
                 {
                     Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
-                        "Selected entity class {0} ({1}) exists too often, instances: {2}, retrying...",
+                        "Selected entity class {0} ({1}) already exists, instances: {2}, retrying...",
                         selectedClassName,
                         selectedClassId,
                         existingCount);
@@ -463,7 +465,8 @@ namespace WalkerSim
             // Select a random class id, it also attempts to avoid spawning duplicates.
             var selectedClassId = -1;
             var selectedClassName = string.Empty;
-            for (int attempt = 0; attempt < 3; attempt++)
+            var maxRetryAttempts = System.Math.Min(MaxSpawnRetryAttempts, spawnList.Count);
+            for (int attempt = 0; attempt < maxRetryAttempts; attempt++)
             {
                 var rand = Simulation.Instance.PRNG;
                 var randomValue = rand.NextSingle() * totalProb;
@@ -484,10 +487,10 @@ namespace WalkerSim
                 }
 
                 var existingCount = GetSpawnedClassIdCount(selectedClassId);
-                if (existingCount >= 2)
+                if (existingCount >= 1)
                 {
                     Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
-                        "Selected entity class {0} ({1}) exists too often, instances: {2}, retrying...",
+                        "Selected entity class {0} ({1}) already exists, instances: {2}, retrying...",
                         selectedClassName,
                         selectedClassId,
                         existingCount);
@@ -624,6 +627,14 @@ namespace WalkerSim
                 spawnedZombie.IsHordeZombie = true;
             }
 
+            if (agent.TimeToDie != ulong.MaxValue)
+            {
+                if (spawnedAgent is EntityHuman spawnedHuman)
+                {
+                    spawnedHuman.timeToDie = agent.TimeToDie;
+                }
+            }
+
             if (agent.Health != -1)
             {
                 Logging.CondInfo(config.LoggingOpts.Spawns,
@@ -728,6 +739,16 @@ namespace WalkerSim
 
             // Retain current state.
             agent.Health = entity.Health;
+
+            var humanEntity = entity as EntityHuman;
+            if (humanEntity != null)
+            {
+                agent.TimeToDie = humanEntity.timeToDie;
+            }
+            else
+            {
+                agent.TimeToDie = ulong.MaxValue;
+            }
 
             agent.Velocity = VectorUtils.ToSim(entity.moveDirection);
             agent.Velocity.Validate();

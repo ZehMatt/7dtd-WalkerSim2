@@ -53,6 +53,7 @@ namespace WalkerSim.Editor
             this.viewActiveAgents = new System.Windows.Forms.ToolStripMenuItem();
             this.viewEvents = new System.Windows.Forms.ToolStripMenuItem();
             this.viewPrefabs = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewCities = new System.Windows.Forms.ToolStripMenuItem();
             this.simulationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.startToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -283,7 +284,8 @@ namespace WalkerSim.Editor
             this.viewAgents,
             this.viewActiveAgents,
             this.viewEvents,
-            this.viewPrefabs});
+            this.viewPrefabs,
+            this.viewCities});
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
             this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.viewToolStripMenuItem.Text = "View";
@@ -383,6 +385,15 @@ namespace WalkerSim.Editor
             this.viewPrefabs.Name = "viewPrefabs";
             this.viewPrefabs.Size = new System.Drawing.Size(155, 22);
             this.viewPrefabs.Text = "Prefabs";
+            // 
+            // viewCities
+            // 
+            this.viewCities.Checked = true;
+            this.viewCities.CheckOnClick = true;
+            this.viewCities.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.viewCities.Name = "viewCities";
+            this.viewCities.Size = new System.Drawing.Size(155, 22);
+            this.viewCities.Text = "Cities";
             // 
             // simulationToolStripMenuItem
             // 
@@ -2134,6 +2145,7 @@ namespace WalkerSim.Editor
         private System.Windows.Forms.ToolTip toolTipGroupSize;
         private System.Windows.Forms.Label lblAffected;
         private System.Windows.Forms.ToolStripMenuItem viewPrefabs;
+        private System.Windows.Forms.ToolStripMenuItem viewCities;
         private System.Windows.Forms.CheckBox inputFastForward;
         private LabelWithHelp lblSpawnProtectionTime;
         private System.Windows.Forms.NumericUpDown inputSpawnProtectionTime;
@@ -2227,4 +2239,3 @@ namespace WalkerSim.Editor
         private System.Windows.Forms.ToolStripMenuItem saveStateToolStripMenuItem1;
     }
 }
-

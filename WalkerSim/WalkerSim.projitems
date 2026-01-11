@@ -12,6 +12,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Agent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Biomes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BuildInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Cities.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Drawing\ColorTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Config.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Drawing\Color.cs" />
@@ -26,6 +27,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Random.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Roads.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Active.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Simulation.Constants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Grid.cs" />

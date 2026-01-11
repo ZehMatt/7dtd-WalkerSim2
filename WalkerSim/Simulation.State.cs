@@ -7,7 +7,7 @@ namespace WalkerSim
     {
         public class State
         {
-            public uint Version = SaveVersion;
+            public uint Version = Constants.SaveVersion;
             public Config Config = Config.GetDefault();
             public List<Agent> Agents = new List<Agent>();
             public Vector3 WorldMins = Vector3.Zero;
@@ -116,6 +116,24 @@ namespace WalkerSim
         {
             get => _state.Agents;
         }
+
+        private int CountAgentsInState(Agent.State state)
+        {
+            int count = 0;
+            foreach (var kvp in _state.Active)
+            {
+                if (kvp.Value.CurrentState == state)
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        public int NumAgentsWandering => CountAgentsInState(Agent.State.Wandering);
+
+        public int NumAgentsDead => CountAgentsInState(Agent.State.Dead);
+
 
         public Vector3 WorldSize
         {

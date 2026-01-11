@@ -23,6 +23,8 @@ namespace WalkerSim
                     return "Random Location";
                 case Config.WorldLocation.RandomPOI:
                     return "Random POI";
+                case Config.WorldLocation.RandomCity:
+                    return "Random City";
                 case Config.WorldLocation.Mixed:
                     return "Mixed";
                 default:
