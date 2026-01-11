@@ -104,13 +104,25 @@ Zombies move away from buildings.
 - Uses Distance: Yes
 - Example: Zombies avoid populated areas
 
-## Behaviors Using Sound
+## Behaviors Using Cities
 
-### WorldEvents
-Zombies move toward loud noises like gunshots and explosions.
+### PreferCities
+Zombies prefer to stay in cities. When inside a city, they wander naturally throughout the area. When outside, they move toward the nearest city.
 
-- Uses Distance: No (uses the sound's distance instead)
-- Example: Zombies walk toward where you're shooting
+- Uses Distance: No
+- Example: Zombies congregate in towns and cities, creating realistic population centers
+
+### AvoidCities
+Zombies avoid cities and stay in the wilderness. When inside a city, they push toward the nearest exit. When outside, they move away from city boundaries.
+
+- Uses Distance: Yes
+- Example: Zombies avoid populated areas and are found in forests, mountains, and rural areas
+
+### CityVisitor
+Zombies visit cities in a rotation pattern. Each zombie group targets one city for 20 minutes, wandering throughout the area, before moving to the next city in the sequence. Different zombie groups may target different cities at the same time.
+
+- Uses Distance: No
+- Example: Zombies spend time in one city exploring it, then travel to the next city when 20 minutes have passed
 
 ## Example Settings
 
@@ -126,6 +138,16 @@ Here's how to set up zombie behaviors in your config file:
     <Processor Type="WorldEvents" Power="0.8" />
     <Processor Type="StickToPOIs" Power="0.5" />
   </ProcessorGroup>
+  <ProcessorGroup Group="2" SpeedScale="1.0" PostSpawnBehavior="Wander" Color="#FFFF00">
+    <Processor Type="PreferCities" Power="0.7" />
+    <Processor Type="FlockSameGroup" Distance="20.0" Power="0.4" />
+  </ProcessorGroup>
+  <ProcessorGroup Group="3" SpeedScale="1.2" PostSpawnBehavior="Wander" Color="#00FFFF">
+    <Processor Type="AvoidCities" Distance="100.0" Power="0.8" />
+  </ProcessorGroup>
+  <ProcessorGroup Group="4" SpeedScale="1.0" PostSpawnBehavior="Wander" Color="#FF00FF">
+    <Processor Type="CityVisitor" Power="0.9" />
+  </ProcessorGroup>
 </MovementProcessors>
 ```
 
@@ -133,6 +155,9 @@ This creates:
 
 - Group 0: Zombies stick together in groups, avoid roads, and wander randomly
 - Group 1: Zombies go to buildings, chase loud noises, move faster, and chase you when they spawn
+- Group 2: Zombies prefer cities, congregate in towns, and stay in groups
+- Group 3: Zombies avoid cities within 100 meters and stay in the wilderness
+- Group 4: Zombies visit cities in rotation, migrating between different population centers
 
 ## Understanding Power and Distance
 

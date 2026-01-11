@@ -104,6 +104,7 @@ Here are all the settings you can change:
 - **RandomBorderLocation**: Zombies start around the edges of the map
 - **RandomLocation**: Zombies start anywhere on the map
 - **RandomPOI**: Zombies start at buildings and landmarks
+- **RandomCity**: Zombies start in cities
 - **Mixed**: A mix of all the above
 
 **Example**: Use RandomPOI to make zombies start at towns and buildings.
@@ -118,6 +119,7 @@ Here are all the settings you can change:
 - **RandomBorderLocation**: Zombies come back at the edges of the map
 - **RandomLocation**: Zombies come back anywhere on the map
 - **RandomPOI**: Zombies come back at buildings
+- **RandomCity**: Zombies come back in cities
 - **Mixed**: A mix of all the above
 
 **Example**: Use RandomBorderLocation to make zombies return from the edges of the map.
