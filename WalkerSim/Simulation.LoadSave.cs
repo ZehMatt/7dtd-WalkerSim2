@@ -99,6 +99,7 @@ namespace WalkerSim
                 Serialization.WriteByte(writer, (byte)agent.CurrentSubState);
                 Serialization.WriteUInt32(writer, agent.AlertedTick);
                 Serialization.WriteVector3(writer, agent.AlertPosition);
+                Serialization.WriteUInt64(writer, agent.TimeToDie);
             }
         }
 
@@ -243,6 +244,7 @@ namespace WalkerSim
                 agent.CurrentSubState = (Agent.SubState)Serialization.ReadByte(reader);
                 agent.AlertedTick = Serialization.ReadUInt32(reader);
                 agent.AlertPosition = Serialization.ReadVector3(reader);
+                agent.TimeToDie = Serialization.ReadUInt64(reader);
                 agents.Add(agent);
 
                 if (agent.CurrentState == Agent.State.Active)

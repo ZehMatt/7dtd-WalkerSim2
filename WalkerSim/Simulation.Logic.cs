@@ -210,6 +210,15 @@ namespace WalkerSim
             vel.Validate();
 
             var walkSpeed = Constants.WalkSpeed;
+            if (_isFastAdvancing)
+            {
+                walkSpeed *= 16.0f;
+            }
+            else
+            {
+                walkSpeed *= MathEx.Clamp(TimeScale, 1.0f, 16.0f);
+            }
+
             var realPower = speedScale * walkSpeed;
 
             var dir = Vector3.Normalize(vel);

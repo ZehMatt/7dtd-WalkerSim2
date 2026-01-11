@@ -932,13 +932,13 @@ namespace WalkerSim
             var cities = state.MapData.Cities;
 
             // Offset each agent's time by their group using prime number for staggering
-            long tickOffset = agent.Group * 37;
+            long tickOffset = agent.Group * 2654435761;
             long adjustedTime = state.Ticks + tickOffset;
 
             int cityCount = cities.CityList.Count;
 
-            // Fixed 10-minute rotation cycle through cities
-            int cityRotationTime = sim.MinutesToTicks(10);
+            // Fixed rotation cycle through cities
+            int cityRotationTime = sim.MinutesToTicks(20);
             int currentCityIndex = (int)((adjustedTime / cityRotationTime) % cityCount);
             int targetCityIndex = (currentCityIndex + agent.Group) % cityCount;
             var targetCity = cities.CityList[targetCityIndex];

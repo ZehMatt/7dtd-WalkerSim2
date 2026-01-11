@@ -9,7 +9,7 @@ namespace WalkerSim
             // Increment this in case of a breaking change in the save format.
             // Version 8: New configuration SoundDistanceScale.
             // Version 9: Might have saved an empty state, skip loading the old one.
-            public const uint SaveVersion = 9;
+            public const uint SaveVersion = 10;
 
             public const int MaxUpdateCountPerTick = 1000;
 
