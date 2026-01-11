@@ -1,4 +1,4 @@
-# 0.9.18 (in progress)
+# 0.9.18
 - Fix: The simulation now keeps track of the TimeToDie variable, which potentially caused Ferals to live past their expiry time.
 - Fix: The code to prevent spawning already existing classes could actually do the opposite in some cases.
 - Feature: Added a heuristic to detect cities on the map by looking for POI clusters; in rare cases, it might falsely classify a cluster as a city.
