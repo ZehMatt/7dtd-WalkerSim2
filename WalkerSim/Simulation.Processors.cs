@@ -942,11 +942,13 @@ namespace WalkerSim
             int currentCityIndex = (int)((adjustedTime / cityRotationTime) % cityCount);
             int targetCityIndex = (currentCityIndex + agent.Group) % cityCount;
             var targetCity = cities.CityList[targetCityIndex];
-
-            var currentCity = cities.GetCityAt(agent.Position);
+            bool isInTargetCity = agent.Position.X >= targetCity.MinX &&
+                                   agent.Position.X <= targetCity.MaxX &&
+                                   agent.Position.Y >= targetCity.MinY &&
+                                   agent.Position.Y <= targetCity.MaxY;
 
             // Two branches: in target city or not
-            if (currentCity == targetCity)
+            if (isInTargetCity)
             {
                 // In target city - wander across full area
                 float phaseX = (agent.Group * 2654435761u) % 10000 / 10000.0f * 6.28318530718f;
