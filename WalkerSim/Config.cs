@@ -59,6 +59,8 @@ namespace WalkerSim
             RandomLocation,
             [XmlEnum("RandomPOI")]
             RandomPOI,
+            [XmlEnum("RandomCity")]
+            RandomCity,
             [XmlEnum("Mixed")]
             Mixed,
         }

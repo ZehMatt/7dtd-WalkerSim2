@@ -346,6 +346,11 @@
                     <xs:documentation>Agents start at a random point of interest</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
+            <xs:enumeration value="RandomCity">
+                <xs:annotation>
+                    <xs:documentation>Agents start at a random city</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
             <xs:enumeration value="Mixed">
                 <xs:annotation>
                     <xs:documentation>Agents start at a mix of different locations</xs:documentation>
@@ -356,7 +361,7 @@
 
     <xs:simpleType name="RespawnPosition">
         <xs:annotation>
-            <xs:documentation>Enumeration for agent starting positions</xs:documentation>
+            <xs:documentation>Enumeration for agent respawn positions</xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
             <xs:enumeration value="None">
@@ -366,22 +371,27 @@
             </xs:enumeration>
             <xs:enumeration value="RandomBorderLocation">
                 <xs:annotation>
-                    <xs:documentation>Agents start at a random border location</xs:documentation>
+                    <xs:documentation>Agents respawn at a random border location</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="RandomLocation">
                 <xs:annotation>
-                    <xs:documentation>Agents start at a random location</xs:documentation>
+                    <xs:documentation>Agents respawn at a random location</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="RandomPOI">
                 <xs:annotation>
-                    <xs:documentation>Agents start at a random point of interest</xs:documentation>
+                    <xs:documentation>Agents respawn at a random point of interest</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RandomCity">
+                <xs:annotation>
+                    <xs:documentation>Agents respawn at a random city</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="Mixed">
                 <xs:annotation>
-                    <xs:documentation>Agents start at a mix of different locations</xs:documentation>
+                    <xs:documentation>Agents respawn at a mix of different locations</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
         </xs:restriction>

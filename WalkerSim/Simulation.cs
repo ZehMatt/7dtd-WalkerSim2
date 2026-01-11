@@ -335,6 +335,57 @@ namespace WalkerSim
             return pos + offset;
         }
 
+        Vector3 GetRandomCityPosition()
+        {
+            var mapData = _state.MapData;
+            if (mapData == null)
+            {
+                // Can be null in viewer.
+                return GetRandomBorderPosition();
+            }
+
+            var cities = mapData.Cities;
+            if (cities.CityList.Count == 0)
+            {
+                // No cities, fallback to random border position.
+                return GetRandomBorderPosition();
+            }
+
+            // Weighted selection, the bigger the city, the more likely it is to be selected.
+            var totalArea = 0.0f;
+            foreach (var city in cities.CityList)
+            {
+                totalArea += city.Bounds.X * city.Bounds.Y;
+            }
+
+            var prng = _state.PRNG;
+            var selectedArea = 0.0f;
+            var selectedCity = cities.CityList[0];
+            var rand = (float)prng.NextDouble() * totalArea;
+
+            for (int i = 0; i < cities.CityList.Count; i++)
+            {
+                var city = cities.CityList[i];
+                var area = city.Bounds.X * city.Bounds.Y;
+                selectedArea += area;
+                if (selectedArea >= rand)
+                {
+                    selectedCity = city;
+                    break;
+                }
+            }
+
+            var bounds = selectedCity.Bounds;
+            var pos = selectedCity.Position;
+
+            var offset = new Vector3(
+                -(bounds.X / 2) + ((float)prng.NextDouble() * bounds.X),
+                -(bounds.Y / 2) + ((float)prng.NextDouble() * bounds.Y)
+                );
+
+            return pos + offset;
+        }
+
         Vector3 GetGroupPosition(int groupIndex)
         {
             return _groupStarts[groupIndex];
@@ -348,7 +399,7 @@ namespace WalkerSim
             if (worldLoc == Config.WorldLocation.Mixed)
             {
                 var min = Config.WorldLocation.RandomBorderLocation;
-                var max = Config.WorldLocation.RandomPOI;
+                var max = Config.WorldLocation.RandomCity;
                 worldLoc = (Config.WorldLocation)prng.Next((int)min, (int)max + 1);
             }
 
@@ -362,6 +413,8 @@ namespace WalkerSim
                     return GetRandomPosition();
                 case Config.WorldLocation.RandomPOI:
                     return GetRandomPOIPosition();
+                case Config.WorldLocation.RandomCity:
+                    return GetRandomCityPosition();
             }
 
             // This should never happen.
