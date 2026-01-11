@@ -1,4 +1,12 @@
 # 0.9.18 (in progress)
+- Fix: The simulation now keeps track of the TimeToDie variable, which potentially caused Ferals to live past their expiry time.
+- Fix: The code to prevent spawning already existing classes could actually do the opposite in some cases.
+- Feature: Added a heuristic to detect cities on the map by looking for POI clusters; in rare cases, it might falsely classify a cluster as a city.
+- Feature: Added movement processor `PreferCities`, which allows keeping zombies within cities.
+- Feature: Added movement processor `AvoidCities`, which allows keeping zombies outside cities.
+- Feature: Added movement processor `CityVisitor`, which has zombies stay in and traverse cities before moving to the next one.
+- Change: Default configuration has been reworked to use the new features, and the default population density has been reduced to 140. This should be less overwhelming now.
+- Change: Reduced the speed of simulated agents from 1.4m/s to 0.8m/s.
 
 # 0.9.17
 - Fix: WalkerSim saved state can become corrupted on game shutdown causing a lot of errors when loading the saved game.
