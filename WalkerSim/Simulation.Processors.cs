@@ -940,7 +940,26 @@ namespace WalkerSim
             // Fixed rotation cycle through cities
             int cityRotationTime = sim.MinutesToTicks(20);
             int currentCityIndex = (int)((adjustedTime / cityRotationTime) % cityCount);
-            int targetCityIndex = (currentCityIndex + agent.Group) % cityCount;
+            
+            // Weighted city selection based on city size (area) - using precomputed weights
+            // Use agent's group as deterministic pseudo-random value for weighted selection
+            uint hash = (uint)((currentCityIndex + agent.Group) * 2654435761);
+            float randomValue = (hash % 10000) / 10000.0f; // 0.0 to 1.0
+            float targetWeight = randomValue * cities.TotalAreaWeight;
+            
+            // Find city by accumulated weight using precomputed values
+            int targetCityIndex = 0;
+            float accumulatedWeight = 0;
+            for (int i = 0; i < cityCount; i++)
+            {
+                accumulatedWeight += cities.CityAreaWeights[i];
+                if (accumulatedWeight >= targetWeight)
+                {
+                    targetCityIndex = i;
+                    break;
+                }
+            }
+            
             var targetCity = cities.CityList[targetCityIndex];
             bool isInTargetCity = agent.Position.X >= targetCity.MinX &&
                                    agent.Position.X <= targetCity.MaxX &&
@@ -950,23 +969,27 @@ namespace WalkerSim
             // Two branches: in target city or not
             if (isInTargetCity)
             {
-                // In target city - wander across full area
-                float phaseX = (agent.Group * 2654435761u) % 10000 / 10000.0f * 6.28318530718f;
-                float phaseY = (agent.Group * 1597334677u) % 10000 / 10000.0f * 6.28318530718f;
-
-                float freqX = 0.002f + ((agent.Group * 2246822519u) % 1000 / 10000.0f) * 0.001f;
-                float freqY = 0.0015f + ((agent.Group * 3266489917u) % 1000 / 10000.0f) * 0.001f;
-
-                float timeScale = state.Ticks;
-                float offsetX = (float)System.Math.Sin(timeScale * freqX + phaseX);
-                float offsetY = (float)System.Math.Cos(timeScale * freqY + phaseY);
-
+                // In target city - wander across full area with better distribution
+                // Instead of sine/cosine (which clusters at center), use hash-based targets
+                // that change over time to cover different areas of the city
+                
                 const float edgeMargin = 20f;
-                float wanderRadiusX = (targetCity.Bounds.X / 2) - edgeMargin;
-                float wanderRadiusY = (targetCity.Bounds.Y / 2) - edgeMargin;
-
-                float targetX = targetCity.Position.X + offsetX * wanderRadiusX;
-                float targetY = targetCity.Position.Y + offsetY * wanderRadiusY;
+                float cityWidth = targetCity.Bounds.X - (edgeMargin * 2);
+                float cityHeight = targetCity.Bounds.Y - (edgeMargin * 2);
+                
+                // Change target position every ~60 seconds for more exploration
+                uint timeSegment = state.Ticks / 3600; // ~60 second segments
+                
+                // Generate unique target for this time segment using agent group
+                uint seedX = (uint)(agent.Group * 2654435761 + timeSegment * 1640531527);
+                uint seedY = (uint)(agent.Group * 1597334677 + timeSegment * 3266489917);
+                
+                // Map to full city area uniformly
+                float targetOffsetX = ((seedX % 10000) / 10000.0f * 2.0f - 1.0f) * (cityWidth / 2);
+                float targetOffsetY = ((seedY % 10000) / 10000.0f * 2.0f - 1.0f) * (cityHeight / 2);
+                
+                float targetX = targetCity.Position.X + targetOffsetX;
+                float targetY = targetCity.Position.Y + targetOffsetY;
                 var targetPos = new Vector3(targetX, targetY, 0);
 
                 var direction = targetPos - agent.Position;
