@@ -212,7 +212,7 @@ namespace WalkerSim
             var walkSpeed = Constants.WalkSpeed;
             if (_isFastAdvancing)
             {
-                walkSpeed *= 16.0f;
+                walkSpeed *= 64.0f;
             }
             else
             {
