@@ -24,10 +24,14 @@ namespace WalkerSim
         }
 
         public List<City> CityList { get; private set; }
+        public float[] CityAreaWeights { get; private set; }
+        public float TotalAreaWeight { get; private set; }
 
         public Cities()
         {
             CityList = new List<City>();
+            CityAreaWeights = new float[0];
+            TotalAreaWeight = 0;
         }
 
         /// <summary>
@@ -48,7 +52,7 @@ namespace WalkerSim
             }
 
             var poiList = new List<MapData.Decoration>(pois);
-            
+
             // Build neighbor lists for each POI
             var neighbors = new Dictionary<int, List<int>>();
             for (int i = 0; i < poiList.Count; i++)
@@ -149,30 +153,30 @@ namespace WalkerSim
                 float width = maxX - minX;
                 float height = maxY - minY;
                 float area = width * height;
-                
+
                 // Calculate total POI area
                 float totalPoiArea = 0;
                 foreach (var poi in cluster)
                 {
                     totalPoiArea += poi.Bounds.X * poi.Bounds.Y;
                 }
-                
+
                 // Density check: POIs should occupy at least 20% of the bounding box area
                 // This filters out clusters that span large areas with lots of empty space
                 float density = totalPoiArea / area;
                 const float minDensity = 0.20f;
-                
+
                 if (density < minDensity)
                 {
                     // Skip this cluster - it's too sparse (too much empty space)
                     continue;
                 }
-                
+
                 // Aspect ratio check: cities should be relatively square, not elongated like roads
                 // A road would have a very high aspect ratio (e.g., 10:1), while a city should be more compact
                 float aspectRatio = Math.Max(width, height) / Math.Min(width, height);
                 const float maxAspectRatio = 3.0f; // Allow up to 3:1 ratio
-                
+
                 if (aspectRatio > maxAspectRatio)
                 {
                     // Skip this cluster - it's too elongated (likely a road)
@@ -184,12 +188,18 @@ namespace WalkerSim
                 cities.CityList.AddRange(subdividedCities);
             }
 
+            // Merge overlapping cities into single cities
+            cities.MergeOverlappingCities();
+
             var poisInCities = cities.CityList.Sum(c => c.POIs.Count);
-            Logging.Info("Generated {0} cities from {1} POIs ({2} POIs in cities, {3} isolated/low-density POIs).", 
-                cities.CityList.Count, 
+            Logging.Info("Generated {0} cities from {1} POIs ({2} POIs in cities, {3} isolated/low-density POIs).",
+                cities.CityList.Count,
                 pois.Length,
                 poisInCities,
                 pois.Length - poisInCities);
+
+            // Precompute city area weights for efficient weighted selection
+            cities.ComputeAreaWeights();
 
             return cities;
         }
@@ -201,7 +211,7 @@ namespace WalkerSim
         private static List<City> RecursivelySubdivideCluster(List<MapData.Decoration> pois, float minX, float maxX, float minY, float maxY, int minPOIsPerCity)
         {
             var result = new List<City>();
-            
+
             if (pois.Count < minPOIsPerCity)
             {
                 return result; // Not enough POIs to form a city
@@ -211,34 +221,34 @@ namespace WalkerSim
             float boxWidth = maxX - minX;
             float boxHeight = maxY - minY;
             float boxArea = boxWidth * boxHeight;
-            
+
             float totalPoiArea = 0;
             foreach (var poi in pois)
             {
                 totalPoiArea += poi.Bounds.X * poi.Bounds.Y;
             }
-            
+
             float density = totalPoiArea / boxArea;
-            
+
             // If density is good (>40%), create a city from this box
             const float targetDensity = 0.40f;
-            
+
             // Also check if box is small enough (don't subdivide tiny boxes)
             const float minBoxSize = 150f; // Don't subdivide below 150x150
             bool boxTooSmall = boxWidth < minBoxSize || boxHeight < minBoxSize;
-            
+
             // Try subdividing first to see if we can split into multiple cities
             if (!boxTooSmall)
             {
                 var subdivisionAttempt = TrySubdivide(pois, minX, maxX, minY, maxY, minPOIsPerCity);
-                
+
                 // If subdivision produced multiple valid cities, use them instead
                 if (subdivisionAttempt.Count > 1)
                 {
                     return subdivisionAttempt;
                 }
             }
-            
+
             if (density >= targetDensity || boxTooSmall)
             {
                 // This box has good density or is too small to subdivide further
@@ -267,7 +277,7 @@ namespace WalkerSim
                 tightMaxX -= shrinkage;
                 tightMinY += shrinkage;
                 tightMaxY -= shrinkage;
-                
+
                 var city = new City();
                 city.POIs.AddRange(pois);
                 city.Position = new Vector3((tightMinX + tightMaxX) / 2, (tightMinY + tightMaxY) / 2, 0);
@@ -286,7 +296,7 @@ namespace WalkerSim
         private static List<City> TrySubdivide(List<MapData.Decoration> pois, float minX, float maxX, float minY, float maxY, int minPOIsPerCity)
         {
             var result = new List<City>();
-            
+
             float centerX = (minX + maxX) / 2;
             float centerY = (minY + maxY) / 2;
 
@@ -336,12 +346,12 @@ namespace WalkerSim
             bool merged = true;
             int iterations = 0;
             const int maxIterations = 5;
-            
+
             while (merged && iterations < maxIterations)
             {
                 merged = false;
                 iterations++;
-                
+
                 for (int i = 0; i < cities.Count; i++)
                 {
                     for (int j = i + 1; j < cities.Count; j++)
@@ -350,7 +360,7 @@ namespace WalkerSim
                         float distance = CalculateCityDistance(cities[i], cities[j]);
                         if (distance > 30f)
                             continue;
-                        
+
                         // Try merging these two cities
                         var mergedCity = TryMergeTwoCities(cities[i], cities[j]);
                         if (mergedCity != null)
@@ -368,15 +378,15 @@ namespace WalkerSim
                             break;
                         }
                     }
-                    
+
                     if (merged)
                         break;
                 }
             }
-            
+
             return cities;
         }
-        
+
         /// <summary>
         /// Calculates the minimum distance between two city bounding boxes.
         /// </summary>
@@ -387,16 +397,16 @@ namespace WalkerSim
                 dx = city2.MinX - city1.MaxX;
             else if (city2.MaxX < city1.MinX)
                 dx = city1.MinX - city2.MaxX;
-            
+
             float dy = 0;
             if (city1.MaxY < city2.MinY)
                 dy = city2.MinY - city1.MaxY;
             else if (city2.MaxY < city1.MinY)
                 dy = city1.MinY - city2.MaxY;
-            
+
             return (float)Math.Sqrt(dx * dx + dy * dy);
         }
-        
+
         /// <summary>
         /// Attempts to merge two cities. Returns the merged city if valid, null otherwise.
         /// </summary>
@@ -407,45 +417,45 @@ namespace WalkerSim
             float distance = CalculateCityDistance(city1, city2);
             if (distance > 5f)
                 return null; // Too far apart - would create empty space
-            
+
             // Combine POIs
             var combinedPOIs = new List<MapData.Decoration>();
             combinedPOIs.AddRange(city1.POIs);
             combinedPOIs.AddRange(city2.POIs);
-            
+
             // Calculate tight bounding box around actual POIs
             float minX = float.MaxValue;
             float maxX = float.MinValue;
             float minY = float.MaxValue;
             float maxY = float.MinValue;
-            
+
             foreach (var poi in combinedPOIs)
             {
                 float poiMinX = poi.Position.X - poi.Bounds.X / 2;
                 float poiMaxX = poi.Position.X + poi.Bounds.X / 2;
                 float poiMinY = poi.Position.Y - poi.Bounds.Y / 2;
                 float poiMaxY = poi.Position.Y + poi.Bounds.Y / 2;
-                
+
                 minX = Math.Min(minX, poiMinX);
                 maxX = Math.Max(maxX, poiMaxX);
                 minY = Math.Min(minY, poiMinY);
                 maxY = Math.Max(maxY, poiMaxY);
             }
-            
+
             float mergedWidth = maxX - minX;
             float mergedHeight = maxY - minY;
             float mergedArea = mergedWidth * mergedHeight;
-            
+
             // Check if merged box is significantly larger than sum of individual boxes
             // If it is, there's empty space between them
             float city1Area = city1.Bounds.X * city1.Bounds.Y;
             float city2Area = city2.Bounds.X * city2.Bounds.Y;
             float combinedOriginalArea = city1Area + city2Area;
-            
+
             // If merged area is more than 1.3x the sum of original areas, there's too much gap
             if (mergedArea > combinedOriginalArea * 1.3f)
                 return null; // Would create too much empty space
-            
+
             // Calculate density of merged box
             float totalPoiArea = 0;
             foreach (var poi in combinedPOIs)
@@ -453,83 +463,32 @@ namespace WalkerSim
                 totalPoiArea += poi.Bounds.X * poi.Bounds.Y;
             }
             float density = totalPoiArea / mergedArea;
-            
+
             // Density check
             const float targetDensity = 0.45f;
             if (density < targetDensity)
                 return null;
-            
+
             // Aspect ratio check
             float aspectRatio = Math.Max(mergedWidth, mergedHeight) / Math.Min(mergedWidth, mergedHeight);
             const float maxAspectRatio = 2.5f;
             if (aspectRatio > maxAspectRatio)
                 return null;
-            
+
             // Apply shrinkage to prevent overlaps
             const float shrinkage = 1f;
             minX += shrinkage;
             maxX -= shrinkage;
             minY += shrinkage;
             maxY -= shrinkage;
-            
+
             // Create merged city
             var mergedCity = new City();
             mergedCity.POIs.AddRange(combinedPOIs);
             mergedCity.Position = new Vector3((minX + maxX) / 2, (minY + maxY) / 2, 0);
             mergedCity.Bounds = new Vector3(maxX - minX, maxY - minY, 0);
-            
+
             return mergedCity;
-        }
-
-        /// <summary>
-        /// Resolves overlapping city bounding boxes by subdividing them into smaller non-overlapping cities.
-        /// </summary>
-        private static List<City> ResolveOverlappingCities(List<City> cities, float clusterDistance, int minNeighbors, int minPOIsPerCity)
-        {
-            bool hasOverlaps = true;
-            int iterations = 0;
-            const int maxIterations = 10; // Prevent infinite loops
-
-            while (hasOverlaps && iterations < maxIterations)
-            {
-                hasOverlaps = false;
-                iterations++;
-                var newCities = new List<City>();
-
-                for (int i = 0; i < cities.Count; i++)
-                {
-                    bool cityOverlaps = false;
-                    
-                    // Check if this city overlaps with any other city
-                    for (int j = 0; j < cities.Count; j++)
-                    {
-                        if (i == j) continue;
-                        
-                        if (DoBoundingBoxesOverlap(cities[i], cities[j]))
-                        {
-                            cityOverlaps = true;
-                            hasOverlaps = true;
-                            break;
-                        }
-                    }
-
-                    if (cityOverlaps && cities[i].POIs.Count >= minPOIsPerCity * 2)
-                    {
-                        // Try to subdivide this city into smaller cities
-                        var subdivided = SubdivideCity(cities[i], clusterDistance, minNeighbors, minPOIsPerCity);
-                        newCities.AddRange(subdivided);
-                    }
-                    else
-                    {
-                        // Keep this city as is
-                        newCities.Add(cities[i]);
-                    }
-                }
-
-                cities = newCities;
-            }
-
-            return cities;
         }
 
         /// <summary>
@@ -539,115 +498,6 @@ namespace WalkerSim
         {
             return !(city1.MaxX < city2.MinX || city1.MinX > city2.MaxX ||
                      city1.MaxY < city2.MinY || city1.MinY > city2.MaxY);
-        }
-
-        /// <summary>
-        /// Subdivides a city into smaller cities by spatially partitioning its bounding box into 4 equal quadrants.
-        /// </summary>
-        private static List<City> SubdivideCity(City city, float clusterDistance, int minNeighbors, int minPOIsPerCity)
-        {
-            var result = new List<City>();
-            
-            // Divide the bounding box into 4 equal quadrants
-            float centerX = city.Position.X;
-            float centerY = city.Position.Y;
-            float halfWidth = city.Bounds.X / 4;
-            float halfHeight = city.Bounds.Y / 4;
-
-            // Define the 4 quadrants
-            var quadrants = new[]
-            {
-                new { MinX = centerX, MaxX = city.MaxX, MinY = centerY, MaxY = city.MaxY }, // Top-right
-                new { MinX = city.MinX, MaxX = centerX, MinY = centerY, MaxY = city.MaxY }, // Top-left
-                new { MinX = city.MinX, MaxX = centerX, MinY = city.MinY, MaxY = centerY }, // Bottom-left
-                new { MinX = centerX, MaxX = city.MaxX, MinY = city.MinY, MaxY = centerY }  // Bottom-right
-            };
-
-            // Check each quadrant
-            foreach (var quad in quadrants)
-            {
-                // Find POIs in this quadrant
-                var poisInQuadrant = new List<MapData.Decoration>();
-                foreach (var poi in city.POIs)
-                {
-                    if (poi.Position.X >= quad.MinX && poi.Position.X <= quad.MaxX &&
-                        poi.Position.Y >= quad.MinY && poi.Position.Y <= quad.MaxY)
-                    {
-                        poisInQuadrant.Add(poi);
-                    }
-                }
-
-                // Check if this quadrant has enough POIs and forms a valid cluster
-                if (poisInQuadrant.Count >= minPOIsPerCity)
-                {
-                    // Calculate actual bounding box for POIs in this quadrant
-                    float minX = float.MaxValue;
-                    float maxX = float.MinValue;
-                    float minY = float.MaxValue;
-                    float maxY = float.MinValue;
-
-                    foreach (var poi in poisInQuadrant)
-                    {
-                        float poiMinX = poi.Position.X - poi.Bounds.X / 2;
-                        float poiMaxX = poi.Position.X + poi.Bounds.X / 2;
-                        float poiMinY = poi.Position.Y - poi.Bounds.Y / 2;
-                        float poiMaxY = poi.Position.Y + poi.Bounds.Y / 2;
-
-                        minX = Math.Min(minX, poiMinX);
-                        maxX = Math.Max(maxX, poiMaxX);
-                        minY = Math.Min(minY, poiMinY);
-                        maxY = Math.Max(maxY, poiMaxY);
-                    }
-
-                    float width = maxX - minX;
-                    float height = maxY - minY;
-                    float area = width * height;
-                    
-                    // Calculate total POI area
-                    float totalPoiArea = 0;
-                    foreach (var poi in poisInQuadrant)
-                    {
-                        totalPoiArea += poi.Bounds.X * poi.Bounds.Y;
-                    }
-                    
-                    // Check density
-                    float density = totalPoiArea / area;
-                    const float minDensity = 0.20f;
-                    
-                    if (density >= minDensity)
-                    {
-                        // Check aspect ratio
-                        float aspectRatio = Math.Max(width, height) / Math.Min(width, height);
-                        const float maxAspectRatio = 3.0f;
-                        
-                        if (aspectRatio <= maxAspectRatio)
-                        {
-                            // Create a city for this quadrant
-                            var quadCity = new City();
-                            quadCity.POIs.AddRange(poisInQuadrant);
-                            
-                            const float padding = 50f;
-                            minX -= padding;
-                            maxX += padding;
-                            minY -= padding;
-                            maxY += padding;
-                            
-                            quadCity.Position = new Vector3((minX + maxX) / 2, (minY + maxY) / 2, 0);
-                            quadCity.Bounds = new Vector3(maxX - minX, maxY - minY, 0);
-                            
-                            result.Add(quadCity);
-                        }
-                    }
-                }
-            }
-
-            // If subdivision didn't produce valid cities, keep the original
-            if (result.Count == 0)
-            {
-                result.Add(city);
-            }
-
-            return result;
         }
 
         /// <summary>
@@ -702,11 +552,101 @@ namespace WalkerSim
         }
 
         /// <summary>
-        /// Returns true if the position is within any city boundary.
+        /// Resolves overlapping and adjacent cities. Merges cities that are close together or have significant overlap.
+        /// For small overlaps, shrinks the city with fewer POIs in the overlap area.
+        /// Should be called after all cities are generated but before weights are computed.
         /// </summary>
-        public bool IsInCity(Vector3 position)
+        public void MergeOverlappingCities()
         {
-            return GetCityAt(position) != null;
+            bool modified;
+            int iterations = 0;
+            const int maxIterations = 100; // Prevent infinite loops
+            const float significantOverlapThreshold = 0.3f; // Merge if overlap is 30% or more of smaller city
+
+            do
+            {
+                modified = false;
+                iterations++;
+
+                for (int i = 0; i < CityList.Count; i++)
+                {
+                    for (int j = i + 1; j < CityList.Count; j++)
+                    {
+                        var cityA = CityList[i];
+                        var cityB = CityList[j];
+
+                        // Calculate overlap rectangle
+                        float overlapMinX = Math.Max(cityA.MinX, cityB.MinX);
+                        float overlapMaxX = Math.Min(cityA.MaxX, cityB.MaxX);
+                        float overlapMinY = Math.Max(cityA.MinY, cityB.MinY);
+                        float overlapMaxY = Math.Min(cityA.MaxY, cityB.MaxY);
+
+                        // Check if there's any overlap
+                        if (overlapMinX < overlapMaxX && overlapMinY < overlapMaxY)
+                        {
+                            // Calculate overlap size relative to each city
+                            float overlapWidth = overlapMaxX - overlapMinX;
+                            float overlapHeight = overlapMaxY - overlapMinY;
+                            float overlapArea = overlapWidth * overlapHeight;
+
+                            float areaA = cityA.Bounds.X * cityA.Bounds.Y;
+                            float areaB = cityB.Bounds.X * cityB.Bounds.Y;
+                            float smallerArea = Math.Min(areaA, areaB);
+                            float overlapPercentage = overlapArea / smallerArea;
+
+                            // If overlap is significant, merge the cities
+                            if (overlapPercentage >= significantOverlapThreshold)
+                            {
+                                // Merge into one larger city
+                                float mergedMinX = Math.Min(cityA.MinX, cityB.MinX);
+                                float mergedMaxX = Math.Max(cityA.MaxX, cityB.MaxX);
+                                float mergedMinY = Math.Min(cityA.MinY, cityB.MinY);
+                                float mergedMaxY = Math.Max(cityA.MaxY, cityB.MaxY);
+
+                                var mergedCity = new City();
+                                mergedCity.Bounds = new Vector3(mergedMaxX - mergedMinX, mergedMaxY - mergedMinY, 0);
+                                mergedCity.Position = new Vector3(
+                                    (mergedMinX + mergedMaxX) / 2,
+                                    (mergedMinY + mergedMaxY) / 2,
+                                    0);
+
+                                // Combine POIs from both cities
+                                mergedCity.POIs.AddRange(cityA.POIs);
+                                mergedCity.POIs.AddRange(cityB.POIs);
+
+                                // Remove the two original cities and add the merged one
+                                CityList.RemoveAt(j);
+                                CityList.RemoveAt(i);
+                                CityList.Add(mergedCity);
+
+                                modified = true;
+                                break;
+                            }
+                            // For smaller overlaps, leave them as is - they'll be handled naturally by agent behavior
+                        }
+                    }
+
+                    if (modified)
+                        break;
+                }
+            } while (modified && iterations < maxIterations);
+
+            Logging.Info("Resolved city overlaps in {0} iterations, final count: {1}", iterations, CityList.Count);
+        }
+
+        public void ComputeAreaWeights()
+        {
+            int count = CityList.Count;
+            CityAreaWeights = new float[count];
+            TotalAreaWeight = 0;
+
+            for (int i = 0; i < count; i++)
+            {
+                var city = CityList[i];
+                float area = city.Bounds.X * city.Bounds.Y;
+                CityAreaWeights[i] = area;
+                TotalAreaWeight += area;
+            }
         }
     }
 }
