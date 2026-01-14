@@ -502,6 +502,19 @@ namespace WalkerSim
             var simulation = Simulation.Instance;
             var entityId = killedEntity.entityId;
 
+            var world = GameManager.Instance.World;
+            var entity = world.GetEntity(entityId);
+
+            if (entity is EntityHuman enemy)
+            {
+                if (world.worldTime > enemy.timeToDie)
+                {
+                    // Forced death, allow them to respawn regardless of respawn configuration.
+                    // TODO: Handle this, if respawn is set to none they would not respawn but the player did also not kill them.
+                    // The issue is that respawn is set to none so where should they respawn?
+                }
+            }
+
             simulation.EntityKilled(entityId);
         }
 
