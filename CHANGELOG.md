@@ -1,3 +1,5 @@
+# 0.9.20 (in progress)
+
 # 0.9.19
 - Improve: Better distribution for CitiyVisitor, agents will now spread out further in the area.
 - Improve: The heuristic for city detection.
