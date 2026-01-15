@@ -1,4 +1,6 @@
-# 0.9.19 (in progress)
+# 0.9.19
+- Improve: Better distribution for CitiyVisitor, agents will now spread out further in the area.
+- Improve: The heuristic for city detection.
 
 # 0.9.18
 - Fix: The simulation now keeps track of the TimeToDie variable, which potentially caused Ferals to live past their expiry time.
