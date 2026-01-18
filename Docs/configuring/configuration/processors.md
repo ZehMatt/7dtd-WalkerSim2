@@ -119,10 +119,17 @@ Zombies avoid cities and stay in the wilderness. When inside a city, they push t
 - Example: Zombies avoid populated areas and are found in forests, mountains, and rural areas
 
 ### CityVisitor
-Zombies visit cities in a rotation pattern. Each zombie group targets one city for 20 minutes, wandering throughout the area, before moving to the next city in the sequence. Different zombie groups may target different cities at the same time.
+Zombies travel to cities using a stateful behavior with three phases: selecting a target city, traveling to it, and exploring it for 20 minutes before selecting a new destination.
+
+**How it works:**
+- **Idle Phase**: Selects a random target city using weighted selection (larger cities are more likely to be chosen)
+- **Approaching Phase**: Travels toward the target city until arrival
+- **Arrived Phase**: Explores the city for 20 minutes with hash-based wandering patterns that change every 60 seconds, then returns to Idle
+
+The selection is deterministic based on agent group and current time, causing agents to pick new destinations at different times. Unlike PreferCities (which keeps agents in one general area), CityVisitor makes agents migrate between cities, creating dynamic population shifts across the map.
 
 - Uses Distance: No
-- Example: Zombies spend time in one city exploring it, then travel to the next city when 20 minutes have passed
+- Example: Zombie groups travel between cities, spending 20 minutes exploring before moving to the next destination
 
 ## Example Settings
 
