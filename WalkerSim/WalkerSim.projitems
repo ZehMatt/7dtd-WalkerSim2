@@ -26,6 +26,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Math.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Random.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Roads.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SerializationContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Active.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Constants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.cs" />
@@ -33,7 +35,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Grid.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Limits.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.LoadSave.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Serialization.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Logic.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Players.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Processors.cs" />

@@ -11,297 +11,245 @@ namespace WalkerSim
         private string _autoSaveFile;
         private float _autoSaveInterval = -1;
 
-        private void SaveState(State state, BinaryWriter writer)
+        private void SerializeState(State state, SerializationContext ctx)
         {
-            SaveHeader(state, writer);
-            SaveInfo(state, writer);
-            SaveStats(state, writer);
-            SaveConfig(state, writer);
-            SavePRNG(state, writer);
-            SaveAgents(state, writer);
-            SaveGrid(state, writer);
-            SaveEvents(state, writer);
+            SerializeHeader(state, ctx);
+            SerializeInfo(state, ctx);
+            SerializeStats(state, ctx);
+            SerializeConfig(state, ctx);
+            SerializePRNG(state, ctx);
+            SerializeAgents(state, ctx);
+            SerializeGrid(state, ctx);
+            SerializeEvents(state, ctx);
         }
 
-        private void SaveHeader(State state, BinaryWriter writer)
+        private bool SerializeHeader(State state, SerializationContext ctx)
         {
-            Serialization.WriteUInt32(writer, Constants.SaveMagic, false);
-            Serialization.WriteUInt32(writer, Constants.SaveVersion, false);
+            uint magic = ctx.IsWriting ? Constants.SaveMagic : 0;
+            uint version = ctx.IsWriting ? Constants.SaveVersion : 0;
+            
+            ctx.Serialize(ref magic, false);
+            ctx.Serialize(ref version, false);
+
+            if (ctx.IsReading)
+            {
+                if (magic != Constants.SaveMagic)
+                {
+                    throw new Exception("Invalid magic value, file is probably corrupted.");
+                }
+
+                state.Version = version;
+                if (state.Version != Constants.SaveVersion)
+                {
+                    Logging.Info("Saved state is using a different version, skipping load.");
+                    return false;
+                }
+            }
+
+            return true;
         }
 
-        private void SaveInfo(State state, BinaryWriter writer)
+        private bool SerializeInfo(State state, SerializationContext ctx)
         {
-            Serialization.WriteVector3(writer, state.WorldMins);
-            Serialization.WriteVector3(writer, state.WorldMaxs);
-            Serialization.WriteStringUTF8(writer, state.WorldName);
-            Serialization.WriteUInt32(writer, state.SlowIterator);
-            Serialization.WriteVector3(writer, state.WindDir);
-            Serialization.WriteVector3(writer, state.WindDirTarget);
-            Serialization.WriteSingle(writer, state.WindTime);
-            Serialization.WriteUInt32(writer, state.Ticks);
-            Serialization.WriteUInt32(writer, state.TickNextWindChange);
-            Serialization.WriteInt32(writer, state.GroupCount);
-            Serialization.WriteSingle(writer, state.MaxNeighbourDistance);
+            ctx.Serialize(ref state.WorldMins);
+            ctx.Serialize(ref state.WorldMaxs);
+            ctx.Serialize(ref state.WorldName);
+            ctx.Serialize(ref state.SlowIterator);
+            ctx.Serialize(ref state.WindDir);
+            ctx.Serialize(ref state.WindDirTarget);
+            ctx.Serialize(ref state.WindTime);
+            ctx.Serialize(ref state.Ticks);
+            ctx.Serialize(ref state.TickNextWindChange);
+            ctx.Serialize(ref state.GroupCount);
+            ctx.Serialize(ref state.MaxNeighbourDistance);
+
+            return true;
         }
 
-        private void SaveStats(State state, BinaryWriter writer)
+        private bool SerializeStats(State state, SerializationContext ctx)
         {
-            Serialization.WriteInt32(writer, state.SuccessfulSpawns);
-            Serialization.WriteInt32(writer, state.FailedSpawns);
-            Serialization.WriteInt32(writer, state.TotalDespawns);
+            ctx.Serialize(ref state.SuccessfulSpawns);
+            ctx.Serialize(ref state.FailedSpawns);
+            ctx.Serialize(ref state.TotalDespawns);
+
+            return true;
         }
 
-        private void SaveConfig(State state, BinaryWriter writer)
+        private bool SerializeConfig(State state, SerializationContext ctx)
         {
-            var config = state.Config;
-
             var configSerializer = new XmlSerializer(typeof(Config));
 
-            // We save this as an UTF8 xml string.
-            var textWriter = new StringWriter();
-            configSerializer.Serialize(textWriter, config);
-
-            Serialization.WriteStringUTF8(writer, textWriter.ToString());
-        }
-
-        private void SavePRNG(State state, BinaryWriter writer)
-        {
-            var prng = state.PRNG;
-            Serialization.WriteUInt32(writer, prng.State0);
-            Serialization.WriteUInt32(writer, prng.State1);
-        }
-
-        private void SaveAgents(State state, BinaryWriter writer)
-        {
-            var agents = state.Agents;
-
-            Serialization.WriteInt32(writer, agents.Count);
-            foreach (var agent in agents)
+            if (ctx.IsWriting)
             {
-                Serialization.WriteInt32(writer, agent.Index);
-                Serialization.WriteInt32(writer, agent.Group);
-                Serialization.WriteVector3(writer, agent.Position);
-                Serialization.WriteVector3(writer, agent.Velocity);
-                Serialization.WriteInt32(writer, agent.CellIndex);
-                Serialization.WriteInt32(writer, agent.EntityId);
-                Serialization.WriteInt32(writer, agent.EntityClassId);
-                Serialization.WriteInt32(writer, agent.Health);
-
-                // NOTE: Ensure the state isn't some intermediate one.
-                var agentState = agent.CurrentState;
-                if (agentState == Agent.State.PendingSpawn)
-                {
-                    agentState = Agent.State.Wandering;
-                }
-                Serialization.WriteInt32(writer, (int)agentState);
-                Serialization.WriteUInt32(writer, agent.LastUpdateTick);
-                Serialization.WriteUInt32(writer, agent.LastSpawnTick);
-                Serialization.WriteByte(writer, (byte)agent.CurrentSubState);
-                Serialization.WriteUInt32(writer, agent.AlertedTick);
-                Serialization.WriteVector3(writer, agent.AlertPosition);
-                Serialization.WriteUInt64(writer, agent.TimeToDie);
-                Serialization.WriteInt32(writer, agent.TargetCityIndex);
-                Serialization.WriteUInt32(writer, agent.CityTime);
-                Serialization.WriteByte(writer, (byte)agent.CurrentTravelState);
+                var textWriter = new StringWriter();
+                configSerializer.Serialize(textWriter, state.Config);
+                var configXml = textWriter.ToString();
+                ctx.Serialize(ref configXml);
             }
-        }
-
-        private void SaveGrid(State state, BinaryWriter writer)
-        {
-            var grid = state.Grid;
-
-            Serialization.WriteInt32(writer, grid.Length);
-            foreach (var cell in grid)
+            else
             {
-                Serialization.WriteInt32(writer, cell.Count);
-                foreach (var entry in cell)
-                {
-                    Serialization.WriteInt32(writer, entry);
-                }
-            }
-        }
-
-        private void SaveEvents(State state, BinaryWriter writer)
-        {
-            var events = state.Events;
-
-            Serialization.WriteInt32(writer, events.Count);
-            foreach (var ev in events)
-            {
-                Serialization.WriteInt32(writer, (int)ev.Type);
-                Serialization.WriteVector3(writer, ev.Position);
-                Serialization.WriteSingle(writer, ev.Radius);
-                Serialization.WriteSingle(writer, ev.Duration);
-            }
-        }
-
-        private bool LoadState(State state, BinaryReader reader)
-        {
-            if (!LoadHeader(state, reader))
-                return false;
-            if (!LoadInfo(state, reader))
-                return false;
-            if (!LoadStats(state, reader))
-                return false;
-            if (!LoadConfig(state, reader))
-                return false;
-            if (!LoadPRNG(state, reader))
-                return false;
-            if (!LoadAgents(state, reader))
-                return false;
-            if (!LoadGrid(state, reader))
-                return false;
-            if (!LoadEvents(state, reader))
-                return false;
-
-            return true;
-        }
-
-        private bool LoadHeader(State state, BinaryReader reader)
-        {
-            var magic = Serialization.ReadUInt32(reader, false);
-            if (magic != Constants.SaveMagic)
-            {
-                throw new Exception("Invalid magic value, file is probably corrupted.");
-            }
-
-            state.Version = Serialization.ReadUInt32(reader, false);
-            if (state.Version != Constants.SaveVersion)
-            {
-                Logging.Info("Saved state is using a different version, skipping load.");
-                return false;
+                string configXml = null;
+                ctx.Serialize(ref configXml);
+                var textReader = new StringReader(configXml);
+                state.Config = (Config)configSerializer.Deserialize(textReader);
             }
 
             return true;
         }
 
-        private bool LoadInfo(State state, BinaryReader reader)
+        private bool SerializePRNG(State state, SerializationContext ctx)
         {
-            state.WorldMins = Serialization.ReadVector3(reader);
-            state.WorldMaxs = Serialization.ReadVector3(reader);
-            state.WorldName = Serialization.ReadStringUTF8(reader);
-            state.SlowIterator = Serialization.ReadUInt32(reader);
-            state.WindDir = Serialization.ReadVector3(reader);
-            state.WindDirTarget = Serialization.ReadVector3(reader);
-            state.WindTime = Serialization.ReadSingle(reader);
-            state.Ticks = Serialization.ReadUInt32(reader);
-            state.TickNextWindChange = Serialization.ReadUInt32(reader);
-            state.GroupCount = Serialization.ReadInt32(reader);
-            state.MaxNeighbourDistance = Serialization.ReadSingle(reader);
+            uint state0 = ctx.IsWriting ? state.PRNG.State0 : 0;
+            uint state1 = ctx.IsWriting ? state.PRNG.State1 : 0;
+
+            ctx.Serialize(ref state0);
+            ctx.Serialize(ref state1);
+
+            if (ctx.IsReading)
+            {
+                state.PRNG = new WalkerSim.Random(state0, state1);
+            }
 
             return true;
         }
 
-        private bool LoadStats(State state, BinaryReader reader)
+        private bool SerializeAgents(State state, SerializationContext ctx)
         {
-            state.SuccessfulSpawns = Serialization.ReadInt32(reader);
-            state.FailedSpawns = Serialization.ReadInt32(reader);
-            state.TotalDespawns = Serialization.ReadInt32(reader);
+            int count = ctx.IsWriting ? state.Agents.Count : 0;
+            ctx.Serialize(ref count);
 
-            return true;
-        }
+            if (ctx.IsReading)
+            {
+                state.Agents = new List<Agent>(count);
+                state.Active = new Dictionary<int, Agent>();
+            }
 
-        private bool LoadConfig(State state, BinaryReader reader)
-        {
-            var configXml = Serialization.ReadStringUTF8(reader);
-
-            var configSerializer = new XmlSerializer(typeof(Config));
-
-            var textReader = new StringReader(configXml);
-            var config = (Config)configSerializer.Deserialize(textReader);
-
-            state.Config = config;
-
-            return true;
-        }
-
-        private bool LoadPRNG(State State, BinaryReader reader)
-        {
-            var state0 = Serialization.ReadUInt32(reader);
-            var state1 = Serialization.ReadUInt32(reader);
-            State.PRNG = new WalkerSim.Random(state0, state1);
-
-            return true;
-        }
-
-        private bool LoadAgents(State state, BinaryReader reader)
-        {
-            var agents = new List<Agent>();
-            var active = new Dictionary<int, Agent>();
-
-            var count = Serialization.ReadInt32(reader);
             for (int i = 0; i < count; i++)
             {
-                var agent = new Agent();
-                agent.Index = Serialization.ReadInt32(reader);
-                agent.Group = Serialization.ReadInt32(reader);
-                agent.Position = Serialization.ReadVector3(reader);
-                agent.Velocity = Serialization.ReadVector3(reader);
-                agent.CellIndex = Serialization.ReadInt32(reader);
-                agent.EntityId = Serialization.ReadInt32(reader);
-                agent.EntityClassId = Serialization.ReadInt32(reader);
-                agent.Health = Serialization.ReadInt32(reader);
-                agent.CurrentState = (Agent.State)Serialization.ReadInt32(reader);
-                agent.LastUpdateTick = Serialization.ReadUInt32(reader);
-                agent.LastSpawnTick = Serialization.ReadUInt32(reader);
-                agent.CurrentSubState = (Agent.SubState)Serialization.ReadByte(reader);
-                agent.AlertedTick = Serialization.ReadUInt32(reader);
-                agent.AlertPosition = Serialization.ReadVector3(reader);
-                agent.TimeToDie = Serialization.ReadUInt64(reader);
-                agent.TargetCityIndex = Serialization.ReadInt32(reader);
-                agent.CityTime = Serialization.ReadUInt32(reader);
-                agent.CurrentTravelState = (Agent.TravelState)Serialization.ReadByte(reader);
-                agents.Add(agent);
-
-                if (agent.CurrentState == Agent.State.Active)
+                Agent agent;
+                if (ctx.IsWriting)
                 {
-                    active.Add(agent.EntityId, agent);
+                    agent = state.Agents[i];
+                }
+                else
+                {
+                    agent = new Agent();
+                }
+
+                ctx.Serialize(ref agent.Index);
+                ctx.Serialize(ref agent.Group);
+                ctx.Serialize(ref agent.Position);
+                ctx.Serialize(ref agent.Velocity);
+                ctx.Serialize(ref agent.CellIndex);
+                ctx.Serialize(ref agent.EntityId);
+                ctx.Serialize(ref agent.EntityClassId);
+                ctx.Serialize(ref agent.Health);
+
+                // NOTE: Ensure the state isn't some intermediate one when saving.
+                if (ctx.IsWriting)
+                {
+                    var agentState = agent.CurrentState;
+                    if (agentState == Agent.State.PendingSpawn)
+                    {
+                        agentState = Agent.State.Wandering;
+                    }
+                    ctx.SerializeEnum(ref agentState);
+                }
+                else
+                {
+                    ctx.SerializeEnum(ref agent.CurrentState);
+                }
+
+                ctx.Serialize(ref agent.LastUpdateTick);
+                ctx.Serialize(ref agent.LastSpawnTick);
+                ctx.SerializeEnumByte(ref agent.CurrentSubState);
+                ctx.Serialize(ref agent.AlertedTick);
+                ctx.Serialize(ref agent.AlertPosition);
+                ctx.Serialize(ref agent.TimeToDie);
+                ctx.Serialize(ref agent.TargetCityIndex);
+                ctx.Serialize(ref agent.CityTime);
+                ctx.SerializeEnumByte(ref agent.CurrentTravelState);
+
+                if (ctx.IsReading)
+                {
+                    state.Agents.Add(agent);
+                    if (agent.CurrentState == Agent.State.Active)
+                    {
+                        state.Active.Add(agent.EntityId, agent);
+                    }
                 }
             }
-
-            state.Agents = agents;
-            state.Active = active;
 
             return true;
         }
 
-        private bool LoadGrid(State state, BinaryReader reader)
+        private bool SerializeGrid(State state, SerializationContext ctx)
         {
-            var cellCount = Serialization.ReadInt32(reader);
-            var grid = new List<int>[cellCount];
+            int cellCount = ctx.IsWriting ? state.Grid.Length : 0;
+            ctx.Serialize(ref cellCount);
 
-            for (var cellIdx = 0; cellIdx < cellCount; cellIdx++)
+            if (ctx.IsReading)
             {
-                var cell = new List<int>();
-                var entryCount = Serialization.ReadInt32(reader);
-                for (var entryIdx = 0; entryIdx < entryCount; entryIdx++)
-                {
-                    cell.Add(Serialization.ReadInt32(reader));
-                }
-                grid[cellIdx] = cell;
+                state.Grid = new List<int>[cellCount];
             }
 
-            state.Grid = grid;
+            for (int cellIdx = 0; cellIdx < cellCount; cellIdx++)
+            {
+                int entryCount = ctx.IsWriting ? state.Grid[cellIdx].Count : 0;
+                ctx.Serialize(ref entryCount);
+
+                if (ctx.IsReading)
+                {
+                    state.Grid[cellIdx] = new List<int>(entryCount);
+                }
+
+                for (int entryIdx = 0; entryIdx < entryCount; entryIdx++)
+                {
+                    int entry = ctx.IsWriting ? state.Grid[cellIdx][entryIdx] : 0;
+                    ctx.Serialize(ref entry);
+
+                    if (ctx.IsReading)
+                    {
+                        state.Grid[cellIdx].Add(entry);
+                    }
+                }
+            }
 
             return true;
         }
 
-        private bool LoadEvents(State state, BinaryReader reader)
+        private bool SerializeEvents(State state, SerializationContext ctx)
         {
-            var events = new List<EventData>();
+            int count = ctx.IsWriting ? state.Events.Count : 0;
+            ctx.Serialize(ref count);
 
-            var count = Serialization.ReadInt32(reader);
+            if (ctx.IsReading)
+            {
+                state.Events = new List<EventData>(count);
+            }
+
             for (int i = 0; i < count; i++)
             {
-                var ev = new EventData();
-                ev.Type = (EventType)Serialization.ReadInt32(reader);
-                ev.Position = Serialization.ReadVector3(reader);
-                ev.Radius = Serialization.ReadSingle(reader);
-                ev.Duration = Serialization.ReadSingle(reader);
-                events.Add(ev);
-            }
+                EventData ev;
+                if (ctx.IsWriting)
+                {
+                    ev = state.Events[i];
+                }
+                else
+                {
+                    ev = new EventData();
+                }
 
-            state.Events = events;
+                ctx.SerializeEnum(ref ev.Type);
+                ctx.Serialize(ref ev.Position);
+                ctx.Serialize(ref ev.Radius);
+                ctx.Serialize(ref ev.Duration);
+
+                if (ctx.IsReading)
+                {
+                    state.Events.Add(ev);
+                }
+            }
 
             return true;
         }
@@ -311,9 +259,10 @@ namespace WalkerSim
             try
             {
                 var writer = new BinaryWriter(stream, System.Text.Encoding.UTF8, true);
+                var ctx = SerializationContext.CreateWriter(writer);
                 lock (_state)
                 {
-                    SaveState(_state, writer);
+                    SerializeState(_state, ctx);
                 }
             }
             catch (Exception ex)
@@ -347,10 +296,9 @@ namespace WalkerSim
             {
                 var state = new State();
                 var reader = new BinaryReader(stream, System.Text.Encoding.UTF8, true);
-                if (!LoadState(state, reader))
-                {
-                    return false;
-                }
+                var ctx = SerializationContext.CreateReader(reader);
+                
+                SerializeState(state, ctx);
 
                 state.MapData = _state.MapData;
                 _state = state;
