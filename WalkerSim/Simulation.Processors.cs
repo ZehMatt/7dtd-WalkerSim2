@@ -930,64 +930,99 @@ namespace WalkerSim
             }
 
             var cities = state.MapData.Cities;
-
-            // Offset each agent's time by their group using prime number for staggering
-            long tickOffset = agent.Group * 2654435761;
-            long adjustedTime = state.Ticks + tickOffset;
-
             int cityCount = cities.CityList.Count;
 
-            // Fixed rotation cycle through cities
-            int cityRotationTime = sim.MinutesToTicks(20);
-            int currentCityIndex = (int)((adjustedTime / cityRotationTime) % cityCount);
-            
-            // Weighted city selection based on city size (area) - using precomputed weights
-            // Use agent's group as deterministic pseudo-random value for weighted selection
-            uint hash = (uint)((currentCityIndex + agent.Group) * 2654435761);
-            float randomValue = (hash % 10000) / 10000.0f; // 0.0 to 1.0
-            float targetWeight = randomValue * cities.TotalAreaWeight;
-            
-            // Find city by accumulated weight using precomputed values
-            int targetCityIndex = 0;
-            float accumulatedWeight = 0;
-            for (int i = 0; i < cityCount; i++)
+            // State machine: Idle -> Approaching -> Arrived -> Idle
+            if (agent.CurrentTravelState == Agent.TravelState.Idle)
             {
-                accumulatedWeight += cities.CityAreaWeights[i];
-                if (accumulatedWeight >= targetWeight)
+                // Select a new target city
+                uint hash = (uint)((agent.Group * 2654435761) ^ (state.Ticks * 1597334677));
+                float randomValue = (hash % 10000) / 10000.0f;
+                float targetWeight = randomValue * cities.TotalAreaWeight;
+
+                int targetCityIndex = 0;
+                float accumulatedWeight = 0;
+                for (int i = 0; i < cityCount; i++)
                 {
-                    targetCityIndex = i;
-                    break;
+                    accumulatedWeight += cities.CityAreaWeights[i];
+                    if (accumulatedWeight >= targetWeight)
+                    {
+                        targetCityIndex = i;
+                        break;
+                    }
+                }
+
+                agent.TargetCityIndex = targetCityIndex;
+                agent.CurrentTravelState = Agent.TravelState.Approaching;
+
+                // Start approaching immediately
+                var targetCity = cities.CityList[agent.TargetCityIndex];
+                float closestX = System.Math.Max(targetCity.MinX, System.Math.Min(agent.Position.X, targetCity.MaxX));
+                float closestY = System.Math.Max(targetCity.MinY, System.Math.Min(agent.Position.Y, targetCity.MaxY));
+                var direction = new Vector3(closestX, closestY, 0) - agent.Position;
+                direction.Z = 0;
+
+                if (direction.X != 0 || direction.Y != 0)
+                {
+                    direction = Vector3.Normalize(direction);
+                    return direction * power;
                 }
             }
-            
-            var targetCity = cities.CityList[targetCityIndex];
-            bool isInTargetCity = agent.Position.X >= targetCity.MinX &&
-                                   agent.Position.X <= targetCity.MaxX &&
-                                   agent.Position.Y >= targetCity.MinY &&
-                                   agent.Position.Y <= targetCity.MaxY;
-
-            // Two branches: in target city or not
-            if (isInTargetCity)
+            else if (agent.CurrentTravelState == Agent.TravelState.Approaching)
             {
-                // In target city - wander across full area with better distribution
-                // Instead of sine/cosine (which clusters at center), use hash-based targets
-                // that change over time to cover different areas of the city
-                
+                var targetCity = cities.CityList[agent.TargetCityIndex];
+
+                // Check if we've arrived at the target city
+                bool isInTargetCity = agent.Position.X >= targetCity.MinX &&
+                                       agent.Position.X <= targetCity.MaxX &&
+                                       agent.Position.Y >= targetCity.MinY &&
+                                       agent.Position.Y <= targetCity.MaxY;
+
+                if (isInTargetCity)
+                {
+                    agent.CurrentTravelState = Agent.TravelState.Arrived;
+                    agent.CityTime = state.Ticks;
+                }
+
+                // Approach the city (or continue approaching if just transitioned)
+                float closestX = System.Math.Max(targetCity.MinX, System.Math.Min(agent.Position.X, targetCity.MaxX));
+                float closestY = System.Math.Max(targetCity.MinY, System.Math.Min(agent.Position.Y, targetCity.MaxY));
+                var direction = new Vector3(closestX, closestY, 0) - agent.Position;
+                direction.Z = 0;
+
+                if (direction.X != 0 || direction.Y != 0)
+                {
+                    direction = Vector3.Normalize(direction);
+                    return direction * power;
+                }
+            }
+            else if (agent.CurrentTravelState == Agent.TravelState.Arrived)
+            {
+                // Check if we've been in the city for 20 minutes
+                int cityDuration = sim.MinutesToTicks(20) + state.PRNG.Next(15);
+                if ((state.Ticks - agent.CityTime) >= cityDuration)
+                {
+                    agent.CurrentTravelState = Agent.TravelState.Idle;
+                    // Will select new target next frame but continue wandering this frame
+                }
+
+                // Wander within the city
+                var targetCity = cities.CityList[agent.TargetCityIndex];
                 const float edgeMargin = 20f;
                 float cityWidth = targetCity.Bounds.X - (edgeMargin * 2);
                 float cityHeight = targetCity.Bounds.Y - (edgeMargin * 2);
-                
+
                 // Change target position every ~60 seconds for more exploration
-                uint timeSegment = state.Ticks / 3600; // ~60 second segments
-                
+                uint timeSegment = state.Ticks / 3600;
+
                 // Generate unique target for this time segment using agent group
                 uint seedX = (uint)(agent.Group * 2654435761 + timeSegment * 1640531527);
                 uint seedY = (uint)(agent.Group * 1597334677 + timeSegment * 3266489917);
-                
+
                 // Map to full city area uniformly
                 float targetOffsetX = ((seedX % 10000) / 10000.0f * 2.0f - 1.0f) * (cityWidth / 2);
                 float targetOffsetY = ((seedY % 10000) / 10000.0f * 2.0f - 1.0f) * (cityHeight / 2);
-                
+
                 float targetX = targetCity.Position.X + targetOffsetX;
                 float targetY = targetCity.Position.Y + targetOffsetY;
                 var targetPos = new Vector3(targetX, targetY, 0);
@@ -1002,25 +1037,9 @@ namespace WalkerSim
                     float forceMult = System.Math.Min(distToTarget / 30f, 1f);
                     return direction * power * forceMult * 0.5f;
                 }
-
-                return Vector3.Zero;
             }
-            else
-            {
-                // Not in target city - approach it
-                float closestX = System.Math.Max(targetCity.MinX, System.Math.Min(agent.Position.X, targetCity.MaxX));
-                float closestY = System.Math.Max(targetCity.MinY, System.Math.Min(agent.Position.Y, targetCity.MaxY));
-                var direction = new Vector3(closestX, closestY, 0) - agent.Position;
-                direction.Z = 0;
 
-                if (direction.X != 0 || direction.Y != 0)
-                {
-                    direction = Vector3.Normalize(direction);
-                    return direction * power;
-                }
-
-                return Vector3.Zero;
-            }
+            return Vector3.Zero;
         }
 
     }

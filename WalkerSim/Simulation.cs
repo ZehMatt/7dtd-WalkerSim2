@@ -573,7 +573,7 @@ namespace WalkerSim
                     continue;
                 }
 
-                accumulator = System.Math.Min(accumulator + scaledDt, 5.0f);
+                accumulator = System.Math.Min(accumulator + scaledDt, 10.0f);
 
                 if (accumulator < Constants.TickRate)
                 {
@@ -673,6 +673,11 @@ namespace WalkerSim
         private int MinutesToTicks(int minutes)
         {
             return SecondsToTicks(minutes * 60);
+        }
+
+        public double GetSimulationTimeSeconds()
+        {
+            return _state.Ticks / (double)Constants.TicksPerSecond;
         }
 
         public void SetIsBloodmoon(bool bloodmoon)

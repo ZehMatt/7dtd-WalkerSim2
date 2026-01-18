@@ -17,6 +17,13 @@ namespace WalkerSim
             Alerted,
         }
 
+        public enum TravelState
+        {
+            Idle,
+            Approaching,
+            Arrived,
+        }
+
         public int Index;
         public int Group;
         public Vector3 Velocity;
@@ -30,6 +37,9 @@ namespace WalkerSim
         public uint AlertedTick = 0;
         public Vector3 AlertPosition;
         public ulong TimeToDie = ulong.MaxValue;
+        public int TargetCityIndex = -1;
+        public uint CityTime = 0;
+        public TravelState CurrentTravelState = TravelState.Idle;
 
         public Agent()
         {
@@ -44,6 +54,9 @@ namespace WalkerSim
             CellIndex = -1;
             CurrentState = State.Wandering;
             LastUpdateTick = 0;
+            TargetCityIndex = -1;
+            CityTime = 0;
+            CurrentTravelState = TravelState.Idle;
 
             ResetSpawnData();
         }
