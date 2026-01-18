@@ -12,6 +12,15 @@ namespace WalkerSim.Console
         public static SubCommand[] Commands = new[] {
             new SubCommand
             {
+                Name = "help",
+                Description = "Shows this help message.",
+                Handler = new Action<CommandSenderInfo>((sender) =>
+                {
+                    ShowHelpTextDirectly();
+                }),
+            },
+            new SubCommand
+            {
                 Name = "show",
                 Description = "Opens the map window and temporarily enables the overlay. To keep the overlay enabled use `walkersim map enable`.",
                 Handler = new Action<CommandSenderInfo>((sender) =>
@@ -204,6 +213,51 @@ namespace WalkerSim.Console
                 }),
             }
         };
+
+        public static void ShowHelpTextDirectly()
+        {
+            SdtdConsole.Instance.Output("=== WalkerSim Commands ===");
+            SdtdConsole.Instance.Output("");
+            SdtdConsole.Instance.Output("Usage: walkersim <command> [arguments]");
+            SdtdConsole.Instance.Output("");
+
+            // Find the longest command name for alignment
+            int maxNameLength = 0;
+            foreach (var cmd in Commands)
+            {
+                if (cmd.Name.Length > maxNameLength)
+                    maxNameLength = cmd.Name.Length;
+            }
+
+            SdtdConsole.Instance.Output("Available Commands:");
+            foreach (var cmd in Commands)
+            {
+                // Get parameter info
+                var parameters = cmd.Handler.Method.GetParameters();
+                bool requiresSenderInfo = parameters.Length > 0 && parameters[0].ParameterType == typeof(CommandSenderInfo);
+                int startIndex = requiresSenderInfo ? 1 : 0;
+                
+                string paramString = "";
+                for (int i = startIndex; i < parameters.Length; i++)
+                {
+                    paramString += $" <{parameters[i].Name}>";
+                }
+
+                string cmdLine = cmd.Name + paramString;
+                int padding = maxNameLength + 20 - cmdLine.Length;
+                if (padding < 2) padding = 2;
+                
+                SdtdConsole.Instance.Output("  {0}{1}{2}",
+                    cmdLine,
+                    new string(' ', padding),
+                    cmd.Description);
+            }
+            SdtdConsole.Instance.Output("");
+            SdtdConsole.Instance.Output("Examples:");
+            SdtdConsole.Instance.Output("  walkersim stats");
+            SdtdConsole.Instance.Output("  walkersim map enable");
+            SdtdConsole.Instance.Output("  walkersim timescale 2.0");
+        }
     }
 
     public class CommandWalkerSim : ConsoleCmdAbstract
@@ -218,6 +272,13 @@ namespace WalkerSim.Console
 
             var command = _params[0].ToLowerInvariant();
             _params.RemoveAt(0);
+
+            // Special handling for help command
+            if (command == "help")
+            {
+                SubCommand.ShowHelpTextDirectly();
+                return;
+            }
 
             SubCommand subCommand = null;
             for (int i = 0; i < SubCommand.Commands.Length; i++)
@@ -290,26 +351,17 @@ namespace WalkerSim.Console
 
         private string GetHelpText()
         {
-            var res = "Usage: walkersim <command>.\n" +
-                "List of commands:\n";
-
-            foreach (var cmd in SubCommand.Commands)
-            {
-                res += string.Format("  {0} - {1}\n",
-                    cmd.Name,
-                    cmd.Description);
-            }
-
-            return res;
+            return "WalkerSim - Zombie simulation mod. Use 'walkersim help' for available commands.";
         }
 
         private void ShowHelpText(string error)
         {
             if (error != null && error != "")
             {
-                SdtdConsole.Instance.Output("ERROR: " + error);
+                SdtdConsole.Instance.Output("[ERROR] " + error);
+                SdtdConsole.Instance.Output("");
             }
-            SdtdConsole.Instance.Output(GetHelpText());
+            SubCommand.ShowHelpTextDirectly();
         }
 
         public override string[] getCommands()
