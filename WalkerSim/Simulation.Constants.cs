@@ -9,15 +9,16 @@ namespace WalkerSim
             // Increment this in case of a breaking change in the save format.
             // Version 8: New configuration SoundDistanceScale.
             // Version 9: Might have saved an empty state, skip loading the old one.
-            public const uint SaveVersion = 10;
+            // Version 11: State for CityVisitor.
+            public const uint SaveVersion = 11;
 
-            public const int MaxUpdateCountPerTick = 1000;
+            public const uint MaxUpdateCountPerTick = 2000;
 
-            public const int TicksPerSecond = 30;
+            public const int TicksPerSecond = 40;
             public const float TickRate = 1f / TicksPerSecond;
             public const int TickRateMs = 1000 / TicksPerSecond;
 
-            public const float WalkSpeed = 0.8f; // 0.8 meters per second
+            public const float WalkSpeed = 1.1f; // 1.1 meters per second
         }
     }
 }

@@ -5,9 +5,6 @@ namespace WalkerSim
 {
     internal partial class Simulation
     {
-        // If DeterministicLoop is set to true this will be the amount of how many agents it will update per tick.
-        private const uint MaxUpdateCountPerTick = 2000;
-
         private TimeMeasurement _simTime = new TimeMeasurement();
 
         private void UpdateAgentLogic(Agent agent)
@@ -25,7 +22,7 @@ namespace WalkerSim
         private void UpdateAgents()
         {
             var agents = _state.Agents;
-            var maxUpdates = MaxUpdateCountPerTick;
+            var maxUpdates = Constants.MaxUpdateCountPerTick;
 
             if (agents.Count > 0)
             {
@@ -34,18 +31,18 @@ namespace WalkerSim
                     // Update in parallel.
                     Parallel.For(0, maxUpdates, i =>
                     {
-                        var index = (int)((_state.SlowIterator + (uint)i) % agents.Count);
-                        var agent = agents[index];
+                        var index = (_state.SlowIterator + i) % agents.Count;
+                        var agent = agents[(int)index];
                         UpdateAgentLogic(agent);
                     });
                 }
                 else
                 {
                     // Update single threaded.
-                    for (int i = 0; i < maxUpdates; i++)
+                    for (uint i = 0; i < maxUpdates; i++)
                     {
-                        var index = (int)((_state.SlowIterator + (uint)i) % agents.Count);
-                        var agent = agents[index];
+                        var index = (_state.SlowIterator + i) % agents.Count;
+                        var agent = agents[(int)index];
                         UpdateAgentLogic(agent);
                     }
                 }
@@ -141,7 +138,7 @@ namespace WalkerSim
             // Sanity check, omitted for release builds.
             CheckPositionInBounds(agent.Position);
 
-            var curVel = agent.Velocity * 0.97f;
+            var curVel = agent.Velocity * 0.9999f;
 
             // Check if curVel is near zero.
             if (System.Math.Abs(curVel.X) < 1e-6f)
@@ -170,11 +167,6 @@ namespace WalkerSim
             curVel.Validate();
             agent.Velocity = curVel;
 
-            if (_isFastAdvancing)
-            {
-                deltaTime *= 2.0f;
-            }
-
             UpdateAwareness(agent);
             ApplyMovement(agent, deltaTime, processorGroup.SpeedScale);
 
@@ -197,7 +189,7 @@ namespace WalkerSim
         public void ApplyMovement(Agent agent, float deltaTime, float speedScale)
         {
             // Cap the deltaTime
-            deltaTime = System.Math.Min(deltaTime, TimeScale);
+            deltaTime = System.Math.Min(deltaTime, Constants.TickRate * 128.0f);
 
             // Keep the Z axis clean.
             agent.Position.Z = 0;
@@ -216,7 +208,7 @@ namespace WalkerSim
             }
             else
             {
-                walkSpeed *= MathEx.Clamp(TimeScale, 1.0f, 16.0f);
+                walkSpeed *= MathEx.Clamp(TimeScale, 1.0f, 32.0f);
             }
 
             var realPower = speedScale * walkSpeed;

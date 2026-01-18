@@ -42,6 +42,9 @@ namespace WalkerSim.Editor
         Brush[] GroupColors;
         Brush[] PlayerColors;
 
+        const float RenderRate = 1.0f / 15.0f; // 15 FPS
+        private DateTime _lastRenderTime = DateTime.MinValue;
+
         int GetTotalGroupCount()
         {
             return (simulation.Agents.Count + (CurrentConfig.GroupSize - 1)) / CurrentConfig.GroupSize;
@@ -100,12 +103,12 @@ namespace WalkerSim.Editor
 
             CenterCanvas();
 
-            viewAgents.Click += (sender, e) => RenderSimulation();
-            viewRoads.Click += (sender, e) => RenderSimulation();
-            viewPrefabs.Click += (sender, e) => RenderSimulation();
-            viewEvents.Click += (sender, e) => RenderSimulation();
-            viewBiomes.Click += (sender, e) => RenderSimulation();
-            viewCities.Click += (sender, e) => RenderSimulation();
+            viewAgents.Click += (sender, e) => RenderSimulation(true);
+            viewRoads.Click += (sender, e) => RenderSimulation(true);
+            viewPrefabs.Click += (sender, e) => RenderSimulation(true);
+            viewEvents.Click += (sender, e) => RenderSimulation(true);
+            viewBiomes.Click += (sender, e) => RenderSimulation(true);
+            viewCities.Click += (sender, e) => RenderSimulation(true);
 
             splitContainer1.Panel1.AutoScroll = true;
             splitContainer1.Panel1.MouseWheel += (sender, e) =>
@@ -312,7 +315,7 @@ namespace WalkerSim.Editor
 
             // Draw current state.
             GenerateGroupColors();
-            RenderSimulation();
+            RenderSimulation(true);
         }
 
         private void SetupWorlds()
@@ -544,7 +547,7 @@ namespace WalkerSim.Editor
         {
             simulation.GameUpdate(updateTimer.Interval / 1000.0f);
 
-            RenderSimulation();
+            RenderSimulation(false);
             UpdateStats();
         }
 
@@ -629,10 +632,16 @@ namespace WalkerSim.Editor
             }
         }
 
-        private void RenderSimulation()
+        private void RenderSimulation(bool forceRedraw)
         {
-            RenderToBitmap();
+            bool shouldRender = forceRedraw || DateTime.Now.Subtract(_lastRenderTime).TotalSeconds >= RenderRate;
 
+            if (!shouldRender)
+            {
+                return;
+            }
+
+            RenderToBitmap();
             simCanvas.Refresh();
         }
 
@@ -646,7 +655,7 @@ namespace WalkerSim.Editor
             lblStatWindTarget.Text = simulation.WindDirectionTarget.ToString();
             lblStatWindChange.Text = simulation.TickNextWindChange.ToString();
             lblStatTicks.Text = simulation.Ticks.ToString();
-            lblStatSimTime.Text = String.Format(
+            lblStatTickTime.Text = String.Format(
                 "{0:0.00000} ms. ({1:0.000}/ps)",
                 simulation.AverageSimTime * 1000.0,
                 (simulation.AverageSimTime > 0 ? 1 / simulation.AverageSimTime : 0)
@@ -657,6 +666,10 @@ namespace WalkerSim.Editor
                 simulation.AverageUpdateTime * 1000.0,
                 (simulation.AverageUpdateTime > 0 ? 1 / simulation.AverageUpdateTime : 0)
                 );
+
+            var secsElapsed = simulation.GetSimulationTimeSeconds();
+            var timeSpan = TimeSpan.FromSeconds(secsElapsed);
+            lblStatSimTime.Text = string.Format("{0:D2}:{1:D2}:{2:D2}.{3:D3}", timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds, timeSpan.Milliseconds);
         }
 
         private void OnGroupSelection(object sender, EventArgs e)
@@ -913,7 +926,7 @@ namespace WalkerSim.Editor
 
         private void OnSimCanvasMouseMove(object sender, MouseEventArgs e)
         {
-            RenderSimulation();
+            RenderSimulation(true);
         }
 
         private void loadConfigurationToolStripMenuItem_Click(object sender, EventArgs e)
@@ -947,7 +960,7 @@ namespace WalkerSim.Editor
                 simulation.Reset(CurrentConfig);
 
                 GenerateGroupColors();
-                RenderSimulation();
+                RenderSimulation(true);
             }
         }
 
@@ -960,7 +973,7 @@ namespace WalkerSim.Editor
 
             GenerateGroupColors();
             UpdateStats();
-            RenderSimulation();
+            RenderSimulation(true);
         }
 
         private void OnAddGroupClick(object sender, EventArgs e)
@@ -1551,7 +1564,7 @@ namespace WalkerSim.Editor
                 CheckMaxAgents();
 
                 GenerateGroupColors();
-                RenderSimulation();
+                RenderSimulation(true);
                 ZoomReset();
                 UpdateStats();
 
@@ -1592,7 +1605,7 @@ namespace WalkerSim.Editor
             simulation.Reset(CurrentConfig);
 
             GenerateGroupColors();
-            RenderSimulation();
+            RenderSimulation(true);
             ZoomReset();
             UpdateStats();
         }

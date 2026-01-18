@@ -154,7 +154,7 @@ namespace WalkerSim.Editor
             this.label22 = new System.Windows.Forms.Label();
             this.lblStatWindTarget = new System.Windows.Forms.Label();
             this.label20 = new System.Windows.Forms.Label();
-            this.lblStatSimTime = new System.Windows.Forms.Label();
+            this.lblStatTickTime = new System.Windows.Forms.Label();
             this.label27 = new System.Windows.Forms.Label();
             this.lblStatWindChange = new System.Windows.Forms.Label();
             this.label25 = new System.Windows.Forms.Label();
@@ -178,6 +178,8 @@ namespace WalkerSim.Editor
             this.btZoomIn = new System.Windows.Forms.Label();
             this.btZoomOut = new System.Windows.Forms.Label();
             this.label29 = new System.Windows.Forms.Label();
+            this.lblStatSimTime = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -233,7 +235,7 @@ namespace WalkerSim.Editor
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(840, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(864, 24);
             this.menuStrip1.TabIndex = 4;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -582,7 +584,7 @@ namespace WalkerSim.Editor
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.tabSimulation);
-            this.splitContainer1.Size = new System.Drawing.Size(840, 692);
+            this.splitContainer1.Size = new System.Drawing.Size(864, 692);
             this.splitContainer1.SplitterDistance = 461;
             this.splitContainer1.TabIndex = 5;
             this.splitContainer1.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.OnSplitContainerMove);
@@ -608,7 +610,7 @@ namespace WalkerSim.Editor
             this.tabSimulation.Location = new System.Drawing.Point(0, 0);
             this.tabSimulation.Name = "tabSimulation";
             this.tabSimulation.SelectedIndex = 0;
-            this.tabSimulation.Size = new System.Drawing.Size(840, 227);
+            this.tabSimulation.Size = new System.Drawing.Size(864, 227);
             this.tabSimulation.TabIndex = 0;
             // 
             // tabPage1
@@ -1666,13 +1668,15 @@ namespace WalkerSim.Editor
             // 
             // tabPage4
             // 
+            this.tabPage4.Controls.Add(this.lblStatSimTime);
+            this.tabPage4.Controls.Add(this.label2);
             this.tabPage4.Controls.Add(this.lblStatGroups);
             this.tabPage4.Controls.Add(this.label24);
             this.tabPage4.Controls.Add(this.lblStatUpdateTime);
             this.tabPage4.Controls.Add(this.label22);
             this.tabPage4.Controls.Add(this.lblStatWindTarget);
             this.tabPage4.Controls.Add(this.label20);
-            this.tabPage4.Controls.Add(this.lblStatSimTime);
+            this.tabPage4.Controls.Add(this.lblStatTickTime);
             this.tabPage4.Controls.Add(this.label27);
             this.tabPage4.Controls.Add(this.lblStatWindChange);
             this.tabPage4.Controls.Add(this.label25);
@@ -1689,7 +1693,7 @@ namespace WalkerSim.Editor
             this.tabPage4.Location = new System.Drawing.Point(4, 22);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(832, 201);
+            this.tabPage4.Size = new System.Drawing.Size(856, 201);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "Statistics";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -1763,17 +1767,17 @@ namespace WalkerSim.Editor
             this.label20.TabIndex = 14;
             this.label20.Text = "Wind Direction Target:";
             // 
-            // lblStatSimTime
+            // lblStatTickTime
             // 
-            this.lblStatSimTime.AutoSize = true;
-            this.lblStatSimTime.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblStatSimTime.Location = new System.Drawing.Point(622, 26);
-            this.lblStatSimTime.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
-            this.lblStatSimTime.Name = "lblStatSimTime";
-            this.lblStatSimTime.Padding = new System.Windows.Forms.Padding(2);
-            this.lblStatSimTime.Size = new System.Drawing.Size(33, 17);
-            this.lblStatSimTime.TabIndex = 13;
-            this.lblStatSimTime.Text = "0 ms";
+            this.lblStatTickTime.AutoSize = true;
+            this.lblStatTickTime.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.lblStatTickTime.Location = new System.Drawing.Point(622, 26);
+            this.lblStatTickTime.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.lblStatTickTime.Name = "lblStatTickTime";
+            this.lblStatTickTime.Padding = new System.Windows.Forms.Padding(2);
+            this.lblStatTickTime.Size = new System.Drawing.Size(33, 17);
+            this.lblStatTickTime.TabIndex = 13;
+            this.lblStatTickTime.Text = "0 ms";
             // 
             // label27
             // 
@@ -1782,9 +1786,9 @@ namespace WalkerSim.Editor
             this.label27.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label27.Name = "label27";
             this.label27.Padding = new System.Windows.Forms.Padding(2);
-            this.label27.Size = new System.Drawing.Size(88, 17);
+            this.label27.Size = new System.Drawing.Size(61, 17);
             this.label27.TabIndex = 12;
-            this.label27.Text = "Simulation Time:";
+            this.label27.Text = "Tick Time:";
             // 
             // lblStatWindChange
             // 
@@ -2020,11 +2024,34 @@ namespace WalkerSim.Editor
             this.label29.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.label29.Click += new System.EventHandler(this.OnZoomResetClick);
             // 
+            // lblStatSimTime
+            // 
+            this.lblStatSimTime.AutoSize = true;
+            this.lblStatSimTime.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.lblStatSimTime.Location = new System.Drawing.Point(622, 60);
+            this.lblStatSimTime.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.lblStatSimTime.Name = "lblStatSimTime";
+            this.lblStatSimTime.Padding = new System.Windows.Forms.Padding(2);
+            this.lblStatSimTime.Size = new System.Drawing.Size(25, 17);
+            this.lblStatSimTime.TabIndex = 21;
+            this.lblStatSimTime.Text = "0 s";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(522, 60);
+            this.label2.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.label2.Name = "label2";
+            this.label2.Padding = new System.Windows.Forms.Padding(2);
+            this.label2.Size = new System.Drawing.Size(88, 17);
+            this.label2.TabIndex = 20;
+            this.label2.Text = "Simulation Time:";
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(840, 716);
+            this.ClientSize = new System.Drawing.Size(864, 716);
             this.Controls.Add(this.label29);
             this.Controls.Add(this.btZoomOut);
             this.Controls.Add(this.btZoomIn);
@@ -2176,7 +2203,7 @@ namespace WalkerSim.Editor
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.Label lblStatInactive;
         private System.Windows.Forms.Label label17;
-        private System.Windows.Forms.Label lblStatSimTime;
+        private System.Windows.Forms.Label lblStatTickTime;
         private System.Windows.Forms.Label label27;
         private System.Windows.Forms.Label lblStatWindChange;
         private System.Windows.Forms.Label label25;
@@ -2237,5 +2264,7 @@ namespace WalkerSim.Editor
         private System.Windows.Forms.ToolStripMenuItem debugToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loadStateToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveStateToolStripMenuItem1;
+        private System.Windows.Forms.Label lblStatSimTime;
+        private System.Windows.Forms.Label label2;
     }
 }
