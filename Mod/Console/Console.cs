@@ -116,6 +116,50 @@ namespace WalkerSim.Console
             },
             new SubCommand
             {
+                Name = "config",
+                Description = "Dumps the currently loaded configuration.",
+                Handler = new Action<CommandSenderInfo>((sender) =>
+                {
+                    var config = Simulation.Instance.Config;
+                    if (config == null)
+                    {
+                        SdtdConsole.Instance.Output("No configuration loaded.");
+                        return;
+                    }
+
+                    SdtdConsole.Instance.Output("--- Configuration ---");
+                    SdtdConsole.Instance.Output("  Random Seed: {0}", config.RandomSeed);
+                    SdtdConsole.Instance.Output("  Population Density: {0} agents/km²", config.PopulationDensity);
+                    SdtdConsole.Instance.Output("  Group Size: {0}", config.GroupSize);
+                    SdtdConsole.Instance.Output("  Fast Forward At Start: {0}", config.FastForwardAtStart);
+                    SdtdConsole.Instance.Output("  Start Agents Grouped: {0}", config.StartAgentsGrouped);
+                    SdtdConsole.Instance.Output("  Start Position: {0}", config.StartPosition);
+                    SdtdConsole.Instance.Output("  Respawn Position: {0}", config.RespawnPosition);
+                    SdtdConsole.Instance.Output("  Pause During Bloodmoon: {0}", config.PauseDuringBloodmoon);
+                    SdtdConsole.Instance.Output("  Sound Distance Scale: {0}", config.SoundDistanceScale);
+                    SdtdConsole.Instance.Output("");
+                    SdtdConsole.Instance.Output("--- Processor Groups ({0}) ---", config.Processors.Count);
+                    for (int i = 0; i < config.Processors.Count; i++)
+                    {
+                        var group = config.Processors[i];
+                        SdtdConsole.Instance.Output("  Group {0}:", group.Group == -1 ? "Any" : group.Group.ToString());
+                        SdtdConsole.Instance.Output("    Speed Scale: {0}", group.SpeedScale);
+                        SdtdConsole.Instance.Output("    Post Spawn Behavior: {0}", group.PostSpawnBehavior);
+                        SdtdConsole.Instance.Output("    Post Spawn Wander Speed: {0}", group.PostSpawnWanderSpeed);
+                        SdtdConsole.Instance.Output("    Color: {0}", group.Color);
+                        SdtdConsole.Instance.Output("    Processors ({0}):", group.Entries.Count);
+                        foreach (var processor in group.Entries)
+                        {
+                            if (processor.Distance > 0)
+                                SdtdConsole.Instance.Output("      - {0} (Distance: {1}, Power: {2})", processor.Type, processor.Distance, processor.Power);
+                            else
+                                SdtdConsole.Instance.Output("      - {0} (Power: {1})", processor.Type, processor.Power);
+                        }
+                    }
+                }),
+            },
+            new SubCommand
+            {
                 Name = "maskinfo",
                 Description = "",
                 Handler = new Action<CommandSenderInfo>((sender) =>
