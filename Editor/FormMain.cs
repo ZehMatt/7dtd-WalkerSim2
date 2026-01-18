@@ -25,6 +25,7 @@ namespace WalkerSim.Editor
         private int _selectedGroup = -1;
         private int _selectedProcessor = -1;
         private bool _updatingConfig = false;
+        private bool _stateLoad = false;
 
         private List<Config.WorldLocation> _startPositions = new List<Config.WorldLocation>();
         private List<Config.WorldLocation> _respawnPositions = new List<Config.WorldLocation>();
@@ -877,7 +878,10 @@ namespace WalkerSim.Editor
             var worldName = Path.GetFileName(worldPath);
             simulation.LoadMapData(worldPath, worldName);
 
-            simulation.Reset(CurrentConfig);
+            if (!_stateLoad)
+            {
+                simulation.Reset(CurrentConfig);
+            }
 
             ZoomReset();
         }
@@ -1552,30 +1556,42 @@ namespace WalkerSim.Editor
                     return;
                 }
 
-                var worldName = simulation.WorldName;
-                if (Worlds.GetWorldPath(worldName, out var worldPath))
+                _stateLoad = true;
+
+                try
                 {
-                    // Update selection.
-                    inputWorld.SelectedItem = worldName;
+                    CurrentConfig = simulation.Config;
+                    UpdateConfigFields();
+
+                    var worldName = simulation.WorldName;
+                    if (Worlds.GetWorldPath(worldName, out var worldPath))
+                    {
+                        // Update selection without triggering the event.
+                        inputWorld.SelectedItem = worldName;
+                    }
+
+                    CheckMaxAgents();
+                    GenerateGroupColors();
+                    RenderSimulation(true);
+                    ZoomReset();
+                    UpdateStats();
+
+                    int numDead = 0;
+                    foreach (var agent in simulation.Agents)
+                    {
+                        if (agent.CurrentState == Agent.State.Dead)
+                            numDead++;
+                    }
+
+                    Logging.Info($"Loaded state save with {simulation.AgentCount} agents, {numDead} dead.");
+                }
+                catch (Exception ex)
+                {
+                    Logging.Info("Error applying loaded configuration:");
+                    Logging.Exception(ex);
                 }
 
-                CurrentConfig = simulation.Config;
-                UpdateConfigFields();
-                CheckMaxAgents();
-
-                GenerateGroupColors();
-                RenderSimulation(true);
-                ZoomReset();
-                UpdateStats();
-
-                int numDead = 0;
-                foreach (var agent in simulation.Agents)
-                {
-                    if (agent.CurrentState == Agent.State.Dead)
-                        numDead++;
-                }
-
-                Logging.Info($"Loaded state save with {simulation.AgentCount} agents, {numDead} dead.");
+                _stateLoad = false;
             }
         }
 

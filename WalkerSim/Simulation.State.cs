@@ -120,9 +120,9 @@ namespace WalkerSim
         private int CountAgentsInState(Agent.State state)
         {
             int count = 0;
-            foreach (var kvp in _state.Active)
+            foreach (var agent in Agents)
             {
-                if (kvp.Value.CurrentState == state)
+                if (agent.CurrentState == state)
                 {
                     count++;
                 }
