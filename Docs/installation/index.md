@@ -36,6 +36,5 @@ For detailed configuration instructions, see the [Configuring the Simulation](..
 
 ## Important Notes
 
-- **EAC (Easy Anti-Cheat) must be disabled** when using mods in 7 Days to Die
 - WalkerSim 2 requires the `0_TFP_Harmony` mod, which is included with the game by default
 - The mod creates a persistent simulation that runs continuously - agents exist in the virtual world even when no players are nearby

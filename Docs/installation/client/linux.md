@@ -44,7 +44,19 @@ Inside the `WalkerSim2` folder, you should see files like `ModInfo.xml` and othe
 
 ---
 
-## Step 4: Launch the Game
+## Step 4: Disable EAC (Easy Anti-Cheat)
+
+**Important:** This mod cannot run with EAC enabled.
+
+1. Open **Steam** and go to your **Library**.
+2. Right-click on **7 Days to Die** and select **Properties**.
+3. In the **General** tab, find **"Selected Launch Option"**.
+4. Set it to **"Launch game without EAC"**.
+5. Close the Properties window.
+
+---
+
+## Step 5: Launch the Game
 
 1. Start **7 Days to Die** through **Steam**.
 2. WalkerSim2 should automatically load if installed correctly.
