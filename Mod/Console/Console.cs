@@ -105,13 +105,13 @@ namespace WalkerSim.Console
                     SdtdConsole.Instance.Output("  Paused: {0}", sim.Paused);
                     SdtdConsole.Instance.Output("  Players: {0}", sim.PlayerCount);
                     SdtdConsole.Instance.Output("  Total Agents: {0}", numTotal);
-                    SdtdConsole.Instance.Output("  Alive Agents: {0} {1}%", numAlive, (numAlive / (float)numTotal) * 100.0f);
-                    SdtdConsole.Instance.Output("  Dead Agents: {0} {1}%", numDead, (numDead / (float)numTotal) * 100.0f);
+                    SdtdConsole.Instance.Output("  Alive Agents: {0} - {1}%", numAlive, (numAlive / (float)numTotal) * 100.0f);
+                    SdtdConsole.Instance.Output("  Dead Agents: {0} - {1}%", numDead, (numDead / (float)numTotal) * 100.0f);
+                    SdtdConsole.Instance.Output("  Active Agents: {0}", sim.ActiveCount);
                     SdtdConsole.Instance.Output("  Total Groups: {0}", sim.GroupCount);
                     SdtdConsole.Instance.Output("  Successful Spawns: {0}", sim.SuccessfulSpawns);
                     SdtdConsole.Instance.Output("  Failed Spawns: {0}", sim.FailedSpawns);
                     SdtdConsole.Instance.Output("  Total Despawns: {0}", sim.TotalDespawns);
-                    SdtdConsole.Instance.Output("  Active Agents: {0}", sim.ActiveCount);
                     SdtdConsole.Instance.Output("  Bloodmoon: {0}", sim.IsBloodmoon);
                     SdtdConsole.Instance.Output("  DayTime: {0}", sim.IsDayTime);
                     SdtdConsole.Instance.Output("  Time Scale: {0}", sim.TimeScale);
