@@ -139,6 +139,33 @@ walkersim timescale 10.0   # 10x speed
 
 ---
 
+### config
+
+**Usage**: `walkersim config`
+
+**What it does**: Displays the currently loaded WalkerSim configuration.
+
+**Output includes**:
+
+- **Random Seed**: The seed used for random number generation
+- **Population Density**: Number of virtual zombies per square kilometer
+- **Group Size**: Number of agents per group
+- **Fast Forward At Start**: Whether the simulation fast-forwards on startup
+- **Start Agents Grouped**: Whether agents start in groups or scattered
+- **Start Position**: Where agents initially spawn (RandomCity, RandomBorderLocation, etc.)
+- **Respawn Position**: Where agents respawn after death
+- **Pause During Bloodmoon**: Whether simulation pauses during Blood Moon events
+- **Sound Distance Scale**: Multiplier for sound event distances
+- **Processor Groups**: Complete list of all movement processor groups including:
+  - Group number (or "Any" for generic groups)
+  - Speed scale
+  - Post-spawn behavior settings
+  - All processors with their type, distance, and power values
+
+**Details**: This command is useful for debugging configuration issues, verifying that your XML settings loaded correctly, and understanding the current simulation parameters. It's especially helpful when sharing configurations with others or troubleshooting behavior.
+
+---
+
 ### maskinfo
 
 **Usage**: `walkersim maskinfo`
@@ -159,6 +186,7 @@ walkersim timescale 10.0   # 10x speed
 ## Tips
 
 - Use `walkersim stats` regularly to monitor the health and performance of your simulation
+- Use `walkersim config` to verify your configuration loaded correctly after making changes
 - If you make changes to your XML configuration, use `walkersim restart` to apply them without restarting the server
 - The `show` command is great for quickly checking zombie distribution without permanently enabling the overlay
 - Use `timescale` to speed up testing when experimenting with different configuration settings

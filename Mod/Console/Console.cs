@@ -90,10 +90,17 @@ namespace WalkerSim.Console
                     var numDead = sim.NumAgentsDead;
                     var numTotal = sim.Agents.Count;
                     var numAlive = numTotal - numDead;
+                    var secsElapsed = sim.GetSimulationTimeSeconds();
+                    var timeSpan = TimeSpan.FromSeconds(secsElapsed);
 
                     SdtdConsole.Instance.Output("--- Simulation Statistics ---");
                     SdtdConsole.Instance.Output("  World Size: {0}", sim.WorldSize);
                     SdtdConsole.Instance.Output("  Ticks: {0}", sim.Ticks);
+                    SdtdConsole.Instance.Output("  Simulation Time: {0}", string.Format("{0:D2}:{1:D2}:{2:D2}.{3:D3}",
+                        timeSpan.Hours,
+                        timeSpan.Minutes,
+                        timeSpan.Seconds,
+                        timeSpan.Milliseconds));
                     SdtdConsole.Instance.Output("  Active: {0}", sim.Running);
                     SdtdConsole.Instance.Output("  Paused: {0}", sim.Paused);
                     SdtdConsole.Instance.Output("  Players: {0}", sim.PlayerCount);
@@ -236,7 +243,7 @@ namespace WalkerSim.Console
                 var parameters = cmd.Handler.Method.GetParameters();
                 bool requiresSenderInfo = parameters.Length > 0 && parameters[0].ParameterType == typeof(CommandSenderInfo);
                 int startIndex = requiresSenderInfo ? 1 : 0;
-                
+
                 string paramString = "";
                 for (int i = startIndex; i < parameters.Length; i++)
                 {
@@ -245,8 +252,9 @@ namespace WalkerSim.Console
 
                 string cmdLine = cmd.Name + paramString;
                 int padding = maxNameLength + 20 - cmdLine.Length;
-                if (padding < 2) padding = 2;
-                
+                if (padding < 2)
+                    padding = 2;
+
                 SdtdConsole.Instance.Output("  {0}{1}{2}",
                     cmdLine,
                     new string(' ', padding),
