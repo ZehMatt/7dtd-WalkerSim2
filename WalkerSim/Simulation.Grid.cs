@@ -295,6 +295,8 @@ namespace WalkerSim
             var worldMins = _state.WorldMins;
             var worldMaxs = _state.WorldMaxs;
             var grid = _state.Grid;
+            var agents = _state.Agents;
+            var gridLength = grid.Length;
 
             // The grid uses 0, 0 as starting origin.
             float remapX = MathEx.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, WorldSize.X);
@@ -311,17 +313,21 @@ namespace WalkerSim
             // Iterate over all cells in the bounding box defined by maxDistance
             for (int x = -cellRadius; x <= cellRadius; x++)
             {
+                int checkX = cellX + x;
+                int baseIndex = checkX * _cellCountY;
+                
                 for (int y = -cellRadius; y <= cellRadius; y++)
                 {
-                    var cellIndex = (cellX + x) * _cellCountY + (cellY + y);
-                    if (cellIndex < 0 || cellIndex >= grid.Length)
+                    var cellIndex = baseIndex + (cellY + y);
+                    if (cellIndex < 0 || cellIndex >= gridLength)
                         continue;
 
                     var cell = grid[cellIndex];
-                    for (int i = 0; i < cell.Count; i++)
+                    var cellCount = cell.Count;
+                    for (int i = 0; i < cellCount; i++)
                     {
                         var idx = cell[i];
-                        var other = _state.Agents[idx];
+                        var other = agents[idx];
 
                         if (other.CurrentState != Agent.State.Wandering)
                             continue;

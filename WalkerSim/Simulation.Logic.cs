@@ -22,16 +22,17 @@ namespace WalkerSim
         private void UpdateAgents()
         {
             var agents = _state.Agents;
+            var agentCount = agents.Count;
             var maxUpdates = Constants.MaxUpdateCountPerTick;
 
-            if (agents.Count > 0)
+            if (agentCount > 0)
             {
                 if (EditorMode || _isFastAdvancing)
                 {
                     // Update in parallel.
                     Parallel.For(0, maxUpdates, i =>
                     {
-                        var index = (_state.SlowIterator + i) % agents.Count;
+                        var index = (_state.SlowIterator + i) % agentCount;
                         var agent = agents[(int)index];
                         UpdateAgentLogic(agent);
                     });
@@ -39,9 +40,10 @@ namespace WalkerSim
                 else
                 {
                     // Update single threaded.
+                    var slowIterator = _state.SlowIterator;
                     for (uint i = 0; i < maxUpdates; i++)
                     {
-                        var index = (_state.SlowIterator + i) % agents.Count;
+                        var index = (slowIterator + i) % agentCount;
                         var agent = agents[(int)index];
                         UpdateAgentLogic(agent);
                     }
@@ -50,7 +52,7 @@ namespace WalkerSim
                 _state.SlowIterator += maxUpdates;
 
                 // Update the grid, can't do this in parallel since it's not thread safe.
-                for (int i = 0; i < agents.Count; i++)
+                for (int i = 0; i < agentCount; i++)
                 {
                     MoveInGrid(agents[i]);
                 }
@@ -105,11 +107,16 @@ namespace WalkerSim
                 _state.AgentsNearPOICounter = new int[decos.Length];
             }
 
-            for (int i = 0; i < decos.Length; i++)
+            if (decos.Length == 0)
             {
-                var deco = decos[i];
-                _state.AgentsNearPOICounter[i] = QueryNearbyCount(deco.Position, 64, 100);
+                return;
             }
+
+            // Update only one POI per tick to spread the cost
+            var deco = decos[_state.POIIterator];
+            _state.AgentsNearPOICounter[_state.POIIterator] = QueryNearbyCount(deco.Position, 64, 100);
+            
+            _state.POIIterator = (_state.POIIterator + 1) % decos.Length;
         }
 
         [Conditional("DEBUG")]
@@ -125,12 +132,14 @@ namespace WalkerSim
 
         private void UpdateAgent(Agent agent)
         {
-            var ticksDelta = _state.Ticks - agent.LastUpdateTick;
+            var ticks = _state.Ticks;
+            var ticksDelta = ticks - agent.LastUpdateTick;
             var deltaTime = ticksDelta * Constants.TickRate;
-            agent.LastUpdateTick = _state.Ticks;
+            agent.LastUpdateTick = ticks;
 
             // Might be cleared while its running.
-            if (_processors.Count == 0)
+            var processorCount = _processors.Count;
+            if (processorCount == 0)
             {
                 return;
             }
@@ -149,9 +158,11 @@ namespace WalkerSim
             var processorGroup = _processors[agent.Group];
             if (processorGroup != null)
             {
-                for (int i = 0; i < processorGroup.Entries.Count; i++)
+                var entries = processorGroup.Entries;
+                var entryCount = entries.Count;
+                for (int i = 0; i < entryCount; i++)
                 {
-                    var processor = processorGroup.Entries[i];
+                    var processor = entries[i];
 
                     var addVel = processor.Handler(this, _state, agent, processor.Distance, processor.Power);
                     addVel.Validate();
@@ -177,7 +188,8 @@ namespace WalkerSim
         {
             if (agent.CurrentSubState == Agent.SubState.Alerted)
             {
-                var ticksAlerted = _state.Ticks - agent.AlertedTick;
+                var ticks = _state.Ticks;
+                var ticksAlerted = ticks - agent.AlertedTick;
 
                 if (ticksAlerted > SecondsToTicks(30))
                 {

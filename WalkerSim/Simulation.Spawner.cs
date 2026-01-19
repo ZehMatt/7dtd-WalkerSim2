@@ -67,13 +67,14 @@ namespace WalkerSim
                 return;
             }
 
-            if (_nextSpawnCheck > DateTime.Now)
+            var now = DateTime.Now;
+            if (_nextSpawnCheck > now)
             {
                 // We don't have to run this every tick/frame, agents typically don't move that fast.
                 return;
             }
 
-            _nextSpawnCheck = DateTime.Now.AddMilliseconds(200);
+            _nextSpawnCheck = now.AddMilliseconds(200);
 
             // Don't activate them when they are in the inner radius.
             var activationBorderSize = 8.0f;
@@ -95,7 +96,7 @@ namespace WalkerSim
                         $"Maximum amount of agents alive reached, max: {_maxAllowedAliveAgents}, pending spawns: {_pendingSpawns.Count}, active agents: {_state.Active.Count}");
 
                     // Increase delay, no need to try again so soon when it is not possible to spawn more agents.
-                    _nextSpawnCheck = DateTime.Now.AddMilliseconds(2000);
+                    _nextSpawnCheck = now.AddMilliseconds(2000);
 
                     return;
                 }
@@ -108,7 +109,7 @@ namespace WalkerSim
                 if (player.IsAlive == false)
                     continue;
 
-                if (DateTime.Now < player.NextPossibleSpawnTime)
+                if (now < player.NextPossibleSpawnTime)
                 {
                     //Logging.Debug("Player {0} is not alive long enough to spawn agents, skipping...", player.EntityId);
                     continue;
@@ -124,7 +125,7 @@ namespace WalkerSim
                         activeNearby);
 
                     // Delay the test for this player.
-                    player.NextPossibleSpawnTime = DateTime.Now.AddSeconds(1);
+                    player.NextPossibleSpawnTime = now.AddSeconds(1);
 
                     continue;
                 }

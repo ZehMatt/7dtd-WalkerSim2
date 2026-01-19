@@ -103,7 +103,6 @@ namespace WalkerSim
             _state.Agents.Clear();
             _state.Active.Clear();
             _state.Events.Clear();
-            _state.POIIterator = 0;
             _state.IsBloodmoon = false;
             _state.IsDayTime = true;
 
