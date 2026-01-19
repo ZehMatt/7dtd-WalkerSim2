@@ -1,3 +1,5 @@
+# 0.9.21 (in progress)
+
 # 0.9.20
 - Fix: CityVisitor could get agents stuck at some areas depending on the map, reworked the entire logic.
 - Fix: `walkersim stats` did show some incorrect information.
