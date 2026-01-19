@@ -1,4 +1,11 @@
 # 0.9.20 (in progress)
+- Fix: CityVisitor could get agents stuck at some areas depending on the map, reworked the entire logic.
+- Fix: `walkersim stats` did show some incorrect information.
+- Feature: A new console command `walkersim config`, it will print the loaded configuration.
+- Improve: `walkersim help` will now list all available console commands including the parameters.
+- Improve: The documentation about EAC was slightly misleading.
+- Improve: Minor performance optimizations.
+- Change: `walkersim stats` now shows the simulation time which is converted from ticks.
 
 # 0.9.19
 - Improve: Better distribution for CitiyVisitor, agents will now spread out further in the area.
