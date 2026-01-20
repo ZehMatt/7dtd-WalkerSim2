@@ -10,6 +10,11 @@ namespace WalkerSim
 #if false
             Logging.DbgInfo("Preventing wandering horde spawn.");
 #endif
+            if (_spawnType == AIWanderingHordeSpawner.SpawnType.Bandits)
+            {
+                // Allow bandit spawns, not used in vanilla, but some mods might have custom spawners.
+                return true;
+            }
 
             // Prevent it from running each frame.
             __instance.SetNextTime(_spawnType, ulong.MaxValue);
