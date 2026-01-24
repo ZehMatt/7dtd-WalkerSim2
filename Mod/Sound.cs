@@ -22,6 +22,7 @@ namespace WalkerSim
                     return 1f - num3;
                 }
             }
+
             return 1f;
         }
 
@@ -87,22 +88,24 @@ namespace WalkerSim
                     return;
             }
 
-            // Any value higher than 0 indicates "indoors".
+            // Any values higher than 0 is considered indoors, returns [0.0, 1.0]
             var amountEnclosed = GetAmountEnclosed(position);
-            var isIndoors = amountEnclosed > 0.0f ? 1.0f : 0.0f;
 
-            // Create a more accurate enclosed scale by combining both values.
-            var totalShelter = (amountEnclosed + isIndoors) / 2.0f;
+            var isIndoors = amountEnclosed > 0.0f;
+            var indoorBaseScale = isIndoors ? 0.3f : 1.0f; // 70% reduction minimum indoors
 
-            // Remap the scale to [0.0, 0.95] to avoid completely negating sound.
-            var enclosedScale = 1.0f - Math.Min(totalShelter, 0.95f);
+            var enclosureMod = isIndoors
+                ? MathEx.Lerp(1.0f, 0.7f, amountEnclosed)
+                : 1.0f;
 
-            Logging.Info("Enclosed: {0}, Total Shelter: {1}, Enclosed Scale: {2}", amountEnclosed, totalShelter, enclosedScale);
+            var finalScale = indoorBaseScale * enclosureMod;
 
             var distancePreScaled = distanceScaled;
+            distanceScaled *= finalScale;
+            eventDuration = (ulong)(eventDuration * finalScale);
 
-            distanceScaled *= enclosedScale;
-            eventDuration = (ulong)(eventDuration * enclosedScale);
+            Logging.Info("Enclosed: {0}, IndoorBase: {1}, EnclosureMod: {2}, FinalScale: {3}",
+                amountEnclosed, indoorBaseScale, enclosureMod, finalScale);
 
             Logging.Info("Adjusted Sound Distance Scale: {0} to {1}", distancePreScaled, distanceScaled);
 
