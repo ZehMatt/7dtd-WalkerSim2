@@ -115,7 +115,7 @@ namespace WalkerSim
             // Update only one POI per tick to spread the cost
             var deco = decos[_state.POIIterator];
             _state.AgentsNearPOICounter[_state.POIIterator] = QueryNearbyCount(deco.Position, 64, 100);
-            
+
             _state.POIIterator = (_state.POIIterator + 1) % decos.Length;
         }
 
@@ -213,7 +213,16 @@ namespace WalkerSim
             var vel = agent.Velocity;
             vel.Validate();
 
-            var walkSpeed = Constants.WalkSpeed;
+            float walkSpeed;
+            if (_state.IsDayTime)
+            {
+                walkSpeed = agent.CurrentSubState == Agent.SubState.Alerted ? _moveSpeedRageDay : _moveSpeedDay;
+            }
+            else
+            {
+                walkSpeed = agent.CurrentSubState == Agent.SubState.Alerted ? _moveSpeedRageNight : _moveSpeedNight;
+            }
+
             if (_isFastAdvancing)
             {
                 walkSpeed *= 64.0f;

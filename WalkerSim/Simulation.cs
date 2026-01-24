@@ -69,6 +69,10 @@ namespace WalkerSim
         private Vector3[] _groupStarts = new Vector3[0];
 
         private int _maxAllowedAliveAgents = 64;
+        private float _moveSpeedDay = 1.0f;
+        private float _moveSpeedNight = 1.0f;
+        private float _moveSpeedRageDay = 2.5f;
+        private float _moveSpeedRageNight = 2.5f;
 
         public int MaxAllowedAliveAgents
         {
@@ -692,6 +696,14 @@ namespace WalkerSim
         public void SetGamePaused(bool paused)
         {
             _gamePaused = paused;
+        }
+
+        public void SetMoveSpeeds(float daySpeed, float nightSpeed, float daySpeedRage, float nightSpeedRage)
+        {
+            _moveSpeedDay = daySpeed;
+            _moveSpeedNight = nightSpeed;
+            _moveSpeedRageDay = daySpeedRage;
+            _moveSpeedRageNight = nightSpeedRage;
         }
     }
 
