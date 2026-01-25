@@ -3,6 +3,16 @@ using System.Collections.Generic;
 
 namespace WalkerSim.Console
 {
+    static class ConsoleOutput
+    {
+        public static void Log(string fmt, params object[] args)
+        {
+            var formatted = string.Format(fmt, args);
+            SdtdConsole.Instance.Output("{0}", formatted);
+            LogFileSink.Instance.Message(Logging.Level.Info, formatted);
+        }
+    }
+
     class SubCommand
     {
         public string Name;
@@ -44,12 +54,12 @@ namespace WalkerSim.Console
                     if(option.ToLowerInvariant() == "enable" || option == "1" || option.ToLowerInvariant() == "true")
                     {
                         MapDrawing.IsEnabled = true;
-                        SdtdConsole.Instance.Output("Overlay for map window enabled.");
+                        ConsoleOutput.Log("Overlay for map window enabled.");
                     }
                     else
                     {
                         MapDrawing.IsEnabled = false;
-                        SdtdConsole.Instance.Output("Overlay for map window disabled.");
+                        ConsoleOutput.Log("Overlay for map window disabled.");
                     }
                 }),
             },
@@ -92,33 +102,35 @@ namespace WalkerSim.Console
                     var numAlive = numTotal - numDead;
                     var secsElapsed = sim.GetSimulationTimeSeconds();
                     var timeSpan = TimeSpan.FromSeconds(secsElapsed);
+                    var averageSimTime = sim.AverageSimTime * 1000.0f;
+                    var ticksPerSecond = sim.AverageSimTime > 0 ? 1 / sim.AverageSimTime : 0;
 
-                    SdtdConsole.Instance.Output("--- Simulation Statistics ---");
-                    SdtdConsole.Instance.Output("  World Size: {0}", sim.WorldSize);
-                    SdtdConsole.Instance.Output("  Ticks: {0}", sim.Ticks);
-                    SdtdConsole.Instance.Output("  Simulation Time: {0}", string.Format("{0:D2}:{1:D2}:{2:D2}.{3:D3}",
+                    ConsoleOutput.Log("--- Simulation Statistics ---");
+                    ConsoleOutput.Log("  World Size: {0}", sim.WorldSize);
+                    ConsoleOutput.Log("  Ticks: {0}", sim.Ticks);
+                    ConsoleOutput.Log("  Simulation Time: {0}", string.Format("{0:D2}:{1:D2}:{2:D2}.{3:D3}",
                         timeSpan.Hours,
                         timeSpan.Minutes,
                         timeSpan.Seconds,
                         timeSpan.Milliseconds));
-                    SdtdConsole.Instance.Output("  Active: {0}", sim.Running);
-                    SdtdConsole.Instance.Output("  Paused: {0}", sim.Paused);
-                    SdtdConsole.Instance.Output("  Players: {0}", sim.PlayerCount);
-                    SdtdConsole.Instance.Output("  Total Agents: {0}", numTotal);
-                    SdtdConsole.Instance.Output("  Alive Agents: {0} - {1}%", numAlive, (numAlive / (float)numTotal) * 100.0f);
-                    SdtdConsole.Instance.Output("  Dead Agents: {0} - {1}%", numDead, (numDead / (float)numTotal) * 100.0f);
-                    SdtdConsole.Instance.Output("  Active Agents: {0}", sim.ActiveCount);
-                    SdtdConsole.Instance.Output("  Total Groups: {0}", sim.GroupCount);
-                    SdtdConsole.Instance.Output("  Successful Spawns: {0}", sim.SuccessfulSpawns);
-                    SdtdConsole.Instance.Output("  Failed Spawns: {0}", sim.FailedSpawns);
-                    SdtdConsole.Instance.Output("  Total Despawns: {0}", sim.TotalDespawns);
-                    SdtdConsole.Instance.Output("  Bloodmoon: {0}", sim.IsBloodmoon);
-                    SdtdConsole.Instance.Output("  DayTime: {0}", sim.IsDayTime);
-                    SdtdConsole.Instance.Output("  Time Scale: {0}", sim.TimeScale);
-                    SdtdConsole.Instance.Output("  Average Tick Time: {0}, {1}/s", sim.AverageSimTime, 1.0f / sim.AverageSimTime);
-                    SdtdConsole.Instance.Output("  Wind Direction: {0}", sim.WindDirection);
-                    SdtdConsole.Instance.Output("  Wind Target: {0}", sim.WindDirectionTarget);
-                    SdtdConsole.Instance.Output("  Next Wind Change: {0}", sim.TickNextWindChange);
+                    ConsoleOutput.Log("  Active: {0}", sim.Running);
+                    ConsoleOutput.Log("  Paused: {0}", sim.Paused);
+                    ConsoleOutput.Log("  Players: {0}", sim.PlayerCount);
+                    ConsoleOutput.Log("  Total Agents: {0}", numTotal);
+                    ConsoleOutput.Log("  Alive Agents: {0} - {1}%", numAlive, (numAlive / (float)numTotal) * 100.0f);
+                    ConsoleOutput.Log("  Dead Agents: {0} - {1}%", numDead, (numDead / (float)numTotal) * 100.0f);
+                    ConsoleOutput.Log("  Active Agents: {0}", sim.ActiveCount);
+                    ConsoleOutput.Log("  Total Groups: {0}", sim.GroupCount);
+                    ConsoleOutput.Log("  Successful Spawns: {0}", sim.SuccessfulSpawns);
+                    ConsoleOutput.Log("  Failed Spawns: {0}", sim.FailedSpawns);
+                    ConsoleOutput.Log("  Total Despawns: {0}", sim.TotalDespawns);
+                    ConsoleOutput.Log("  Bloodmoon: {0}", sim.IsBloodmoon);
+                    ConsoleOutput.Log("  DayTime: {0}", sim.IsDayTime);
+                    ConsoleOutput.Log("  Time Scale: {0}", sim.TimeScale);
+                    ConsoleOutput.Log("  Average Tick Time: {0}ms, {1}/ps", averageSimTime, ticksPerSecond);
+                    ConsoleOutput.Log("  Wind Direction: {0}", sim.WindDirection);
+                    ConsoleOutput.Log("  Wind Target: {0}", sim.WindDirectionTarget);
+                    ConsoleOutput.Log("  Next Wind Change: {0}", sim.TickNextWindChange);
                 }),
             },
             new SubCommand
@@ -139,37 +151,37 @@ namespace WalkerSim.Console
                     var config = Simulation.Instance.Config;
                     if (config == null)
                     {
-                        SdtdConsole.Instance.Output("No configuration loaded.");
+                        ConsoleOutput.Log("No configuration loaded.");
                         return;
                     }
 
-                    SdtdConsole.Instance.Output("--- Configuration ---");
-                    SdtdConsole.Instance.Output("  Random Seed: {0}", config.RandomSeed);
-                    SdtdConsole.Instance.Output("  Population Density: {0} agents/km²", config.PopulationDensity);
-                    SdtdConsole.Instance.Output("  Group Size: {0}", config.GroupSize);
-                    SdtdConsole.Instance.Output("  Fast Forward At Start: {0}", config.FastForwardAtStart);
-                    SdtdConsole.Instance.Output("  Start Agents Grouped: {0}", config.StartAgentsGrouped);
-                    SdtdConsole.Instance.Output("  Start Position: {0}", config.StartPosition);
-                    SdtdConsole.Instance.Output("  Respawn Position: {0}", config.RespawnPosition);
-                    SdtdConsole.Instance.Output("  Pause During Bloodmoon: {0}", config.PauseDuringBloodmoon);
-                    SdtdConsole.Instance.Output("  Sound Distance Scale: {0}", config.SoundDistanceScale);
-                    SdtdConsole.Instance.Output("");
-                    SdtdConsole.Instance.Output("--- Processor Groups ({0}) ---", config.Processors.Count);
+                    ConsoleOutput.Log("--- Configuration ---");
+                    ConsoleOutput.Log("  Random Seed: {0}", config.RandomSeed);
+                    ConsoleOutput.Log("  Population Density: {0} agents/km²", config.PopulationDensity);
+                    ConsoleOutput.Log("  Group Size: {0}", config.GroupSize);
+                    ConsoleOutput.Log("  Fast Forward At Start: {0}", config.FastForwardAtStart);
+                    ConsoleOutput.Log("  Start Agents Grouped: {0}", config.StartAgentsGrouped);
+                    ConsoleOutput.Log("  Start Position: {0}", config.StartPosition);
+                    ConsoleOutput.Log("  Respawn Position: {0}", config.RespawnPosition);
+                    ConsoleOutput.Log("  Pause During Bloodmoon: {0}", config.PauseDuringBloodmoon);
+                    ConsoleOutput.Log("  Sound Distance Scale: {0}", config.SoundDistanceScale);
+                    ConsoleOutput.Log("");
+                    ConsoleOutput.Log("--- Processor Groups ({0}) ---", config.Processors.Count);
                     for (int i = 0; i < config.Processors.Count; i++)
                     {
                         var group = config.Processors[i];
-                        SdtdConsole.Instance.Output("  Group {0}:", group.Group == -1 ? "Any" : group.Group.ToString());
-                        SdtdConsole.Instance.Output("    Speed Scale: {0}", group.SpeedScale);
-                        SdtdConsole.Instance.Output("    Post Spawn Behavior: {0}", group.PostSpawnBehavior);
-                        SdtdConsole.Instance.Output("    Post Spawn Wander Speed: {0}", group.PostSpawnWanderSpeed);
-                        SdtdConsole.Instance.Output("    Color: {0}", group.Color);
-                        SdtdConsole.Instance.Output("    Processors ({0}):", group.Entries.Count);
+                        ConsoleOutput.Log("  Group {0}:", group.Group == -1 ? "Any" : group.Group.ToString());
+                        ConsoleOutput.Log("    Speed Scale: {0}", group.SpeedScale);
+                        ConsoleOutput.Log("    Post Spawn Behavior: {0}", group.PostSpawnBehavior);
+                        ConsoleOutput.Log("    Post Spawn Wander Speed: {0}", group.PostSpawnWanderSpeed);
+                        ConsoleOutput.Log("    Color: {0}", group.Color);
+                        ConsoleOutput.Log("    Processors ({0}):", group.Entries.Count);
                         foreach (var processor in group.Entries)
                         {
                             if (processor.Distance > 0)
-                                SdtdConsole.Instance.Output("      - {0} (Distance: {1}, Power: {2})", processor.Type, processor.Distance, processor.Power);
+                                ConsoleOutput.Log("      - {0} (Distance: {1}, Power: {2})", processor.Type, processor.Distance, processor.Power);
                             else
-                                SdtdConsole.Instance.Output("      - {0} (Power: {1})", processor.Type, processor.Power);
+                                ConsoleOutput.Log("      - {0} (Power: {1})", processor.Type, processor.Power);
                         }
                     }
                 }),
@@ -193,7 +205,7 @@ namespace WalkerSim.Console
 
                     if (player == null)
                     {
-                        SdtdConsole.Instance.Output("No player found for this command.");
+                        ConsoleOutput.Log("No player found for this command.");
                         return;
                     }
 
@@ -211,10 +223,10 @@ namespace WalkerSim.Console
                     var spawnGroup = spawnGroups.GetSpawnGroup(x, y);
                     if (spawnGroup == null)
                     {
-                        SdtdConsole.Instance.Output("No spawn group found at position {0}, {1} ({2}).", x, y, pos);
+                        ConsoleOutput.Log("No spawn group found at position {0}, {1} ({2}).", x, y, pos);
                     }
 
-                    SdtdConsole.Instance.Output("Spawn group at position {0}, {1} ({2}): {3} - {4}, {5}",
+                    ConsoleOutput.Log("Spawn group at position {0}, {1} ({2}): {3} - {4}, {5}",
                         x, y, pos,
                         spawnGroup.EntityGroupDay, spawnGroup.EntityGroupNight, spawnGroup.ColorString);
                 }),
@@ -223,10 +235,10 @@ namespace WalkerSim.Console
 
         public static void ShowHelpTextDirectly()
         {
-            SdtdConsole.Instance.Output("=== WalkerSim Commands ===");
-            SdtdConsole.Instance.Output("");
-            SdtdConsole.Instance.Output("Usage: walkersim <command> [arguments]");
-            SdtdConsole.Instance.Output("");
+            ConsoleOutput.Log("=== WalkerSim Commands ===");
+            ConsoleOutput.Log("");
+            ConsoleOutput.Log("Usage: walkersim <command> [arguments]");
+            ConsoleOutput.Log("");
 
             // Find the longest command name for alignment
             int maxNameLength = 0;
@@ -236,7 +248,7 @@ namespace WalkerSim.Console
                     maxNameLength = cmd.Name.Length;
             }
 
-            SdtdConsole.Instance.Output("Available Commands:");
+            ConsoleOutput.Log("Available Commands:");
             foreach (var cmd in Commands)
             {
                 // Get parameter info
@@ -255,16 +267,16 @@ namespace WalkerSim.Console
                 if (padding < 2)
                     padding = 2;
 
-                SdtdConsole.Instance.Output("  {0}{1}{2}",
+                ConsoleOutput.Log("  {0}{1}{2}",
                     cmdLine,
                     new string(' ', padding),
                     cmd.Description);
             }
-            SdtdConsole.Instance.Output("");
-            SdtdConsole.Instance.Output("Examples:");
-            SdtdConsole.Instance.Output("  walkersim stats");
-            SdtdConsole.Instance.Output("  walkersim map enable");
-            SdtdConsole.Instance.Output("  walkersim timescale 2.0");
+            ConsoleOutput.Log("");
+            ConsoleOutput.Log("Examples:");
+            ConsoleOutput.Log("  walkersim stats");
+            ConsoleOutput.Log("  walkersim map enable");
+            ConsoleOutput.Log("  walkersim timescale 2.0");
         }
     }
 
@@ -366,8 +378,8 @@ namespace WalkerSim.Console
         {
             if (error != null && error != "")
             {
-                SdtdConsole.Instance.Output("[ERROR] " + error);
-                SdtdConsole.Instance.Output("");
+                ConsoleOutput.Log("[ERROR] " + error);
+                ConsoleOutput.Log("");
             }
             SubCommand.ShowHelpTextDirectly();
         }

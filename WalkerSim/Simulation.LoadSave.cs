@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
@@ -27,7 +28,7 @@ namespace WalkerSim
         {
             uint magic = ctx.IsWriting ? Constants.SaveMagic : 0;
             uint version = ctx.IsWriting ? Constants.SaveVersion : 0;
-            
+
             ctx.Serialize(ref magic, false);
             ctx.Serialize(ref version, false);
 
@@ -121,7 +122,7 @@ namespace WalkerSim
             if (ctx.IsReading)
             {
                 state.Agents = new List<Agent>(count);
-                state.Active = new Dictionary<int, Agent>();
+                state.Active = new ConcurrentDictionary<int, Agent>();
             }
 
             for (int i = 0; i < count; i++)
@@ -175,7 +176,7 @@ namespace WalkerSim
                     state.Agents.Add(agent);
                     if (agent.CurrentState == Agent.State.Active)
                     {
-                        state.Active.Add(agent.EntityId, agent);
+                        state.Active.TryAdd(agent.EntityId, agent);
                     }
                 }
             }
@@ -297,7 +298,7 @@ namespace WalkerSim
                 var state = new State();
                 var reader = new BinaryReader(stream, System.Text.Encoding.UTF8, true);
                 var ctx = SerializationContext.CreateReader(reader);
-                
+
                 SerializeState(state, ctx);
 
                 state.MapData = _state.MapData;

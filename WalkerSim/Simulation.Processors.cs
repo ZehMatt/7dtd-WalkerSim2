@@ -999,7 +999,7 @@ namespace WalkerSim
             else if (agent.CurrentTravelState == Agent.TravelState.Arrived)
             {
                 // Check if we've been in the city for 20 minutes
-                ulong cityDuration = sim.MinutesToTicks(20) + (uint)state.PRNG.Next(15);
+                ulong cityDuration = Simulation.MinutesToTicks(20) + (uint)state.PRNG.Next(15);
                 if ((state.Ticks - agent.CityTime) >= cityDuration)
                 {
                     agent.CurrentTravelState = Agent.TravelState.Idle;

@@ -26,7 +26,7 @@ namespace WalkerSim
 
         private DateTime _nextSpawnCheck = DateTime.Now;
 
-        private bool _allowAgentSpawn = true;
+        private volatile bool _allowAgentSpawn = true;
 
         private int _nextFakeEntityId = 0;
 

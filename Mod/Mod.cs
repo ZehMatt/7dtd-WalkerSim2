@@ -21,8 +21,8 @@ namespace WalkerSim
             Drawing.Loader = new Unity.Drawing.UnityImageLoader();
 
             // Set up logging.
-            Logging.AddSink(new LogFileSink("WalkerSim"));
-            Logging.AddSink(new LogGameConsoleSink());
+            Logging.AddSink(LogFileSink.Instance);
+            Logging.AddSink(LogGameConsoleSink.Instance);
 
             Hooks.Init();
 
@@ -487,7 +487,7 @@ namespace WalkerSim
                     spawnDelay = 30;
                     break;
                 case RespawnType.NewGame:
-                    spawnDelay = simulation.Config.SpawnProtectionTime;
+                    spawnDelay = Simulation.SecondsToTicks(simulation.Config.SpawnProtectionTime);
                     break;
             }
 

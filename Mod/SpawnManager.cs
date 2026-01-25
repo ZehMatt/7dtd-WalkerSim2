@@ -207,6 +207,24 @@ namespace WalkerSim
             return PerformSelection(simulation, entityGroupData);
         }
 
+        static private bool IsEntityClassAllowed(int entityClassId)
+        {
+            var entityClassInfo = EntityClass.GetEntityClass(entityClassId);
+            if (entityClassInfo.entityFlags.HasFlag(EntityFlags.Zombie))
+            {
+                // Zombies are always allowed.
+                return true;
+            }
+
+            if (entityClassInfo.entityFlags.HasFlag(EntityFlags.Animal) && entityClassInfo.bIsEnemyEntity)
+            {
+                // Hostile animals are allowed.
+                return true;
+            }
+
+            return false;
+        }
+
         static private int GetEntityClassId(Simulation simulation, Chunk chunk, UnityEngine.Vector3 worldPos)
         {
             var world = GameManager.Instance.World;
@@ -314,18 +332,13 @@ namespace WalkerSim
                             }
                             */
 
-                            if (entry.entityClassId != 0)
+                            if (entry.entityClassId != 0 && !IsEntityClassAllowed(entry.entityClassId))
                             {
-                                var entityClassInfo = EntityClass.GetEntityClass(entry.entityClassId);
-                                if (!entityClassInfo.entityFlags.HasFlag(EntityFlags.Zombie))
-                                {
-                                    // NOTE: This is to have better compatibility with mods that mess around with NPC's.
-                                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
-                                        "Ignoring entity class {0}:{1}, entity is not a zombie",
-                                        entityClassInfo.entityClassName,
-                                        entry.entityClassId);
-                                    continue;
-                                }
+                                Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                                    "Ignoring entity class {0}:{1}, entity not handled.",
+                                    GetEntityClassName(entry.entityClassId),
+                                    entry.entityClassId);
+                                continue;
                             }
 
                             if (group.daytime == EDaytime.Day || group.daytime == EDaytime.Any)

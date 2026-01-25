@@ -13,7 +13,7 @@ namespace WalkerSim
         private bool _running = false;
         private bool _shouldStop = false;
         private bool _pauseRequested = false;
-        private bool _gamePaused = false;
+        private volatile bool _gamePaused = false;
         private bool _isFastAdvancing = false;
 
         private Vector3[] _groupStarts = new Vector3[0];
@@ -504,6 +504,12 @@ namespace WalkerSim
                     TimeScale = oldTimeScale;
                 });
 
+                // Adjust the time for spawn protection.
+                foreach (var player in _state.Players.Values)
+                {
+                    player.NextPossibleSpawnTime += Limits.TicksToAdvanceOnStartup;
+                }
+
                 _isFastAdvancing = false;
 
                 Logging.CondInfo(Config.LoggingOpts.General, "... done, took {0}.", elapsed);
@@ -533,7 +539,8 @@ namespace WalkerSim
                     if (_shouldStop)
                         break;
 
-                    Thread.Sleep(1);
+                    // Yield to prevent busy-wait CPU spike, but don't sleep (too slow on Mono)
+                    Thread.Sleep(0);
                     continue;
                 }
 
@@ -618,17 +625,17 @@ namespace WalkerSim
             return _processors[groupIndex].Color;
         }
 
-        private uint MillisecondsToTicks(uint milliseconds)
+        static public uint MillisecondsToTicks(uint milliseconds)
         {
             return (milliseconds * Constants.TicksPerSecond) / 1000;
         }
 
-        private uint SecondsToTicks(uint seconds)
+        static public uint SecondsToTicks(uint seconds)
         {
             return seconds * Constants.TicksPerSecond;
         }
 
-        private uint MinutesToTicks(uint minutes)
+        static public uint MinutesToTicks(uint minutes)
         {
             return SecondsToTicks(minutes * 60);
         }

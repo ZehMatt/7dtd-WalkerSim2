@@ -27,7 +27,7 @@ namespace WalkerSim
 
             if (agentCount > 0)
             {
-                if (EditorMode || _isFastAdvancing)
+                if (/*EditorMode || */ _isFastAdvancing)
                 {
                     // Update in parallel.
                     Parallel.For(0, maxUpdates, i =>
@@ -72,15 +72,12 @@ namespace WalkerSim
 
             try
             {
-                lock (_state)
-                {
-                    CheckAgentSpawn();
-                    UpdateWindDirection();
-                    UpdateEvents();
-                    UpatePOICounter();
-                    UpdateAgents();
-                    CheckAutoSave();
-                }
+                CheckAgentSpawn();
+                UpdateWindDirection();
+                UpdateEvents();
+                UpatePOICounter();
+                UpdateAgents();
+                CheckAutoSave();
             }
             catch (System.Exception ex)
             {
