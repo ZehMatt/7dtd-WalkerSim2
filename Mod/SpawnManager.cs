@@ -7,6 +7,8 @@ namespace WalkerSim
     {
         static Dictionary<long, List<SEntityClassAndProb>> _spawnDataNight = new Dictionary<long, List<SEntityClassAndProb>>();
         static Dictionary<long, List<SEntityClassAndProb>> _spawnDataDay = new Dictionary<long, List<SEntityClassAndProb>>();
+        static List<SEntityClassAndProb> _spawnGeneric;
+
         static Dictionary<int, int> _classIdCounter = new Dictionary<int, int>();
         const int MaxSpawnRetryAttempts = 10;
 
@@ -304,21 +306,26 @@ namespace WalkerSim
                     {
                         foreach (var entry in data)
                         {
+                            /*
                             if (entry.entityClassId == 0)
                             {
-                                // Ignore this case, not relevant in this situation.
+                                // "none", Ignore this case, not relevant in this situation.
                                 continue;
                             }
+                            */
 
-                            var entityClassInfo = EntityClass.GetEntityClass(entry.entityClassId);
-                            if (!entityClassInfo.entityFlags.HasFlag(EntityFlags.Zombie))
+                            if (entry.entityClassId != 0)
                             {
-                                // NOTE: This is to have better compatibility with mods that mess around with NPC's.
-                                Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
-                                    "Ignoring entity class {0}:{1}, entity is not a zombie",
-                                    entityClassInfo.entityClassName,
-                                    entry.entityClassId);
-                                continue;
+                                var entityClassInfo = EntityClass.GetEntityClass(entry.entityClassId);
+                                if (!entityClassInfo.entityFlags.HasFlag(EntityFlags.Zombie))
+                                {
+                                    // NOTE: This is to have better compatibility with mods that mess around with NPC's.
+                                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                                        "Ignoring entity class {0}:{1}, entity is not a zombie",
+                                        entityClassInfo.entityClassName,
+                                        entry.entityClassId);
+                                    continue;
+                                }
                             }
 
                             if (group.daytime == EDaytime.Day || group.daytime == EDaytime.Any)
@@ -387,7 +394,38 @@ namespace WalkerSim
                 spawnList = world.IsDaytime() ? entityClassesDay : entityClassesNight;
             }
 
-            return PerformSelection(simulation, spawnList);
+            int classId = PerformSelection(simulation, spawnList);
+            if (classId != 0 && classId != -1)
+            {
+                return classId;
+            }
+
+            // Vanilla uses "none" as don't spawn and then adds a delay before trying again.
+            // We however want to try to map all agents to actual zombies so for "none" we fallback
+            // to ZombiesAll group, "none" is usually used to prevent certain types from spawning too often.
+            if (classId == 0)
+            {
+                if (_spawnGeneric == null)
+                {
+                    if (EntityGroups.list.TryGetValue("ZombiesAll", out var zombiesAll))
+                    {
+                        // Remove 0 "none" entries if any.
+                        _spawnGeneric = new List<SEntityClassAndProb>(zombiesAll);
+                        _spawnGeneric.RemoveAll(entry => entry.entityClassId == 0);
+                    }
+                }
+
+                if (_spawnGeneric != null && _spawnGeneric.Count > 0)
+                {
+                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                        "Using fallback to generic ZombiesAll group for 'none' selection.");
+
+                    return PerformSelection(simulation, _spawnGeneric);
+                }
+            }
+
+            // Selection failed.
+            return -1;
         }
 
         static private int PerformSelection(Simulation simulation, List<SEntityClassAndProb> spawnList)
