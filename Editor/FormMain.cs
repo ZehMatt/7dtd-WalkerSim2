@@ -400,7 +400,7 @@ namespace WalkerSim.Editor
             CurrentConfig.SpawnActivationRadius = (int)inputActivationRadius.Value;
             CurrentConfig.EnhancedSoundAwareness = inputSoundAware.Checked;
             CurrentConfig.GroupSize = (int)inputGroupSize.Value;
-            CurrentConfig.SpawnProtectionTime = (int)inputSpawnProtectionTime.Value;
+            CurrentConfig.SpawnProtectionTime = (uint)inputSpawnProtectionTime.Value;
             CurrentConfig.StartAgentsGrouped = inputStartGrouped.Checked;
             CurrentConfig.FastForwardAtStart = inputFastForward.Checked;
             CurrentConfig.PauseDuringBloodmoon = inputPauseDuringBloodmoon.Checked;

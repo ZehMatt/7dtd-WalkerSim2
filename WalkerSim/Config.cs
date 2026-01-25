@@ -197,7 +197,7 @@ namespace WalkerSim
         public bool PauseDuringBloodmoon = true;
 
         [XmlElement("SpawnProtectionTime")]
-        public int SpawnProtectionTime = 300;
+        public uint SpawnProtectionTime = 300;
 
         [XmlElement("MaxSpawnedZombies")]
         public string MaxSpawnedZombies = "75%";

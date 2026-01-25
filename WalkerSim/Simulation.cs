@@ -668,12 +668,17 @@ namespace WalkerSim
             return _processors[groupIndex].Color;
         }
 
-        private int SecondsToTicks(int seconds)
+        private uint MillisecondsToTicks(uint milliseconds)
+        {
+            return (milliseconds * Constants.TicksPerSecond) / 1000;
+        }
+
+        private uint SecondsToTicks(uint seconds)
         {
             return seconds * Constants.TicksPerSecond;
         }
 
-        private int MinutesToTicks(int minutes)
+        private uint MinutesToTicks(uint minutes)
         {
             return SecondsToTicks(minutes * 60);
         }

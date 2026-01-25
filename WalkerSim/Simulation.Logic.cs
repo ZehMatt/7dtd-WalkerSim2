@@ -269,8 +269,8 @@ namespace WalkerSim
                 _state.WindDirTarget.X = (float)System.Math.Cos(newAngle);
                 _state.WindDirTarget.Y = (float)System.Math.Sin(newAngle);
 
-                var minWindTime = MinutesToTicks(1);
-                var maxWindTime = MinutesToTicks(3);
+                var minWindTime = (int)MinutesToTicks(1);
+                var maxWindTime = (int)MinutesToTicks(3);
 
                 _state.TickNextWindChange = _state.Ticks + (uint)prng.Next(minWindTime, maxWindTime);
             }

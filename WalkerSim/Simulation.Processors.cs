@@ -936,7 +936,7 @@ namespace WalkerSim
             if (agent.CurrentTravelState == Agent.TravelState.Idle)
             {
                 // Select a new target city
-                uint hash = (uint)((agent.Group * 2654435761) ^ (state.Ticks * 1597334677));
+                uint hash = (uint)((agent.Group * 2654435761) ^ ((uint)state.Ticks * 1597334677));
                 float randomValue = (hash % 10000) / 10000.0f;
                 float targetWeight = randomValue * cities.TotalAreaWeight;
 
@@ -999,7 +999,7 @@ namespace WalkerSim
             else if (agent.CurrentTravelState == Agent.TravelState.Arrived)
             {
                 // Check if we've been in the city for 20 minutes
-                int cityDuration = sim.MinutesToTicks(20) + state.PRNG.Next(15);
+                ulong cityDuration = sim.MinutesToTicks(20) + (uint)state.PRNG.Next(15);
                 if ((state.Ticks - agent.CityTime) >= cityDuration)
                 {
                     agent.CurrentTravelState = Agent.TravelState.Idle;

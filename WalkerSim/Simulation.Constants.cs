@@ -14,9 +14,9 @@ namespace WalkerSim
 
             public const uint MaxUpdateCountPerTick = 2000;
 
-            public const int TicksPerSecond = 40;
+            public const uint TicksPerSecond = 40;
             public const float TickRate = 1f / TicksPerSecond;
-            public const int TickRateMs = 1000 / TicksPerSecond;
+            public const uint TickRateMs = 1000 / TicksPerSecond;
 
             public const float WalkSpeed = 1.1f; // 1.1 meters per second
         }

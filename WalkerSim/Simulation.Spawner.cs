@@ -64,6 +64,13 @@ namespace WalkerSim
         {
             if (_allowAgentSpawn == false)
             {
+                // Game specific setting, do not spawn agents.
+                return;
+            }
+
+            if (_isFastAdvancing)
+            {
+                // Do not spawn at initial startup.
                 return;
             }
 
@@ -109,7 +116,7 @@ namespace WalkerSim
                 if (player.IsAlive == false)
                     continue;
 
-                if (now < player.NextPossibleSpawnTime)
+                if (Ticks < player.NextPossibleSpawnTime)
                 {
                     //Logging.Debug("Player {0} is not alive long enough to spawn agents, skipping...", player.EntityId);
                     continue;
@@ -125,7 +132,7 @@ namespace WalkerSim
                         activeNearby);
 
                     // Delay the test for this player.
-                    player.NextPossibleSpawnTime = now.AddSeconds(1);
+                    player.NextPossibleSpawnTime = Ticks + SecondsToTicks(1);
 
                     continue;
                 }

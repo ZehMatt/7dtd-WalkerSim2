@@ -135,20 +135,8 @@ namespace WalkerSim
             return System.IO.Path.Combine(saveFilePath, "walkersim.bin");
         }
 
-        static void ResetSimulation()
+        static void SetSimulationParameters(Simulation simulation)
         {
-            var world = GameManager.Instance.World;
-            var simulation = Simulation.Instance;
-
-            // Remove all active zombies as they will have no connection with the simulation anymore.
-            foreach (var kv in simulation.Active)
-            {
-                world.RemoveEntity(kv.Key, EnumRemoveEntityReason.Despawned);
-            }
-
-            var config = LoadConfiguration();
-            simulation.Reset(config);
-
             // Set max allowed alive agents.
             {
                 var maxSpawnedSetting = simulation.Config.MaxSpawnedZombies;
@@ -214,13 +202,30 @@ namespace WalkerSim
             }
         }
 
+        static void ResetSimulation(Simulation simulation)
+        {
+            var world = GameManager.Instance.World;
+
+            // Remove all active zombies as they will have no connection with the simulation anymore.
+            foreach (var kv in simulation.Active)
+            {
+                world.RemoveEntity(kv.Key, EnumRemoveEntityReason.Despawned);
+            }
+
+            var config = LoadConfiguration();
+            simulation.Reset(config);
+
+            SetSimulationParameters(simulation);
+        }
+
         internal static void RestartSimulation()
         {
+            var simulation = Simulation.Instance;
+
             Logging.Out("Restarting simulation...");
 
-            ResetSimulation();
+            ResetSimulation(simulation);
 
-            var simulation = Simulation.Instance;
             simulation.Start();
         }
 
@@ -333,9 +338,10 @@ namespace WalkerSim
 
                 if (resetSim)
                 {
-                    ResetSimulation();
+                    ResetSimulation(simulation);
                 }
 
+                SetSimulationParameters(simulation);
                 simulation.EnableAutoSave(simFile, 60.0f);
             }
 
@@ -471,7 +477,7 @@ namespace WalkerSim
             Logging.DbgInfo("Player Spawn: {0}", data.RespawnType);
             Logging.DbgInfo("Spawn Position: {0}", data.Position);
 
-            int spawnDelay = 0;
+            uint spawnDelay = 0;
             switch (data.RespawnType)
             {
                 case RespawnType.JoinMultiplayer:
