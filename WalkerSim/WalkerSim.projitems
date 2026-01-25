@@ -41,6 +41,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Spawner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.State.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpawnGroups.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TimeMeasurement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Vector3.cs" />
   </ItemGroup>
