@@ -104,10 +104,10 @@ namespace WalkerSim
             distanceScaled *= finalScale;
             eventDuration = (ulong)(eventDuration * finalScale);
 
-            Logging.Info("Enclosed: {0}, IndoorBase: {1}, EnclosureMod: {2}, FinalScale: {3}",
+            Logging.DbgInfo("Enclosed: {0}, IndoorBase: {1}, EnclosureMod: {2}, FinalScale: {3}",
                 amountEnclosed, indoorBaseScale, enclosureMod, finalScale);
 
-            Logging.Info("Adjusted Sound Distance Scale: {0} to {1}", distancePreScaled, distanceScaled);
+            Logging.DbgInfo("Adjusted Sound Distance Scale: {0} to {1}", distancePreScaled, distanceScaled);
 
             simulation.AddSoundEvent(VectorUtils.ToSim(position), distanceScaled, eventDuration);
 

@@ -1,4 +1,5 @@
 # 1.0.1 (in progress)
+- Change: Remove verbose logging of sound info.
 
 # 1.0.0
 - Fix: Pausing the game did not pause the spawn protection time.
