@@ -1,4 +1,9 @@
-# 0.9.21 (in progress)
+# 1.0.0 (in progress)
+- Fix: Pausing the game did not pause the spawn protection time.
+- Fix: Enemy animals did not spawn, snakes, dogs and so on should now be back.
+- Feature: The distance the sound travels now considers the environment, for example, when in-doors then sounds will not travel as far making gun play more viable, this applies to all sounds emitted.
+- Improve: The spawn chances now respect `none`, when `none` is selected it substitutes with ordinary enemies now, this was the cause for a lot of strong zombies to spawn.
+- Improve: Performance improvements, there was a chance for some small hangs to happen, this should be resolved now.
 
 # 0.9.20
 - Fix: CityVisitor could get agents stuck at some areas depending on the map, reworked the entire logic.
