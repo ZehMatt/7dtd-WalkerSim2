@@ -1,4 +1,4 @@
-# 1.0.1 (in progress)
+# 1.0.1
 - Change: Remove verbose logging of sound info.
 
 # 1.0.0
