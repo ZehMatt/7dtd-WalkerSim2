@@ -5,14 +5,13 @@ namespace WalkerSim
     internal partial class Simulation
     {
         const int CellSize = 96;
-        private int _cellCountX;
         private int _cellCountY;
 
         void SetupGrid()
         {
-            _cellCountX = (int)System.Math.Ceiling(WorldSize.X / CellSize);
+            var cellCountX = (int)System.Math.Ceiling(WorldSize.X / CellSize);
             _cellCountY = (int)System.Math.Ceiling(WorldSize.Y / CellSize);
-            var totalCells = _cellCountX * _cellCountY;
+            var totalCells = cellCountX * _cellCountY;
 
             var grid = new List<int>[totalCells];
             for (int i = 0; i < totalCells; i++)
@@ -297,6 +296,7 @@ namespace WalkerSim
             var worldMaxs = _state.WorldMaxs;
             var grid = _state.Grid;
             var agents = _state.Agents;
+            var gridLength = grid.Length;
 
             // The grid uses 0, 0 as starting origin.
             float remapX = MathEx.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, WorldSize.X);
@@ -307,39 +307,36 @@ namespace WalkerSim
 
             // Calculate the number of cells to search in each direction based on maxDistance
             int cellRadius = (int)(maxDistance / CellSize) + 1;
+
             var maxDistSqr = maxDistance * maxDistance;
 
-            // Clamp loop bounds to valid cell ranges - eliminates need for bounds checking
-            int minX = System.Math.Max(0, cellX - cellRadius);
-            int maxX = System.Math.Min(_cellCountX - 1, cellX + cellRadius);
-            int minY = System.Math.Max(0, cellY - cellRadius);
-            int maxY = System.Math.Min(_cellCountY - 1, cellY + cellRadius);
-
             // Iterate over all cells in the bounding box defined by maxDistance
-            for (int x = minX; x <= maxX; x++)
+            for (int x = -cellRadius; x <= cellRadius; x++)
             {
-                int baseIndex = x * _cellCountY;
+                int checkX = cellX + x;
+                int baseIndex = checkX * _cellCountY;
 
-                for (int y = minY; y <= maxY; y++)
+                for (int y = -cellRadius; y <= cellRadius; y++)
                 {
-                    var cellIndex = baseIndex + y;
+                    var cellIndex = baseIndex + (cellY + y);
+                    if (cellIndex < 0 || cellIndex >= gridLength)
+                        continue;
+
                     var cell = grid[cellIndex];
                     var cellCount = cell.Count;
-
                     for (int i = 0; i < cellCount; i++)
                     {
-                        var other = agents[cell[i]];
+                        var idx = cell[i];
+                        var other = agents[idx];
 
-                        // Early exit conditions grouped
-                        if (other.CurrentState != Agent.State.Wandering || other.Index == excludeIndex)
+                        if (other.CurrentState != Agent.State.Wandering)
                             continue;
 
-                        // Distance check with early rejection
-                        float dx = pos.X - other.Position.X;
-                        float dy = pos.Y - other.Position.Y;
-                        float distSqr = dx * dx + dy * dy;
+                        if (other.Index == excludeIndex)
+                            continue;
 
-                        if (distSqr < maxDistSqr)
+                        var distance = Vector3.Distance2DSqr(pos, other.Position);
+                        if (distance < maxDistSqr)
                         {
                             processor.Process(other);
                         }
