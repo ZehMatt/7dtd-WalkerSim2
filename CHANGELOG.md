@@ -1,4 +1,4 @@
-# 1.0.0 (in progress)
+# 1.0.0
 - Fix: Pausing the game did not pause the spawn protection time.
 - Fix: Enemy animals did not spawn, snakes, dogs and so on should now be back.
 - Feature: The distance the sound travels now considers the environment, for example, when in-doors then sounds will not travel as far making gun play more viable, this applies to all sounds emitted.
