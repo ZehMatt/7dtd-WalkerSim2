@@ -1,3 +1,5 @@
+# 1.0.1 (in progress)
+
 # 1.0.0
 - Fix: Pausing the game did not pause the spawn protection time.
 - Fix: Enemy animals did not spawn, snakes, dogs and so on should now be back.
