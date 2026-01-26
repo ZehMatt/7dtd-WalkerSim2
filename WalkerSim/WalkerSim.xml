@@ -18,7 +18,7 @@
   <AgentStartPosition>RandomCity</AgentStartPosition>
   <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>
   <PauseDuringBloodmoon>true</PauseDuringBloodmoon>
-  <SpawnProtectionTime>140</SpawnProtectionTime>
+  <SpawnProtectionTime>300</SpawnProtectionTime>
   <MaxSpawnedZombies>75%</MaxSpawnedZombies>
   <MovementProcessors>
     <ProcessorGroup Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="Lime">

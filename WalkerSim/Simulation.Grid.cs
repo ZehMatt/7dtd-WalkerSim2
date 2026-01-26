@@ -315,7 +315,7 @@ namespace WalkerSim
             {
                 int checkX = cellX + x;
                 int baseIndex = checkX * _cellCountY;
-                
+
                 for (int y = -cellRadius; y <= cellRadius; y++)
                 {
                     var cellIndex = baseIndex + (cellY + y);

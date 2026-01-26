@@ -18,13 +18,14 @@ namespace WalkerSim
             public ConcurrentDictionary<int, Player> Players = new ConcurrentDictionary<int, Player>();
             public List<EventData> Events = new List<EventData>();
             public List<EventData> EventsTemp = new List<EventData>();
-            public Dictionary<int, Agent> Active = new Dictionary<int, Agent>();
+            public ConcurrentDictionary<int, Agent> Active = new ConcurrentDictionary<int, Agent>();
             public WalkerSim.Random PRNG;
             public uint SlowIterator = 0;
             public Vector3 WindDir = new Vector3(1, 0, 0);
             public Vector3 WindDirTarget = new Vector3(1, 0, 0);
             public float WindTime = 0;
             public uint Ticks = 0;
+            public uint UnscaledTicks = 0;
             public uint TickNextWindChange = 0;
             public int GroupCount = 0;
             public float MaxNeighbourDistance = 0;
@@ -35,8 +36,8 @@ namespace WalkerSim
             public int SuccessfulSpawns = 0;
             public int TotalDespawns = 0;
             // Game State, not saved.
-            public bool IsBloodmoon = false;
-            public bool IsDayTime = true;
+            public volatile bool IsBloodmoon = false;
+            public volatile bool IsDayTime = true;
 
             public void Reset()
             {
@@ -52,7 +53,7 @@ namespace WalkerSim
             public void SoftReset()
             {
                 Events = new List<EventData>();
-                Active = new Dictionary<int, Agent>();
+                Active = new ConcurrentDictionary<int, Agent>();
                 SlowIterator = 0;
                 TickNextWindChange = 0;
                 Ticks = 0;
@@ -158,6 +159,11 @@ namespace WalkerSim
         public uint Ticks
         {
             get => _state.Ticks;
+        }
+
+        public uint UnscaledTicks
+        {
+            get => _state.UnscaledTicks;
         }
 
         public uint SlowIterator

@@ -26,7 +26,7 @@ namespace WalkerSim
 
         private void AddActiveAgent(int entityId, Agent agent)
         {
-            _state.Active.Add(entityId, agent);
+            _state.Active.TryAdd(entityId, agent);
 
             var log = Config.LoggingOpts.Spawns || EditorMode || Utils.IsDebugMode();
             Logging.CondInfo(log, "Added agent with entity id {0} to active list, list size {1}", entityId, _state.Active.Count);
@@ -34,7 +34,7 @@ namespace WalkerSim
 
         public void MarkAgentDead(Agent agent)
         {
-            _state.Active.Remove(agent.EntityId);
+            _state.Active.TryRemove(agent.EntityId, out _);
             agent.ResetSpawnData();
 
             if (_state.Config.RespawnPosition == Config.WorldLocation.None)
@@ -107,7 +107,7 @@ namespace WalkerSim
                 // Reset spawn timestamp, allow immediate respawning in case the player backtracks.
                 agent.LastSpawnTick = 0;
 
-                _state.Active.Remove(kv.Key);
+                _state.Active.TryRemove(kv.Key, out _);
                 _state.TotalDespawns++;
 
                 break;

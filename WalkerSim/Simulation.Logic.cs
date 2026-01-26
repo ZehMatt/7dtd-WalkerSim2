@@ -72,24 +72,27 @@ namespace WalkerSim
 
             try
             {
-                lock (_state)
-                {
-                    CheckAgentSpawn();
-                    UpdateWindDirection();
-                    UpdateEvents();
-                    UpatePOICounter();
-                    UpdateAgents();
-                    CheckAutoSave();
-                }
+                CheckAgentSpawn();
+                UpdateWindDirection();
+                UpdateEvents();
+                UpatePOICounter();
+                UpdateAgents();
+                CheckAutoSave();
             }
             catch (System.Exception ex)
             {
                 Logging.Exception(ex);
             }
 
+            _simTime.Capture();
+
             _state.Ticks++;
 
-            _simTime.Capture();
+            // Log profiling data every 10 seconds
+            if (_state.Ticks % (Constants.TicksPerSecond * 10) == 0)
+            {
+                PerformanceCounters.Report();
+            }
         }
 
         private void UpatePOICounter()
@@ -115,7 +118,7 @@ namespace WalkerSim
             // Update only one POI per tick to spread the cost
             var deco = decos[_state.POIIterator];
             _state.AgentsNearPOICounter[_state.POIIterator] = QueryNearbyCount(deco.Position, 64, 100);
-            
+
             _state.POIIterator = (_state.POIIterator + 1) % decos.Length;
         }
 
@@ -155,18 +158,18 @@ namespace WalkerSim
             if (System.Math.Abs(curVel.Y) < 1e-6f)
                 curVel.Y = 0;
 
-            var processorGroup = _processors[agent.Group];
+            // Safe access to processors - may be modified by editor thread
+            var processorGroup = (agent.Group >= 0 && agent.Group < _processors.Count) ? _processors[agent.Group] : null;
             if (processorGroup != null)
             {
                 var entries = processorGroup.Entries;
                 var entryCount = entries.Count;
+
                 for (int i = 0; i < entryCount; i++)
                 {
                     var processor = entries[i];
-
                     var addVel = processor.Handler(this, _state, agent, processor.Distance, processor.Power);
                     addVel.Validate();
-
                     curVel += addVel;
                 }
             }
@@ -179,8 +182,7 @@ namespace WalkerSim
             agent.Velocity = curVel;
 
             UpdateAwareness(agent);
-            ApplyMovement(agent, deltaTime, processorGroup.SpeedScale);
-
+            ApplyMovement(agent, deltaTime, processorGroup?.SpeedScale ?? 1.0f);
             Warp(agent);
         }
 
@@ -213,7 +215,16 @@ namespace WalkerSim
             var vel = agent.Velocity;
             vel.Validate();
 
-            var walkSpeed = Constants.WalkSpeed;
+            float walkSpeed;
+            if (_state.IsDayTime)
+            {
+                walkSpeed = agent.CurrentSubState == Agent.SubState.Alerted ? _moveSpeedRageDay : _moveSpeedDay;
+            }
+            else
+            {
+                walkSpeed = agent.CurrentSubState == Agent.SubState.Alerted ? _moveSpeedRageNight : _moveSpeedNight;
+            }
+
             if (_isFastAdvancing)
             {
                 walkSpeed *= 64.0f;
@@ -260,8 +271,8 @@ namespace WalkerSim
                 _state.WindDirTarget.X = (float)System.Math.Cos(newAngle);
                 _state.WindDirTarget.Y = (float)System.Math.Sin(newAngle);
 
-                var minWindTime = MinutesToTicks(1);
-                var maxWindTime = MinutesToTicks(3);
+                var minWindTime = (int)MinutesToTicks(1);
+                var maxWindTime = (int)MinutesToTicks(3);
 
                 _state.TickNextWindChange = _state.Ticks + (uint)prng.Next(minWindTime, maxWindTime);
             }

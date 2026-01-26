@@ -23,7 +23,7 @@ namespace WalkerSim.Editor
 
     internal class SoundEventTool : ITool
     {
-        public float Radius = 700.0f;
+        public float Radius = 90.0f;
 
         public NextToolState OnClick(Vector3 position)
         {

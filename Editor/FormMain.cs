@@ -81,28 +81,16 @@ namespace WalkerSim.Editor
 
             this.Text = $"WalkerSim Editor v{BuildInfo.Version}";
 
-            var defaultConfig = Encoding.UTF8.GetString(Resources.WalkerSimConfig);
-            CurrentConfig = Config.LoadFromText(defaultConfig);
-
-            // Set world size to 6k as the default thing until the world is changed.
-            simulation.EditorMode = true;
-            simulation.SetWorldSize(WorldMins, WorldMaxs);
-            simulation.Reset(CurrentConfig);
-
             SetupLogging();
+            SetupLimits();
             SetupChoices();
-            UpdateConfigFields();
 
             SetupConfigChangeHandlers();
             SetupSpeedModifiers();
-            SetupDrawingContext();
             SetupWorlds();
-            SetupLimits();
             ScrollWheelHack();
             SetupToolTips();
             UpdateHelpLinks();
-
-            CenterCanvas();
 
             viewAgents.Click += (sender, e) => RenderSimulation(true);
             viewRoads.Click += (sender, e) => RenderSimulation(true);
@@ -131,6 +119,18 @@ namespace WalkerSim.Editor
             {
                 ((HandledMouseEventArgs)e).Handled = true;
             };
+
+            var defaultConfig = Encoding.UTF8.GetString(Resources.WalkerSimConfig);
+            CurrentConfig = Config.LoadFromText(defaultConfig);
+
+            // Set world size to 6k as the default thing until the world is changed.
+            simulation.EditorMode = true;
+            simulation.SetWorldSize(WorldMins, WorldMaxs);
+            simulation.Reset(CurrentConfig);
+
+            UpdateConfigFields();
+            SetupDrawingContext();
+            CenterCanvas();
         }
 
         private void SetToolTip(Control ctrl, string helpText)
@@ -400,7 +400,7 @@ namespace WalkerSim.Editor
             CurrentConfig.SpawnActivationRadius = (int)inputActivationRadius.Value;
             CurrentConfig.EnhancedSoundAwareness = inputSoundAware.Checked;
             CurrentConfig.GroupSize = (int)inputGroupSize.Value;
-            CurrentConfig.SpawnProtectionTime = (int)inputSpawnProtectionTime.Value;
+            CurrentConfig.SpawnProtectionTime = (uint)inputSpawnProtectionTime.Value;
             CurrentConfig.StartAgentsGrouped = inputStartGrouped.Checked;
             CurrentConfig.FastForwardAtStart = inputFastForward.Checked;
             CurrentConfig.PauseDuringBloodmoon = inputPauseDuringBloodmoon.Checked;

@@ -33,8 +33,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Drawing\Drawing.cs" />
+    <Compile Include="Game.cs" />
     <Compile Include="Logging.cs" />
     <Compile Include="MapDrawing.cs" />
+    <Compile Include="Sound.cs" />
     <Compile Include="SpawnManager.cs" />
     <Compile Include="Console\Console.cs" />
     <Compile Include="Drawing.Primitives.cs" />

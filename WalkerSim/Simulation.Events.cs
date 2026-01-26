@@ -30,15 +30,15 @@ namespace WalkerSim
             }
         }
 
-        private const float MaxMergeDistance = 25f;
-        private const float MaxAllowedRadius = 500f;
+        const float MergeDistanceThreshold = 25.0f;
+        const float MergeRadiusThreshold = 5.0f;
 
         private void AddEvent(EventData data)
         {
             var events = _state.Events;
             lock (events)
             {
-                EventData mergeTarget = null;
+                EventData mergeCandidate = null;
 
                 // Try to find a merge candidate
                 foreach (var ev in events)
@@ -46,33 +46,29 @@ namespace WalkerSim
                     if (ev.Type != data.Type)
                         continue;
 
-                    float dist = Vector3.Distance2D(ev.Position, data.Position);
-
-                    if (dist <= MaxMergeDistance)
+                    // Check if the current event fits in the new event and swallow it.
+                    var dist = Vector3.Distance(ev.Position, data.Position);
+                    if (dist + ev.Radius <= data.Radius)
                     {
-                        mergeTarget = ev;
+                        mergeCandidate = ev;
                         break;
                     }
 
-                    if (data.Radius > ev.Radius && dist <= data.Radius)
+                    // Check if we should just move the existing event to the new position.
+                    var radiusDiff = Math.Abs(ev.Radius - data.Radius);
+                    if (dist <= MergeDistanceThreshold &&
+                        radiusDiff <= MergeRadiusThreshold)
                     {
-                        mergeTarget = ev;
+                        mergeCandidate = ev;
                         break;
                     }
                 }
 
-                if (mergeTarget != null)
+                if (mergeCandidate != null)
                 {
-                    mergeTarget.Duration = Math.Max(mergeTarget.Duration, data.Duration);
-
-                    mergeTarget.Radius = Math.Min(
-                        Math.Max(mergeTarget.Radius, data.Radius),
-                        MaxAllowedRadius);
-
-                    mergeTarget.Position = Vector3.Lerp(
-                        mergeTarget.Position,
-                        data.Position,
-                        0.2f);
+                    mergeCandidate.Position = data.Position;
+                    mergeCandidate.Radius = data.Radius;
+                    mergeCandidate.Duration = Math.Max(mergeCandidate.Duration, data.Duration);
                 }
                 else
                 {

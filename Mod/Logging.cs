@@ -4,6 +4,8 @@ namespace WalkerSim
 {
     public class LogGameConsoleSink : Logging.ISink
     {
+        public static LogGameConsoleSink Instance { get; } = new LogGameConsoleSink();
+
         public void Message(Logging.Level level, string message)
         {
             switch (level)
@@ -23,10 +25,14 @@ namespace WalkerSim
 
     public class LogFileSink : Logging.ISink
     {
+        public static LogFileSink Instance { get; } = new LogFileSink();
+
         private readonly string _filePath = string.Empty;
 
-        public LogFileSink(string fileName)
+        public LogFileSink()
         {
+            var fileName = "WalkerSim";
+
             // Get local application data path
             var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 

@@ -26,7 +26,7 @@ namespace WalkerSim
 
         private DateTime _nextSpawnCheck = DateTime.Now;
 
-        private bool _allowAgentSpawn = true;
+        private volatile bool _allowAgentSpawn = true;
 
         private int _nextFakeEntityId = 0;
 
@@ -64,6 +64,13 @@ namespace WalkerSim
         {
             if (_allowAgentSpawn == false)
             {
+                // Game specific setting, do not spawn agents.
+                return;
+            }
+
+            if (_isFastAdvancing)
+            {
+                // Do not spawn at initial startup.
                 return;
             }
 
@@ -109,7 +116,7 @@ namespace WalkerSim
                 if (player.IsAlive == false)
                     continue;
 
-                if (now < player.NextPossibleSpawnTime)
+                if (UnscaledTicks < player.NextPossibleSpawnTime)
                 {
                     //Logging.Debug("Player {0} is not alive long enough to spawn agents, skipping...", player.EntityId);
                     continue;
@@ -125,7 +132,7 @@ namespace WalkerSim
                         activeNearby);
 
                     // Delay the test for this player.
-                    player.NextPossibleSpawnTime = now.AddSeconds(1);
+                    player.NextPossibleSpawnTime = UnscaledTicks + SecondsToTicks(1);
 
                     continue;
                 }
@@ -150,7 +157,7 @@ namespace WalkerSim
                         continue;
 
                     // TODO: We are not handling overflow of Ticks but it takes a lot of time to get there.
-                    var spawnDelta = _state.Ticks - agent.LastSpawnTick;
+                    var spawnDelta = UnscaledTicks - agent.LastSpawnTick;
                     if (spawnDelta < Limits.MinSpawnDelayTicks)
                     {
                         // The actual spawning might fail and to avoid trying to spawn the same agent
@@ -158,7 +165,7 @@ namespace WalkerSim
 
 #if false
                         Logging.DbgInfo("Agent {0} was spawned too recently, skipping spawn, last spawn tick: {1}, current tick: {2}, delta: {3}",
-                            agent.Index, agent.LastSpawnTick, _state.Ticks, spawnDelta);
+                            agent.Index, agent.LastSpawnTick, UnscaledTicks, spawnDelta);
 #endif
 
                         continue;
@@ -170,7 +177,7 @@ namespace WalkerSim
                         player.EntityId,
                         dist);
 
-                    agent.LastSpawnTick = _state.Ticks;
+                    agent.LastSpawnTick = UnscaledTicks;
                     agent.CurrentState = Agent.State.PendingSpawn;
 
                     var processorGroup = _processors[agent.Group];

@@ -24,6 +24,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Logging.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MapData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Math.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceCounters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Random.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Roads.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization.cs" />
@@ -41,6 +42,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.Spawner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Simulation.State.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpawnGroups.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TimeMeasurement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Vector3.cs" />
   </ItemGroup>

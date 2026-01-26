@@ -42,7 +42,7 @@ namespace WalkerSim
     {
         static void Prefix(Entity instigator, UnityEngine.Vector3 position, string clipName, float volumeScale)
         {
-            WalkerSimMod.NotifyNoise(instigator, position, clipName, volumeScale);
+            Sound.NotifyNoise(instigator, position, clipName, volumeScale);
         }
     }
 

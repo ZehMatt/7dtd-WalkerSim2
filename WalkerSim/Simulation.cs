@@ -1,58 +1,8 @@
 using System;
-using System.Diagnostics;
 using System.Threading;
 
 namespace WalkerSim
 {
-    internal class TimeMeasurement
-    {
-        private Stopwatch _sw = new Stopwatch();
-        private float[] _samples = new float[64];
-
-        private int _index = 0;
-        private int _count = 0;
-
-        public void Add(float time)
-        {
-            _samples[_index % _samples.Length] = time;
-            _index++;
-            _count = System.Math.Min(_count + 1, _samples.Length);
-        }
-
-        public void Reset()
-        {
-            _index = 0;
-            _count = 0;
-        }
-
-        public void Restart()
-        {
-            _sw.Restart();
-        }
-
-        public float Capture()
-        {
-            var elapsed = (float)_sw.Elapsed.TotalSeconds;
-            Add(elapsed);
-            return elapsed;
-        }
-
-        public float Average
-        {
-            get
-            {
-                if (_count == 0)
-                    return 0.0f;
-                float sum = 0.0f;
-                for (int i = 0; i < _count; i++)
-                {
-                    sum += _samples[i];
-                }
-                return sum / _count;
-            }
-        }
-    }
-
     internal partial class Simulation
     {
         public static Simulation Instance = new Simulation();
@@ -63,12 +13,16 @@ namespace WalkerSim
         private bool _running = false;
         private bool _shouldStop = false;
         private bool _pauseRequested = false;
-        private bool _gamePaused = false;
+        private volatile bool _gamePaused = false;
         private bool _isFastAdvancing = false;
 
         private Vector3[] _groupStarts = new Vector3[0];
 
         private int _maxAllowedAliveAgents = 64;
+        private float _moveSpeedDay = 1.0f;
+        private float _moveSpeedNight = 1.0f;
+        private float _moveSpeedRageDay = 2.5f;
+        private float _moveSpeedRageNight = 2.5f;
 
         public int MaxAllowedAliveAgents
         {
@@ -558,6 +512,7 @@ namespace WalkerSim
             _updateTime.Restart();
 
             float accumulator = 0;
+            float unscaledAccumulator = 0;
             while (!_shouldStop)
             {
                 var timeElapsed = _updateTime.Capture();
@@ -573,13 +528,21 @@ namespace WalkerSim
                 }
 
                 accumulator = System.Math.Min(accumulator + scaledDt, 10.0f);
+                unscaledAccumulator = System.Math.Min(unscaledAccumulator + timeElapsed, 10.0f);
+
+                while (unscaledAccumulator >= Constants.TickRate)
+                {
+                    unscaledAccumulator -= Constants.TickRate;
+                    _state.UnscaledTicks++;
+                }
 
                 if (accumulator < Constants.TickRate)
                 {
                     if (_shouldStop)
                         break;
 
-                    Thread.Sleep(1);
+                    // Yield to prevent busy-wait CPU spike, but don't sleep (too slow on Mono)
+                    Thread.Sleep(0);
                     continue;
                 }
 
@@ -664,19 +627,24 @@ namespace WalkerSim
             return _processors[groupIndex].Color;
         }
 
-        private int SecondsToTicks(int seconds)
+        static public uint MillisecondsToTicks(uint milliseconds)
+        {
+            return (milliseconds * Constants.TicksPerSecond) / 1000;
+        }
+
+        static public uint SecondsToTicks(uint seconds)
         {
             return seconds * Constants.TicksPerSecond;
         }
 
-        private int MinutesToTicks(int minutes)
+        static public uint MinutesToTicks(uint minutes)
         {
             return SecondsToTicks(minutes * 60);
         }
 
         public double GetSimulationTimeSeconds()
         {
-            return _state.Ticks / (double)Constants.TicksPerSecond;
+            return _state.UnscaledTicks / (double)Constants.TicksPerSecond;
         }
 
         public void SetIsBloodmoon(bool bloodmoon)
@@ -692,6 +660,14 @@ namespace WalkerSim
         public void SetGamePaused(bool paused)
         {
             _gamePaused = paused;
+        }
+
+        public void SetMoveSpeeds(float daySpeed, float nightSpeed, float daySpeedRage, float nightSpeedRage)
+        {
+            _moveSpeedDay = daySpeed;
+            _moveSpeedNight = nightSpeed;
+            _moveSpeedRageDay = daySpeedRage;
+            _moveSpeedRageNight = nightSpeedRage;
         }
     }
 

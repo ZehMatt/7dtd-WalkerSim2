@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace WalkerSim
@@ -10,7 +9,7 @@ namespace WalkerSim
             public Vector3 Position;
             public int EntityId;
             public bool IsAlive;
-            public DateTime NextPossibleSpawnTime = DateTime.Now;
+            public uint NextPossibleSpawnTime;
         }
 
         public IEnumerable<KeyValuePair<int, Player>> Players
@@ -23,20 +22,21 @@ namespace WalkerSim
             get => _state.Players.Count;
         }
 
-        public void AddPlayer(int entityId, Vector3 pos, int spawnDelay)
+        public void AddPlayer(int entityId, Vector3 pos, uint spawnDelay)
         {
             Player player = new Player();
             player.EntityId = entityId;
             player.Position = pos;
             player.IsAlive = true;
-            player.NextPossibleSpawnTime = DateTime.Now.AddSeconds(spawnDelay);
+            player.NextPossibleSpawnTime = UnscaledTicks + spawnDelay;
 
             _state.Players.TryAdd(entityId, player);
 
             Logging.CondInfo(Config.LoggingOpts.General,
-                "Player added in simulation, entity id: {0}, position: {1}",
+                "Player added in simulation, entity id: {0}, position: {1}, spawn delay: {2} ticks",
                 entityId,
-                player.Position);
+                player.Position,
+                spawnDelay);
         }
 
         public void RemovePlayer(int entityId)
@@ -60,18 +60,18 @@ namespace WalkerSim
             }
         }
 
-        public void NotifyPlayerSpawned(int entityId, int spawnDelay)
+        public void NotifyPlayerSpawned(int entityId, uint spawnDelay)
         {
             if (_state.Players.TryGetValue(entityId, out var player))
             {
                 Logging.CondInfo(Config.LoggingOpts.General,
-                    "Player spawned in simulation, entity id: {0}, position: {1}, spawn activation delay: {2} secs",
+                    "Player spawned in simulation, entity id: {0}, position: {1}, spawn activation delay: {2} ticks",
                     entityId,
                     player.Position,
                     spawnDelay);
 
                 player.IsAlive = true;
-                player.NextPossibleSpawnTime = DateTime.Now.AddSeconds(spawnDelay);
+                player.NextPossibleSpawnTime = UnscaledTicks + spawnDelay;
             }
         }
 

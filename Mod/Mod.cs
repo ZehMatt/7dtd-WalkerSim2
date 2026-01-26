@@ -2,6 +2,15 @@ using System;
 
 namespace WalkerSim
 {
+    enum GameZombieSpeed
+    {
+        Walk = 0,
+        Jog,
+        Run,
+        Sprint,
+        Nightmare,
+    }
+
     public class WalkerSimMod : IModApi
     {
         static DateTime _lastUpdate = DateTime.Now;
@@ -12,8 +21,8 @@ namespace WalkerSim
             Drawing.Loader = new Unity.Drawing.UnityImageLoader();
 
             // Set up logging.
-            Logging.AddSink(new LogFileSink("WalkerSim"));
-            Logging.AddSink(new LogGameConsoleSink());
+            Logging.AddSink(LogFileSink.Instance);
+            Logging.AddSink(LogGameConsoleSink.Instance);
 
             Hooks.Init();
 
@@ -126,21 +135,9 @@ namespace WalkerSim
             return System.IO.Path.Combine(saveFilePath, "walkersim.bin");
         }
 
-        static void ResetSimulation()
+        static void SetSimulationParameters(Simulation simulation)
         {
-            var world = GameManager.Instance.World;
-            var simulation = Simulation.Instance;
-
-            // Remove all active zombies as they will have no connection with the simulation anymore.
-            foreach (var kv in simulation.Active)
-            {
-                world.RemoveEntity(kv.Key, EnumRemoveEntityReason.Despawned);
-            }
-
-            var config = LoadConfiguration();
-            simulation.Reset(config);
-
-
+            // Set max allowed alive agents.
             {
                 var maxSpawnedSetting = simulation.Config.MaxSpawnedZombies;
                 var gameMaxSpawnedAlive = GamePrefs.GetInt(EnumGamePrefs.MaxSpawnedZombies);
@@ -177,15 +174,58 @@ namespace WalkerSim
 
                 Logging.Out("Max Allowed Alive Agents: {0}", maxAliveAllowed);
             }
+
+            // Set zombie move speeds.
+            {
+                var daySpeedSetting = (GameZombieSpeed)GamePrefs.GetInt(EnumGamePrefs.ZombieMove);
+                float dayMult = EntityHuman.moveSpeeds[0];
+                float dayRageMult = EntityHuman.moveRageSpeeds[(int)daySpeedSetting];
+
+                var nightSpeedSetting = (GameZombieSpeed)GamePrefs.GetInt(EnumGamePrefs.ZombieMoveNight);
+                float nightMult = EntityHuman.moveSpeeds[0];
+                float nightRageMult = EntityHuman.moveRageSpeeds[(int)nightSpeedSetting];
+
+                // NOTE: This is arbitrary, we don't have entity information at this point.
+                const float minSpeed = 1.1f;
+                const float maxSpeed = 2.2f;
+
+                float dayAbsolute = minSpeed + (maxSpeed - minSpeed) * dayMult;
+                float dayRageAbsolute = minSpeed + (maxSpeed - minSpeed) * dayRageMult;
+                float nightAbsolute = minSpeed + (maxSpeed - minSpeed) * nightMult;
+                float nightRageAbsolute = minSpeed + (maxSpeed - minSpeed) * nightRageMult;
+
+                simulation.SetMoveSpeeds(dayAbsolute, nightAbsolute, dayRageAbsolute, nightRageAbsolute);
+
+                Logging.Info("Zombie Move Speeds - Day: {0}, Night: {1}", daySpeedSetting, nightSpeedSetting);
+                Logging.Info(" Zombie Move Absolute Speeds - Day: {0}, Night: {1}", dayAbsolute, nightAbsolute);
+                Logging.Info(" Zombie Move Rage Absolute Speeds - Day: {0}, Night: {1}", dayRageAbsolute, nightRageAbsolute);
+            }
+        }
+
+        static void ResetSimulation(Simulation simulation)
+        {
+            var world = GameManager.Instance.World;
+
+            // Remove all active zombies as they will have no connection with the simulation anymore.
+            foreach (var kv in simulation.Active)
+            {
+                world.RemoveEntity(kv.Key, EnumRemoveEntityReason.Despawned);
+            }
+
+            var config = LoadConfiguration();
+            simulation.Reset(config);
+
+            SetSimulationParameters(simulation);
         }
 
         internal static void RestartSimulation()
         {
+            var simulation = Simulation.Instance;
+
             Logging.Out("Restarting simulation...");
 
-            ResetSimulation();
+            ResetSimulation(simulation);
 
-            var simulation = Simulation.Instance;
             simulation.Start();
         }
 
@@ -298,9 +338,10 @@ namespace WalkerSim
 
                 if (resetSim)
                 {
-                    ResetSimulation();
+                    ResetSimulation(simulation);
                 }
 
+                SetSimulationParameters(simulation);
                 simulation.EnableAutoSave(simFile, 60.0f);
             }
 
@@ -312,22 +353,11 @@ namespace WalkerSim
             simulation.Start();
         }
 
-        static bool IsHost()
-        {
-            if (GameManager.IsDedicatedServer)
-                return true;
-
-            if (SingletonMonoBehaviour<ConnectionManager>.Instance.IsServer)
-                return true;
-
-            return false;
-        }
-
         static void GameStartDone(ref ModEvents.SGameStartDoneData data)
         {
             Logging.Info("GameStartDone, setting up simulation...");
 
-            if (!IsHost())
+            if (!Game.IsHost())
             {
                 // If we are just a client we also avoid using hooks to not mess with EAC.
                 Logging.Out("WalkerSim disabled, not host.");
@@ -370,7 +400,7 @@ namespace WalkerSim
 
         static void GameUpdate(ref ModEvents.SGameUpdateData data)
         {
-            if (!IsHost())
+            if (!Game.IsHost())
             {
                 return;
             }
@@ -437,7 +467,7 @@ namespace WalkerSim
 
         static void PlayerSpawnedInWorld(ref ModEvents.SPlayerSpawnedInWorldData data)
         {
-            if (!IsHost())
+            if (!Game.IsHost())
             {
                 return;
             }
@@ -447,7 +477,7 @@ namespace WalkerSim
             Logging.DbgInfo("Player Spawn: {0}", data.RespawnType);
             Logging.DbgInfo("Spawn Position: {0}", data.Position);
 
-            int spawnDelay = 0;
+            uint spawnDelay = 0;
             switch (data.RespawnType)
             {
                 case RespawnType.JoinMultiplayer:
@@ -457,7 +487,7 @@ namespace WalkerSim
                     spawnDelay = 30;
                     break;
                 case RespawnType.NewGame:
-                    spawnDelay = simulation.Config.SpawnProtectionTime;
+                    spawnDelay = Simulation.SecondsToTicks(simulation.Config.SpawnProtectionTime);
                     break;
             }
 
@@ -478,7 +508,7 @@ namespace WalkerSim
 
         static void PlayerDisconnected(ref ModEvents.SPlayerDisconnectedData data)
         {
-            if (!IsHost())
+            if (!Game.IsHost())
             {
                 return;
             }
@@ -492,7 +522,7 @@ namespace WalkerSim
 
         static void EntityKilled(ref ModEvents.SEntityKilledData data)
         {
-            if (!IsHost())
+            if (!Game.IsHost())
             {
                 return;
             }
@@ -518,121 +548,6 @@ namespace WalkerSim
             simulation.EntityKilled(entityId);
         }
 
-        internal static void NotifyNoise(Entity instigator, UnityEngine.Vector3 position, string clipName, float volumeScale)
-        {
-            if (!IsHost())
-            {
-                return;
-            }
-
-            var simulation = Simulation.Instance;
-            if (simulation == null)
-            {
-                return;
-            }
-
-            var config = simulation.Config;
-            if (config == null)
-            {
-                return;
-            }
-
-            var logEvents = config.LoggingOpts.Events;
-
-            if (!AIDirectorData.FindNoise(clipName, out AIDirectorData.Noise noise))
-            {
-                return;
-            }
-
-            var distance = (noise.volume * volumeScale * 3.0f) * config.SoundDistanceScale;
-            var normalizedHeatmapStrength = Math.Min(noise.heatMapStrength, 1.0f);
-            var distanceScaled = distance * normalizedHeatmapStrength;
-            var eventDuration = noise.heatMapWorldTimeToLive / 60;
-
-            // Log all variables from noise.
-            Logging.CondInfo(logEvents, "Noise: {0}, " +
-                " Volume: {1}, " +
-                "Duration: {2}, " +
-                "MuffledWhenCrouched: {3}, " +
-                "HeatMapStrength: {4}, " +
-                "HeatMapWorldTimeToLive: {5}, " +
-                "volumeScale: {6}, " +
-                "Travel Distance: {7}, " +
-                "Scaled Travel Distance: {8}",
-                               clipName,
-                               noise.volume,
-                               noise.duration,
-                               noise.muffledWhenCrouched,
-                               noise.heatMapStrength,
-                               noise.heatMapWorldTimeToLive,
-                               volumeScale,
-                               distance,
-                               distanceScaled);
-
-            if (noise.heatMapStrength == 0.0f)
-            {
-                return;
-            }
-
-            if (instigator != null && instigator.IsIgnoredByAI())
-            {
-                return;
-            }
-
-            simulation.AddSoundEvent(VectorUtils.ToSim(position), distanceScaled, eventDuration);
-
-            if (simulation.Config.EnhancedSoundAwareness)
-            {
-                NotifyNearbyEnemies(simulation, instigator, position, distanceScaled);
-            }
-        }
-
-        internal static void NotifyNearbyEnemies(Simulation simulation, Entity instigator, UnityEngine.Vector3 position, float distance)
-        {
-            if (!IsHost())
-            {
-                return;
-            }
-
-            if (instigator is EntityEnemy)
-            {
-                return;
-            }
-
-            var world = GameManager.Instance.World;
-            var logEvents = simulation.Config.LoggingOpts.Events;
-
-            // Notify all nearby enemies in idle state.
-            foreach (var active in Simulation.Instance.Active)
-            {
-                var ent = world.GetEntity(active.Key) as EntityEnemy;
-                if (ent == null || ent.IsDead())
-                {
-                    continue;
-                }
-
-                if (ent.attackTarget != null || ent.IsAlert)
-                {
-                    continue;
-                }
-
-                var entPos = ent.GetPosition();
-                var entDist = UnityEngine.Vector3.Distance(entPos, position);
-                if (entDist > distance)
-                {
-                    continue;
-                }
-
-                Logging.CondInfo(logEvents, "Alerting enemy {0} at {1} to noise at {2}, distance: {3}.",
-                             ent.entityId, entPos, position, entDist);
-
-                // Prevent them from digging.
-                var heightOffset = new UnityEngine.Vector3(0, 1.5f, 0);
-
-                // Have them interested for for 2~ min, assuming 30 ticks a second.
-                ent.SetInvestigatePosition(position + heightOffset, 3600, true);
-            }
-        }
 
         internal static void GetZombieWanderingSpeed(EntityHuman entity, ref float speed)
         {
