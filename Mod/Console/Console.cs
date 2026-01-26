@@ -108,6 +108,7 @@ namespace WalkerSim.Console
                     ConsoleOutput.Log("--- Simulation Statistics ---");
                     ConsoleOutput.Log("  World Size: {0}", sim.WorldSize);
                     ConsoleOutput.Log("  Ticks: {0}", sim.Ticks);
+                    ConsoleOutput.Log("  Unscaled Ticks: {0}", sim.UnscaledTicks);
                     ConsoleOutput.Log("  Simulation Time: {0}", string.Format("{0:D2}:{1:D2}:{2:D2}.{3:D3}",
                         timeSpan.Hours,
                         timeSpan.Minutes,

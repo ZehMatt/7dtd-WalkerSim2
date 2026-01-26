@@ -504,12 +504,6 @@ namespace WalkerSim
                     TimeScale = oldTimeScale;
                 });
 
-                // Adjust the time for spawn protection.
-                foreach (var player in _state.Players.Values)
-                {
-                    player.NextPossibleSpawnTime += Limits.TicksToAdvanceOnStartup;
-                }
-
                 _isFastAdvancing = false;
 
                 Logging.CondInfo(Config.LoggingOpts.General, "... done, took {0}.", elapsed);
@@ -518,6 +512,7 @@ namespace WalkerSim
             _updateTime.Restart();
 
             float accumulator = 0;
+            float unscaledAccumulator = 0;
             while (!_shouldStop)
             {
                 var timeElapsed = _updateTime.Capture();
@@ -533,6 +528,13 @@ namespace WalkerSim
                 }
 
                 accumulator = System.Math.Min(accumulator + scaledDt, 10.0f);
+                unscaledAccumulator = System.Math.Min(unscaledAccumulator + timeElapsed, 10.0f);
+
+                while (unscaledAccumulator >= Constants.TickRate)
+                {
+                    unscaledAccumulator -= Constants.TickRate;
+                    _state.UnscaledTicks++;
+                }
 
                 if (accumulator < Constants.TickRate)
                 {
@@ -642,7 +644,7 @@ namespace WalkerSim
 
         public double GetSimulationTimeSeconds()
         {
-            return _state.Ticks / (double)Constants.TicksPerSecond;
+            return _state.UnscaledTicks / (double)Constants.TicksPerSecond;
         }
 
         public void SetIsBloodmoon(bool bloodmoon)

@@ -28,7 +28,7 @@ namespace WalkerSim
             player.EntityId = entityId;
             player.Position = pos;
             player.IsAlive = true;
-            player.NextPossibleSpawnTime = Ticks + spawnDelay;
+            player.NextPossibleSpawnTime = UnscaledTicks + spawnDelay;
 
             _state.Players.TryAdd(entityId, player);
 
@@ -71,7 +71,7 @@ namespace WalkerSim
                     spawnDelay);
 
                 player.IsAlive = true;
-                player.NextPossibleSpawnTime = Ticks + spawnDelay;
+                player.NextPossibleSpawnTime = UnscaledTicks + spawnDelay;
             }
         }
 

@@ -25,6 +25,7 @@ namespace WalkerSim
             public Vector3 WindDirTarget = new Vector3(1, 0, 0);
             public float WindTime = 0;
             public uint Ticks = 0;
+            public uint UnscaledTicks = 0;
             public uint TickNextWindChange = 0;
             public int GroupCount = 0;
             public float MaxNeighbourDistance = 0;
@@ -158,6 +159,11 @@ namespace WalkerSim
         public uint Ticks
         {
             get => _state.Ticks;
+        }
+
+        public uint UnscaledTicks
+        {
+            get => _state.UnscaledTicks;
         }
 
         public uint SlowIterator

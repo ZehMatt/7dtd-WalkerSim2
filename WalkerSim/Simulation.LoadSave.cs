@@ -60,6 +60,7 @@ namespace WalkerSim
             ctx.Serialize(ref state.WindDirTarget);
             ctx.Serialize(ref state.WindTime);
             ctx.Serialize(ref state.Ticks);
+            ctx.Serialize(ref state.UnscaledTicks);
             ctx.Serialize(ref state.TickNextWindChange);
             ctx.Serialize(ref state.GroupCount);
             ctx.Serialize(ref state.MaxNeighbourDistance);
