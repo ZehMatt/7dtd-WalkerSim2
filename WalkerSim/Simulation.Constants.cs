@@ -13,9 +13,9 @@ namespace WalkerSim
             // Version 12: Change type of Ticks to uint.
             public const uint SaveVersion = 12;
 
-            public const uint MaxUpdateCountPerTick = 2000;
+            public const uint MaxUpdateCountPerTick = 500;
 
-            public const uint TicksPerSecond = 40;
+            public const uint TicksPerSecond = 33;
             public const float TickRate = 1f / TicksPerSecond;
             public const uint TickRateMs = 1000 / TicksPerSecond;
         }

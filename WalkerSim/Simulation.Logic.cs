@@ -27,7 +27,7 @@ namespace WalkerSim
 
             if (agentCount > 0)
             {
-                if (/*EditorMode || */ _isFastAdvancing)
+                if (EditorMode || _isFastAdvancing)
                 {
                     // Update in parallel.
                     Parallel.For(0, maxUpdates, i =>
@@ -84,9 +84,15 @@ namespace WalkerSim
                 Logging.Exception(ex);
             }
 
+            _simTime.Capture();
+
             _state.Ticks++;
 
-            _simTime.Capture();
+            // Log profiling data every 10 seconds
+            if (_state.Ticks % (Constants.TicksPerSecond * 10) == 0)
+            {
+                PerformanceCounters.Report();
+            }
         }
 
         private void UpatePOICounter()
@@ -152,18 +158,18 @@ namespace WalkerSim
             if (System.Math.Abs(curVel.Y) < 1e-6f)
                 curVel.Y = 0;
 
-            var processorGroup = _processors[agent.Group];
+            // Safe access to processors - may be modified by editor thread
+            var processorGroup = (agent.Group >= 0 && agent.Group < _processors.Count) ? _processors[agent.Group] : null;
             if (processorGroup != null)
             {
                 var entries = processorGroup.Entries;
                 var entryCount = entries.Count;
+
                 for (int i = 0; i < entryCount; i++)
                 {
                     var processor = entries[i];
-
                     var addVel = processor.Handler(this, _state, agent, processor.Distance, processor.Power);
                     addVel.Validate();
-
                     curVel += addVel;
                 }
             }
@@ -176,8 +182,7 @@ namespace WalkerSim
             agent.Velocity = curVel;
 
             UpdateAwareness(agent);
-            ApplyMovement(agent, deltaTime, processorGroup.SpeedScale);
-
+            ApplyMovement(agent, deltaTime, processorGroup?.SpeedScale ?? 1.0f);
             Warp(agent);
         }
 

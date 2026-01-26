@@ -7,13 +7,12 @@ namespace WalkerSim
         private Stopwatch _sw = new Stopwatch();
         private float[] _samples = new float[64];
 
-        private int _index = 0;
-        private int _count = 0;
+        private volatile uint _index = 0;
+        private volatile int _count = 0;
 
         public void Add(float time)
         {
-            _samples[_index % _samples.Length] = time;
-            _index++;
+            _samples[_index++ % _samples.Length] = time;
             _count = System.Math.Min(_count + 1, _samples.Length);
         }
 

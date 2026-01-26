@@ -7,27 +7,19 @@ namespace WalkerSim
         // Processor structs to avoid lambda allocations
         private struct FlockAnyProcessor : INeighborProcessor
         {
-            public Vector3 AgentPos;
-            public float DistanceSqr;
             public Vector3 Mean;
             public int Count;
 
             public void Process(Agent neighbor)
             {
-                var dist = Vector3.Distance2DSqr(AgentPos, neighbor.Position);
-                if (dist <= DistanceSqr)
-                {
-                    Mean += neighbor.Position;
-                    Count++;
-                }
+                Mean += neighbor.Position;
+                Count++;
             }
         }
 
         private struct FlockSameProcessor : INeighborProcessor
         {
-            public Vector3 AgentPos;
             public int AgentGroup;
-            public float DistanceSqr;
             public Vector3 Mean;
             public int Count;
 
@@ -36,20 +28,14 @@ namespace WalkerSim
                 if (neighbor.Group != AgentGroup)
                     return;
 
-                var dist = Vector3.Distance2DSqr(AgentPos, neighbor.Position);
-                if (dist <= DistanceSqr)
-                {
-                    Mean += neighbor.Position;
-                    Count++;
-                }
+                Mean += neighbor.Position;
+                Count++;
             }
         }
 
         private struct FlockOtherProcessor : INeighborProcessor
         {
-            public Vector3 AgentPos;
             public int AgentGroup;
-            public float DistanceSqr;
             public Vector3 Mean;
             public int Count;
 
@@ -58,38 +44,26 @@ namespace WalkerSim
                 if (neighbor.Group == AgentGroup)
                     return;
 
-                var dist = Vector3.Distance2DSqr(AgentPos, neighbor.Position);
-                if (dist <= DistanceSqr)
-                {
-                    Mean += neighbor.Position;
-                    Count++;
-                }
+                Mean += neighbor.Position;
+                Count++;
             }
         }
 
         private struct AlignAnyProcessor : INeighborProcessor
         {
-            public Vector3 AgentPos;
-            public float DistanceSqr;
             public Vector3 MeanVel;
             public int Count;
 
             public void Process(Agent neighbor)
             {
-                var dist = Vector3.Distance2DSqr(AgentPos, neighbor.Position);
-                if (dist <= DistanceSqr)
-                {
-                    MeanVel += neighbor.Velocity;
-                    Count++;
-                }
+                MeanVel += neighbor.Velocity;
+                Count++;
             }
         }
 
         private struct AlignSameProcessor : INeighborProcessor
         {
-            public Vector3 AgentPos;
             public int AgentGroup;
-            public float DistanceSqr;
             public Vector3 MeanVel;
             public int Count;
 
@@ -98,20 +72,14 @@ namespace WalkerSim
                 if (neighbor.Group != AgentGroup)
                     return;
 
-                var dist = Vector3.Distance2DSqr(AgentPos, neighbor.Position);
-                if (dist <= DistanceSqr)
-                {
-                    MeanVel += neighbor.Velocity;
-                    Count++;
-                }
+                MeanVel += neighbor.Velocity;
+                Count++;
             }
         }
 
         private struct AlignOtherProcessor : INeighborProcessor
         {
-            public Vector3 AgentPos;
             public int AgentGroup;
-            public float DistanceSqr;
             public Vector3 MeanVel;
             public int Count;
 
@@ -120,12 +88,8 @@ namespace WalkerSim
                 if (neighbor.Group == AgentGroup)
                     return;
 
-                var dist = Vector3.Distance2DSqr(AgentPos, neighbor.Position);
-                if (dist <= DistanceSqr)
-                {
-                    MeanVel += neighbor.Velocity;
-                    Count++;
-                }
+                MeanVel += neighbor.Velocity;
+                Count++;
             }
         }
 
@@ -137,12 +101,10 @@ namespace WalkerSim
 
             public void Process(Agent neighbor)
             {
-                var dist = Vector3.Distance2DSqr(AgentPos, neighbor.Position);
-                if (dist <= DistanceSqr)
-                {
-                    var closeness = DistanceSqr - dist;
-                    SumCloseness += (AgentPos - neighbor.Position) * closeness;
-                }
+                var delta = AgentPos - neighbor.Position;
+                var dist = delta.X * delta.X + delta.Y * delta.Y;
+                var closeness = DistanceSqr - dist;
+                SumCloseness += delta * closeness;
             }
         }
 
@@ -158,12 +120,10 @@ namespace WalkerSim
                 if (neighbor.Group != AgentGroup)
                     return;
 
-                var dist = Vector3.Distance2DSqr(AgentPos, neighbor.Position);
-                if (dist <= DistanceSqr)
-                {
-                    var closeness = DistanceSqr - dist;
-                    SumCloseness += (AgentPos - neighbor.Position) * closeness;
-                }
+                var delta = AgentPos - neighbor.Position;
+                var dist = delta.X * delta.X + delta.Y * delta.Y;
+                var closeness = DistanceSqr - dist;
+                SumCloseness += delta * closeness;
             }
         }
 
@@ -179,12 +139,10 @@ namespace WalkerSim
                 if (neighbor.Group == AgentGroup)
                     return;
 
-                var dist = Vector3.Distance2DSqr(AgentPos, neighbor.Position);
-                if (dist <= DistanceSqr)
-                {
-                    var closeness = DistanceSqr - dist;
-                    SumCloseness += (AgentPos - neighbor.Position) * closeness;
-                }
+                var delta = AgentPos - neighbor.Position;
+                var dist = delta.X * delta.X + delta.Y * delta.Y;
+                var closeness = DistanceSqr - dist;
+                SumCloseness += delta * closeness;
             }
         }
 
@@ -387,8 +345,6 @@ namespace WalkerSim
         {
             var processor = new FlockAnyProcessor
             {
-                AgentPos = agent.Position,
-                DistanceSqr = distance * distance,
                 Mean = Vector3.Zero,
                 Count = 0
             };
@@ -407,9 +363,7 @@ namespace WalkerSim
         {
             var processor = new FlockSameProcessor
             {
-                AgentPos = agent.Position,
                 AgentGroup = agent.Group,
-                DistanceSqr = distance * distance,
                 Mean = Vector3.Zero,
                 Count = 0
             };
@@ -428,9 +382,7 @@ namespace WalkerSim
         {
             var processor = new FlockOtherProcessor
             {
-                AgentPos = agent.Position,
                 AgentGroup = agent.Group,
-                DistanceSqr = distance * distance,
                 Mean = Vector3.Zero,
                 Count = 0
             };
@@ -449,8 +401,6 @@ namespace WalkerSim
         {
             var processor = new AlignAnyProcessor
             {
-                AgentPos = agent.Position,
-                DistanceSqr = distance * distance,
                 MeanVel = Vector3.Zero,
                 Count = 0
             };
@@ -468,15 +418,9 @@ namespace WalkerSim
 
         private static Vector3 AlignSame(Simulation sim, State state, Agent agent, float distance, float power)
         {
-            // point toward the center of the flock (mean flock boid position)
-            var meanVel = Vector3.Zero;
-            var distanceSqr = distance * distance;
-
             var processor = new AlignSameProcessor
             {
-                AgentPos = agent.Position,
                 AgentGroup = agent.Group,
-                DistanceSqr = distanceSqr,
                 MeanVel = Vector3.Zero,
                 Count = 0
             };
@@ -495,9 +439,7 @@ namespace WalkerSim
         {
             var processor = new AlignOtherProcessor
             {
-                AgentPos = agent.Position,
                 AgentGroup = agent.Group,
-                DistanceSqr = distance * distance,
                 MeanVel = Vector3.Zero,
                 Count = 0
             };
@@ -930,7 +872,8 @@ namespace WalkerSim
             }
 
             var cities = state.MapData.Cities;
-            int cityCount = cities.CityList.Count;
+            var cityList = cities.CityList;
+            int cityCount = cityList.Count;
 
             // State machine: Idle -> Approaching -> Arrived -> Idle
             if (agent.CurrentTravelState == Agent.TravelState.Idle)
@@ -954,60 +897,51 @@ namespace WalkerSim
 
                 agent.TargetCityIndex = targetCityIndex;
                 agent.CurrentTravelState = Agent.TravelState.Approaching;
-
-                // Start approaching immediately
-                var targetCity = cities.CityList[agent.TargetCityIndex];
-                float closestX = System.Math.Max(targetCity.MinX, System.Math.Min(agent.Position.X, targetCity.MaxX));
-                float closestY = System.Math.Max(targetCity.MinY, System.Math.Min(agent.Position.Y, targetCity.MaxY));
-                var direction = new Vector3(closestX, closestY, 0) - agent.Position;
-                direction.Z = 0;
-
-                if (direction.X != 0 || direction.Y != 0)
-                {
-                    direction = Vector3.Normalize(direction);
-                    return direction * power;
-                }
             }
-            else if (agent.CurrentTravelState == Agent.TravelState.Approaching)
+
+            if (agent.CurrentTravelState == Agent.TravelState.Approaching)
             {
-                var targetCity = cities.CityList[agent.TargetCityIndex];
+                var targetCity = cityList[agent.TargetCityIndex];
+                var agentPos = agent.Position;
 
                 // Check if we've arrived at the target city
-                bool isInTargetCity = agent.Position.X >= targetCity.MinX &&
-                                       agent.Position.X <= targetCity.MaxX &&
-                                       agent.Position.Y >= targetCity.MinY &&
-                                       agent.Position.Y <= targetCity.MaxY;
-
-                if (isInTargetCity)
+                if (agentPos.X >= targetCity.MinX && agentPos.X <= targetCity.MaxX &&
+                    agentPos.Y >= targetCity.MinY && agentPos.Y <= targetCity.MaxY)
                 {
                     agent.CurrentTravelState = Agent.TravelState.Arrived;
                     agent.CityTime = state.Ticks;
+                    // Fall through to Arrived state handling
                 }
-
-                // Approach the city (or continue approaching if just transitioned)
-                float closestX = System.Math.Max(targetCity.MinX, System.Math.Min(agent.Position.X, targetCity.MaxX));
-                float closestY = System.Math.Max(targetCity.MinY, System.Math.Min(agent.Position.Y, targetCity.MaxY));
-                var direction = new Vector3(closestX, closestY, 0) - agent.Position;
-                direction.Z = 0;
-
-                if (direction.X != 0 || direction.Y != 0)
+                else
                 {
-                    direction = Vector3.Normalize(direction);
-                    return direction * power;
+                    // Approach the city
+                    float closestX = System.Math.Max(targetCity.MinX, System.Math.Min(agentPos.X, targetCity.MaxX));
+                    float closestY = System.Math.Max(targetCity.MinY, System.Math.Min(agentPos.Y, targetCity.MaxY));
+                    
+                    float dx = closestX - agentPos.X;
+                    float dy = closestY - agentPos.Y;
+
+                    if (dx != 0 || dy != 0)
+                    {
+                        float invMag = 1f / (float)System.Math.Sqrt(dx * dx + dy * dy);
+                        return new Vector3(dx * invMag * power, dy * invMag * power, 0);
+                    }
+                    return Vector3.Zero;
                 }
             }
-            else if (agent.CurrentTravelState == Agent.TravelState.Arrived)
+            
+            if (agent.CurrentTravelState == Agent.TravelState.Arrived)
             {
                 // Check if we've been in the city for 20 minutes
                 ulong cityDuration = Simulation.MinutesToTicks(20) + (uint)state.PRNG.Next(15);
                 if ((state.Ticks - agent.CityTime) >= cityDuration)
                 {
                     agent.CurrentTravelState = Agent.TravelState.Idle;
-                    // Will select new target next frame but continue wandering this frame
+                    return Vector3.Zero;
                 }
 
                 // Wander within the city
-                var targetCity = cities.CityList[agent.TargetCityIndex];
+                var targetCity = cityList[agent.TargetCityIndex];
                 const float edgeMargin = 20f;
                 float cityWidth = targetCity.Bounds.X - (edgeMargin * 2);
                 float cityHeight = targetCity.Bounds.Y - (edgeMargin * 2);
@@ -1025,17 +959,16 @@ namespace WalkerSim
 
                 float targetX = targetCity.Position.X + targetOffsetX;
                 float targetY = targetCity.Position.Y + targetOffsetY;
-                var targetPos = new Vector3(targetX, targetY, 0);
+                
+                float dx = targetX - agent.Position.X;
+                float dy = targetY - agent.Position.Y;
+                float distSqr = dx * dx + dy * dy;
 
-                var direction = targetPos - agent.Position;
-                direction.Z = 0;
-
-                float distToTarget = Vector3.Magnitude(direction);
-                if (distToTarget > 1f)
+                if (distSqr > 1f)
                 {
-                    direction = Vector3.Normalize(direction);
-                    float forceMult = System.Math.Min(distToTarget / 30f, 1f);
-                    return direction * power * forceMult * 0.5f;
+                    float invMag = 1f / (float)System.Math.Sqrt(distSqr);
+                    float forceMult = System.Math.Min((float)System.Math.Sqrt(distSqr) / 30f, 1f);
+                    return new Vector3(dx * invMag * power * forceMult * 0.5f, dy * invMag * power * forceMult * 0.5f, 0);
                 }
             }
 
