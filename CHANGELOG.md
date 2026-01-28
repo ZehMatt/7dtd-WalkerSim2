@@ -1,4 +1,5 @@
 # 1.0.2 (in progress)
+- Fix: Zombies sometimes spawn inside blocks.
 
 # 1.0.1
 - Change: Remove verbose logging of sound info.

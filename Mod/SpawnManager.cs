@@ -76,7 +76,7 @@ namespace WalkerSim
             return prob;
         }
 
-        static private bool CanSpawnAtPosition(UnityEngine.Vector3 position)
+        static private bool CanSpawnAtPosition(UnityEngine.Vector3 position, bool rainMode)
         {
             var world = GameManager.Instance.World;
             if (world == null)
@@ -84,10 +84,13 @@ namespace WalkerSim
                 return false;
             }
 
-            if (!world.CanMobsSpawnAtPos(position))
+            if (!rainMode)
             {
-                Logging.DbgInfo("CanMobsSpawnAtPos returned false for position {0}", position);
-                return false;
+                if (!world.CanMobsSpawnAtPos(position))
+                {
+                    Logging.DbgInfo("CanMobsSpawnAtPos returned false for position {0}", position);
+                    return false;
+                }
             }
 
             if (world.isPositionInRangeOfBedrolls(position))
@@ -541,10 +544,24 @@ namespace WalkerSim
             // Adjust position height.
             worldPos.y = terrainHeight;
 
-            if (!CanSpawnAtPosition(worldPos))
+            var blockPos = World.worldToBlockPos(worldPos);
+            var terrainOffset = world.GetTerrainOffset(0, blockPos);
+
+            worldPos.y += terrainOffset;
+
+            if (!CanSpawnAtPosition(worldPos, spawnData.ZombieRain))
             {
                 Logging.CondInfo(config.LoggingOpts.Spawns, "Failed to spawn agent {0}, position not suitable at {1}", agent.Index, worldPos);
                 return -1;
+            }
+
+            // Prevent them from spawning inside blocks.
+            worldPos.y += 1;
+
+            // Easter egg.
+            if (spawnData.ZombieRain)
+            {
+                worldPos.y = 150;
             }
 
             Logging.CondInfo(config.LoggingOpts.Spawns, "Spawning agent {0} at {1}", agent.Index, worldPos);
@@ -685,6 +702,11 @@ namespace WalkerSim
             else
             {
                 Logging.Err("Unknown post spawn behavior: {0}", spawnData.PostSpawnBehavior);
+            }
+
+            if (spawnData.ZombieRain)
+            {
+                spawnedAgent.emodel.DoRagdoll(5.0f, EnumBodyPartHit.None, UnityEngine.Vector3.zero, UnityEngine.Vector3.zero, false);
             }
 
             // Update the agent data.
