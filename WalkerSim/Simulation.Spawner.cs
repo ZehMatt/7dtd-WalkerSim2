@@ -12,6 +12,7 @@ namespace WalkerSim
             public int ActivatorEntityId;
             public Agent.SubState SubState;
             public Vector3 AlertPosition;
+            public bool ZombieRain;
         }
 
         public delegate int AgentSpawnHandler(Simulation simulation, SpawnData agent);
@@ -150,11 +151,20 @@ namespace WalkerSim
                         continue;
 
                     var dist = Vector3.Distance2D(playerPos, agent.Position);
-                    if (dist < viewRadius - activationBorderSize)
-                        continue;
-
                     if (dist > viewRadius)
                         continue;
+
+                    var rainZombie = false;
+                    if (dist < viewRadius - activationBorderSize)
+                    {
+                        if (!player.ZombieRain)
+                            continue;
+
+                        if (dist > 15)
+                            continue;
+
+                        rainZombie = true;
+                    }
 
                     // TODO: We are not handling overflow of Ticks but it takes a lot of time to get there.
                     var spawnDelta = UnscaledTicks - agent.LastSpawnTick;
@@ -188,6 +198,7 @@ namespace WalkerSim
                         ActivatorEntityId = player.EntityId,
                         SubState = agent.CurrentSubState,
                         AlertPosition = agent.AlertPosition,
+                        ZombieRain = rainZombie,
                     };
                     _pendingSpawns.Enqueue(spawnData);
 

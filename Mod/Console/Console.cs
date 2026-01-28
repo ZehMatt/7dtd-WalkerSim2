@@ -231,6 +231,37 @@ namespace WalkerSim.Console
                         x, y, pos,
                         spawnGroup.EntityGroupDay, spawnGroup.EntityGroupNight, spawnGroup.ColorString);
                 }),
+            },
+            new SubCommand
+            {
+                Name = "jonah",
+                Description = "Find out what this is",
+                Handler = new Action<CommandSenderInfo>((sender) =>
+                {
+                    EntityPlayer player = null;
+                    if(sender.RemoteClientInfo == null)
+                    {
+                        player = GameManager.Instance.World.GetPrimaryPlayer() as EntityPlayer;
+                    }
+                    else
+                    {
+                        var entityId = sender.RemoteClientInfo.entityId;
+                        player = GameManager.Instance.World.GetEntity(entityId) as EntityPlayer;
+                    }
+
+                    if(player != null)
+                    {
+                        if(Simulation.Instance.EnableZombieRain(player.entityId))
+                        {
+                            ConsoleOutput.Log("Jonah mode now active.");
+                        }
+                        else
+                        {
+                            ConsoleOutput.Log("Jonah mode now inactive.");
+                        }
+
+                    }
+                }),
             }
         };
 

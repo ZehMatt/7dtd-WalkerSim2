@@ -10,6 +10,7 @@ namespace WalkerSim
             public int EntityId;
             public bool IsAlive;
             public uint NextPossibleSpawnTime;
+            public bool ZombieRain;
         }
 
         public IEnumerable<KeyValuePair<int, Player>> Players
@@ -78,6 +79,17 @@ namespace WalkerSim
         public bool HasPlayer(int entityId)
         {
             return _state.Players.ContainsKey(entityId);
+        }
+
+        public bool EnableZombieRain(int entityId)
+        {
+            if (_state.Players.TryGetValue(entityId, out var ply))
+            {
+                ply.ZombieRain = !ply.ZombieRain;
+                return ply.ZombieRain;
+            }
+
+            return false;
         }
     }
 }
