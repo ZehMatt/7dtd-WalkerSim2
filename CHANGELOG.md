@@ -1,4 +1,5 @@
 # 1.0.3 (in progress)
+- Change: Spawn selection now cycles through entity groups with better respect to `none`, spawn chances should now better reflect original.
 
 # 1.0.2
 - Fix: Zombies sometimes spawn inside blocks.
