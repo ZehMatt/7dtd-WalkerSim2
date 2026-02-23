@@ -690,6 +690,18 @@ namespace WalkerSim
 
             // Use previously assigned entity class id.
             int entityClassId = agent.EntityClassId;
+
+            var remainingLifeTime = agent.TimeToDie > world.worldTime ? agent.TimeToDie - world.worldTime : 0;
+            if (remainingLifeTime <= 500 /* 30 in-game minutes */)
+            {
+                // Don't reuse if they are close to death or past the lifetime.
+                entityClassId = -1;
+
+                // Reset the previous state.
+                agent.TimeToDie = ulong.MaxValue;
+                agent.Health = -1;
+            }
+
             if (entityClassId == -1 || entityClassId == 0)
             {
                 // Try first from mask.
@@ -757,12 +769,22 @@ namespace WalkerSim
                 spawnedZombie.IsHordeZombie = true;
             }
 
+            // Keep maximum assigned lifetime.
             if (agent.TimeToDie != ulong.MaxValue)
             {
                 if (spawnedAgent is EntityHuman spawnedHuman)
                 {
                     spawnedHuman.timeToDie = agent.TimeToDie;
                 }
+                else if (spawnedAgent is EntityZombieDog spawnedDog)
+                {
+                    spawnedDog.timeToDie = agent.TimeToDie;
+                }
+
+                Logging.CondInfo(config.LoggingOpts.Spawns,
+                    "Using previous time to die: {0}, remaining: {1}",
+                    agent.TimeToDie,
+                    remainingLifeTime);
             }
 
             if (agent.Health != -1)
@@ -875,10 +897,13 @@ namespace WalkerSim
             // Retain current state.
             agent.Health = entity.Health;
 
-            var humanEntity = entity as EntityHuman;
-            if (humanEntity != null)
+            if (entity is EntityHuman humanEntity)
             {
                 agent.TimeToDie = humanEntity.timeToDie;
+            }
+            else if (entity is EntityZombieDog dogEntity)
+            {
+                agent.TimeToDie = dogEntity.timeToDie;
             }
             else
             {

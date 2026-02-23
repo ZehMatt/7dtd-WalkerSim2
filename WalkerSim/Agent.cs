@@ -66,6 +66,7 @@ namespace WalkerSim
             EntityId = -1;
             EntityClassId = -1;
             Health = -1;
+            TimeToDie = ulong.MaxValue;
         }
 
         public float GetDistance(Agent other)
