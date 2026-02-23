@@ -1,4 +1,5 @@
 # 1.0.3 (in progress)
+- Fix: Zombies that despawned a few in-game days before would immediately die when spawned again.
 - Change: Spawn selection now cycles through entity groups with better respect to `none`, spawn chances should now better reflect original.
 
 # 1.0.2
