@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace WalkerSim
 {
@@ -69,5 +70,18 @@ namespace WalkerSim
         {
             return (Next() / (Double)(Int32.MaxValue + 1.0));
         }
+
+        public void ShuffleList<T>(IList<T> list)
+        {
+            for (int i = list.Count - 1; i > 0; i--)
+            {
+                int j = Next(i + 1);
+                T temp = list[i];
+                list[i] = list[j];
+                list[j] = temp;
+
+            }
+        }
     }
+
 }

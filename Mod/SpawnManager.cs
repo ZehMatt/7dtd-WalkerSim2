@@ -5,12 +5,13 @@ namespace WalkerSim
 {
     internal class SpawnManager
     {
-        static Dictionary<long, List<SEntityClassAndProb>> _spawnDataNight = new Dictionary<long, List<SEntityClassAndProb>>();
-        static Dictionary<long, List<SEntityClassAndProb>> _spawnDataDay = new Dictionary<long, List<SEntityClassAndProb>>();
+
+        static Dictionary<long, List<List<SEntityClassAndProb>>> _spawnDataNight = new Dictionary<long, List<List<SEntityClassAndProb>>>();
+        static Dictionary<long, List<List<SEntityClassAndProb>>> _spawnDataDay = new Dictionary<long, List<List<SEntityClassAndProb>>>();
         static List<SEntityClassAndProb> _spawnGeneric;
 
         static Dictionary<int, int> _classIdCounter = new Dictionary<int, int>();
-        const int MaxSpawnRetryAttempts = 10;
+        const int MaxSpawnRetryAttempts = 20;
 
         static private bool CanSpawnZombie(Simulation simulation)
         {
@@ -102,7 +103,7 @@ namespace WalkerSim
             return true;
         }
 
-        static List<SEntityClassAndProb> GetBiomeEntityClasses(long chunkKey)
+        static List<List<SEntityClassAndProb>> GetBiomeEntityClasses(long chunkKey)
         {
             var world = GameManager.Instance.World;
             if (world.IsDaytime())
@@ -153,6 +154,186 @@ namespace WalkerSim
                     }
                 }
             }
+        }
+
+        static private int PerformSelectionSubGroup(Simulation simulation, List<SEntityClassAndProb> spawnList, int maxRetries, bool allowDuplicates = false)
+        {
+            var rand = simulation.PRNG;
+            var config = simulation.Config;
+
+            var selectedClassId = 0;
+            var maxRetryAttempts = System.Math.Min(maxRetries, spawnList.Count);
+
+            // Calculate the total probability.
+            float maxTotalProb = 0;
+            for (int i = 0; i < spawnList.Count; i++)
+            {
+                var entry = spawnList[i];
+                var prob = GetEntityClassProbability(entry.prob, entry.entityClassId);
+
+                maxTotalProb += prob;
+            }
+
+            // Attempt to pick a non-duplicate class.
+            for (int attempt = 0; attempt < maxRetryAttempts; attempt++)
+            {
+                var totalProb = maxTotalProb;
+
+                // Select a random class id, it also attempts to avoid spawning duplicates.
+                var randomValue = rand.NextSingle() * maxTotalProb;
+
+                for (int i = 0; i < spawnList.Count; i++)
+                {
+                    var entry = spawnList[i];
+                    var prob = GetEntityClassProbability(entry.prob, entry.entityClassId);
+
+                    randomValue -= prob;
+
+                    if (randomValue <= 0)
+                    {
+                        selectedClassId = entry.entityClassId;
+                        break;
+                    }
+                }
+
+                if (selectedClassId == 0)
+                {
+                    // Some groups have "none" with high probability, retry if we hit that.
+                    continue;
+                    //return 0;
+                }
+
+                // If we already have the same class id, retry selection.
+                var existingCount = GetSpawnedClassIdCount(selectedClassId);
+                if (existingCount > 0)
+                {
+                    if (!allowDuplicates)
+                    {
+                        // Try again, this is a duplicate and we are not allowing duplicates in this attempt.
+                        selectedClassId = -1;
+                        continue;
+                    }
+
+                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                        "Selected entity class {0} ({1}) already exists, instances: {2}, retrying...",
+                        GetEntityClassName(selectedClassId),
+                        selectedClassId,
+                        existingCount);
+
+                    continue;
+                }
+                else
+                {
+                    // Found something.
+
+                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                        "Selected entity class {0} ({1}) from {2} attempts",
+                        GetEntityClassName(selectedClassId),
+                        selectedClassId,
+                        attempt + 1);
+
+                    return selectedClassId;
+                }
+            }
+
+            if (selectedClassId == -1)
+            {
+                Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                    "Failed to select a non-duplicate entity class after {0} attempts.",
+                    maxRetryAttempts,
+                    allowDuplicates);
+            }
+
+            return selectedClassId;
+        }
+
+        static private int PerformSelection(Simulation simulation, List<List<SEntityClassAndProb>> biomeList)
+        {
+            var rand = simulation.PRNG;
+            var config = simulation.Config;
+
+            if (biomeList.Count == 0)
+            {
+                Logging.CondWrn(config.LoggingOpts.EntityClassSelection, "Biome list is empty, no entity classes to select from.");
+                return -1;
+            }
+
+            // Randomize the order of the spawn groups to avoid always selecting from the same group first.
+            rand.ShuffleList(biomeList);
+
+            var selectedClassId = 0;
+
+            // First attempt, no duplicates allowed.
+            for (var subIndex = 0; subIndex < biomeList.Count; subIndex++)
+            {
+                var spawnList = biomeList[subIndex];
+
+                selectedClassId = PerformSelectionSubGroup(simulation, spawnList, MaxSpawnRetryAttempts, false);
+                if (selectedClassId == 0)
+                {
+                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                        "Selected 'none' entity class from group {0}, trying next group if available. Groups in biome list: {1}",
+                        subIndex, biomeList.Count);
+
+                    continue;
+                }
+                else if (selectedClassId == -1)
+                {
+                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                        "Failed to select an entity class from group {0} with no duplicates, trying next group if available. Groups in biome list: {1}",
+                        subIndex, biomeList.Count);
+
+                    continue;
+                }
+
+                // Found a valid class id.
+                break;
+            }
+
+            // Second attempt, allow duplicates.
+            if (selectedClassId == -1)
+            {
+                Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                    "Failed to select an entity class with no duplicates, retrying with duplicates allowed. Groups in biome list: {0}",
+                    biomeList.Count);
+
+                // Reduce the amount of retry attempts, we already tried before with MaxSpawnRetryAttempts so we can be more lenient now.
+                var maxRetries = System.Math.Max(MaxSpawnRetryAttempts / biomeList.Count, 5);
+
+                for (var subIndex = 0; subIndex < biomeList.Count; subIndex++)
+                {
+                    var spawnList = biomeList[subIndex];
+
+                    selectedClassId = PerformSelectionSubGroup(simulation, spawnList, maxRetries, true);
+                    if (selectedClassId != 0 && selectedClassId != -1)
+                    {
+                        return selectedClassId;
+                    }
+                }
+            }
+
+            if (selectedClassId == 0)
+            {
+                if (_spawnGeneric.Count > 0)
+                {
+                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                        "Using fallback to generic ZombiesAll group for 'none' selection. Groups in biome list: {0}",
+                        biomeList.Count);
+
+                    return PerformSelectionSubGroup(simulation, _spawnGeneric, MaxSpawnRetryAttempts);
+                }
+
+                Logging.Err("Selected 'none' entity class, 'ZombiesAll' doesn't exist or is empty, no fallback possible.");
+                return -1;
+            }
+            else if (selectedClassId == -1)
+            {
+                // We should never end up here.
+                Logging.Err("Failed to select an entity class {0}, no valid classes found in biome list. Groups in biome list: {1}",
+                    selectedClassId, biomeList.Count);
+            }
+
+            return selectedClassId;
         }
 
         static private int GetEntityClassIdFromMask(Simulation simulation, Chunk chunk, UnityEngine.Vector3 worldPos)
@@ -207,7 +388,7 @@ namespace WalkerSim
                 return -1;
             }
 
-            return PerformSelection(simulation, entityGroupData);
+            return PerformSelectionSubGroup(simulation, entityGroupData, MaxSpawnRetryAttempts);
         }
 
         static private bool IsEntityClassAllowed(int entityClassId)
@@ -238,9 +419,28 @@ namespace WalkerSim
 
             var config = simulation.Config;
 
-            List<SEntityClassAndProb> spawnList = GetBiomeEntityClasses(chunk.Key);
+            if (_spawnGeneric == null)
+            {
+                if (EntityGroups.list.TryGetValue("ZombiesAll", out var zombiesAll))
+                {
+                    // Remove 0 "none" entries if any.
+                    _spawnGeneric = new List<SEntityClassAndProb>(zombiesAll);
+                    _spawnGeneric.RemoveAll(entry => entry.entityClassId == 0);
+                }
+                else
+                {
+                    // Empty list.
+                    _spawnGeneric = new List<SEntityClassAndProb>();
+                }
+            }
+
+            List<List<SEntityClassAndProb>> spawnList = GetBiomeEntityClasses(chunk.Key);
             if (spawnList == null)
             {
+                Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                    "No cached entity classes for chunk: {0}, building cache...",
+                    chunk.Key);
+
                 int worldX = Mathf.FloorToInt(worldPos.x);
                 int worldZ = Mathf.FloorToInt(worldPos.z);
 
@@ -253,7 +453,7 @@ namespace WalkerSim
                 if (biomeData == null)
                 {
                     Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
-                        "Biome data is null for id {0}",
+                        "  Biome data is null for id {0}",
                         biomeId);
                     return -1;
                 }
@@ -261,7 +461,7 @@ namespace WalkerSim
                 if (!BiomeSpawningClass.list.TryGetValue(biomeData.m_sBiomeName, out BiomeSpawnEntityGroupList biomeList))
                 {
                     Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
-                        "Biome data not found for id {0}",
+                        "  Biome data not found for id {0}",
                         biomeId);
                     return -1;
                 }
@@ -279,7 +479,7 @@ namespace WalkerSim
                     world.GetPOIsAtXZ(xMin, xMax, zMin, zMax, spawnPIs);
 
                     Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
-                        "Got {0} POIs for ({1}, {2}) ({3}, {4})",
+                        "  Got {0} POIs for ({1}, {2}) ({3}, {4})",
                         spawnPIs.Count,
                         xMin,
                         xMax,
@@ -305,40 +505,36 @@ namespace WalkerSim
                     }
 
                     Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
-                        "ChunkFlags generated: {0}",
+                        "  ChunkFlags generated: {0}",
                         groupsEnabledFlags);
                 }
 
-                // Gather all possible groups.
-                var entityClassesDay = new List<SEntityClassAndProb>();
-                var entityClassesNight = new List<SEntityClassAndProb>();
-
                 // Extract possible groups from the bit mask.
+                List<List<SEntityClassAndProb>> spawnDataNight = new List<List<SEntityClassAndProb>>();
+                List<List<SEntityClassAndProb>> spawnDataDay = new List<List<SEntityClassAndProb>>();
+
                 for (int i = 0; i < biomeList.list.Count; i++)
                 {
                     var group = biomeList.list[i];
+
+                    // Gather all possible groups.
+                    var entityClassesDay = new List<SEntityClassAndProb>();
+                    var entityClassesNight = new List<SEntityClassAndProb>();
 
                     if ((groupsEnabledFlags & (1 << i)) == 0)
                     {
                         // This group is not enabled for this chunk.
                         continue;
                     }
+
                     if (EntityGroups.list.TryGetValue(group.entityGroupName, out var data))
                     {
                         foreach (var entry in data)
                         {
-                            /*
-                            if (entry.entityClassId == 0)
-                            {
-                                // "none", Ignore this case, not relevant in this situation.
-                                continue;
-                            }
-                            */
-
                             if (entry.entityClassId != 0 && !IsEntityClassAllowed(entry.entityClassId))
                             {
                                 Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
-                                    "Ignoring entity class {0}:{1}, entity not handled.",
+                                    "  Ignoring entity class {0}:{1}, entity not handled.",
                                     GetEntityClassName(entry.entityClassId),
                                     entry.entityClassId);
                                 continue;
@@ -363,144 +559,70 @@ namespace WalkerSim
                             }
                         }
                     }
+
+                    // De-duplicate the spawn lists with identical entity class ids, select highest probability.
+                    DeduplicateSpawnList(entityClassesDay);
+                    DeduplicateSpawnList(entityClassesNight);
+
+                    // Sort by probability.
+                    entityClassesDay.Sort((a, b) => b.prob.CompareTo(a.prob));
+                    entityClassesNight.Sort((a, b) => b.prob.CompareTo(a.prob));
+
+                    spawnDataDay.Add(entityClassesDay);
+                    spawnDataNight.Add(entityClassesNight);
                 }
-
-
-                // De-duplicate the spawn lists with identical entity class ids, select highest probability.
-                DeduplicateSpawnList(entityClassesDay);
-                DeduplicateSpawnList(entityClassesNight);
-
-                // Sort by probability.
-                entityClassesDay.Sort((a, b) => b.prob.CompareTo(a.prob));
-                entityClassesNight.Sort((a, b) => b.prob.CompareTo(a.prob));
-
-                // Cache the spawn data for this chunk.
-                _spawnDataDay[chunk.Key] = entityClassesDay;
-                _spawnDataNight[chunk.Key] = entityClassesNight;
 
                 Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
-                    "Spawn list for chunk {0} (Day: {1}, Night: {2}), Biome: {3}",
+                    "  Spawn groups for chunk {0} (Day: {1}, Night: {2}), Biome: {3}",
                     chunk.Key,
-                    entityClassesDay.Count,
-                    entityClassesNight.Count,
+                    spawnDataNight.Count,
+                    spawnDataDay.Count,
                     biomeData.m_sBiomeName);
 
-                // Day.
-                Logging.CondInfo(config.LoggingOpts.EntityClassSelection, "  Daytime:");
-                foreach (var entry in entityClassesDay)
+                // Remove empty groups to avoid unnecessary selection attempts.
+                spawnDataNight.RemoveAll(group => group.Count == 0);
+                spawnDataDay.RemoveAll(group => group.Count == 0);
+
+                _spawnDataNight.Add(chunk.Key, spawnDataNight);
+                _spawnDataDay.Add(chunk.Key, spawnDataDay);
+
+                // Log out all sub groups.
+                if (config.LoggingOpts.EntityClassSelection)
                 {
-                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
-                        "    Class: {0} ({1}), Probability: {2}",
-                        GetEntityClassName(entry.entityClassId),
-                        entry.entityClassId,
-                        entry.prob);
+                    Logging.Info("  Spawn groups Day:", chunk.Key);
+                    foreach (var group in spawnDataDay)
+                    {
+                        Logging.Info("  >");
+                        foreach (var entry in group)
+                        {
+                            Logging.Info("    Entity Class {0}:{1}, Probability: {2}",
+                                GetEntityClassName(entry.entityClassId), entry.entityClassId, entry.prob);
+                        }
+                    }
+
+                    Logging.Info("  Spawn groups Night:", chunk.Key);
+                    foreach (var group in spawnDataNight)
+                    {
+                        Logging.Info("  >");
+                        foreach (var entry in group)
+                        {
+                            Logging.Info("    Entity Class {0}:{1}, Probability: {2}",
+                                GetEntityClassName(entry.entityClassId), entry.entityClassId, entry.prob);
+                        }
+                    }
                 }
 
-                // Night.
-                Logging.CondInfo(config.LoggingOpts.EntityClassSelection, "  Nighttime:");
-                foreach (var entry in entityClassesNight)
-                {
-                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
-                        "    Class: {0} ({1}), Probability: {2}",
-                        GetEntityClassName(entry.entityClassId),
-                        entry.entityClassId,
-                        entry.prob);
-                }
-
-                spawnList = world.IsDaytime() ? entityClassesDay : entityClassesNight;
+                spawnList = world.IsDaytime() ? spawnDataDay : spawnDataNight;
             }
 
             int classId = PerformSelection(simulation, spawnList);
-            if (classId != 0 && classId != -1)
+            if (classId == 0 || classId == -1)
             {
-                return classId;
+                // Selection failed.
+                return -1;
             }
 
-            // Vanilla uses "none" as don't spawn and then adds a delay before trying again.
-            // We however want to try to map all agents to actual zombies so for "none" we fallback
-            // to ZombiesAll group, "none" is usually used to prevent certain types from spawning too often.
-            if (classId == 0)
-            {
-                if (_spawnGeneric == null)
-                {
-                    if (EntityGroups.list.TryGetValue("ZombiesAll", out var zombiesAll))
-                    {
-                        // Remove 0 "none" entries if any.
-                        _spawnGeneric = new List<SEntityClassAndProb>(zombiesAll);
-                        _spawnGeneric.RemoveAll(entry => entry.entityClassId == 0);
-                    }
-                }
-
-                if (_spawnGeneric != null && _spawnGeneric.Count > 0)
-                {
-                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
-                        "Using fallback to generic ZombiesAll group for 'none' selection.");
-
-                    return PerformSelection(simulation, _spawnGeneric);
-                }
-            }
-
-            // Selection failed.
-            return -1;
-        }
-
-        static private int PerformSelection(Simulation simulation, List<SEntityClassAndProb> spawnList)
-        {
-            var rand = simulation.PRNG;
-            var config = simulation.Config;
-
-            // Calculate the total probability.
-            float totalProb = 0;
-            for (int i = 0; i < spawnList.Count; i++)
-            {
-                var entry = spawnList[i];
-                var prob = GetEntityClassProbability(entry.prob, entry.entityClassId);
-
-                totalProb += prob;
-            }
-
-            // Select a random class id, it also attempts to avoid spawning duplicates.
-            var selectedClassId = -1;
-            var maxRetryAttempts = System.Math.Min(MaxSpawnRetryAttempts, spawnList.Count);
-            for (int attempt = 0; attempt < maxRetryAttempts; attempt++)
-            {
-                var randomValue = rand.NextSingle() * totalProb;
-
-                for (int i = 0; i < spawnList.Count; i++)
-                {
-                    var entry = spawnList[i];
-                    var prob = GetEntityClassProbability(entry.prob, entry.entityClassId);
-
-                    randomValue -= prob;
-
-                    if (randomValue <= 0)
-                    {
-                        selectedClassId = entry.entityClassId;
-                        break;
-                    }
-                }
-
-                var existingCount = GetSpawnedClassIdCount(selectedClassId);
-                if (existingCount >= 1)
-                {
-                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
-                        "Selected entity class {0} ({1}) already exists, instances: {2}, retrying...",
-                        GetEntityClassName(selectedClassId),
-                        selectedClassId,
-                        existingCount);
-                }
-                else
-                {
-                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
-                        "Selected entity class {0} ({1}) from {2} attempts",
-                        GetEntityClassName(selectedClassId),
-                        selectedClassId,
-                        attempt + 1);
-                    break;
-                }
-            }
-
-            return selectedClassId;
+            return classId;
         }
 
         static public int SpawnAgent(Simulation simulation, Simulation.SpawnData spawnData)
