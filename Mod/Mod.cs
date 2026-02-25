@@ -365,7 +365,7 @@ namespace WalkerSim
                 var entity = world.GetEntity(entityId) as EntityAlive;
                 if (entity != null)
                 {
-                    SpawnManager.AdjustZombieHealth(config, agent, entity);
+                    SpawnManager.ApplyEntityState(config, agent, entity);
                 }
                 else
                 {
@@ -472,6 +472,9 @@ namespace WalkerSim
         {
             var simulation = Simulation.Instance;
             simulation.Stop();
+
+
+
             simulation.AutoSave();
             simulation.Shutdown();
         }

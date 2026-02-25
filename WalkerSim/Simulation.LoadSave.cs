@@ -12,9 +12,12 @@ namespace WalkerSim
         private string _autoSaveFile;
         private float _autoSaveInterval = -1;
 
-        private void SerializeState(State state, SerializationContext ctx)
+        private bool SerializeState(State state, SerializationContext ctx)
         {
-            SerializeHeader(state, ctx);
+            if (!SerializeHeader(state, ctx))
+            {
+                return false;
+            }
             SerializeInfo(state, ctx);
             SerializeStats(state, ctx);
             SerializeConfig(state, ctx);
@@ -22,6 +25,8 @@ namespace WalkerSim
             SerializeAgents(state, ctx);
             SerializeGrid(state, ctx);
             SerializeEvents(state, ctx);
+
+            return true;
         }
 
         private bool SerializeHeader(State state, SerializationContext ctx)
@@ -146,6 +151,10 @@ namespace WalkerSim
                 ctx.Serialize(ref agent.EntityId);
                 ctx.Serialize(ref agent.EntityClassId);
                 ctx.Serialize(ref agent.Health);
+                ctx.Serialize(ref agent.MaxHealth);
+                ctx.Serialize(ref agent.OriginalMaxHealth);
+                ctx.SerializeEnum(ref agent.Dismemberment);
+                ctx.Serialize(ref agent.WalkType);
 
                 // NOTE: Ensure the state isn't some intermediate one when saving.
                 if (ctx.IsWriting)
@@ -264,7 +273,10 @@ namespace WalkerSim
                 var ctx = SerializationContext.CreateWriter(writer);
                 lock (_state)
                 {
-                    SerializeState(_state, ctx);
+                    if (!SerializeState(_state, ctx))
+                    {
+                        return false;
+                    }
                 }
             }
             catch (Exception ex)
@@ -300,7 +312,10 @@ namespace WalkerSim
                 var reader = new BinaryReader(stream, System.Text.Encoding.UTF8, true);
                 var ctx = SerializationContext.CreateReader(reader);
 
-                SerializeState(state, ctx);
+                if (!SerializeState(state, ctx))
+                {
+                    return false;
+                }
 
                 state.MapData = _state.MapData;
                 _state = state;

@@ -22,7 +22,10 @@ namespace WalkerSim
             // Version 12: Change type of Ticks to uint.
             // Version 13: Unscaled Ticks.
             // Version 14: Max Health.
-            public const uint SaveVersion = 14;
+            // Version 15: Dismemberment state.
+            // Version 16: Walk type.
+            // Version 17: Boo
+            public const uint SaveVersion = 17;
         }
     }
 }

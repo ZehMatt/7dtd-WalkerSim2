@@ -11,24 +11,152 @@ namespace WalkerSim
         static List<SEntityClassAndProb> _spawnGeneric;
 
         static Dictionary<int, int> _classIdCounter = new Dictionary<int, int>();
-        const int MaxSpawnRetryAttempts = 20;
 
-        static private bool CanSpawnZombie(Simulation simulation)
+        // Avoid using too many retries rather rely on the chances even if there is a duplicate.
+        const int MaxSpawnRetryAttempts = 3;
+
+        static Agent.DismembermentMask BuildDismembermentMask(EntityAlive entity)
         {
-            // Check for maximum count, this is ordinarily checked before spawning but to be sure.
-            var alive = simulation.ActiveCount;
-            var maxAllowed = simulation.MaxAllowedAliveAgents;
-
-            if (alive >= maxAllowed)
+            var avatarController = entity.emodel.avatarController as AvatarZombieController;
+            if (avatarController == null)
             {
-                Logging.DbgInfo("Max zombies reached, alive: {0}, max: {1}", alive, maxAllowed);
-                return false;
+                return Agent.DismembermentMask.None;
             }
 
-            return true;
+            Agent.DismembermentMask mask = Agent.DismembermentMask.None;
+            if (avatarController.headDismembered)
+            {
+                // Should be dead at this point, but whatever.
+                mask |= Agent.DismembermentMask.Head;
+            }
+
+            if (avatarController.leftUpperArmDismembered)
+            {
+                mask |= Agent.DismembermentMask.LeftUpperArm;
+            }
+
+            if (avatarController.leftLowerArmDismembered)
+            {
+                mask |= Agent.DismembermentMask.LeftLowerArm;
+            }
+
+            if (avatarController.rightUpperArmDismembered)
+            {
+                mask |= Agent.DismembermentMask.RightUpperArm;
+            }
+
+            if (avatarController.rightLowerArmDismembered)
+            {
+                mask |= Agent.DismembermentMask.RightLowerArm;
+            }
+
+            if (avatarController.leftUpperLegDismembered)
+            {
+                mask |= Agent.DismembermentMask.LeftUpperLeg;
+            }
+
+            if (avatarController.leftLowerLegDismembered)
+            {
+                mask |= Agent.DismembermentMask.LeftLowerLeg;
+            }
+
+            if (avatarController.rightUpperLegDismembered)
+            {
+                mask |= Agent.DismembermentMask.RightUpperLeg;
+            }
+
+            if (avatarController.rightLowerLegDismembered)
+            {
+                mask |= Agent.DismembermentMask.RightLowerLeg;
+            }
+
+            return mask;
         }
 
-        public static void AdjustZombieHealth(Config config, Agent agent, EntityAlive spawnedAgent)
+        public static void ApplyDismemberment(Agent agent, EntityAlive entity)
+        {
+            var mask = agent.Dismemberment;
+            if (mask == Agent.DismembermentMask.None)
+            {
+                return;
+            }
+
+            var avatarController = entity.emodel.avatarController as AvatarZombieController;
+            if (avatarController == null)
+            {
+                return;
+            }
+
+            DismembermentManager instance = DismembermentManager.Instance;
+            int num = ((instance != null) ? instance.parts.Count : 0);
+            if (entity.isDisintegrated && num >= 0x19)
+            {
+                return;
+            }
+
+            avatarController._InitDismembermentMaterials();
+
+            EnumDamageTypes enumDamageTypes = EnumDamageTypes.Piercing;
+            bool restoreState = true;
+
+            if (!avatarController.leftUpperLegDismembered && mask.HasFlag(Agent.DismembermentMask.LeftUpperLeg))
+            {
+                avatarController.leftUpperLegDismembered = true;
+                Transform transform3 = avatarController.FindTransform("LeftUpLeg");
+                avatarController.MakeDismemberedPart(0x20U, enumDamageTypes, transform3, restoreState);
+            }
+
+            if (!avatarController.leftLowerLegDismembered && !avatarController.leftUpperLegDismembered && mask.HasFlag(Agent.DismembermentMask.LeftLowerLeg))
+            {
+                avatarController.leftLowerLegDismembered = true;
+                Transform transform4 = avatarController.FindTransform("LeftLeg");
+                avatarController.MakeDismemberedPart(0x40U, enumDamageTypes, transform4, restoreState);
+            }
+
+            if (!avatarController.rightUpperLegDismembered && mask.HasFlag(Agent.DismembermentMask.RightUpperLeg))
+            {
+                avatarController.rightUpperLegDismembered = true;
+                Transform transform5 = avatarController.FindTransform("RightUpLeg");
+                avatarController.MakeDismemberedPart(0x80U, enumDamageTypes, transform5, restoreState);
+            }
+
+            if (!avatarController.rightLowerLegDismembered && !avatarController.rightUpperLegDismembered && mask.HasFlag(Agent.DismembermentMask.RightLowerLeg))
+            {
+                avatarController.rightLowerLegDismembered = true;
+                Transform transform6 = avatarController.FindTransform("RightLeg");
+                avatarController.MakeDismemberedPart(0x100U, enumDamageTypes, transform6, restoreState);
+            }
+
+            if (!avatarController.leftUpperArmDismembered && mask.HasFlag(Agent.DismembermentMask.LeftUpperArm))
+            {
+                avatarController.leftUpperArmDismembered = true;
+                Transform transform7 = avatarController.FindTransform("LeftArm");
+                avatarController.MakeDismemberedPart(2U, enumDamageTypes, transform7, restoreState);
+            }
+
+            if (!avatarController.leftLowerArmDismembered && !avatarController.leftUpperArmDismembered && mask.HasFlag(Agent.DismembermentMask.LeftLowerArm))
+            {
+                avatarController.leftLowerArmDismembered = true;
+                Transform transform8 = avatarController.FindTransform("LeftForeArm");
+                avatarController.MakeDismemberedPart(4U, enumDamageTypes, transform8, restoreState);
+            }
+
+            if (!avatarController.rightUpperArmDismembered && mask.HasFlag(Agent.DismembermentMask.RightUpperArm))
+            {
+                avatarController.rightUpperArmDismembered = true;
+                Transform transform9 = avatarController.FindTransform("RightArm");
+                avatarController.MakeDismemberedPart(8U, enumDamageTypes, transform9, restoreState);
+            }
+
+            if (!avatarController.rightLowerArmDismembered && !avatarController.rightUpperArmDismembered && mask.HasFlag(Agent.DismembermentMask.RightLowerArm))
+            {
+                avatarController.rightLowerArmDismembered = true;
+                Transform transform10 = avatarController.FindTransform("RightForeArm");
+                avatarController.MakeDismemberedPart(0x10U, enumDamageTypes, transform10, restoreState);
+            }
+        }
+
+        public static void ApplyHealthState(Config config, Agent agent, EntityAlive spawnedAgent)
         {
             if (agent.Health == -1)
             {
@@ -48,11 +176,38 @@ namespace WalkerSim
             stats.Health.Value = agent.Health;
             stats.Health.m_originalValue = agent.Health;
             stats.Health.m_baseMax = agent.MaxHealth;
-            stats.Health.m_originalBaseMax = agent.MaxHealth;
+            stats.Health.m_originalBaseMax = agent.OriginalMaxHealth;
             stats.Health.m_maxModifier = 0;
+            stats.Health.m_changed = true;
+
+            // Remove passive effects that would modify max health, we want the max health to be exactly what we set it to.
             stats.Health.MaxPassive = PassiveEffects.None;
-            stats.Health.GainPassive = PassiveEffects.None;
-            stats.Health.LossPassive = PassiveEffects.None;
+        }
+
+        public static void ApplyEntityState(Config config, Agent agent, EntityAlive spawnedAgent)
+        {
+            ApplyHealthState(config, agent, spawnedAgent);
+            ApplyDismemberment(agent, spawnedAgent);
+
+            if (agent.WalkType != int.MaxValue)
+            {
+                spawnedAgent.SetWalkType(agent.WalkType);
+            }
+        }
+
+        static private bool CanSpawnZombie(Simulation simulation)
+        {
+            // Check for maximum count, this is ordinarily checked before spawning but to be sure.
+            var alive = simulation.ActiveCount;
+            var maxAllowed = simulation.MaxAllowedAliveAgents;
+
+            if (alive >= maxAllowed)
+            {
+                Logging.DbgInfo("Max zombies reached, alive: {0}, max: {1}", alive, maxAllowed);
+                return false;
+            }
+
+            return true;
         }
 
         static int GetSpawnedClassIdCount(int classId)
@@ -114,11 +269,13 @@ namespace WalkerSim
 
             if (!rainMode)
             {
+#if false // DON'T FORGET TO REMOVE IT
                 if (!world.CanMobsSpawnAtPos(position))
                 {
                     Logging.DbgInfo("CanMobsSpawnAtPos returned false for position {0}", position);
                     return false;
                 }
+#endif
             }
 
             if (world.isPositionInRangeOfBedrolls(position))
@@ -295,7 +452,7 @@ namespace WalkerSim
             {
                 var spawnList = biomeList[subIndex];
 
-                selectedClassId = PerformSelectionSubGroup(simulation, spawnList, MaxSpawnRetryAttempts, false);
+                selectedClassId = PerformSelectionSubGroup(simulation, spawnList, 0, false);
                 if (selectedClassId == 0)
                 {
                     Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
@@ -324,14 +481,11 @@ namespace WalkerSim
                     "Failed to select an entity class with no duplicates, retrying with duplicates allowed. Groups in biome list: {0}",
                     biomeList.Count);
 
-                // Reduce the amount of retry attempts, we already tried before with MaxSpawnRetryAttempts so we can be more lenient now.
-                var maxRetries = System.Math.Max(MaxSpawnRetryAttempts / biomeList.Count, 5);
-
                 for (var subIndex = 0; subIndex < biomeList.Count; subIndex++)
                 {
                     var spawnList = biomeList[subIndex];
 
-                    selectedClassId = PerformSelectionSubGroup(simulation, spawnList, maxRetries, true);
+                    selectedClassId = PerformSelectionSubGroup(simulation, spawnList, MaxSpawnRetryAttempts, true);
                     if (selectedClassId != 0 && selectedClassId != -1)
                     {
                         return selectedClassId;
@@ -825,7 +979,7 @@ namespace WalkerSim
                     remainingLifeTime);
             }
 
-            AdjustZombieHealth(config, agent, spawnedAgent);
+            ApplyEntityState(config, agent, spawnedAgent);
 
             // Post spawn behavior.
             var isAlerted = spawnData.SubState == Agent.SubState.Alerted;
@@ -927,8 +1081,10 @@ namespace WalkerSim
             DecrementSpawnedClassIdCount(entity.entityClass, entity.entityId);
 
             // Retain current state.
-            agent.Health = entity.Health;
-            agent.MaxHealth = entity.GetMaxHealth();
+            var stats = entity.Stats;
+            agent.Health = stats.Health.Value;
+            agent.MaxHealth = stats.Health.m_baseMax;
+            agent.OriginalMaxHealth = stats.Health.m_originalBaseMax;
 
             if (entity is EntityHuman humanEntity)
             {
@@ -948,6 +1104,11 @@ namespace WalkerSim
 
             agent.Position = VectorUtils.ToSim(entity.position);
             agent.Position.Validate();
+
+            agent.Dismemberment = BuildDismembermentMask(entity);
+            Logging.Info("Built dismemberment mask {0} for entity {1}", agent.Dismemberment, entity.entityId);
+
+            agent.WalkType = entity.walkType;
 
             world.RemoveEntity(entity.entityId, EnumRemoveEntityReason.Despawned);
 
@@ -1016,8 +1177,13 @@ namespace WalkerSim
                     agent.Position.Validate();
 
                     // Update health.
-                    agent.Health = entity.Health;
-                    agent.MaxHealth = entity.GetMaxHealth();
+                    var stats = entity.Stats;
+                    agent.Health = stats.Health.Value;
+                    agent.MaxHealth = stats.Health.m_baseMax;
+                    agent.OriginalMaxHealth = stats.Health.m_originalBaseMax;
+
+                    // Dismemberment state.
+                    agent.Dismemberment = BuildDismembermentMask(entity);
                 }
             }
 

@@ -24,13 +24,29 @@ namespace WalkerSim
             Arrived,
         }
 
+        [System.Flags]
+        public enum DismembermentMask
+        {
+            None = 0,
+            Head = 1 << 0,
+            LeftUpperArm = 1 << 1,
+            LeftLowerArm = 1 << 2,
+            RightUpperArm = 1 << 3,
+            RightLowerArm = 1 << 4,
+            LeftUpperLeg = 1 << 5,
+            LeftLowerLeg = 1 << 6,
+            RightUpperLeg = 1 << 7,
+            RightLowerLeg = 1 << 8,
+        }
+
         public int Index;
         public int Group;
         public Vector3 Velocity;
         public int EntityId = -1;
         public int EntityClassId = -1;
-        public int Health = -1;
-        public int MaxHealth = -1;
+        public float Health = -1;
+        public float MaxHealth = -1;
+        public float OriginalMaxHealth = -1;
         public State CurrentState = State.Dead;
         public uint LastUpdateTick = 0;
         public uint LastSpawnTick = 0;
@@ -41,6 +57,8 @@ namespace WalkerSim
         public int TargetCityIndex = -1;
         public uint CityTime = 0;
         public TravelState CurrentTravelState = TravelState.Idle;
+        public DismembermentMask Dismemberment = DismembermentMask.None;
+        public int WalkType = int.MaxValue;
 
         public Agent()
         {
