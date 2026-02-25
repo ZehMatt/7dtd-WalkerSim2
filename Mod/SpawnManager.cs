@@ -28,6 +28,33 @@ namespace WalkerSim
             return true;
         }
 
+        public static void AdjustZombieHealth(Config config, Agent agent, EntityAlive spawnedAgent)
+        {
+            if (agent.Health == -1)
+            {
+                // No health assigned, skip.
+                return;
+            }
+
+            Logging.CondInfo(config.LoggingOpts.Spawns,
+                "Using previous health: {0}",
+                agent.Health);
+
+            // Remove this buff otherwise they regenerate health.
+            spawnedAgent.Buffs.RemoveBuff("buffentityspawnheal");
+
+            // When restoring health/max health we use absolute values.
+            var stats = spawnedAgent.Stats;
+            stats.Health.Value = agent.Health;
+            stats.Health.m_originalValue = agent.Health;
+            stats.Health.m_baseMax = agent.MaxHealth;
+            stats.Health.m_originalBaseMax = agent.MaxHealth;
+            stats.Health.m_maxModifier = 0;
+            stats.Health.MaxPassive = PassiveEffects.None;
+            stats.Health.GainPassive = PassiveEffects.None;
+            stats.Health.LossPassive = PassiveEffects.None;
+        }
+
         static int GetSpawnedClassIdCount(int classId)
         {
             if (_classIdCounter.TryGetValue(classId, out var count))
@@ -769,6 +796,17 @@ namespace WalkerSim
                 spawnedZombie.IsHordeZombie = true;
             }
 
+            if (config.LoggingOpts.Spawns)
+            {
+                var activeBuffs = spawnedAgent.Buffs.ActiveBuffs;
+                for (int i = 0; i < activeBuffs.Count; i++)
+                {
+                    var buff = spawnedAgent.Buffs.ActiveBuffs[i];
+                    Logging.Info("  Spawned with Buff: {0}",
+                        buff.BuffName);
+                }
+            }
+
             // Keep maximum assigned lifetime.
             if (agent.TimeToDie != ulong.MaxValue)
             {
@@ -787,13 +825,7 @@ namespace WalkerSim
                     remainingLifeTime);
             }
 
-            if (agent.Health != -1)
-            {
-                Logging.CondInfo(config.LoggingOpts.Spawns,
-                    "Using previous health: {0}",
-                    agent.Health);
-                spawnedAgent.Health = agent.Health;
-            }
+            AdjustZombieHealth(config, agent, spawnedAgent);
 
             // Post spawn behavior.
             var isAlerted = spawnData.SubState == Agent.SubState.Alerted;
@@ -896,6 +928,7 @@ namespace WalkerSim
 
             // Retain current state.
             agent.Health = entity.Health;
+            agent.MaxHealth = entity.GetMaxHealth();
 
             if (entity is EntityHuman humanEntity)
             {
@@ -965,7 +998,7 @@ namespace WalkerSim
                     continue;
                 }
 
-                var entity = world.GetEntity(agent.EntityId);
+                var entity = world.GetEntity(agent.EntityId) as EntityAlive;
                 if (IsEntityDead(entity, agent.EntityId))
                 {
                     // Mark as dead so it will be sweeped.
@@ -981,6 +1014,10 @@ namespace WalkerSim
                     var newPos = entity.GetPosition();
                     agent.Position = VectorUtils.ToSim(newPos);
                     agent.Position.Validate();
+
+                    // Update health.
+                    agent.Health = entity.Health;
+                    agent.MaxHealth = entity.GetMaxHealth();
                 }
             }
 

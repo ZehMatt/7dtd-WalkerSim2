@@ -14,6 +14,7 @@ namespace WalkerSim
     public class WalkerSimMod : IModApi
     {
         static DateTime _lastUpdate = DateTime.Now;
+        static bool _firstUpdateDone = false;
 
         void IModApi.InitMod(Mod _modInstance)
         {
@@ -45,6 +46,7 @@ namespace WalkerSim
 
         static void GameAwake(ref ModEvents.SGameAwakeData data)
         {
+            _firstUpdateDone = false;
         }
 
         internal static string GetModFolder()
@@ -266,10 +268,8 @@ namespace WalkerSim
             return (worldMins, worldMaxs);
         }
 
-        static void InitializeSimulation()
+        static void InitializeSimulation(Simulation simulation)
         {
-            var simulation = Simulation.Instance;
-
             string worldName = GamePrefs.GetString(EnumGamePrefs.GameWorld);
             string worldFolder = PathAbstractions.WorldsSearchPaths.GetLocation(worldName).FullPath;
 
@@ -353,6 +353,27 @@ namespace WalkerSim
             simulation.Start();
         }
 
+        static void AdjustHealthOnSpawnedZombies(Simulation simulation)
+        {
+            var config = simulation.Config;
+            var world = GameManager.Instance.World;
+            foreach (var kv in Simulation.Instance.Active)
+            {
+                var entityId = kv.Key;
+                var agent = kv.Value;
+
+                var entity = world.GetEntity(entityId) as EntityAlive;
+                if (entity != null)
+                {
+                    SpawnManager.AdjustZombieHealth(config, agent, entity);
+                }
+                else
+                {
+                    Logging.Warn("Failed to find entity for active agent {0} on game start, skipping health adjustment.", entityId);
+                }
+            }
+        }
+
         static void GameStartDone(ref ModEvents.SGameStartDoneData data)
         {
             Logging.Info("GameStartDone, setting up simulation...");
@@ -364,10 +385,16 @@ namespace WalkerSim
                 return;
             }
 
+            var simulation = Simulation.Instance;
+
             // Ensure we have a cache only from this session.
             SpawnManager.ClearCache();
 
-            InitializeSimulation();
+            // Init.
+            InitializeSimulation(simulation);
+
+            // Delay some initialization until the first game update.
+            _firstUpdateDone = false;
         }
 
         static void UpdatePlayerPositions()
@@ -412,6 +439,16 @@ namespace WalkerSim
             var simulation = Simulation.Instance;
             if (simulation == null)
                 return;
+
+            if (!_firstUpdateDone && simulation.PlayerCount > 0)
+            {
+                Logging.Info("First GameUpdate, applying health corrections to existing zombies...");
+
+                // Health corrections to existing zombies.
+                AdjustHealthOnSpawnedZombies(simulation);
+
+                _firstUpdateDone = true;
+            }
 
             // Update state.
             simulation.SetEnableAgentSpawn(GamePrefs.GetBool(EnumGamePrefs.EnemySpawnMode));

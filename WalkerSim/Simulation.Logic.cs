@@ -72,7 +72,6 @@ namespace WalkerSim
 
             try
             {
-                CheckAgentSpawn();
                 UpdateWindDirection();
                 UpdateEvents();
                 UpatePOICounter();

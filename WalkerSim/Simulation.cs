@@ -556,6 +556,9 @@ namespace WalkerSim
                         break;
                 }
 
+                // Don't tie this to ticks, this should work with any time scale and tick rate.
+                CheckAgentSpawn();
+
                 if (_shouldStop)
                     break;
             }

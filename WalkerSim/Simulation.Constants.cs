@@ -12,13 +12,17 @@ namespace WalkerSim
             public const float TickRate = 1f / TicksPerSecond;
             public const uint TickRateMs = 1000 / TicksPerSecond;
 
+            public const uint SpawnCheckDelayMs = 50;
+            public const int SpawnBorderSize = 12;
+
             // Increment this in case of a breaking change in the save format.
             // Version 8: New configuration SoundDistanceScale.
             // Version 9: Might have saved an empty state, skip loading the old one.
             // Version 11: State for CityVisitor.
             // Version 12: Change type of Ticks to uint.
             // Version 13: Unscaled Ticks.
-            public const uint SaveVersion = 13;
+            // Version 14: Max Health.
+            public const uint SaveVersion = 14;
         }
     }
 }

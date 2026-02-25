@@ -30,6 +30,7 @@ namespace WalkerSim
         public int EntityId = -1;
         public int EntityClassId = -1;
         public int Health = -1;
+        public int MaxHealth = -1;
         public State CurrentState = State.Dead;
         public uint LastUpdateTick = 0;
         public uint LastSpawnTick = 0;
@@ -66,6 +67,7 @@ namespace WalkerSim
             EntityId = -1;
             EntityClassId = -1;
             Health = -1;
+            MaxHealth = -1;
             TimeToDie = ulong.MaxValue;
         }
 
