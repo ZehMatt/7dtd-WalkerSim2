@@ -104,8 +104,7 @@ namespace WalkerSim
                 }
             }
 
-            // TODO: Expose this from the simulation.
-            var activationBorderSize = 8.0f;
+            var activationBorderSize = Simulation.Constants.SpawnBorderSize;
 
             int numPlayers = 0;
             foreach (var ply in simulation.Players)

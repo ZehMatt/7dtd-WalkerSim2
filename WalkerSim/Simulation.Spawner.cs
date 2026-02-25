@@ -82,10 +82,9 @@ namespace WalkerSim
                 return;
             }
 
-            _nextSpawnCheck = now.AddMilliseconds(200);
+            _nextSpawnCheck = now.AddMilliseconds(Constants.SpawnCheckDelayMs);
 
             // Don't activate them when they are in the inner radius.
-            var activationBorderSize = 8.0f;
             var viewRadius = Config.SpawnActivationRadius;
 
             var maxActivePerPlayer = _maxAllowedAliveAgents;
@@ -155,7 +154,7 @@ namespace WalkerSim
                         continue;
 
                     var rainZombie = false;
-                    if (dist < viewRadius - activationBorderSize)
+                    if (dist < viewRadius - Constants.SpawnBorderSize)
                     {
                         if (!player.ZombieRain)
                             continue;
