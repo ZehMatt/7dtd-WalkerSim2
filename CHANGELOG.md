@@ -1,4 +1,4 @@
-# 1.0.3 (in progress)
+# 1.0.3
 - Fix: Zombies that despawned a few in-game days before would immediately die when spawned again.
 - Fix: Health is now properly saved across despawns/spawns also after exiting and loading existing saved game.
 - Fix: In some cases it failed to spawn a zombie where it should have been possible.
