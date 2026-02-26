@@ -240,7 +240,17 @@ namespace WalkerSim
             var simConfig = Simulation.Instance.Config;
             if (!simConfig.Compare(config))
             {
-                Logging.Warn("Configuration on disk is different than the configuration in the saved state. In order to apply the changes the simulation must be restarted, this can be done using 'walkersim restart' in the console.");
+                var msg = "WalkerSim configuration on disk is different than the configuration in the saved state.\n" +
+                    "In order to apply the changes the simulation must be restarted, this can be done using 'walkersim restart' in the console.";
+                Logging.Warn(msg);
+
+                if (!GameManager.IsDedicatedServer)
+                {
+                    XUiC_ChatOutput.AddMessage(
+                        GameManager.Instance.myEntityPlayerLocal.PlayerUI.xui,
+                        EnumGameMessages.Chat,
+                        "[FF8C00FF]" + msg);
+                }
             }
         }
 
@@ -353,11 +363,11 @@ namespace WalkerSim
             simulation.Start();
         }
 
-        static void AdjustHealthOnSpawnedZombies(Simulation simulation)
+        static void ApplyStateToActive(Simulation simulation)
         {
-            var config = simulation.Config;
             var world = GameManager.Instance.World;
-            foreach (var kv in Simulation.Instance.Active)
+            var config = simulation.Config;
+            foreach (var kv in simulation.Active)
             {
                 var entityId = kv.Key;
                 var agent = kv.Value;
@@ -369,7 +379,7 @@ namespace WalkerSim
                 }
                 else
                 {
-                    Logging.Warn("Failed to find entity for active agent {0} on game start, skipping health adjustment.", entityId);
+                    Logging.Warn("Failed to find entity for active agent {0} on game start, skipping state adjustment.", entityId);
                 }
             }
         }
@@ -440,21 +450,27 @@ namespace WalkerSim
             if (simulation == null)
                 return;
 
-            if (!_firstUpdateDone && simulation.PlayerCount > 0)
-            {
-                Logging.Info("First GameUpdate, applying health corrections to existing zombies...");
-
-                // Health corrections to existing zombies.
-                AdjustHealthOnSpawnedZombies(simulation);
-
-                _firstUpdateDone = true;
-            }
-
             // Update state.
             simulation.SetEnableAgentSpawn(GamePrefs.GetBool(EnumGamePrefs.EnemySpawnMode));
             simulation.SetIsBloodmoon(world.isEventBloodMoon);
             simulation.SetIsDayTime(world.IsDaytime());
             simulation.SetGamePaused(GameManager.Instance.IsPaused());
+
+            if (simulation.PlayerCount == 0)
+            {
+                // Wait for player before actually updating.
+                return;
+            }
+
+            if (!_firstUpdateDone)
+            {
+                Logging.Info("First GameUpdate, applying saved state to existing zombies...");
+
+                // Health corrections to existing zombies.
+                ApplyStateToActive(simulation);
+
+                _firstUpdateDone = true;
+            }
 
             try
             {
@@ -472,9 +488,6 @@ namespace WalkerSim
         {
             var simulation = Simulation.Instance;
             simulation.Stop();
-
-
-
             simulation.AutoSave();
             simulation.Shutdown();
         }

@@ -7,6 +7,7 @@ namespace WalkerSim
     public static class Logging
     {
         public delegate void LogMessage(string message);
+        private static object _lock = new object();
 
         public enum Level
         {
@@ -28,9 +29,12 @@ namespace WalkerSim
 
         private static void Message(Level level, string message)
         {
-            foreach (var sink in _sinks)
+            lock (_lock)
             {
-                sink.Message(level, message);
+                foreach (var sink in _sinks)
+                {
+                    sink.Message(level, message);
+                }
             }
         }
 
@@ -39,9 +43,12 @@ namespace WalkerSim
             if (!log)
                 return;
 
-            foreach (var sink in _sinks)
+            lock (_lock)
             {
-                sink.Message(level, message);
+                foreach (var sink in _sinks)
+                {
+                    sink.Message(level, message);
+                }
             }
         }
 

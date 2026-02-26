@@ -13,13 +13,20 @@ namespace WalkerSim
         static Dictionary<int, int> _classIdCounter = new Dictionary<int, int>();
 
         // Avoid using too many retries rather rely on the chances even if there is a duplicate.
-        const int MaxSpawnRetryAttempts = 3;
+        const int MaxSpawnRetryAttempts = 5;
 
         static Agent.DismembermentMask BuildDismembermentMask(EntityAlive entity)
         {
+            if (entity.emodel == null)
+            {
+                Logging.DbgInfo("No emodel found for entity {0}, cannot build dismemberment mask, returning none.", entity.entityId);
+                return Agent.DismembermentMask.None;
+            }
+
             var avatarController = entity.emodel.avatarController as AvatarZombieController;
             if (avatarController == null)
             {
+                Logging.DbgInfo("No avatar controller found for entity {0}, cannot build dismemberment mask, returning none.", entity.entityId);
                 return Agent.DismembermentMask.None;
             }
 
@@ -81,23 +88,24 @@ namespace WalkerSim
                 return;
             }
 
+            if (entity.emodel == null)
+            {
+                Logging.Warn("Trying to apply dismemberment to entity {0} but emodel is null, skipping dismemberment.", entity.entityId);
+                return;
+            }
+
             var avatarController = entity.emodel.avatarController as AvatarZombieController;
             if (avatarController == null)
             {
+                Logging.Warn("Trying to apply dismemberment to entity {0} but avatar controller is null or not of type AvatarZombieController, skipping dismemberment.", entity.entityId);
                 return;
             }
 
-            DismembermentManager instance = DismembermentManager.Instance;
-            int num = ((instance != null) ? instance.parts.Count : 0);
-            if (entity.isDisintegrated && num >= 0x19)
-            {
-                return;
-            }
-
+            Logging.DbgInfo("Applying dismemberment for entity {0}, mask: {1}", entity.entityId, mask);
             avatarController._InitDismembermentMaterials();
 
             EnumDamageTypes enumDamageTypes = EnumDamageTypes.Piercing;
-            bool restoreState = true;
+            bool restoreState = false;
 
             if (!avatarController.leftUpperLegDismembered && mask.HasFlag(Agent.DismembermentMask.LeftUpperLeg))
             {
@@ -186,6 +194,14 @@ namespace WalkerSim
 
         public static void ApplyEntityState(Config config, Agent agent, EntityAlive spawnedAgent)
         {
+            Logging.DbgInfo("Applying entity state for agent {0}, entity id {1}, class id {2}, health {3}, dismemberment {4}",
+                agent.Index,
+                agent.EntityId,
+                agent.EntityClassId,
+                agent.Health,
+                agent.Dismemberment
+                );
+
             ApplyHealthState(config, agent, spawnedAgent);
             ApplyDismemberment(agent, spawnedAgent);
 
@@ -257,34 +273,6 @@ namespace WalkerSim
             }
 
             return prob;
-        }
-
-        static private bool CanSpawnAtPosition(UnityEngine.Vector3 position, bool rainMode)
-        {
-            var world = GameManager.Instance.World;
-            if (world == null)
-            {
-                return false;
-            }
-
-            if (!rainMode)
-            {
-#if false // DON'T FORGET TO REMOVE IT
-                if (!world.CanMobsSpawnAtPos(position))
-                {
-                    Logging.DbgInfo("CanMobsSpawnAtPos returned false for position {0}", position);
-                    return false;
-                }
-#endif
-            }
-
-            if (world.isPositionInRangeOfBedrolls(position))
-            {
-                Logging.DbgInfo("Position {0} is near a bedroll", position);
-                return false;
-            }
-
-            return true;
         }
 
         static List<List<SEntityClassAndProb>> GetBiomeEntityClasses(long chunkKey)
@@ -452,7 +440,7 @@ namespace WalkerSim
             {
                 var spawnList = biomeList[subIndex];
 
-                selectedClassId = PerformSelectionSubGroup(simulation, spawnList, 0, false);
+                selectedClassId = PerformSelectionSubGroup(simulation, spawnList, MaxSpawnRetryAttempts, false);
                 if (selectedClassId == 0)
                 {
                     Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
@@ -501,7 +489,7 @@ namespace WalkerSim
                         "Using fallback to generic ZombiesAll group for 'none' selection. Groups in biome list: {0}",
                         biomeList.Count);
 
-                    return PerformSelectionSubGroup(simulation, _spawnGeneric, MaxSpawnRetryAttempts);
+                    return PerformSelectionSubGroup(simulation, _spawnGeneric, MaxSpawnRetryAttempts, true);
                 }
 
                 Logging.Err("Selected 'none' entity class, 'ZombiesAll' doesn't exist or is empty, no fallback possible.");
@@ -595,6 +583,7 @@ namespace WalkerSim
             var world = GameManager.Instance.World;
             if (world == null)
             {
+                Logging.Err("No world instance found.");
                 return -1;
             }
 
@@ -806,6 +795,85 @@ namespace WalkerSim
             return classId;
         }
 
+
+        static private (bool, UnityEngine.Vector3) GetFinalSpawnPosition(Chunk chunk, UnityEngine.Vector3 position)
+        {
+            var world = GameManager.Instance.World;
+            if (world == null)
+            {
+                return (false, UnityEngine.Vector3.zero);
+            }
+
+            if (world.isPositionInRangeOfBedrolls(position))
+            {
+                Logging.DbgInfo("Position {0} is near a bedroll", position);
+                return (false, UnityEngine.Vector3.zero);
+            }
+
+            var blockPos = World.worldToBlockPos(position);
+
+            var terrainHeight = chunk.GetTerrainHeight(World.toBlockXZ(blockPos.x), World.toBlockXZ(blockPos.z));
+            var height = chunk.GetHeight(World.toBlockXZ(blockPos.x), World.toBlockXZ(blockPos.z));
+
+            blockPos.y = height;
+            var y = global::Utils.Fastfloor(blockPos.y);
+
+            if (chunk.CanMobsSpawnAtPos(World.toBlockXZ(blockPos.x), y, World.toBlockXZ(blockPos.z), false, true))
+            {
+                var finalPos = new UnityEngine.Vector3(position.x, y, position.z);
+                return (true, finalPos);
+            }
+
+            blockPos.y = height + 1;
+            y = global::Utils.Fastfloor(blockPos.y);
+
+            if (chunk.CanMobsSpawnAtPos(World.toBlockXZ(blockPos.x), y, World.toBlockXZ(blockPos.z), false, true))
+            {
+                var finalPos = new UnityEngine.Vector3(position.x, y, position.z);
+                return (true, finalPos);
+            }
+
+            blockPos.y = height + 2;
+            y = global::Utils.Fastfloor(blockPos.y);
+
+            if (chunk.CanMobsSpawnAtPos(World.toBlockXZ(blockPos.x), y, World.toBlockXZ(blockPos.z), false, true))
+            {
+                var finalPos = new UnityEngine.Vector3(position.x, y, position.z);
+                return (true, finalPos);
+            }
+
+            return (false, position);
+        }
+
+        static private bool CanSpawnAtPosition(Chunk chunk, UnityEngine.Vector3 position, bool rainMode)
+        {
+            var world = GameManager.Instance.World;
+            if (world == null)
+            {
+                return false;
+            }
+
+            if (!rainMode)
+            {
+                var blockPos = World.worldToBlockPos(position);
+                //if (!chunk.CanMobsSpawnAtPos(World.toBlockXZ(blockPos.x), blockPos.y, World.toBlockXZ(blockPos.z), false, true))
+                if (!world.CanMobsSpawnAtPos(position))
+                {
+                    Logging.DbgInfo("CanMobsSpawnAtPos returned false for position {0}", position);
+                    return false;
+                }
+            }
+
+            if (world.isPositionInRangeOfBedrolls(position))
+            {
+                Logging.DbgInfo("Position {0} is near a bedroll", position);
+                return false;
+            }
+
+            return true;
+        }
+
+
         static public int SpawnAgent(Simulation simulation, Simulation.SpawnData spawnData)
         {
             var agent = spawnData.Agent;
@@ -824,9 +892,6 @@ namespace WalkerSim
 
             var worldPos = VectorUtils.ToUnity(agent.Position);
 
-            // We leave y position to be adjusted by the terrain.
-            worldPos.y = 0;
-
             var chunkPosX = World.toChunkXZ(Mathf.FloorToInt(worldPos.x));
             var chunkPosZ = World.toChunkXZ(Mathf.FloorToInt(worldPos.z));
 
@@ -837,29 +902,15 @@ namespace WalkerSim
                 return -1;
             }
 
-            var terrainHeight = world.GetTerrainHeight(Mathf.FloorToInt(worldPos.x), Mathf.FloorToInt(worldPos.z)) + 1;
-            Logging.CondInfo(config.LoggingOpts.Spawns,
-                "Terrain height at {0}, {1} is {2}",
-                worldPos.x,
-                worldPos.z,
-                terrainHeight);
-
-            // Adjust position height.
-            worldPos.y = terrainHeight;
-
-            var blockPos = World.worldToBlockPos(worldPos);
-            var terrainOffset = world.GetTerrainOffset(0, blockPos);
-
-            worldPos.y += terrainOffset;
-
-            if (!CanSpawnAtPosition(worldPos, spawnData.ZombieRain))
+            var (canSpawn, finalPos) = GetFinalSpawnPosition(chunk, worldPos);
+            if (!canSpawn)
             {
                 Logging.CondInfo(config.LoggingOpts.Spawns, "Failed to spawn agent {0}, position not suitable at {1}", agent.Index, worldPos);
                 return -1;
             }
 
-            // Prevent them from spawning inside blocks.
-            worldPos.y += 1;
+            worldPos = finalPos;
+            worldPos.y += 1.5f;
 
             // Easter egg.
             if (spawnData.ZombieRain)
@@ -1106,7 +1157,10 @@ namespace WalkerSim
             agent.Position.Validate();
 
             agent.Dismemberment = BuildDismembermentMask(entity);
-            Logging.Info("Built dismemberment mask {0} for entity {1}", agent.Dismemberment, entity.entityId);
+            if (agent.Dismemberment != Agent.DismembermentMask.None)
+            {
+                Logging.DbgInfo("Built dismemberment mask {0} for entity {1}", agent.Dismemberment, entity.entityId);
+            }
 
             agent.WalkType = entity.walkType;
 

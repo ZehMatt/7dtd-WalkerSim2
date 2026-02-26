@@ -12,8 +12,9 @@ namespace WalkerSim
             public const float TickRate = 1f / TicksPerSecond;
             public const uint TickRateMs = 1000 / TicksPerSecond;
 
-            public const uint SpawnCheckDelayMs = 50;
+            public const uint SpawnCheckDelayMs = 25;
             public const int SpawnBorderSize = 12;
+            public const int MaxSpawnsPerCheck = 3;
 
             // Increment this in case of a breaking change in the save format.
             // Version 8: New configuration SoundDistanceScale.

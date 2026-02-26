@@ -87,6 +87,7 @@ namespace WalkerSim
             Health = -1;
             MaxHealth = -1;
             TimeToDie = ulong.MaxValue;
+            Dismemberment = DismembermentMask.None;
         }
 
         public float GetDistance(Agent other)

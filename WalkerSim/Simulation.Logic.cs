@@ -224,6 +224,16 @@ namespace WalkerSim
                 walkSpeed = agent.CurrentSubState == Agent.SubState.Alerted ? _moveSpeedRageNight : _moveSpeedNight;
             }
 
+            // Slow the movement speed for crippled and crawler walk types.
+            if (agent.WalkType == 5 /* cWalkTypeCripple = 5; */)
+            {
+                walkSpeed *= 0.5f;
+            }
+            else if (agent.WalkType == 0x15 /* cWalkTypeCrawler = 0x15 */)
+            {
+                walkSpeed *= 0.25f;
+            }
+
             if (_isFastAdvancing)
             {
                 walkSpeed *= 64.0f;
