@@ -225,11 +225,11 @@ namespace WalkerSim
             }
 
             // Slow the movement speed for crippled and crawler walk types.
-            if (agent.WalkType == 5 /* cWalkTypeCripple = 5; */)
+            if (agent.WalkType == Agent.MoveType.Crippled)
             {
                 walkSpeed *= 0.5f;
             }
-            else if (agent.WalkType == 0x15 /* cWalkTypeCrawler = 0x15 */)
+            else if (agent.WalkType == Agent.MoveType.Crawling)
             {
                 walkSpeed *= 0.25f;
             }

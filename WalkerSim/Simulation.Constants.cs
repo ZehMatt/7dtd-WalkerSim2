@@ -26,7 +26,8 @@ namespace WalkerSim
             // Version 15: Dismemberment state.
             // Version 16: Walk type.
             // Version 17: Boo
-            public const uint SaveVersion = 17;
+            // Version 18: Make WalkType an enum.
+            public const uint SaveVersion = 18;
         }
     }
 }

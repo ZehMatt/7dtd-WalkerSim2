@@ -205,9 +205,14 @@ namespace WalkerSim
             ApplyHealthState(config, agent, spawnedAgent);
             ApplyDismemberment(agent, spawnedAgent);
 
-            if (agent.WalkType != int.MaxValue)
+            switch (agent.WalkType)
             {
-                spawnedAgent.SetWalkType(agent.WalkType);
+                case Agent.MoveType.Crippled:
+                    spawnedAgent.SetWalkType(EntityAlive.cWalkTypeCripple);
+                    break;
+                case Agent.MoveType.Crawling:
+                    spawnedAgent.SetWalkType(EntityAlive.cWalkTypeCrawler);
+                    break;
             }
         }
 
@@ -1162,7 +1167,7 @@ namespace WalkerSim
                 Logging.DbgInfo("Built dismemberment mask {0} for entity {1}", agent.Dismemberment, entity.entityId);
             }
 
-            agent.WalkType = entity.walkType;
+            agent.WalkType = TranslateMoveType(entity.walkType);
 
             world.RemoveEntity(entity.entityId, EnumRemoveEntityReason.Despawned);
 
@@ -1187,6 +1192,19 @@ namespace WalkerSim
             }
 
             return false;
+        }
+
+        public static Agent.MoveType TranslateMoveType(int walkType)
+        {
+            switch (walkType)
+            {
+                case EntityAlive.cWalkTypeCripple:
+                    return Agent.MoveType.Crippled;
+                case EntityAlive.cWalkTypeCrawler:
+                    return Agent.MoveType.Crawling;
+                default:
+                    return Agent.MoveType.Normal;
+            }
         }
 
         public static void UpdateActiveAgents()
@@ -1238,6 +1256,7 @@ namespace WalkerSim
 
                     // Dismemberment state.
                     agent.Dismemberment = BuildDismembermentMask(entity);
+                    agent.WalkType = TranslateMoveType(entity.walkType);
                 }
             }
 

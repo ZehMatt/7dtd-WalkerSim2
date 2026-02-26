@@ -154,7 +154,7 @@ namespace WalkerSim
                 ctx.Serialize(ref agent.MaxHealth);
                 ctx.Serialize(ref agent.OriginalMaxHealth);
                 ctx.SerializeEnum(ref agent.Dismemberment);
-                ctx.Serialize(ref agent.WalkType);
+                ctx.SerializeEnum(ref agent.WalkType);
 
                 // NOTE: Ensure the state isn't some intermediate one when saving.
                 if (ctx.IsWriting)

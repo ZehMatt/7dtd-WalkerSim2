@@ -39,6 +39,13 @@ namespace WalkerSim
             RightLowerLeg = 1 << 8,
         }
 
+        public enum MoveType
+        {
+            Normal,
+            Crippled,
+            Crawling,
+        }
+
         public int Index;
         public int Group;
         public Vector3 Velocity;
@@ -58,7 +65,7 @@ namespace WalkerSim
         public uint CityTime = 0;
         public TravelState CurrentTravelState = TravelState.Idle;
         public DismembermentMask Dismemberment = DismembermentMask.None;
-        public int WalkType = int.MaxValue;
+        public MoveType WalkType = MoveType.Normal;
 
         public Agent()
         {
@@ -88,6 +95,7 @@ namespace WalkerSim
             MaxHealth = -1;
             TimeToDie = ulong.MaxValue;
             Dismemberment = DismembermentMask.None;
+            WalkType = MoveType.Normal;
         }
 
         public float GetDistance(Agent other)

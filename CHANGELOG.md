@@ -1,4 +1,5 @@
 # 1.0.4 (in progress)
+- Fix: Walk type not being reset, can carry onto new spawned agents.
 
 # 1.0.3
 - Fix: Zombies that despawned a few in-game days before would immediately die when spawned again.
