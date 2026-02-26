@@ -1,3 +1,5 @@
+# 1.0.5 (in progress)
+
 # 1.0.4
 - Fix: Walk type not being reset, can carry onto new spawned agents.
 
