@@ -234,13 +234,9 @@ namespace WalkerSim
                 walkSpeed *= 0.25f;
             }
 
-            if (_isFastAdvancing)
+            if (TimeScale > 4.0f)
             {
-                walkSpeed *= 64.0f;
-            }
-            else
-            {
-                walkSpeed *= MathEx.Clamp(TimeScale, 1.0f, 32.0f);
+                walkSpeed *= 4.0f;
             }
 
             var realPower = speedScale * walkSpeed;

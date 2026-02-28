@@ -496,7 +496,7 @@ namespace WalkerSim
                 var elapsed = Utils.Measure(() =>
                 {
                     var oldTimeScale = TimeScale;
-                    TimeScale = 128.0f;
+                    TimeScale = 32.0f;
                     for (uint num = 0u; num < Simulation.Limits.TicksToAdvanceOnStartup && !_shouldStop; num++)
                     {
                         Tick();
@@ -527,8 +527,8 @@ namespace WalkerSim
                     continue;
                 }
 
-                accumulator = System.Math.Min(accumulator + scaledDt, 10.0f);
-                unscaledAccumulator = System.Math.Min(unscaledAccumulator + timeElapsed, 10.0f);
+                accumulator = System.Math.Min(accumulator + scaledDt, 20.0f);
+                unscaledAccumulator = System.Math.Min(unscaledAccumulator + timeElapsed, 20.0f);
 
                 while (unscaledAccumulator >= Constants.TickRate)
                 {
