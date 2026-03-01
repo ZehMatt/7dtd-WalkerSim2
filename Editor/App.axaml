@@ -8,8 +8,28 @@
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>
-  
+
     <Application.Styles>
         <FluentTheme />
     </Application.Styles>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <SolidColorBrush x:Key="EditorBackground" Color="#1e1e1e"/>
+            <SolidColorBrush x:Key="EditorSidebarBackground" Color="#252525"/>
+            <SolidColorBrush x:Key="EditorPanelBackground" Color="#2d2d2d"/>
+            <SolidColorBrush x:Key="EditorBorder" Color="#3a3a3a"/>
+            <SolidColorBrush x:Key="EditorTextMuted" Color="#888888"/>
+            <SolidColorBrush x:Key="EditorTextNormal" Color="#cccccc"/>
+            <SolidColorBrush x:Key="EditorTextBright" Color="#ffffff"/>
+            <SolidColorBrush x:Key="EditorTextPlaceholder" Color="#666666"/>
+            <SolidColorBrush x:Key="EditorAccent" Color="#0078d4"/>
+            <SolidColorBrush x:Key="EditorDanger" Color="#d13438"/>
+
+            <!-- Log Level Colors -->
+            <SolidColorBrush x:Key="LogInfo" Color="#ffffff"/>
+            <SolidColorBrush x:Key="LogWarning" Color="#ffff00"/>
+            <SolidColorBrush x:Key="LogError" Color="#ff0000"/>
+        </ResourceDictionary>
+    </Application.Resources>
 </Application>

@@ -73,6 +73,8 @@ namespace WalkerSim
 
         public static Roads LoadFromFile(string splatPath)
         {
+            Logging.Info("Loading roads from file: " + splatPath);
+
             using (var img = WalkerSim.Drawing.LoadFromFile(splatPath))
             {
                 img.RemoveTransparency();

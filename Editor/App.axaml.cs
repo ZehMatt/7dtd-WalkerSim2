@@ -25,7 +25,7 @@ namespace Editor
                 DisableAvaloniaDataAnnotationValidation();
                 desktop.MainWindow = new MainWindow
                 {
-                    DataContext = new MainWindowViewModel(),
+                    DataContext = new EditorViewModel(),
                 };
             }
 

@@ -1,0 +1,274 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Editor.ViewModels"
+        xmlns:models="using:Editor.Models"
+        xmlns:converters="using:Editor.Converters"
+        xmlns:views="using:Editor.Views"
+        x:Class="Editor.Views.MovementSystemsView"
+        x:DataType="vm:EditorViewModel"
+        x:CompileBindings="False">
+
+    <ScrollViewer>
+        <StackPanel Spacing="16" Margin="16">
+            
+            <!-- Header and Toolbar -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                          Text="Movement Systems"
+                          Classes="Header"
+                          FontWeight="SemiBold"
+                          FontSize="18"
+                          VerticalAlignment="Center"/>
+
+                <StackPanel Grid.Column="1" 
+                           Orientation="Horizontal"
+                           Spacing="8">
+                    <Button Classes="accent"
+                           Command="{Binding AddMovementSystemCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="+"/>
+                            <TextBlock Text="Add"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding DuplicateMovementSystemCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="📋"/>
+                            <TextBlock Text="Duplicate"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="danger"
+                           Command="{Binding RemoveMovementSystemCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="🗑"/>
+                            <TextBlock Text="Remove"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- Systems List -->
+            <Border Classes="SectionBorder" 
+                   CornerRadius="4"
+                   Padding="8">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Systems" FontSize="14" FontWeight="SemiBold"/>
+                    
+                    <ListBox ItemsSource="{Binding MovementSystems}"
+                            SelectedItem="{Binding SelectedSystem}"
+                            Height="120"
+                            Classes="SystemsList">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="models:MovementProcessorGroupModel">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <Border Width="12" Height="12"
+                                            CornerRadius="2"
+                                            Background="{Binding Color, Converter={x:Static converters:StringToBrushConverter.Instance}}"
+                                            BorderBrush="#555555"
+                                            BorderThickness="1"
+                                            VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+            </Border>
+
+            <!-- System Properties (when system selected) -->
+            <Border Classes="SectionBorder" 
+                   CornerRadius="4"
+                   Padding="12"
+                   IsVisible="{Binding HasSelectedSystem, Mode=OneWay}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="System Properties" 
+                              FontSize="14" 
+                              FontWeight="SemiBold"/>
+
+                    <!-- Affected Group -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Affected Group:" FontWeight="Medium"/>
+                        <ComboBox ItemsSource="{Binding AvailableGroupIndexOptions}"
+                                  SelectedItem="{Binding SelectedGroupIndexOption, Mode=TwoWay}"
+                                  HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+
+                    <!-- Name -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Name:" FontWeight="Medium"/>
+                        <TextBox Text="{Binding SelectedSystem.Name, Mode=TwoWay}"/>
+                    </StackPanel>
+
+                    <!-- Speed Scale -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Speed Scale:" FontWeight="Medium"/>
+                        <NumericUpDown Value="{Binding SelectedSystem.SpeedScale}"
+                                     Minimum="0"
+                                     Maximum="10"
+                                     Increment="0.1"
+                                     FormatString="F2"/>
+                    </StackPanel>
+
+                    <!-- Color -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Color:" FontWeight="Medium"/>
+                        <views:ColorPickerControl ColorString="{Binding SelectedSystem.Color, Mode=TwoWay}"/>
+                    </StackPanel>
+
+                    <!-- Post Spawn Behavior -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Post Spawn Behavior:" FontWeight="Medium"/>
+                        <ComboBox SelectedItem="{Binding SelectedSystem.PostSpawnBehavior, Mode=TwoWay}"
+                                 ItemsSource="{Binding PostSpawnBehaviorOptions}"
+                                 HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+
+                    <!-- Post Spawn Wander Speed -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Post Spawn Wander Speed:" FontWeight="Medium"/>
+                        <ComboBox SelectedItem="{Binding SelectedSystem.PostSpawnWanderSpeed, Mode=TwoWay}"
+                                 ItemsSource="{Binding WanderingSpeedOptions}"
+                                 HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Processors (when system selected) -->
+            <Border Classes="SectionBorder" 
+                   CornerRadius="4"
+                   Padding="12"
+                   IsVisible="{Binding HasSelectedSystem, Mode=OneWay}">
+                <StackPanel Spacing="12">
+                    
+                    <!-- Processors Header and Add/Remove -->
+                    <Grid>
+                        <TextBlock Text="Processors"
+                                  FontSize="14"
+                                  FontWeight="SemiBold"
+                                  VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Right">
+                            <Button Classes="small"
+                                   Command="{Binding SelectedSystem.AddProcessorCommand}"
+                                   Content="+ Add">
+                                <Button.Styles>
+                                    <Style Selector="Button">
+                                        <Setter Property="Padding" Value="8,4"/>
+                                        <Setter Property="FontSize" Value="11"/>
+                                    </Style>
+                                </Button.Styles>
+                            </Button>
+                            <Button Classes="small danger"
+                                   Command="{Binding SelectedSystem.RemoveProcessorCommand}"
+                                   CommandParameter="{Binding SelectedProcessor}"
+                                   Content="- Remove">
+                                <Button.Styles>
+                                    <Style Selector="Button">
+                                        <Setter Property="Padding" Value="8,4"/>
+                                        <Setter Property="FontSize" Value="11"/>
+                                    </Style>
+                                </Button.Styles>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Processors List -->
+                    <ListBox ItemsSource="{Binding SelectedSystem.Processors}"
+                            SelectedItem="{Binding SelectedProcessor}"
+                            Height="120"
+                            Classes="ProcessorsList">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="models:MovementProcessorModel">
+                                <Grid ColumnDefinitions="200,100,100">
+                                    <TextBlock Grid.Column="0" Text="{Binding Type}"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Distance, StringFormat='{}{0:F1}'}"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding Power, StringFormat='{}{0:F4}'}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                </StackPanel>
+            </Border>
+
+            <!-- Processor Properties (when processor selected) -->
+            <Border Classes="SectionBorder"
+                   CornerRadius="4"
+                   Padding="12"
+                   IsVisible="{Binding HasSelectedProcessor, Mode=OneWay}">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Processor Properties"
+                              FontSize="14"
+                              FontWeight="SemiBold"/>
+
+                    <!-- Processor Type -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Type:" FontWeight="Medium"/>
+                        <ComboBox SelectedItem="{Binding SelectedProcessor.Type, Mode=TwoWay}"
+                                 ItemsSource="{Binding MovementProcessorTypeOptions}"
+                                 HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <!-- Distance -->
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Distance:" FontWeight="Medium"/>
+                            <NumericUpDown Value="{Binding SelectedProcessor.Distance}"
+                                         Minimum="0"
+                                         Maximum="10000"
+                                         Increment="1"
+                                         FormatString="F1"/>
+                        </StackPanel>
+
+                        <!-- Power -->
+                        <StackPanel Grid.Column="1" Spacing="4">
+                            <TextBlock Text="Power:" FontWeight="Medium"/>
+                            <NumericUpDown Value="{Binding SelectedProcessor.Power}"
+                                         Minimum="-1"
+                                         Maximum="1"
+                                         Increment="0.0001"
+                                         FormatString="F4"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+
+    <UserControl.Styles>
+        <Style Selector="UserControl">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="Border.SectionBorder">
+            <Setter Property="Background" Value="#2d2d2d"/>
+            <Setter Property="BorderBrush" Value="#3d3d3d"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="Border.InnerBorder">
+            <Setter Property="Background" Value="#252525"/>
+            <Setter Property="BorderBrush" Value="#3d3d3d"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="ListBox">
+            <Setter Property="Background" Value="#1e1e1e"/>
+            <Setter Property="BorderBrush" Value="#3d3d3d"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="ListBoxItem:pointerover">
+            <Setter Property="Background" Value="#3d3d3d"/>
+        </Style>
+        <Style Selector="ListBoxItem:selected">
+            <Setter Property="Background" Value="#0078d4"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="Button.danger">
+            <Setter Property="Background" Value="#d13438"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </UserControl.Styles>
+
+</UserControl>
