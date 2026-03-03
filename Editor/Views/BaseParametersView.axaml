@@ -1,122 +1,122 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:Editor.ViewModels"
-        xmlns:enums="using:WalkerSim"
-        x:Class="Editor.Views.BaseParametersView"
-        x:DataType="vm:EditorViewModel"
-        x:CompileBindings="False">
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:vm="using:Editor.ViewModels"
+			 xmlns:enums="using:WalkerSim"
+			 x:Class="Editor.Views.BaseParametersView"
+			 x:DataType="vm:EditorViewModel"
+			 x:CompileBindings="False">
 
-    <ScrollViewer>
-        <StackPanel Spacing="12" Margin="16">
-            
-            <!-- Header -->
-            <TextBlock Text="Base Parameters"
-                      Classes="Header"
-                      FontWeight="SemiBold"
-                      FontSize="18"
-                      Margin="0,0,0,8"/>
+	<ScrollViewer>
+		<StackPanel Spacing="12" Margin="16">
 
-            <!-- World Selection -->
-            <StackPanel Spacing="4">
-                <TextBlock Text="World:" FontWeight="Medium"/>
-                <ComboBox SelectedItem="{Binding SelectedWorldName, Mode=TwoWay}"
-                         ItemsSource="{Binding WorldNames}"
-                         IsEnabled="{Binding IsNotRunning}"
-                         HorizontalAlignment="Stretch"/>
-            </StackPanel>
+			<!-- Header -->
+			<TextBlock Text="Base Parameters"
+					   Classes="Header"
+					   FontWeight="SemiBold"
+					   FontSize="18"
+					   Margin="0,0,0,8"/>
 
-            <!-- Population Density -->
-            <StackPanel Spacing="4">
-                <TextBlock Text="Population Density:" FontWeight="Medium"/>
-                <NumericUpDown Value="{Binding PopulationDensity, Mode=TwoWay}" 
-                             Minimum="0"
-                             Increment="10"
-                             IsEnabled="{Binding IsNotRunning}"/>
-            </StackPanel>
+			<!-- World Selection -->
+			<StackPanel Spacing="4">
+				<TextBlock Text="Preview World:" FontWeight="Medium"/>
+				<ComboBox SelectedItem="{Binding SelectedWorldName, Mode=TwoWay}"
+						  ItemsSource="{Binding WorldNames}"
+						  IsEnabled="{Binding IsNotRunning}"
+						  HorizontalAlignment="Stretch"/>
+			</StackPanel>
 
-            <!-- Group Size -->
-            <StackPanel Spacing="4">
-                <TextBlock Text="Group Size:" FontWeight="Medium"/>
-                <NumericUpDown Value="{Binding GroupSize, Mode=TwoWay}" 
-                             Minimum="1"
-                             Maximum="1024"
-                             Increment="1"
-                             IsEnabled="{Binding IsNotRunning}"/>
-            </StackPanel>
+			<!-- Population Density -->
+			<StackPanel Spacing="4">
+				<TextBlock Text="Population Density:" FontWeight="Medium"/>
+				<NumericUpDown Value="{Binding PopulationDensity, Mode=TwoWay}"
+							   Minimum="0"
+							   Increment="10"
+							   IsEnabled="{Binding IsNotRunning}"/>
+			</StackPanel>
 
-            <!-- Random Seed -->
-            <StackPanel Spacing="4">
-                <TextBlock Text="Random Seed:" FontWeight="Medium"/>
-                <NumericUpDown Value="{Binding RandomSeed, Mode=TwoWay}" 
-                             Minimum="0"
-                             Maximum="2147483647"
-                             Increment="1"
-                             IsEnabled="{Binding IsNotRunning}"/>
-            </StackPanel>
+			<!-- Group Size -->
+			<StackPanel Spacing="4">
+				<TextBlock Text="Group Size:" FontWeight="Medium"/>
+				<NumericUpDown Value="{Binding GroupSize, Mode=TwoWay}"
+							   Minimum="1"
+							   Maximum="1024"
+							   Increment="1"
+							   IsEnabled="{Binding IsNotRunning}"/>
+			</StackPanel>
 
-            <!-- Spawn Activation Radius -->
-            <StackPanel Spacing="4">
-                <TextBlock Text="Spawn Activation Radius:" FontWeight="Medium"/>
-                <NumericUpDown Value="{Binding SpawnActivationRadius, Mode=TwoWay}" 
-                             Minimum="0"
-                             Increment="1"/>
-            </StackPanel>
+			<!-- Random Seed -->
+			<StackPanel Spacing="4">
+				<TextBlock Text="Random Seed:" FontWeight="Medium"/>
+				<NumericUpDown Value="{Binding RandomSeed, Mode=TwoWay}"
+							   Minimum="0"
+							   Maximum="2147483647"
+							   Increment="1"
+							   IsEnabled="{Binding IsNotRunning}"/>
+			</StackPanel>
 
-            <!-- Start Position -->
-            <StackPanel Spacing="4">
-                <TextBlock Text="Start Position:" FontWeight="Medium"/>
-                <ComboBox SelectedItem="{Binding StartPosition, Mode=TwoWay}"
-                         ItemsSource="{Binding StartPositionOptions}"/>
-            </StackPanel>
+			<!-- Spawn Activation Radius -->
+			<StackPanel Spacing="4">
+				<TextBlock Text="Spawn Activation Radius:" FontWeight="Medium"/>
+				<NumericUpDown Value="{Binding SpawnActivationRadius, Mode=TwoWay}"
+							   Minimum="0"
+							   Increment="1"/>
+			</StackPanel>
 
-            <!-- Respawn Position -->
-            <StackPanel Spacing="4">
-                <TextBlock Text="Respawn Position:" FontWeight="Medium"/>
-                <ComboBox SelectedItem="{Binding RespawnPosition, Mode=TwoWay}"
-                         ItemsSource="{Binding RespawnPositionOptions}"/>
-            </StackPanel>
+			<!-- Start Position -->
+			<StackPanel Spacing="4">
+				<TextBlock Text="Start Position:" FontWeight="Medium"/>
+				<ComboBox SelectedItem="{Binding StartPosition, Mode=TwoWay}"
+						  ItemsSource="{Binding StartPositionOptions}"/>
+			</StackPanel>
 
-            <!-- Start Agents Grouped -->
-            <CheckBox IsChecked="{Binding StartAgentsGrouped, Mode=TwoWay}" 
-                     IsEnabled="{Binding IsNotRunning}"
-                     Content="Start Agents Grouped"
-                     Margin="0,8,0,4"/>
+			<!-- Respawn Position -->
+			<StackPanel Spacing="4">
+				<TextBlock Text="Respawn Position:" FontWeight="Medium"/>
+				<ComboBox SelectedItem="{Binding RespawnPosition, Mode=TwoWay}"
+						  ItemsSource="{Binding RespawnPositionOptions}"/>
+			</StackPanel>
 
-            <!-- Enhanced Sound Awareness -->
-            <CheckBox IsChecked="{Binding EnhancedSoundAwareness, Mode=TwoWay}" 
-                     Content="Enhanced Sound Awareness"
-                     Margin="0,4,0,8"/>
+			<!-- Start Agents Grouped -->
+			<CheckBox IsChecked="{Binding StartAgentsGrouped, Mode=TwoWay}"
+					  IsEnabled="{Binding IsNotRunning}"
+					  Content="Start Agents Grouped"
+					  Margin="0,8,0,4"/>
 
-            <!-- Sound Distance Scale -->
-            <StackPanel Spacing="4">
-                <TextBlock Text="Sound Distance Scale:" FontWeight="Medium"/>
-                <NumericUpDown Value="{Binding SoundDistanceScale, Mode=TwoWay}" 
-                             Minimum="0"
-                             Maximum="10"
-                             Increment="0.1"
-                             FormatString="F1"/>
-            </StackPanel>
+			<!-- Enhanced Sound Awareness -->
+			<CheckBox IsChecked="{Binding EnhancedSoundAwareness, Mode=TwoWay}"
+					  Content="Enhanced Sound Awareness"
+					  Margin="0,4,0,8"/>
 
-            <!-- Fast Forward At Start -->
-            <CheckBox IsChecked="{Binding FastForwardAtStart, Mode=TwoWay}" 
-                     Content="Fast Forward At Start"
-                     Margin="0,8,0,4"/>
+			<!-- Sound Distance Scale -->
+			<StackPanel Spacing="4">
+				<TextBlock Text="Sound Distance Scale:" FontWeight="Medium"/>
+				<NumericUpDown Value="{Binding SoundDistanceScale, Mode=TwoWay}"
+							   Minimum="0"
+							   Maximum="10"
+							   Increment="0.1"
+							   FormatString="F1"/>
+			</StackPanel>
 
-            <!-- Pause During Bloodmoon -->
-            <CheckBox IsChecked="{Binding PauseDuringBloodmoon, Mode=TwoWay}" 
-                     Content="Pause During Bloodmoon"
-                     Margin="0,4,0,8"/>
+			<!-- Fast Forward At Start -->
+			<CheckBox IsChecked="{Binding FastForwardAtStart, Mode=TwoWay}"
+					  Content="Fast Forward At Start"
+					  Margin="0,8,0,4"/>
 
-            <!-- Spawn Protection Time -->
-            <StackPanel Spacing="4">
-                <TextBlock Text="Spawn Protection Time (seconds):" FontWeight="Medium"/>
-                <NumericUpDown Value="{Binding SpawnProtectionTime, Mode=TwoWay}" 
-                             Minimum="0"
-                             Maximum="3600"
-                             Increment="1"/>
-            </StackPanel>
+			<!-- Pause During Bloodmoon -->
+			<CheckBox IsChecked="{Binding PauseDuringBloodmoon, Mode=TwoWay}"
+					  Content="Pause During Bloodmoon"
+					  Margin="0,4,0,8"/>
 
-        </StackPanel>
-    </ScrollViewer>
+			<!-- Spawn Protection Time -->
+			<StackPanel Spacing="4">
+				<TextBlock Text="Spawn Protection Time (seconds):" FontWeight="Medium"/>
+				<NumericUpDown Value="{Binding SpawnProtectionTime, Mode=TwoWay}"
+							   Minimum="0"
+							   Maximum="3600"
+							   Increment="1"/>
+			</StackPanel>
+
+		</StackPanel>
+	</ScrollViewer>
 
 </UserControl>

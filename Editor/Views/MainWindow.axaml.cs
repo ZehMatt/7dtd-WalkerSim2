@@ -22,7 +22,7 @@ namespace Editor.Views
             // Set up timer to update simulation stats and redraw canvas
             _updateTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromMilliseconds(66) // ~15 FPS
+                Interval = TimeSpan.FromMilliseconds(16) // ~60 FPS
             };
             _updateTimer.Tick += UpdateTimer_Tick;
             _updateTimer.Start();
@@ -43,6 +43,10 @@ namespace Editor.Views
                     {
                         ScrollLogIfNeeded(entry.IsError);
                     };
+                    vm2.NavigateToAgentRequested = a => SimCanvas.GoToAgent(a);
+                    vm2.TrackAgentRequested      = a => SimCanvas.TrackAgent(a);
+                    vm2.StopTrackingRequested    = () => SimCanvas.StopTracking();
+                    SimCanvas.TrackingStopped    = () => vm2.IsTrackingAgent = false;
                 }
             };
         }
@@ -51,6 +55,10 @@ namespace Editor.Views
         {
             if (DataContext is EditorViewModel viewModel)
                 viewModel.UpdateSimulationStats();
+
+            // Keep agents list live while that tab is open
+            if (AgentsPanel.IsVisible && DataContext is EditorViewModel vm2)
+                vm2.RefreshAgentModels();
 
             SimCanvas.InvalidateVisual();
         }
@@ -61,16 +69,33 @@ namespace Editor.Views
         {
             BaseParamsTab.IsChecked = true;
             MovementSystemsTab.IsChecked = false;
+            AgentsTab.IsChecked = false;
             BaseParametersPanel.IsVisible = true;
             MovementSystemsPanel.IsVisible = false;
+            AgentsPanel.IsVisible = false;
         }
 
         private void OnMovementSystemsTabClick(object? sender, RoutedEventArgs e)
         {
             MovementSystemsTab.IsChecked = true;
             BaseParamsTab.IsChecked = false;
+            AgentsTab.IsChecked = false;
             MovementSystemsPanel.IsVisible = true;
             BaseParametersPanel.IsVisible = false;
+            AgentsPanel.IsVisible = false;
+        }
+
+        private void OnAgentsTabClick(object? sender, RoutedEventArgs e)
+        {
+            AgentsTab.IsChecked = true;
+            BaseParamsTab.IsChecked = false;
+            MovementSystemsTab.IsChecked = false;
+            AgentsPanel.IsVisible = true;
+            BaseParametersPanel.IsVisible = false;
+            MovementSystemsPanel.IsVisible = false;
+
+            if (DataContext is EditorViewModel vm)
+                vm.RefreshAgentModels();
         }
 
         // ── Zoom ──────────────────────────────────────────────────────────────────

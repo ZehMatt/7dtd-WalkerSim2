@@ -496,7 +496,7 @@ namespace WalkerSim
                 var elapsed = Utils.Measure(() =>
                 {
                     var oldTimeScale = TimeScale;
-                    TimeScale = 32.0f;
+                    TimeScale = 64.0f;
                     for (uint num = 0u; num < Simulation.Limits.TicksToAdvanceOnStartup && !_shouldStop; num++)
                     {
                         Tick();

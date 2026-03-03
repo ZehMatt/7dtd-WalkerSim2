@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>disable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <OutputPath>..\Build\$(Configuration)\Editor\</OutputPath>
     <PackageOutputPath></PackageOutputPath>
@@ -22,6 +23,7 @@
     <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
     <AvaloniaResource Include="Styles\*.axaml" />
+    <AvaloniaResource Include="..\WalkerSim\WalkerSim.xml" Link="Assets\WalkerSim.xml" />
   </ItemGroup>
 
   <ItemGroup>

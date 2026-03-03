@@ -1,5 +1,4 @@
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
@@ -26,81 +25,31 @@ namespace Editor.ViewModels
         private static readonly Vector3 WorldMaxs = new Vector3(WorldSizeX * 0.5f, WorldSizeY * 0.5f, 256);
 
         [ObservableProperty]
-        private Config _config = Config.GetDefault();
+        private Config _config = LoadDefaultConfig();
+
+        private static Config LoadDefaultConfig()
+        {
+            try
+            {
+                var uri = new Uri("avares://Editor/Assets/WalkerSim.xml");
+                using var stream = Avalonia.Platform.AssetLoader.Open(uri);
+                using var reader = new System.IO.StreamReader(stream);
+                var cfg = Config.LoadFromStream(reader);
+                if (cfg != null) return cfg;
+            }
+            catch { }
+            return Config.GetDefault();
+        }
 
         [ObservableProperty]
         private Models.MovementProcessorGroupModel? _selectedSystem;
 
         partial void OnSelectedSystemChanged(Models.MovementProcessorGroupModel? value)
         {
-            OnPropertyChanged(nameof(HasSelectedSystem));
             SelectedProcessor = null;
-            RefreshGroupIndexOptions();
-        }
-
-        public bool HasSelectedSystem => SelectedSystem != null;
-
-        // Group Index options for the dropdown
-        public struct GroupIndexOption
-        {
-            public int Value;
-            public string Text;
-            public override string ToString() => Text;
-        }
-
-        private List<GroupIndexOption> _availableGroupIndexOptions = new List<GroupIndexOption>();
-        public List<GroupIndexOption> AvailableGroupIndexOptions
-        {
-            get => _availableGroupIndexOptions;
-            private set { _availableGroupIndexOptions = value; OnPropertyChanged(); }
-        }
-
-        private bool _suppressGroupIndexWrite = false;
-        private GroupIndexOption? _selectedGroupIndexOption;
-        public GroupIndexOption? SelectedGroupIndexOption
-        {
-            get => _selectedGroupIndexOption;
-            set
-            {
-                _selectedGroupIndexOption = value;
-                OnPropertyChanged();
-                if (!_suppressGroupIndexWrite && SelectedSystem != null && value != null)
-                    SelectedSystem.GroupIndex = value.Value.Value;
-            }
-        }
-
-        private void RefreshGroupIndexOptions()
-        {
-            var options = new List<GroupIndexOption>();
-            options.Add(new GroupIndexOption { Value = -1, Text = "Any" });
-
-            var totalGroups = Config.GroupSize > 0
-                ? (Config.PopulationDensity + Config.GroupSize - 1) / Config.GroupSize
-                : 0;
-
-            var currentGroupIndex = SelectedSystem?.GroupIndex ?? -1;
-            var usedIndices = new HashSet<int>(
-                MovementSystems
-                    .Where(s => s != SelectedSystem && s.GroupIndex >= 0)
-                    .Select(s => s.GroupIndex));
-
-            for (int i = 0; i < totalGroups; i++)
-            {
-                if (usedIndices.Contains(i)) continue;
-                options.Add(new GroupIndexOption { Value = i, Text = i.ToString() });
-            }
-
-            // Always include current value even if out of range
-            if (currentGroupIndex >= 0 && !options.Any(o => o.Value == currentGroupIndex))
-                options.Add(new GroupIndexOption { Value = currentGroupIndex, Text = currentGroupIndex.ToString() });
-
-            // Suppress write-back while ItemsSource changes; the ComboBox may fire the
-            // binding with a stale or null value as it resets, which would corrupt the model.
-            _suppressGroupIndexWrite = true;
-            AvailableGroupIndexOptions = options;
-            _selectedGroupIndexOption = options.Find(o => o.Value == currentGroupIndex) is { } found ? found : (GroupIndexOption?)null;
-            _suppressGroupIndexWrite = false;
-            OnPropertyChanged(nameof(SelectedGroupIndexOption));
+            OnPropertyChanged(nameof(HasSelectedSystem));
+            OnPropertyChanged(nameof(HasSelection));
+            OnPropertyChanged(nameof(HasNoSelection));
         }
 
         [ObservableProperty]
@@ -108,22 +57,53 @@ namespace Editor.ViewModels
 
         partial void OnSelectedProcessorChanged(Models.MovementProcessorModel? value)
         {
+            OnPropertyChanged(nameof(HasSelectedSystem));
             OnPropertyChanged(nameof(HasSelectedProcessor));
+            OnPropertyChanged(nameof(HasSelection));
+            OnPropertyChanged(nameof(HasNoSelection));
         }
 
+        // HasSelectedSystem = a system is selected (regardless of whether a processor is also selected).
+        // Used to gate "+ Processor" availability.
+        public bool HasSelectedSystem => SelectedSystem != null;
         public bool HasSelectedProcessor => SelectedProcessor != null;
+        public bool HasSelection => SelectedSystem != null || SelectedProcessor != null;
+        public bool HasNoSelection => !HasSelection;
+
+        // TreeView two-way binding target.  Setting it updates SelectedSystem / SelectedProcessor.
+        [ObservableProperty]
+        private object? _treeSelectedItem;
+
+        partial void OnTreeSelectedItemChanged(object? value)
+        {
+            if (value is Models.MovementProcessorGroupModel sys)
+            {
+                SelectedSystem = sys;
+                SelectedProcessor = null;
+            }
+            else if (value is Models.MovementProcessorModel proc)
+            {
+                SelectedProcessor = proc;
+                SelectedSystem = MovementSystems.FirstOrDefault(s => s.Processors.Contains(proc));
+            }
+            else
+            {
+                SelectedSystem = null;
+                SelectedProcessor = null;
+            }
+        }
 
         // Wrapper properties for Config fields (Config uses fields, not properties, so we need wrappers for binding)
         public int PopulationDensity
         {
             get => Config.PopulationDensity;
-            set { Config.PopulationDensity = value; OnPropertyChanged(); if (!_suppressReset) ResetSimulation(); }
+            set { Config.PopulationDensity = value; OnPropertyChanged(); RefreshAllGroupIndexOptions(); if (!_suppressReset) ResetSimulation(); }
         }
 
         public int GroupSize
         {
             get => Config.GroupSize;
-            set { Config.GroupSize = value; OnPropertyChanged(); if (!_suppressReset) ResetSimulation(); }
+            set { Config.GroupSize = value; OnPropertyChanged(); RefreshAllGroupIndexOptions(); if (!_suppressReset) ResetSimulation(); }
         }
 
         public int RandomSeed
@@ -183,7 +163,46 @@ namespace Editor.ViewModels
         public uint SpawnProtectionTime
         {
             get => Config.SpawnProtectionTime;
-            set { Config.SpawnProtectionTime = value; OnPropertyChanged(); }
+            set { Config.SpawnProtectionTime = value; OnPropertyChanged(); if (!_suppressReset) ResetSimulation(); }
+        }
+
+        // Wrapper properties for movement processor parameters to support live editing
+        private Models.MovementProcessorModel? _selectedMovementProcessor;
+        
+        public Models.MovementProcessorModel SelectedMovementProcessor
+        {
+            get => _selectedMovementProcessor ??= MovementSystems.FirstOrDefault(s => s.Processors.Count > 0).Processors[0];
+            set { _selectedMovementProcessor = value; OnPropertyChanged(); }
+        }
+
+        public float MovementProcessorDistance
+        {
+            get => SelectedMovementProcessor?.Underlying.Distance ?? 30.0f;
+            set
+            {
+                var proc = SelectedMovementProcessor?.Underlying;
+                if (proc != null)
+                {
+                    proc.Distance = value;
+                    OnPropertyChanged();
+                    if (!_suppressReset) _simulation.ReloadConfig(Config);
+                }
+            }
+        }
+
+        public float MovementProcessorPower
+        {
+            get => SelectedMovementProcessor?.Underlying.Power ?? 0.5f;
+            set
+            {
+                var proc = SelectedMovementProcessor?.Underlying;
+                if (proc != null)
+                {
+                    proc.Power = value;
+                    OnPropertyChanged();
+                    if (!_suppressReset) _simulation.ReloadConfig(Config);
+                }
+            }
         }
 
         [ObservableProperty]
@@ -192,12 +211,31 @@ namespace Editor.ViewModels
         partial void OnIsSimulationRunningChanged(bool value)
         {
             OnPropertyChanged(nameof(IsNotRunning));
+            OnPropertyChanged(nameof(CanStart));
+            OnPropertyChanged(nameof(CanStop));
+            OnPropertyChanged(nameof(CanPause));
+            OnPropertyChanged(nameof(CanResume));
+            OnPropertyChanged(nameof(CanAdvance));
+            OnPropertyChanged(nameof(CanSetSpeed));
         }
 
         public bool IsNotRunning => !IsSimulationRunning;
+        public bool CanStart => !IsSimulationRunning;
+        public bool CanStop => IsSimulationRunning;
+        public bool CanPause => IsSimulationRunning && !IsSimulationPaused;
+        public bool CanResume => IsSimulationRunning && IsSimulationPaused;
+        public bool CanAdvance => !IsSimulationRunning || IsSimulationPaused;
+        public bool CanSetSpeed => IsSimulationRunning;
 
         [ObservableProperty]
         private bool _isSimulationPaused = false;
+
+        partial void OnIsSimulationPausedChanged(bool value)
+        {
+            OnPropertyChanged(nameof(CanPause));
+            OnPropertyChanged(nameof(CanResume));
+            OnPropertyChanged(nameof(CanAdvance));
+        }
 
         [ObservableProperty]
         private int _totalAgents = 0;
@@ -218,12 +256,95 @@ namespace Editor.ViewModels
         private string _simulationTime = "00:00:00.000";
 
         [ObservableProperty]
-        private double _averageSimTime = 0;
+        private string _tickTime = "0.00000 ms.";
 
         [ObservableProperty]
-        private double _averageUpdateTime = 0;
+        private string _updateTime = "0.00000 ms.";
+
+        [ObservableProperty]
+        private string _windDirection = "";
+
+        [ObservableProperty]
+        private string _windDirectionTarget = "";
+
+        [ObservableProperty]
+        private uint _tickNextWindChange = 0;
 
         public ObservableCollection<Models.MovementProcessorGroupModel> MovementSystems { get; }
+
+        public ObservableCollection<object> AgentListItems { get; } = new ObservableCollection<object>();
+
+        [ObservableProperty]
+        private Models.AgentModel? _selectedAgent;
+
+        partial void OnSelectedAgentChanged(Models.AgentModel? value)
+        {
+            OnPropertyChanged(nameof(HasSelectedAgent));
+            // If tracking, switch to the newly selected agent automatically.
+            if (IsTrackingAgent && value != null)
+                TrackAgentRequested?.Invoke(value.Underlying);
+            else if (IsTrackingAgent && value == null)
+            {
+                IsTrackingAgent = false;
+                StopTrackingRequested?.Invoke();
+            }
+        }
+
+        public bool HasSelectedAgent => SelectedAgent != null;
+
+        [ObservableProperty]
+        private bool _isTrackingAgent;
+
+        partial void OnIsTrackingAgentChanged(bool value) => OnPropertyChanged(nameof(IsNotTrackingAgent));
+        public bool IsNotTrackingAgent => !IsTrackingAgent;
+
+        // Wired up by MainWindow.axaml.cs to the SimulationCanvas.
+        public Action<WalkerSim.Agent>? NavigateToAgentRequested;
+        public Action<WalkerSim.Agent>? TrackAgentRequested;
+        public Action? StopTrackingRequested;
+
+        [RelayCommand]
+        public void GoToAgent()
+        {
+            if (SelectedAgent != null)
+                NavigateToAgentRequested?.Invoke(SelectedAgent.Underlying);
+        }
+
+        [RelayCommand]
+        public void TrackSelectedAgent()
+        {
+            if (SelectedAgent == null)
+                return;
+            IsTrackingAgent = true;
+            TrackAgentRequested?.Invoke(SelectedAgent.Underlying);
+        }
+
+        [RelayCommand]
+        public void StopTrackingAgent()
+        {
+            IsTrackingAgent = false;
+            StopTrackingRequested?.Invoke();
+        }
+
+        private object? _selectedAgentListItem;
+        public object? SelectedAgentListItem
+        {
+            get => _selectedAgentListItem;
+            set
+            {
+                // Group headers are not selectable — ignore and clear
+                if (value is Models.AgentGroupHeader)
+                {
+                    _selectedAgentListItem = null;
+                    SelectedAgent = null;
+                    OnPropertyChanged();
+                    return;
+                }
+                _selectedAgentListItem = value;
+                OnPropertyChanged();
+                SelectedAgent = value as Models.AgentModel;
+            }
+        }
 
         public System.Collections.ObjectModel.ObservableCollection<Models.LogEntry> LogEntries { get; } = new System.Collections.ObjectModel.ObservableCollection<Models.LogEntry>();
 
@@ -236,6 +357,11 @@ namespace Editor.ViewModels
         public Config.WanderingSpeed[] WanderingSpeedOptions { get; } = (Config.WanderingSpeed[])Enum.GetValues(typeof(Config.WanderingSpeed));
 
         public Config.MovementProcessorType[] MovementProcessorTypeOptions { get; } = (Config.MovementProcessorType[])Enum.GetValues(typeof(Config.MovementProcessorType));
+
+        public WalkerSim.Agent.State[] AgentStateOptions { get; } = (WalkerSim.Agent.State[])Enum.GetValues(typeof(WalkerSim.Agent.State));
+        public WalkerSim.Agent.SubState[] AgentSubStateOptions { get; } = (WalkerSim.Agent.SubState[])Enum.GetValues(typeof(WalkerSim.Agent.SubState));
+        public WalkerSim.Agent.TravelState[] AgentTravelStateOptions { get; } = (WalkerSim.Agent.TravelState[])Enum.GetValues(typeof(WalkerSim.Agent.TravelState));
+        public WalkerSim.Agent.MoveType[] AgentMoveTypeOptions { get; } = (WalkerSim.Agent.MoveType[])Enum.GetValues(typeof(WalkerSim.Agent.MoveType));
 
         // Suppress simulation reset during bulk config updates (e.g. import, OnConfigChanged)
         private bool _suppressReset = false;
@@ -255,12 +381,17 @@ namespace Editor.ViewModels
 
         public IAsyncRelayCommand ExportConfigurationCommand => new AsyncRelayCommand(ExportConfiguration);
 
+        public IAsyncRelayCommand LoadStateCommand => new AsyncRelayCommand(LoadState);
+
+        public IAsyncRelayCommand SaveStateCommand => new AsyncRelayCommand(SaveState);
+
         public EditorViewModel()
         {
             // Initialize movement systems from config
             MovementSystems = new ObservableCollection<Models.MovementProcessorGroupModel>(
-                Config.Processors.Select(p => new Models.MovementProcessorGroupModel(p))
+                Config.Processors.Select(p => CreateMovementSystemModel(p))
             );
+            RefreshAllGroupIndexOptions();
 
             // Setup logging
             Logging.AddSink(this);
@@ -285,12 +416,22 @@ namespace Editor.ViewModels
                     WorldNames.Add(Path.GetFileName(f));
 
                 Logging.Info($"Found {folders.Count} world(s).");
+
+                // Default to Navezgane if present
+                if (SelectedWorldName == null)
+                {
+                    var navezgane = WorldNames.FirstOrDefault(n =>
+                        n.Equals("Navezgane", StringComparison.OrdinalIgnoreCase));
+                    if (navezgane != null)
+                        SelectedWorldName = navezgane;
+                }
             });
         }
 
         partial void OnSelectedWorldNameChanged(string value)
         {
-            if (string.IsNullOrEmpty(value)) return;
+            if (string.IsNullOrEmpty(value))
+                return;
 
             if (WorldLocator.TryGetWorldPath(_worldFolders, value, out var worldPath))
             {
@@ -322,6 +463,55 @@ namespace Editor.ViewModels
         }
 
         [RelayCommand]
+        public void AddProcessorToSelectedSystem()
+        {
+            SelectedSystem?.AddProcessor();
+        }
+
+        [RelayCommand]
+        public void DuplicateSelected()
+        {
+            if (SelectedProcessor != null && SelectedSystem != null)
+            {
+                var source = SelectedProcessor.Underlying;
+                var newProc = new Config.MovementProcessor
+                {
+                    Type = source.Type,
+                    Distance = source.Distance,
+                    Power = source.Power
+                };
+                SelectedSystem.Underlying.Entries.Add(newProc);
+                var m = new Models.MovementProcessorModel(newProc);
+                var capSys = SelectedSystem;
+                m.RemoveSelfCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(() => capSys.RemoveProcessor(m));
+                m.ConfigChanged = ReloadConfigLive;
+                SelectedSystem.Processors.Add(m);
+                TreeSelectedItem = m;
+            }
+            else if (SelectedSystem != null)
+            {
+                DuplicateMovementSystem(SelectedSystem);
+            }
+        }
+
+        [RelayCommand]
+        public void RemoveSelected()
+        {
+            if (SelectedProcessor != null && SelectedSystem != null)
+            {
+                var sys = SelectedSystem;
+                sys.RemoveProcessor(SelectedProcessor);
+                SelectedProcessor = null;
+                TreeSelectedItem = sys;
+            }
+            else if (SelectedSystem != null)
+            {
+                RemoveMovementSystem(SelectedSystem);
+                TreeSelectedItem = null;
+            }
+        }
+
+        [RelayCommand]
         public void AddMovementSystem()
         {
             var newGroup = new Config.MovementProcessorGroup
@@ -332,16 +522,17 @@ namespace Editor.ViewModels
             };
 
             Config.Processors.Add(newGroup);
-            var model = new Models.MovementProcessorGroupModel(newGroup);
+            var model = CreateMovementSystemModel(newGroup);
             model.Name = $"System {MovementSystems.Count + 1}";
             MovementSystems.Add(model);
-            SelectedSystem = model;
+            RefreshAllGroupIndexOptions();
         }
 
         [RelayCommand]
         public void StartSimulation()
         {
-            if (IsSimulationRunning) return;
+            if (IsSimulationRunning)
+                return;
 
             _simulation.Start();
             IsSimulationRunning = true;
@@ -352,7 +543,8 @@ namespace Editor.ViewModels
         [RelayCommand]
         public void StopSimulation()
         {
-            if (!IsSimulationRunning) return;
+            if (!IsSimulationRunning)
+                return;
 
             _simulation.Stop();
             IsSimulationRunning = false;
@@ -363,7 +555,8 @@ namespace Editor.ViewModels
         [RelayCommand]
         public void PauseSimulation()
         {
-            if (!IsSimulationRunning || IsSimulationPaused) return;
+            if (!IsSimulationRunning || IsSimulationPaused)
+                return;
 
             _simulation.SetPaused(true);
             IsSimulationPaused = true;
@@ -373,7 +566,8 @@ namespace Editor.ViewModels
         [RelayCommand]
         public void ResumeSimulation()
         {
-            if (!IsSimulationRunning || !IsSimulationPaused) return;
+            if (!IsSimulationRunning || !IsSimulationPaused)
+                return;
 
             _simulation.SetPaused(false);
             IsSimulationPaused = false;
@@ -402,17 +596,69 @@ namespace Editor.ViewModels
         [RelayCommand]
         public void AdvanceOneTick()
         {
-            if (IsSimulationRunning && !IsSimulationPaused) return;
+            if (IsSimulationRunning && !IsSimulationPaused)
+                return;
 
             _simulation.Advance(1);
             UpdateSimulationStats();
         }
 
         [RelayCommand]
-        public void SetSimulationSpeed(int speed)
+        public void SetSimulationSpeed(string speedStr)
         {
-            _simulation.TimeScale = speed;
-            Logging.Info($"Simulation speed set to {speed}x");
+            if (int.TryParse(speedStr, out var speed))
+            {
+                _simulation.TimeScale = speed;
+                CurrentSpeed = speed;
+                Logging.Info($"Simulation speed set to {speed}x");
+            }
+        }
+
+        [ObservableProperty]
+        private int _currentSpeed = 1;
+
+        public void RefreshAgentModels()
+        {
+            var agents = _simulation.Agents;
+
+            // Count current agent models in the list
+            int currentAgentCount = 0;
+            foreach (var item in AgentListItems)
+                if (item is Models.AgentModel)
+                    currentAgentCount++;
+
+            if (currentAgentCount == agents.Count)
+            {
+                // Structure unchanged: just pull live data into the selected agent
+                SelectedAgent?.Pull();
+                return;
+            }
+
+            // Structure changed (e.g. after a reset): rebuild grouped list
+            var prevUnderlying = SelectedAgent?.Underlying;
+            AgentListItems.Clear();
+
+            var grouped = System.Linq.Enumerable.OrderBy(
+                System.Linq.Enumerable.GroupBy(agents, a => a.Group),
+                g => g.Key);
+
+            Models.AgentModel? newSelected = null;
+            foreach (var group in grouped)
+            {
+                AgentListItems.Add(new Models.AgentGroupHeader(group.Key));
+                foreach (var agent in group)
+                {
+                    var model = new Models.AgentModel(agent);
+                    if (agent == prevUnderlying)
+                        newSelected = model;
+                    AgentListItems.Add(model);
+                }
+            }
+
+            // Restore selection
+            _selectedAgentListItem = newSelected;
+            SelectedAgent = newSelected;
+            OnPropertyChanged(nameof(SelectedAgentListItem));
         }
 
         public void UpdateSimulationStats()
@@ -425,19 +671,30 @@ namespace Editor.ViewModels
 
             var secsElapsed = _simulation.GetSimulationTimeSeconds();
             var timeSpan = TimeSpan.FromSeconds(secsElapsed);
-            SimulationTime = string.Format("{0:D2}:{1:D2}:{2:D2}.{3:D3}", 
+            SimulationTime = string.Format("{0:D2}:{1:D2}:{2:D2}.{3:D3}",
                 timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds, timeSpan.Milliseconds);
 
-            AverageSimTime = _simulation.AverageSimTime * 1000.0; // Convert to ms
-            AverageUpdateTime = _simulation.AverageUpdateTime * 1000.0; // Convert to ms
+            var simTimeMs = _simulation.AverageSimTime * 1000.0;
+            var updateTimeMs = _simulation.AverageUpdateTime * 1000.0;
+            TickTime = string.Format("{0:0.00000} ms. ({1:0.000}/s)",
+                simTimeMs, simTimeMs > 0 ? 1000.0 / simTimeMs : 0);
+            UpdateTime = string.Format("{0:0.00000} ms. ({1:0.000}/s)",
+                updateTimeMs, updateTimeMs > 0 ? 1000.0 / updateTimeMs : 0);
+
+            var wd = _simulation.WindDirection;
+            WindDirection = string.Format("{0:0.00}, {1:0.00}", wd.X, wd.Y);
+            var wdt = _simulation.WindDirectionTarget;
+            WindDirectionTarget = string.Format("{0:0.00}, {1:0.00}", wdt.X, wdt.Y);
+            TickNextWindChange = _simulation.TickNextWindChange;
         }
 
         [RelayCommand]
-        public void DuplicateMovementSystem()
+        public void DuplicateMovementSystem(Models.MovementProcessorGroupModel? system)
         {
-            if (SelectedSystem == null) return;
+            if (system == null)
+                return;
 
-            var source = SelectedSystem.Underlying;
+            var source = system.Underlying;
             var newGroup = new Config.MovementProcessorGroup
             {
                 Group = source.Group,
@@ -459,20 +716,56 @@ namespace Editor.ViewModels
             }
 
             Config.Processors.Add(newGroup);
-            var model = new Models.MovementProcessorGroupModel(newGroup);
-            model.Name = $"{SelectedSystem.Name} (Copy)";
+            var model = CreateMovementSystemModel(newGroup);
+            model.Name = $"{system.Name} (Copy)";
             MovementSystems.Add(model);
-            SelectedSystem = model;
+            RefreshAllGroupIndexOptions();
         }
 
         [RelayCommand]
-        public void RemoveMovementSystem()
+        public void RemoveMovementSystem(Models.MovementProcessorGroupModel? system)
         {
-            if (SelectedSystem == null) return;
+            if (system == null)
+                return;
 
-            Config.Processors.Remove(SelectedSystem.Underlying);
-            MovementSystems.Remove(SelectedSystem);
-            SelectedSystem = MovementSystems.FirstOrDefault();
+            Config.Processors.Remove(system.Underlying);
+            MovementSystems.Remove(system);
+            RefreshAllGroupIndexOptions();
+        }
+
+        private void RefreshAllGroupIndexOptions()
+        {
+            var totalGroups = Config.GroupSize > 0
+                ? (Config.PopulationDensity + Config.GroupSize - 1) / Config.GroupSize
+                : 0;
+            for (int i = 0; i < MovementSystems.Count; i++)
+            {
+                MovementSystems[i].SystemIndex = i + 1;
+                MovementSystems[i].RefreshGroupOptions(MovementSystems, totalGroups);
+            }
+        }
+
+        private Models.MovementProcessorGroupModel CreateMovementSystemModel(Config.MovementProcessorGroup group)
+        {
+            var model = new Models.MovementProcessorGroupModel(group);
+            model.ConfigChanged = ReloadConfigLive;
+            
+            // Wire up ConfigChanged for all existing processors
+            foreach (var proc in model.Processors)
+            {
+                proc.ConfigChanged = ReloadConfigLive;
+            }
+            
+            return model;
+        }
+
+        private void ReloadConfigLive()
+        {
+            // Only reload if simulation is running (mimics legacy editor behavior)
+            if (!_suppressReset)
+            {
+                _simulation.ReloadConfig(Config);
+            }
         }
 
         [RelayCommand]
@@ -487,7 +780,8 @@ namespace Editor.ViewModels
                 ? desktop.MainWindow
                 : null;
 
-            if (mainWindow == null) return;
+            if (mainWindow == null)
+                return;
 
             try
             {
@@ -525,11 +819,11 @@ namespace Editor.ViewModels
                     int sysIdx = 0;
                     foreach (var proc in Config.Processors)
                     {
-                        var m = new Models.MovementProcessorGroupModel(proc);
+                        var m = CreateMovementSystemModel(proc);
                         m.Name = $"System {++sysIdx}";
                         MovementSystems.Add(m);
                     }
-                    SelectedSystem = MovementSystems.FirstOrDefault();
+                    RefreshAllGroupIndexOptions();
                     _suppressReset = false;
 
                     // Reset simulation with new config (OnConfigChanged will refresh all UI bindings)
@@ -549,7 +843,8 @@ namespace Editor.ViewModels
                 ? desktop.MainWindow
                 : null;
 
-            if (mainWindow == null) return;
+            if (mainWindow == null)
+                return;
 
             try
             {
@@ -581,9 +876,141 @@ namespace Editor.ViewModels
             catch (System.Exception ex)
             {
                 Logging.Exception(ex);
-                Logging.Err($"Failed to export configuration: {ex.Message}");
+                                Logging.Err($"Failed to export configuration: {ex.Message}");
             }
-        }    }
+        }
+
+        private async Task LoadState()
+        {
+            var mainWindow = Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+                ? desktop.MainWindow
+                : null;
+
+            if (mainWindow == null)
+                return;
+
+            try
+            {
+                var files = await mainWindow.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                {
+                    Title = "Load State Save",
+                    FileTypeFilter = new[] { new FilePickerFileType("State Files") { Patterns = new[] { "*.bin" } } },
+                    AllowMultiple = false
+                });
+
+                if (files != null && files.Count > 0 && files[0] != null)
+                {
+                    var file = files[0];
+                    var filePath = file.TryGetLocalPath();
+                    if (filePath == null)
+                    {
+                        Logging.Err("Could not get file path");
+                        return;
+                    }
+
+                    // Stop simulation if running
+                    if (IsSimulationRunning)
+                    {
+                        StopSimulation();
+                    }
+
+                    if (!_simulation.Load(filePath))
+                    {
+                        Logging.Err("Failed to load state save file");
+                        return;
+                    }
+
+                    // Update config from loaded state
+                    Config = _simulation.Config;
+                    
+                    // Update world selection if loaded world is available
+                    var loadedWorldName = _simulation.WorldName;
+                    if (!string.IsNullOrEmpty(loadedWorldName))
+                    {
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            SelectedWorldName = loadedWorldName;
+                        });
+                    }
+
+                    // Re-initialize movement systems from loaded config
+                    _suppressReset = true;
+                    MovementSystems.Clear();
+                    int sysIdx = 0;
+                    foreach (var proc in Config.Processors)
+                    {
+                        var m = CreateMovementSystemModel(proc);
+                        m.Name = $"System {++sysIdx}";
+                        MovementSystems.Add(m);
+                    }
+                    RefreshAllGroupIndexOptions();
+                    _suppressReset = false;
+
+                    // Update stats
+                    UpdateSimulationStats();
+
+                    // Count dead agents
+                    int numDead = 0;
+                    foreach (var agent in _simulation.Agents)
+                    {
+                        if (agent.CurrentState == WalkerSim.Agent.State.Dead)
+                            numDead++;
+                    }
+
+                    Logging.Info($"Loaded state save with {_simulation.AgentCount} agents, {numDead} dead.");
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Logging.Exception(ex);
+                Logging.Err($"Failed to load state: {ex.Message}");
+            }
+        }
+
+        private async Task SaveState()
+        {
+            var mainWindow = Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+                ? desktop.MainWindow
+                : null;
+
+            if (mainWindow == null)
+                return;
+
+            try
+            {
+                var file = await mainWindow.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+                {
+                    Title = "Save State",
+                    DefaultExtension = "bin",
+                    FileTypeChoices = new[] { new FilePickerFileType("State Files") { Patterns = new[] { "*.bin" } } },
+                    SuggestedFileName = "WalkerSim.bin"
+                });
+
+                if (file != null)
+                {
+                    var path = file.TryGetLocalPath();
+                    if (path == null)
+                    {
+                        Logging.Err("Could not get file path");
+                        return;
+                    }
+
+                    if (!_simulation.Save(path))
+                    {
+                        Logging.Err("Failed to save state");
+                        return;
+                    }
+
+                    Logging.Info($"State saved to {System.IO.Path.GetFileName(path)}");
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Logging.Exception(ex);
+                Logging.Err($"Failed to save state: {ex.Message}");
+            }
+        }
+    }
 
     // Implement Logging ISink to receive log messages
     public partial class EditorViewModel : Logging.ISink

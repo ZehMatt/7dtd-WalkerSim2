@@ -10,3 +10,4 @@
 .vs
 obj
 bin
+/Editor/*.user

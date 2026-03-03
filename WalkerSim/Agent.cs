@@ -1,6 +1,6 @@
 namespace WalkerSim
 {
-    internal class Agent : GridObject
+    public class Agent : GridObject
     {
         public enum State
         {

@@ -240,6 +240,14 @@
                                         </xs:annotation>
                                     </xs:attribute>
 
+                                    <xs:attribute name="Name" type="xs:string" use="optional">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                Optional display name for this processor group
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+
                                     <xs:attribute name="Color" type="xs:string" use="required">
                                         <xs:annotation>
                                             <xs:documentation>

@@ -123,6 +123,9 @@ namespace WalkerSim
         [XmlType("ProcessorGroup")]
         public class MovementProcessorGroup
         {
+            [XmlAttribute("Name")]
+            public string Name = "";
+
             [XmlAttribute("Group")]
             public int Group = -1;
 

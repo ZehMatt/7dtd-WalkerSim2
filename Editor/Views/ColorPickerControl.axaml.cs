@@ -25,11 +25,13 @@ namespace Editor.Views
         public ColorPickerControl()
         {
             _vm = new ColorPickerViewModel();
-
-            // The control owns its DataContext, so the Flyout content will also
-            // inherit it regardless of the parent's DataContext.
-            DataContext = _vm;
             InitializeComponent();
+
+            // Set DataContext on the INNER grid only — not on the UserControl itself.
+            // If we set it on the UserControl, the external binding
+            // ColorString="{Binding Color, Mode=TwoWay}" would resolve against _vm
+            // (which has no Color property) instead of the MovementProcessorGroupModel.
+            InnerGrid.DataContext = _vm;
 
             _vm.ColorChanged = str =>
             {

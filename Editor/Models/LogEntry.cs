@@ -1,5 +1,7 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+using Avalonia;
 using Avalonia.Media;
+using Avalonia.Styling;
+using CommunityToolkit.Mvvm.ComponentModel;
 using WalkerSim;
 
 namespace Editor.Models
@@ -12,27 +14,31 @@ namespace Editor.Models
         [ObservableProperty]
         private string _timestamp = string.Empty;
 
-        private IBrush? _foreground;
-
         public IBrush? Foreground
         {
             get
             {
-                if (_foreground == null)
+                var key = Level switch
                 {
-                    // Fallback colors
-                    _foreground = Level switch
-                    {
-                        WalkerSim.Logging.Level.Info => new SolidColorBrush(Colors.White),
-                        WalkerSim.Logging.Level.Warning => new SolidColorBrush(Colors.Yellow),
-                        WalkerSim.Logging.Level.Error => new SolidColorBrush(Colors.Red),
-                        _ => new SolidColorBrush(Colors.White)
-                    };
-                }
+                    WalkerSim.Logging.Level.Warning => "LogWarning",
+                    WalkerSim.Logging.Level.Error   => "LogError",
+                    _                               => "LogInfo"
+                };
 
-                return _foreground;
+                var app = Application.Current;
+                if (app != null &&
+                    app.Resources.TryGetResource(key, app.ActualThemeVariant, out var resource) &&
+                    resource is IBrush brush)
+                    return brush;
+
+                // Fallback when resources are unavailable
+                return Level switch
+                {
+                    WalkerSim.Logging.Level.Warning => Brushes.Yellow,
+                    WalkerSim.Logging.Level.Error   => Brushes.Red,
+                    _                               => Brushes.White
+                };
             }
-            set => _foreground = value;
         }
 
         public WalkerSim.Logging.Level Level { get; set; } = WalkerSim.Logging.Level.Info;

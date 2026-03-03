@@ -234,9 +234,9 @@ namespace WalkerSim
                 walkSpeed *= 0.25f;
             }
 
-            if (TimeScale > 4.0f)
+            if (TimeScale >= 64.0f)
             {
-                walkSpeed *= 4.0f;
+                walkSpeed *= 2.0f;
             }
 
             var realPower = speedScale * walkSpeed;

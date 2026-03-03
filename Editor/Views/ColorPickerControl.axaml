@@ -1,63 +1,63 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:converters="using:Editor.Converters"
-             x:Class="Editor.Views.ColorPickerControl"
-             x:CompileBindings="False">
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:converters="using:Editor.Converters"
+			 x:Class="Editor.Views.ColorPickerControl"
+			 x:CompileBindings="False">
 
-    <Grid ColumnDefinitions="40,8,*">
+	<Grid x:Name="InnerGrid" ColumnDefinitions="40,8,*">
 
-        <!-- Swatch button — opens flyout picker -->
-        <Button Grid.Column="0"
-                Width="36" Height="36"
-                Padding="2"
-                CornerRadius="4"
-                VerticalAlignment="Center">
-            <Button.Flyout>
-                <Flyout Placement="BottomEdgeAlignedLeft">
-                    <StackPanel Width="280" Spacing="10" Margin="8">
+		<!-- Swatch button — opens flyout picker -->
+		<Button Grid.Column="0"
+				Width="36" Height="36"
+				Padding="2"
+				CornerRadius="4"
+				VerticalAlignment="Center">
+			<Button.Flyout>
+				<Flyout Placement="BottomEdgeAlignedLeft">
+					<StackPanel Width="280" Spacing="10" Margin="8">
 
-                        <!-- Preview bar -->
-                        <Border Height="32" CornerRadius="3"
-                                Background="{Binding ColorValue, Converter={x:Static converters:ColorToBrushConverter.Instance}}"
-                                BorderBrush="#555" BorderThickness="1"/>
+						<!-- Preview bar -->
+						<Border Height="32" CornerRadius="3"
+								Background="{Binding ColorValue, Converter={x:Static converters:ColorToBrushConverter.Instance}}"
+								BorderBrush="{DynamicResource EditorBorderMid}" BorderThickness="1"/>
 
-                        <!-- R -->
-                        <Grid ColumnDefinitions="16,*,64">
-                            <TextBlock Grid.Column="0" Text="R" Foreground="#FF6666" FontWeight="Bold" VerticalAlignment="Center"/>
-                            <Slider Grid.Column="1" Value="{Binding ColorR, Mode=TwoWay}" Minimum="0" Maximum="255" Margin="8,0" VerticalAlignment="Center"/>
-                            <NumericUpDown Grid.Column="2" Value="{Binding ColorR, Mode=TwoWay}" Minimum="0" Maximum="255" Increment="1" FormatString="0" Padding="4,2"/>
-                        </Grid>
+						<!-- R -->
+						<Grid ColumnDefinitions="16,*,64">
+							<TextBlock Grid.Column="0" Text="R" Foreground="#FF6666" FontWeight="Bold" VerticalAlignment="Center"/>
+							<Slider Grid.Column="1" Value="{Binding ColorR, Mode=TwoWay}" Minimum="0" Maximum="255" Margin="8,0" VerticalAlignment="Center"/>
+							<NumericUpDown Grid.Column="2" Value="{Binding ColorR, Mode=TwoWay}" Minimum="0" Maximum="255" Increment="1" FormatString="0" Padding="4,2"/>
+						</Grid>
 
-                        <!-- G -->
-                        <Grid ColumnDefinitions="16,*,64">
-                            <TextBlock Grid.Column="0" Text="G" Foreground="#66CC66" FontWeight="Bold" VerticalAlignment="Center"/>
-                            <Slider Grid.Column="1" Value="{Binding ColorG, Mode=TwoWay}" Minimum="0" Maximum="255" Margin="8,0" VerticalAlignment="Center"/>
-                            <NumericUpDown Grid.Column="2" Value="{Binding ColorG, Mode=TwoWay}" Minimum="0" Maximum="255" Increment="1" FormatString="0" Padding="4,2"/>
-                        </Grid>
+						<!-- G -->
+						<Grid ColumnDefinitions="16,*,64">
+							<TextBlock Grid.Column="0" Text="G" Foreground="#66CC66" FontWeight="Bold" VerticalAlignment="Center"/>
+							<Slider Grid.Column="1" Value="{Binding ColorG, Mode=TwoWay}" Minimum="0" Maximum="255" Margin="8,0" VerticalAlignment="Center"/>
+							<NumericUpDown Grid.Column="2" Value="{Binding ColorG, Mode=TwoWay}" Minimum="0" Maximum="255" Increment="1" FormatString="0" Padding="4,2"/>
+						</Grid>
 
-                        <!-- B -->
-                        <Grid ColumnDefinitions="16,*,64">
-                            <TextBlock Grid.Column="0" Text="B" Foreground="#6699FF" FontWeight="Bold" VerticalAlignment="Center"/>
-                            <Slider Grid.Column="1" Value="{Binding ColorB, Mode=TwoWay}" Minimum="0" Maximum="255" Margin="8,0" VerticalAlignment="Center"/>
-                            <NumericUpDown Grid.Column="2" Value="{Binding ColorB, Mode=TwoWay}" Minimum="0" Maximum="255" Increment="1" FormatString="0" Padding="4,2"/>
-                        </Grid>
+						<!-- B -->
+						<Grid ColumnDefinitions="16,*,64">
+							<TextBlock Grid.Column="0" Text="B" Foreground="#6699FF" FontWeight="Bold" VerticalAlignment="Center"/>
+							<Slider Grid.Column="1" Value="{Binding ColorB, Mode=TwoWay}" Minimum="0" Maximum="255" Margin="8,0" VerticalAlignment="Center"/>
+							<NumericUpDown Grid.Column="2" Value="{Binding ColorB, Mode=TwoWay}" Minimum="0" Maximum="255" Increment="1" FormatString="0" Padding="4,2"/>
+						</Grid>
 
-                    </StackPanel>
-                </Flyout>
-            </Button.Flyout>
+					</StackPanel>
+				</Flyout>
+			</Button.Flyout>
 
-            <Border CornerRadius="2"
-                    Background="{Binding ColorValue, Converter={x:Static converters:ColorToBrushConverter.Instance}}"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"/>
-        </Button>
+			<Border CornerRadius="2"
+					Background="{Binding ColorValue, Converter={x:Static converters:ColorToBrushConverter.Instance}}"
+					HorizontalAlignment="Stretch"
+					VerticalAlignment="Stretch"/>
+		</Button>
 
-        <!-- Hex text input -->
-        <TextBox Grid.Column="2"
-                 Text="{Binding ColorString, Mode=TwoWay}"
-                 Watermark="#RRGGBB"
-                 VerticalAlignment="Center"/>
+		<!-- Hex text input -->
+		<TextBox Grid.Column="2"
+				 Text="{Binding ColorString, Mode=TwoWay}"
+				 Watermark="#RRGGBB"
+				 VerticalAlignment="Center"/>
 
-    </Grid>
+	</Grid>
 
 </UserControl>

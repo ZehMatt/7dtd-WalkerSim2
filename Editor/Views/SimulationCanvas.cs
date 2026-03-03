@@ -3,8 +3,10 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using System;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using WalkerSim;
 
@@ -18,6 +20,7 @@ namespace Editor.Views
         private double _zoom = 1.0;
         private const double MinZoom = 0.1;
         private const double MaxZoom = 16.0;
+        private const double BarHeight = 48.0;
 
         // Pan state
         private double _panX = 0.0;
@@ -50,6 +53,28 @@ namespace Editor.Views
         private IPen _eventPen;
         private IPen _cityPen;
         private IPen _prefabPen;
+        private IPen _highlightPen;
+
+        // ── Agent tracking / highlight ────────────────────────────────────────────
+        private Agent _trackedAgent;
+        private Agent _highlightAgent;
+        private double _highlightTimer;      // seconds remaining; double.MaxValue = forever
+        private double _blinkPhase;          // 0..2, draw when < 1
+        private const double BlinkRate = 5.0; // Hz
+        private const double TrackZoom = 6.0;
+
+        // Smooth pan / zoom target
+        private bool   _smoothActive;
+        private double _smoothTargetPanX;
+        private double _smoothTargetPanY;
+        private double _smoothTargetZoom = 1.0;
+
+        private DateTime _lastRenderTime = DateTime.UtcNow;
+
+        /// <summary>Called by the canvas when the user drags and cancels tracking.</summary>
+        public Action? TrackingStopped;
+
+        private static double Lerp(double a, double b, double t) => a + (b - a) * t;
 
         private void EnsureScaledPens()
         {
@@ -59,6 +84,7 @@ namespace Editor.Views
             _eventPen   = new Pen(_eventPenBrush, t);
             _cityPen    = new Pen(_cityPenBrush, t);
             _prefabPen  = new Pen(_prefabPenBrush, t * 0.5);
+            _highlightPen = new Pen(new SolidColorBrush(Color.FromArgb(255, 255, 220, 0)), t * 2.0);
             _cachedPenZoom = _zoom;
         }
 
@@ -130,19 +156,17 @@ namespace Editor.Views
             var h = Bounds.Height;
             if (w <= 0 || h <= 0) return;
 
-            var viewSize = Math.Min(w, h);
+            var viewSize = Math.Min(w, h - BarHeight);
             var worldHalf = (viewSize * _zoom) / 2.0;
             const double minVisible = 50.0;
 
-            // World center is at (w/2 + panX, h/2 + panY) in screen space.
-            // Ensure world right edge >= minVisible:  w/2 + panX + worldHalf >= minVisible
-            // Ensure world left edge  <= w-minVisible: w/2 + panX - worldHalf <= w - minVisible
+            // World center is at (w/2 + panX, BarHeight + (h-BarHeight)/2 + panY) in screen space.
             _panX = Math.Clamp(_panX,
                 minVisible - w / 2.0 - worldHalf,
                 w / 2.0 - minVisible + worldHalf);
             _panY = Math.Clamp(_panY,
-                minVisible - h / 2.0 - worldHalf,
-                h / 2.0 - minVisible + worldHalf);
+                minVisible - (h - BarHeight) / 2.0 - worldHalf,
+                (h - BarHeight) / 2.0 - minVisible + worldHalf);
         }
 
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
@@ -198,6 +222,16 @@ namespace Editor.Views
             base.OnPointerMoved(e);
             if (_isDragging)
             {
+                // Stop tracking if the user manually pans the view.
+                if (_trackedAgent != null)
+                {
+                    _trackedAgent = null;
+                    _highlightAgent = null;
+                    _highlightTimer = 0;
+                    _smoothActive = false;
+                    TrackingStopped?.Invoke();
+                }
+
                 var pos = e.GetPosition(this);
                 _panX += pos.X - _dragStart.X;
                 _panY += pos.Y - _dragStart.Y;
@@ -227,6 +261,56 @@ namespace Editor.Views
             return (mapped.X, mapped.Y);
         }
 
+        /// <summary>Compute the pan values that would center <paramref name="agent"/> at the given zoom.</summary>
+        private (double panX, double panY) ComputeCenterPan(Agent agent, double zoom, double width, double height)
+        {
+            var viewSize = Math.Min(width, height);
+            var (cx, cy) = SimToCanvas(agent.Position, viewSize, viewSize);
+            // Derived from: screenCenter = (canvasPos - viewSize/2) * zoom + viewSize/2 + offset + pan
+            // Solving for pan such that screenCenter = width/2:
+            return ((viewSize / 2.0 - cx) * zoom, (viewSize / 2.0 - cy) * zoom);
+        }
+
+        /// <summary>Smoothly pan and zoom to center on the agent, then blink it briefly.</summary>
+        public void GoToAgent(Agent agent)
+        {
+            _highlightAgent = agent;
+            _highlightTimer = 2.5;
+            _blinkPhase = 0;
+
+            var bounds = Bounds;
+            _smoothTargetZoom = Math.Max(_zoom, TrackZoom);
+            if (bounds.Width > 0)
+                (_smoothTargetPanX, _smoothTargetPanY) = ComputeCenterPan(agent, _smoothTargetZoom, bounds.Width, bounds.Height);
+            _smoothActive = true;
+            InvalidateVisual();
+        }
+
+        /// <summary>Continuously follow the agent, blinking it until tracking is stopped.</summary>
+        public void TrackAgent(Agent agent)
+        {
+            _trackedAgent = agent;
+            _highlightAgent = agent;
+            _highlightTimer = double.MaxValue;
+            _blinkPhase = 0;
+
+            var bounds = Bounds;
+            _smoothTargetZoom = TrackZoom;
+            if (bounds.Width > 0)
+                (_smoothTargetPanX, _smoothTargetPanY) = ComputeCenterPan(agent, _smoothTargetZoom, bounds.Width, bounds.Height);
+            _smoothActive = true;
+            InvalidateVisual();
+        }
+
+        /// <summary>Stop tracking and clear highlight.</summary>
+        public void StopTracking()
+        {
+            _trackedAgent = null;
+            _highlightAgent = null;
+            _highlightTimer = 0;
+            _smoothActive = false;
+        }
+
         private void EnsureGroupBrushes()
         {
             var groupCount = _simulation.GroupCount;
@@ -252,14 +336,60 @@ namespace Editor.Views
             var height = bounds.Height;
             if (width <= 0 || height <= 0) return;
 
+            // ── Animation step ─────────────────────────────────────────────────────
+            var now = DateTime.UtcNow;
+            var dt = Math.Min((now - _lastRenderTime).TotalSeconds, 0.1);
+            _lastRenderTime = now;
+
+            // Update tracking target every frame so the camera follows the moving agent.
+            if (_trackedAgent != null)
+            {
+                _smoothTargetZoom = TrackZoom;
+                (_smoothTargetPanX, _smoothTargetPanY) = ComputeCenterPan(_trackedAgent, _smoothTargetZoom, width, height);
+                _smoothActive = true;
+            }
+
+            // Lerp pan and zoom toward targets.
+            if (_smoothActive)
+            {
+                const double speed = 10.0;
+                double lerpT = 1.0 - Math.Exp(-speed * dt);
+                _panX = Lerp(_panX, _smoothTargetPanX, lerpT);
+                _panY = Lerp(_panY, _smoothTargetPanY, lerpT);
+                _zoom = Lerp(_zoom, _smoothTargetZoom, lerpT);
+                ClampPan();
+
+                // Stop one-shot smooth pan once close enough (tracking keeps it going).
+                if (_trackedAgent == null &&
+                    Math.Abs(_panX - _smoothTargetPanX) < 0.5 &&
+                    Math.Abs(_panY - _smoothTargetPanY) < 0.5)
+                    _smoothActive = false;
+            }
+
+            // Advance blink.
+            if (_highlightAgent != null)
+            {
+                _blinkPhase = (_blinkPhase + dt * BlinkRate) % 2.0;
+                if (_highlightTimer > 0 && _highlightTimer < double.MaxValue)
+                {
+                    _highlightTimer -= dt;
+                    if (_highlightTimer <= 0)
+                    {
+                        _highlightTimer = 0;
+                        _highlightAgent = null;
+                    }
+                }
+            }
+
             // Fill the entire control background.
             context.FillRectangle(Brushes.Black, new Rect(bounds.Size));
 
             // Keep a 1:1 square viewport centered in the canvas so the world
             // map is never stretched when the window is resized.
-            var viewSize = Math.Min(width, height);
+            var worldHeight = height - BarHeight;
+            var viewSize = Math.Min(width, worldHeight);
             var offsetX = Math.Floor((width - viewSize) / 2.0);
-            var offsetY = Math.Floor((height - viewSize) / 2.0);
+            var offsetY = BarHeight + Math.Floor((worldHeight - viewSize) / 2.0);
 
             EnsureGroupBrushes();
             EnsureScaledPens();
@@ -273,7 +403,7 @@ namespace Editor.Views
                           * Matrix.CreateTranslation(vcx, vcy)
                           * Matrix.CreateTranslation(offsetX + _panX, offsetY + _panY);
 
-            using (context.PushClip(new Rect(bounds.Size)))
+            using (context.PushClip(new Rect(0, BarHeight, width, height - BarHeight)))
             using (context.PushTransform(transform))
             {
                 if (ShowBiomes) RenderBiomes(context, viewSize, viewSize);
@@ -284,8 +414,29 @@ namespace Editor.Views
                 if (ShowActiveAgents) RenderActiveAgents(context, viewSize, viewSize);
                 RenderPlayers(context, viewSize, viewSize);
                 if (ShowEvents) RenderEvents(context, viewSize, viewSize);
-                RenderWindArrow(context);
+                // Draw highlight/blink on top of everything.
+                if (_highlightAgent != null && _blinkPhase < 1.0)
+                    RenderHighlightAgent(context, viewSize, viewSize);
             }
+
+            // HUD bar — drawn in screen space, never affected by zoom/pan.
+            RenderHUDBar(context, width);
+
+            // Keep animating while tracking, smooth-panning, or blinking.
+            bool animating = _smoothActive || _trackedAgent != null || _highlightAgent != null;
+            if (animating)
+                Dispatcher.UIThread.Post(() => InvalidateVisual(), Avalonia.Threading.DispatcherPriority.Render);
+        }
+
+        private void RenderHighlightAgent(DrawingContext context, double width, double height)
+        {
+            var agent = _highlightAgent;
+            if (agent == null) return;
+
+            EnsureScaledPens();
+            var (cx, cy) = SimToCanvas(agent.Position, width, height);
+            double r = 6.0 / _zoom;
+            context.DrawEllipse(null, _highlightPen, new Point(cx, cy), r, r);
         }
 
         private void RenderRoads(DrawingContext context, double width, double height)
@@ -503,26 +654,79 @@ namespace Editor.Views
             }
         }
 
-        private void RenderWindArrow(DrawingContext context)
+        private void RenderHUDBar(DrawingContext context, double width)
         {
-            // Draw a simple wind direction arrow in the top-left corner
+            bool dark = Application.Current?.ActualThemeVariant != ThemeVariant.Light;
+
+            var barBg = dark
+                ? new SolidColorBrush(Color.FromArgb(210, 30, 30, 30))
+                : new SolidColorBrush(Color.FromArgb(220, 240, 240, 240));
+            var barBorder = dark
+                ? new SolidColorBrush(Color.FromArgb(255, 58, 58, 58))
+                : new SolidColorBrush(Color.FromArgb(255, 160, 160, 160));
+            IBrush arrowBrush = dark
+                ? Brushes.White
+                : new SolidColorBrush(Color.FromRgb(30, 30, 30));
+            var textPrimary = dark
+                ? new SolidColorBrush(Color.FromArgb(200, 200, 200, 200))
+                : new SolidColorBrush(Color.FromArgb(220, 30, 30, 30));
+            var textSecondary = dark
+                ? new SolidColorBrush(Color.FromArgb(140, 180, 180, 180))
+                : new SolidColorBrush(Color.FromArgb(180, 80, 80, 80));
+
+            // Background and border
+            context.FillRectangle(barBg, new Rect(0, 0, width, BarHeight));
+            context.FillRectangle(barBorder, new Rect(0, BarHeight - 1, width, 1));
+
             var windDir = _simulation.WindDirection;
-            double cx = 26, cy = 16, length = 14, headSize = 5;
+            double cx = 28, cy = BarHeight / 2.0;
+            double shaft = 8.0;   // half-length of the line
+            double headL = 7.0;   // arrowhead length
+            double headW = 4.0;   // arrowhead half-width
 
-            double dx = windDir.X * length;
-            double dy = windDir.Y * length;
+            double angle = Math.Atan2(windDir.Y, windDir.X);
+            double cos = Math.Cos(angle), sin = Math.Sin(angle);
+            double perpCos = Math.Cos(angle + Math.PI / 2), perpSin = Math.Sin(angle + Math.PI / 2);
 
-            var start = new Point(cx - dx, cy - dy);
-            var end = new Point(cx + dx, cy + dy);
+            // Shaft: from tail to where head base starts
+            var tail     = new Point(cx - cos * shaft, cy - sin * shaft);
+            var headBase = new Point(cx + cos * (shaft - headL), cy + sin * (shaft - headL));
+            var tip      = new Point(cx + cos * shaft, cy + sin * shaft);
 
-            var pen = new Pen(Brushes.White, 1.5);
-            context.DrawLine(pen, start, end);
+            var pen = new Pen(arrowBrush, 1.5);
+            context.DrawLine(pen, tail, headBase);
 
-            // Simple arrowhead
-            double angle = Math.Atan2(dy, dx);
-            double a1 = angle + 2.5, a2 = angle - 2.5;
-            context.DrawLine(pen, end, new Point(end.X - headSize * Math.Cos(a1), end.Y - headSize * Math.Sin(a1)));
-            context.DrawLine(pen, end, new Point(end.X - headSize * Math.Cos(a2), end.Y - headSize * Math.Sin(a2)));
+            // Filled triangle arrowhead
+            var wing1 = new Point(headBase.X + perpCos * headW, headBase.Y + perpSin * headW);
+            var wing2 = new Point(headBase.X - perpCos * headW, headBase.Y - perpSin * headW);
+            var geo = new PathGeometry();
+            var fig = new PathFigure { StartPoint = tip, IsClosed = true, IsFilled = true };
+            fig.Segments.Add(new LineSegment { Point = wing1 });
+            fig.Segments.Add(new LineSegment { Point = wing2 });
+            geo.Figures.Add(fig);
+            context.DrawGeometry(arrowBrush, null, geo);
+
+            // Labels
+            var typeface = new Typeface(FontFamily.Default);
+
+            void DrawHudText(string header, string value, ref double x)
+            {
+                var headerText = new FormattedText(header, CultureInfo.CurrentCulture,
+                    FlowDirection.LeftToRight, typeface, 10, textSecondary);
+                var valueText = new FormattedText(value, CultureInfo.CurrentCulture,
+                    FlowDirection.LeftToRight, typeface, 12, textPrimary);
+                context.DrawText(headerText, new Point(x, cy - headerText.Height - 1));
+                context.DrawText(valueText,  new Point(x, cy + 1));
+                x += Math.Max(headerText.Width, valueText.Width) + 16;
+            }
+
+            double textX = cx + shaft + 8;
+            var windDir2 = _simulation.WindDirection;
+            var windTarget = _simulation.WindDirectionTarget;
+            var nextChange = _simulation.TickNextWindChange;
+            DrawHudText("Wind Dir",    $"{windDir2.X:0.00}, {windDir2.Y:0.00}", ref textX);
+            DrawHudText("Wind Target", $"{windTarget.X:0.00}, {windTarget.Y:0.00}", ref textX);
+            DrawHudText("Next Change", nextChange.ToString(), ref textX);
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
