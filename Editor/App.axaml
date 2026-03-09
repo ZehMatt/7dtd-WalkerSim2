@@ -1,7 +1,9 @@
 <Application xmlns="https://github.com/avaloniaui"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 x:Class="Editor.App"
+			 x:CompileBindings="True"
 			 xmlns:local="using:Editor"
+			 xmlns:controls="using:Editor.Controls"
 			 RequestedThemeVariant="Default">
 	<!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
@@ -11,6 +13,14 @@
 
 	<Application.Styles>
 		<FluentTheme />
+		<!-- Suppress validation error overlay; range is enforced by Minimum/Maximum and the clamp behavior below. -->
+		<Style Selector="NumericUpDown /template/ DataValidationErrors">
+			<Setter Property="ErrorTemplate" Value="{x:Null}"/>
+		</Style>
+		<!-- Clamp value immediately as the user types, globally for all NumericUpDown controls. -->
+		<Style Selector="NumericUpDown">
+			<Setter Property="(controls:NumericUpDownBehavior.ClampImmediately)" Value="True"/>
+		</Style>
 	</Application.Styles>
 
 	<Application.Resources>

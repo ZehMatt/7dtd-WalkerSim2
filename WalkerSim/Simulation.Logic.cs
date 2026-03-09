@@ -149,7 +149,8 @@ namespace WalkerSim
             // Sanity check, omitted for release builds.
             CheckPositionInBounds(agent.Position);
 
-            var curVel = agent.Velocity * 0.9999f;
+            // If no system is applying velocity changes to the agent, it should slow down over time.
+            var curVel = agent.Velocity * 0.75f;
 
             // Check if curVel is near zero.
             if (System.Math.Abs(curVel.X) < 1e-6f)
@@ -167,7 +168,7 @@ namespace WalkerSim
                 for (int i = 0; i < entryCount; i++)
                 {
                     var processor = entries[i];
-                    var addVel = processor.Handler(this, _state, agent, processor.Distance, processor.Power);
+                    var addVel = processor.Handler(this, _state, agent, processor.Distance, processor.Power, processor.Param1, processor.Param2);
                     addVel.Validate();
                     curVel += addVel;
                 }

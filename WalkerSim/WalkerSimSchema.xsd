@@ -202,6 +202,24 @@
                                                         </xs:documentation>
                                                     </xs:annotation>
                                                 </xs:attribute>
+                                                <xs:attribute name="Param1" type="xs:decimal"
+                                                    use="optional">
+                                                    <xs:annotation>
+                                                        <xs:documentation>
+                                                            Generic parameter 1,
+                                                            interpretation depends on processor type
+                                                        </xs:documentation>
+                                                    </xs:annotation>
+                                                </xs:attribute>
+                                                <xs:attribute name="Param2" type="xs:decimal"
+                                                    use="optional">
+                                                    <xs:annotation>
+                                                        <xs:documentation>
+                                                            Generic parameter 2,
+                                                            interpretation depends on processor type
+                                                        </xs:documentation>
+                                                    </xs:annotation>
+                                                </xs:attribute>
                                             </xs:complexType>
                                         </xs:element>
                                     </xs:sequence>

@@ -37,6 +37,7 @@ namespace WalkerSim
             LeftLowerLeg = 1 << 6,
             RightUpperLeg = 1 << 7,
             RightLowerLeg = 1 << 8,
+            LowerBody = LeftUpperLeg | LeftLowerLeg | RightUpperLeg | RightLowerLeg,
         }
 
         public enum MoveType

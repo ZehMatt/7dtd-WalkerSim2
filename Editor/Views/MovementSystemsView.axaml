@@ -4,10 +4,11 @@
 			 xmlns:models="using:Editor.Models"
 			 xmlns:converters="using:Editor.Converters"
 			 xmlns:views="using:Editor.Views"
+			 xmlns:controls="using:Editor.Controls"
 			 x:Class="Editor.Views.MovementSystemsView"
 			 x:Name="RootControl"
 			 x:DataType="vm:EditorViewModel"
-			 x:CompileBindings="False">
+			 x:CompileBindings="True">
 
 	<DockPanel>
 
@@ -54,8 +55,10 @@
 			<Border Grid.Column="0"
 					BorderBrush="{DynamicResource EditorBorderMid}"
 					BorderThickness="0,0,1,0">
-				<TreeView ItemsSource="{Binding MovementSystems}"
-						  SelectedItem="{Binding TreeSelectedItem, Mode=TwoWay}">
+				<TreeView x:Name="SystemsTree"
+						  ItemsSource="{Binding MovementSystems}"
+						  SelectedItem="{Binding TreeSelectedItem, Mode=TwoWay}"
+						  AutoScrollToSelectedItem="True">
 					<TreeView.DataTemplates>
 						<TreeDataTemplate DataType="models:MovementProcessorGroupModel"
 										  ItemsSource="{Binding Processors}">
@@ -104,12 +107,13 @@
 								<!-- Name -->
 								<Grid ColumnDefinitions="140,*">
 									<TextBlock Grid.Column="0" Text="Name:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
-									<TextBox Grid.Column="1" Text="{Binding Name, Mode=TwoWay}" FontSize="12"/>
+									<TextBox Grid.Column="1" Text="{Binding Name, Mode=TwoWay}" Watermark="{Binding DisplayName}" FontSize="12"/>
 								</Grid>
 
 								<!-- Affected Group -->
 								<Grid ColumnDefinitions="140,*">
-									<TextBlock Grid.Column="0" Text="Affected Group:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+									<controls:LabelWithHelp Grid.Column="0" LabelText="Affected Group:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"
+										HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/systems.html#group-number"/>
 									<ComboBox Grid.Column="1"
 											  ItemsSource="{Binding GroupIndexOptions}"
 											  SelectedItem="{Binding SelectedGroupOption, Mode=TwoWay}"
@@ -118,7 +122,8 @@
 
 								<!-- Speed Scale -->
 								<Grid ColumnDefinitions="140,*">
-									<TextBlock Grid.Column="0" Text="Speed Scale:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+									<controls:LabelWithHelp Grid.Column="0" LabelText="Speed Scale:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"
+										HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/systems.html#speedscale"/>
 									<NumericUpDown Grid.Column="1"
 												   Value="{Binding SpeedScale}"
 												   Minimum="0" Maximum="10" Increment="0.1"
@@ -127,14 +132,16 @@
 
 								<!-- Color -->
 								<Grid ColumnDefinitions="140,*">
-									<TextBlock Grid.Column="0" Text="Color:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+									<controls:LabelWithHelp Grid.Column="0" LabelText="Color:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"
+										HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/systems.html#color"/>
 									<views:ColorPickerControl Grid.Column="1"
 															  ColorString="{Binding Color, Mode=TwoWay}"/>
 								</Grid>
 
 								<!-- Post Spawn Behavior -->
 								<Grid ColumnDefinitions="140,*">
-									<TextBlock Grid.Column="0" Text="Post Spawn:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+									<controls:LabelWithHelp Grid.Column="0" LabelText="Post Spawn:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"
+										HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/systems.html#postspawnbehavior"/>
 									<ComboBox Grid.Column="1"
 											  SelectedItem="{Binding PostSpawnBehavior, Mode=TwoWay}"
 											  ItemsSource="{Binding DataContext.PostSpawnBehaviorOptions, ElementName=RootControl}"
@@ -143,7 +150,8 @@
 
 								<!-- Wander Speed -->
 								<Grid ColumnDefinitions="140,*">
-									<TextBlock Grid.Column="0" Text="Wander Speed:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+									<controls:LabelWithHelp Grid.Column="0" LabelText="Wander Speed:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"
+										HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/systems.html#postspawnwanderspeed"/>
 									<ComboBox Grid.Column="1"
 											  SelectedItem="{Binding PostSpawnWanderSpeed, Mode=TwoWay}"
 											  ItemsSource="{Binding DataContext.WanderingSpeedOptions, ElementName=RootControl}"
@@ -172,8 +180,8 @@
 								</Grid>
 
 								<!-- Distance -->
-								<Grid ColumnDefinitions="110,*">
-									<TextBlock Grid.Column="0" Text="Distance:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+								<Grid ColumnDefinitions="110,*" IsVisible="{Binding ShowDistance}">
+									<TextBlock Grid.Column="0" Text="{Binding DistanceLabel, StringFormat='{}{0}:'}" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
 									<NumericUpDown Grid.Column="1"
 												   Value="{Binding Distance}"
 												   Minimum="0" Maximum="10000" Increment="1"
@@ -181,12 +189,30 @@
 								</Grid>
 
 								<!-- Power -->
-								<Grid ColumnDefinitions="110,*">
-									<TextBlock Grid.Column="0" Text="Power:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+								<Grid ColumnDefinitions="110,*" IsVisible="{Binding ShowPower}">
+									<TextBlock Grid.Column="0" Text="{Binding PowerLabel, StringFormat='{}{0}:'}" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
 									<NumericUpDown Grid.Column="1"
 												   Value="{Binding Power}"
 												   Minimum="-1" Maximum="1" Increment="0.0001"
 												   FormatString="F4" FontSize="12"/>
+								</Grid>
+
+								<!-- Param1 -->
+								<Grid ColumnDefinitions="110,*" IsVisible="{Binding ShowParam1}">
+									<TextBlock Grid.Column="0" Text="{Binding Param1Label, StringFormat='{}{0}:'}" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+									<NumericUpDown Grid.Column="1"
+												   Value="{Binding Param1}"
+												   Minimum="0" Maximum="10000" Increment="1"
+												   FormatString="F1" FontSize="12"/>
+								</Grid>
+
+								<!-- Param2 -->
+								<Grid ColumnDefinitions="110,*" IsVisible="{Binding ShowParam2}">
+									<TextBlock Grid.Column="0" Text="{Binding Param2Label, StringFormat='{}{0}:'}" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+									<NumericUpDown Grid.Column="1"
+												   Value="{Binding Param2}"
+												   Minimum="0" Maximum="10000" Increment="1"
+												   FormatString="F1" FontSize="12"/>
 								</Grid>
 
 							</StackPanel>

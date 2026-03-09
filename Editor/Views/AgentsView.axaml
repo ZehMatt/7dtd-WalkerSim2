@@ -5,7 +5,7 @@
 			 x:Class="Editor.Views.AgentsView"
 			 x:Name="RootControl"
 			 x:DataType="vm:EditorViewModel"
-			 x:CompileBindings="False">
+			 x:CompileBindings="True">
 
 	<Grid RowDefinitions="Auto,Auto,*" ColumnDefinitions="220,4,*">
 

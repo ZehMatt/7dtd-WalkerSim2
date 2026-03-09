@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Editor.ViewModels;
@@ -14,6 +13,8 @@ namespace Editor
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
+
+            WalkerSim.Simulation.Instance.EditorMode = true;
         }
 
         public override void OnFrameworkInitializationCompleted()

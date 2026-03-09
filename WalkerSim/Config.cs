@@ -118,6 +118,12 @@ namespace WalkerSim
 
             [XmlAttribute("Power")]
             public float Power = 0.0f;
+
+            [XmlAttribute("Param1")]
+            public float Param1 = 0.0f;
+
+            [XmlAttribute("Param2")]
+            public float Param2 = 0.0f;
         }
 
         [XmlType("ProcessorGroup")]
@@ -230,6 +236,22 @@ namespace WalkerSim
             if (config.Processors == null)
             {
                 config.Processors = new List<MovementProcessorGroup>();
+            }
+
+            foreach (var proc in config.Processors)
+            {
+                if (string.IsNullOrEmpty(proc.Color))
+                    proc.Color = "#FF00FF";
+
+                foreach (var entry in proc.Entries)
+                {
+                    if (entry.Type == MovementProcessorType.CityVisitor &&
+                        entry.Param1 == 0f && entry.Param2 == 0f)
+                    {
+                        entry.Param1 = 20f;
+                        entry.Param2 = 35f;
+                    }
+                }
             }
         }
 

@@ -2,9 +2,10 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:vm="using:Editor.ViewModels"
 			 xmlns:enums="using:WalkerSim"
+			 xmlns:controls="using:Editor.Controls"
 			 x:Class="Editor.Views.BaseParametersView"
 			 x:DataType="vm:EditorViewModel"
-			 x:CompileBindings="False">
+			 x:CompileBindings="True">
 
 	<ScrollViewer>
 		<StackPanel Spacing="12" Margin="16">
@@ -18,7 +19,8 @@
 
 			<!-- World Selection -->
 			<StackPanel Spacing="4">
-				<TextBlock Text="Preview World:" FontWeight="Medium"/>
+				<controls:LabelWithHelp LabelText="Preview World:" FontWeight="Medium"
+					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html"/>
 				<ComboBox SelectedItem="{Binding SelectedWorldName, Mode=TwoWay}"
 						  ItemsSource="{Binding WorldNames}"
 						  IsEnabled="{Binding IsNotRunning}"
@@ -27,7 +29,8 @@
 
 			<!-- Population Density -->
 			<StackPanel Spacing="4">
-				<TextBlock Text="Population Density:" FontWeight="Medium"/>
+				<controls:LabelWithHelp LabelText="Population Density:" FontWeight="Medium"
+					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#populationdensity"/>
 				<NumericUpDown Value="{Binding PopulationDensity, Mode=TwoWay}"
 							   Minimum="0"
 							   Increment="10"
@@ -36,7 +39,8 @@
 
 			<!-- Group Size -->
 			<StackPanel Spacing="4">
-				<TextBlock Text="Group Size:" FontWeight="Medium"/>
+				<controls:LabelWithHelp LabelText="Group Size:" FontWeight="Medium"
+					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html"/>
 				<NumericUpDown Value="{Binding GroupSize, Mode=TwoWay}"
 							   Minimum="1"
 							   Maximum="1024"
@@ -46,7 +50,8 @@
 
 			<!-- Random Seed -->
 			<StackPanel Spacing="4">
-				<TextBlock Text="Random Seed:" FontWeight="Medium"/>
+				<controls:LabelWithHelp LabelText="Random Seed:" FontWeight="Medium"
+					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#randomseed"/>
 				<NumericUpDown Value="{Binding RandomSeed, Mode=TwoWay}"
 							   Minimum="0"
 							   Maximum="2147483647"
@@ -56,7 +61,8 @@
 
 			<!-- Spawn Activation Radius -->
 			<StackPanel Spacing="4">
-				<TextBlock Text="Spawn Activation Radius:" FontWeight="Medium"/>
+				<controls:LabelWithHelp LabelText="Spawn Activation Radius:" FontWeight="Medium"
+					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#spawnactivationradius"/>
 				<NumericUpDown Value="{Binding SpawnActivationRadius, Mode=TwoWay}"
 							   Minimum="0"
 							   Increment="1"/>
@@ -64,14 +70,16 @@
 
 			<!-- Start Position -->
 			<StackPanel Spacing="4">
-				<TextBlock Text="Start Position:" FontWeight="Medium"/>
+				<controls:LabelWithHelp LabelText="Start Position:" FontWeight="Medium"
+					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#agentstartposition"/>
 				<ComboBox SelectedItem="{Binding StartPosition, Mode=TwoWay}"
 						  ItemsSource="{Binding StartPositionOptions}"/>
 			</StackPanel>
 
 			<!-- Respawn Position -->
 			<StackPanel Spacing="4">
-				<TextBlock Text="Respawn Position:" FontWeight="Medium"/>
+				<controls:LabelWithHelp LabelText="Respawn Position:" FontWeight="Medium"
+					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#agentrespawnposition"/>
 				<ComboBox SelectedItem="{Binding RespawnPosition, Mode=TwoWay}"
 						  ItemsSource="{Binding RespawnPositionOptions}"/>
 			</StackPanel>
@@ -79,17 +87,22 @@
 			<!-- Start Agents Grouped -->
 			<CheckBox IsChecked="{Binding StartAgentsGrouped, Mode=TwoWay}"
 					  IsEnabled="{Binding IsNotRunning}"
-					  Content="Start Agents Grouped"
-					  Margin="0,8,0,4"/>
+					  Margin="0,8,0,4">
+				<controls:LabelWithHelp LabelText="Start Agents Grouped"
+					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#startagentsgrouped"/>
+			</CheckBox>
 
 			<!-- Enhanced Sound Awareness -->
 			<CheckBox IsChecked="{Binding EnhancedSoundAwareness, Mode=TwoWay}"
-					  Content="Enhanced Sound Awareness"
-					  Margin="0,4,0,8"/>
+					  Margin="0,4,0,8">
+				<controls:LabelWithHelp LabelText="Enhanced Sound Awareness"
+					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#enhancedsoundawareness"/>
+			</CheckBox>
 
 			<!-- Sound Distance Scale -->
 			<StackPanel Spacing="4">
-				<TextBlock Text="Sound Distance Scale:" FontWeight="Medium"/>
+				<controls:LabelWithHelp LabelText="Sound Distance Scale:" FontWeight="Medium"
+					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#sounddistancescale"/>
 				<NumericUpDown Value="{Binding SoundDistanceScale, Mode=TwoWay}"
 							   Minimum="0"
 							   Maximum="10"
@@ -99,17 +112,22 @@
 
 			<!-- Fast Forward At Start -->
 			<CheckBox IsChecked="{Binding FastForwardAtStart, Mode=TwoWay}"
-					  Content="Fast Forward At Start"
-					  Margin="0,8,0,4"/>
+					  Margin="0,8,0,4">
+				<controls:LabelWithHelp LabelText="Fast Forward At Start"
+					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#fastforwardatstart"/>
+			</CheckBox>
 
 			<!-- Pause During Bloodmoon -->
 			<CheckBox IsChecked="{Binding PauseDuringBloodmoon, Mode=TwoWay}"
-					  Content="Pause During Bloodmoon"
-					  Margin="0,4,0,8"/>
+					  Margin="0,4,0,8">
+				<controls:LabelWithHelp LabelText="Pause During Bloodmoon"
+					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#pauseduringbloodmoon"/>
+			</CheckBox>
 
 			<!-- Spawn Protection Time -->
 			<StackPanel Spacing="4">
-				<TextBlock Text="Spawn Protection Time (seconds):" FontWeight="Medium"/>
+				<controls:LabelWithHelp LabelText="Spawn Protection Time (seconds):" FontWeight="Medium"
+					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#spawnprotectiontime"/>
 				<NumericUpDown Value="{Binding SpawnProtectionTime, Mode=TwoWay}"
 							   Minimum="0"
 							   Maximum="3600"

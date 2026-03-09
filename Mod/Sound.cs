@@ -58,24 +58,15 @@ namespace WalkerSim
             var eventDuration = noise.heatMapWorldTimeToLive / 60;
 
             // Log all variables from noise.
-            Logging.CondInfo(logEvents, "Noise: {0}, " +
-                " Volume: {1}, " +
-                "Duration: {2}, " +
-                "MuffledWhenCrouched: {3}, " +
-                "HeatMapStrength: {4}, " +
-                "HeatMapWorldTimeToLive: {5}, " +
-                "volumeScale: {6}, " +
-                "Travel Distance: {7}, " +
-                "Scaled Travel Distance: {8}",
-                               clipName,
-                               noise.volume,
-                               noise.duration,
-                               noise.muffledWhenCrouched,
-                               noise.heatMapStrength,
-                               noise.heatMapWorldTimeToLive,
-                               volumeScale,
-                               distance,
-                               distanceScaled);
+            Logging.CondInfo(logEvents, () => $"Noise: {clipName}, " +
+                $" Volume: {noise.volume}, " +
+                $"Duration: {noise.duration}, " +
+                $"MuffledWhenCrouched: {noise.muffledWhenCrouched}, " +
+                $"HeatMapStrength: {noise.heatMapStrength}, " +
+                $"HeatMapWorldTimeToLive: {noise.heatMapWorldTimeToLive}, " +
+                $"volumeScale: {volumeScale}, " +
+                $"Travel Distance: {distance}, " +
+                $"Scaled Travel Distance: {distanceScaled}");
 
             if (noise.heatMapStrength == 0.0f)
             {
@@ -153,8 +144,7 @@ namespace WalkerSim
                     continue;
                 }
 
-                Logging.CondInfo(logEvents, "Alerting enemy {0} at {1} to noise at {2}, distance: {3}.",
-                             ent.entityId, entPos, position, entDist);
+                Logging.CondInfo(logEvents, () => $"Alerting enemy {ent.entityId} at {entPos} to noise at {position}, distance: {entDist}.");
 
                 // Prevent them from digging.
                 var heightOffset = new UnityEngine.Vector3(0, 1.5f, 0);

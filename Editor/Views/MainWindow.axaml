@@ -7,6 +7,7 @@
 		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		mc:Ignorable="d" d:DesignWidth="1400" d:DesignHeight="925"
 		x:Class="Editor.Views.MainWindow"
+		x:CompileBindings="True"
 		x:DataType="vm:EditorViewModel"
 		Icon="/Assets/icon.ico"
 		Title="WalkerSim Editor">
@@ -114,15 +115,23 @@
 			</MenuItem>
 
 			<MenuItem Header="Tools">
-				<MenuItem Header="Emit Sound..."/>
-				<MenuItem Header="Kill..."/>
+				<MenuItem Header="Emit Sound">
+					<MenuItem Header="64 m"  Tag="64"  Click="OnToolEmitSoundClick"/>
+					<MenuItem Header="72 m"  Tag="72"  Click="OnToolEmitSoundClick"/>
+					<MenuItem Header="96 m"  Tag="96"  Click="OnToolEmitSoundClick"/>
+					<MenuItem Header="128 m" Tag="128" Click="OnToolEmitSoundClick"/>
+					<MenuItem Header="160 m" Tag="160" Click="OnToolEmitSoundClick"/>
+					<MenuItem Header="250 m" Tag="250" Click="OnToolEmitSoundClick"/>
+					<MenuItem Header="400 m" Tag="400" Click="OnToolEmitSoundClick"/>
+				</MenuItem>
+				<MenuItem Header="Kill..." Click="OnToolKillClick"/>
 				<Separator/>
-				<MenuItem Header="Add Player"/>
-				<MenuItem Header="Set Player Position..."/>
+				<MenuItem Header="Add Player" Click="OnToolAddPlayerClick"/>
+				<MenuItem Header="Set Player Position..." Click="OnToolSetPlayerPositionClick"/>
 			</MenuItem>
 
 			<MenuItem Header="Help">
-				<MenuItem Header="Documentation"/>
+				<MenuItem Header="Documentation" Click="OnDocumentationClick"/>
 			</MenuItem>
 		</Menu>
 

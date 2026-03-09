@@ -5,6 +5,7 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Editor.ViewModels;
 using System;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Editor.Views
@@ -34,6 +35,15 @@ namespace Editor.Views
                     vm.StopSimulation();
             };
 
+            this.KeyDown += (s, e) =>
+            {
+                if (e.Key == Avalonia.Input.Key.Escape && DataContext is EditorViewModel vmEsc)
+                {
+                    vmEsc.CancelToolCommand.Execute(null);
+                    e.Handled = true;
+                }
+            };
+
             this.DataContextChanged += (s, e) =>
             {
                 if (DataContext is EditorViewModel vm2)
@@ -46,7 +56,9 @@ namespace Editor.Views
                     vm2.NavigateToAgentRequested = a => SimCanvas.GoToAgent(a);
                     vm2.TrackAgentRequested      = a => SimCanvas.TrackAgent(a);
                     vm2.StopTrackingRequested    = () => SimCanvas.StopTracking();
+                    vm2.GroupColorsChanged        = () => SimCanvas.InvalidateGroupBrushes();
                     SimCanvas.TrackingStopped    = () => vm2.IsTrackingAgent = false;
+                    SimCanvas.OnCanvasClick      = pos => vm2.HandleCanvasClick(pos);
                 }
             };
         }
@@ -54,7 +66,13 @@ namespace Editor.Views
         private void UpdateTimer_Tick(object? sender, EventArgs e)
         {
             if (DataContext is EditorViewModel viewModel)
+            {
                 viewModel.UpdateSimulationStats();
+
+                // Sync tool preview state to canvas every frame
+                SimCanvas.ToolPreviewRadius = viewModel.ActiveToolPreviewRadius;
+                SimCanvas.SetToolActive(viewModel.IsToolActive);
+            }
 
             // Keep agents list live while that tab is open
             if (AgentsPanel.IsVisible && DataContext is EditorViewModel vm2)
@@ -103,6 +121,47 @@ namespace Editor.Views
         private void OnZoomInClick(object? sender, RoutedEventArgs e) => SimCanvas.ZoomIn();
         private void OnZoomOutClick(object? sender, RoutedEventArgs e) => SimCanvas.ZoomOut();
         private void OnZoomResetClick(object? sender, RoutedEventArgs e) => SimCanvas.ZoomReset();
+
+        // ── Tools ─────────────────────────────────────────────────────────────────
+
+        private void OnToolEmitSoundClick(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is not EditorViewModel vm) return;
+            if (sender is MenuItem { Tag: string tag } && float.TryParse(tag, out float radius))
+                vm.SoundRadius = radius;
+            vm.ActivateEmitSoundCommand.Execute(null);
+        }
+
+        private void OnToolKillClick(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is EditorViewModel vm)
+                vm.ActivateKillCommand.Execute(null);
+        }
+
+        private void OnToolAddPlayerClick(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is EditorViewModel vm)
+                vm.ActivateAddPlayerCommand.Execute(null);
+        }
+
+        private void OnToolSetPlayerPositionClick(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is EditorViewModel vm)
+                vm.ActivateSetPlayerPositionCommand.Execute(null);
+        }
+
+        // ── Help ──────────────────────────────────────────────────────────────────
+
+        private void OnDocumentationClick(object? sender, RoutedEventArgs e)
+        {
+            var version = WalkerSim.BuildInfo.Version == "0.0.0" ? "nightly" : WalkerSim.BuildInfo.Version;
+            var url = $"https://7dtd-walkersim2.readthedocs.io/{version}/";
+            try
+            {
+                Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
+            }
+            catch { }
+        }
 
         // ── View toggles ──────────────────────────────────────────────────────────
 

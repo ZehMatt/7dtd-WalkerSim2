@@ -172,8 +172,7 @@ namespace Editor.Models
             OnPropertyChanged(nameof(SelectedGroupOption));
         }
 
-        [RelayCommand]
-        public void AddProcessor()
+        public MovementProcessorModel AddProcessor()
         {
             var newProcessor = new Config.MovementProcessor
             {
@@ -186,6 +185,8 @@ namespace Editor.Models
             m.RemoveSelfCommand = new RelayCommand(() => RemoveProcessor(m));
             m.ConfigChanged = ConfigChanged;
             Processors.Add(m);
+            ConfigChanged?.Invoke();
+            return m;
         }
 
         [RelayCommand]
@@ -195,6 +196,7 @@ namespace Editor.Models
             {
                 _group.Entries.Remove(processor.Underlying);
                 Processors.Remove(processor);
+                ConfigChanged?.Invoke();
             }
         }
     }

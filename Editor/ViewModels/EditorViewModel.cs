@@ -17,6 +17,7 @@ namespace Editor.ViewModels
     public partial class EditorViewModel : ObservableObject
     {
         private readonly Simulation _simulation = Simulation.Instance;
+        private bool _agentsDirty = false;
         private readonly System.Random _prng = new System.Random((int)DateTime.Now.Ticks);
 
         private static readonly float WorldSizeX = 6000;
@@ -298,10 +299,75 @@ namespace Editor.ViewModels
         partial void OnIsTrackingAgentChanged(bool value) => OnPropertyChanged(nameof(IsNotTrackingAgent));
         public bool IsNotTrackingAgent => !IsTrackingAgent;
 
+        // ── Tool state ────────────────────────────────────────────────────────────
+
+        public enum EditorTool { None, EmitSound, Kill, AddPlayer, SetPlayerPosition }
+
+        [ObservableProperty]
+        private EditorTool _activeTool = EditorTool.None;
+
+        partial void OnActiveToolChanged(EditorTool value)
+        {
+            OnPropertyChanged(nameof(IsToolActive));
+            OnPropertyChanged(nameof(ActiveToolPreviewRadius));
+        }
+
+        [ObservableProperty]
+        private float _soundRadius = 90.0f;
+
+        [ObservableProperty]
+        private float _killRadius = 650.0f;
+
+        public bool IsToolActive => ActiveTool != EditorTool.None;
+
+        /// <summary>World-space preview circle radius for the active tool, or NaN for point tools.</summary>
+        public float ActiveToolPreviewRadius => ActiveTool switch
+        {
+            EditorTool.EmitSound => SoundRadius,
+            EditorTool.Kill      => KillRadius,
+            _                    => float.NaN,
+        };
+
+        /// <summary>Called by SimulationCanvas when the user clicks the world.</summary>
+        public void HandleCanvasClick(Vector3 position)
+        {
+            switch (ActiveTool)
+            {
+                case EditorTool.EmitSound:
+                    _simulation.AddSoundEvent(position, SoundRadius, 20.0f);
+                    Logging.Info($"Emitted sound at {position}, radius: {SoundRadius}");
+                    break;
+
+                case EditorTool.Kill:
+                    int killed = _simulation.KillAgentsInRadius(position, KillRadius);
+                    Logging.Info($"Killed {killed} agent(s) at {position}");
+                    break;
+
+                case EditorTool.AddPlayer:
+                    _simulation.AddPlayer(0, position, 0);
+                    Logging.Info($"Added player at {position}");
+                    ActiveTool = EditorTool.None;
+                    break;
+
+                case EditorTool.SetPlayerPosition:
+                    _simulation.UpdatePlayer(0, position, true);
+                    Logging.Info($"Set player position to {position}");
+                    ActiveTool = EditorTool.None;
+                    break;
+            }
+        }
+
+        [RelayCommand] public void ActivateEmitSound()         => ActiveTool = EditorTool.EmitSound;
+        [RelayCommand] public void ActivateKill()              => ActiveTool = EditorTool.Kill;
+        [RelayCommand] public void ActivateAddPlayer()         => ActiveTool = EditorTool.AddPlayer;
+        [RelayCommand] public void ActivateSetPlayerPosition() => ActiveTool = EditorTool.SetPlayerPosition;
+        [RelayCommand] public void CancelTool()                => ActiveTool = EditorTool.None;
+
         // Wired up by MainWindow.axaml.cs to the SimulationCanvas.
         public Action<WalkerSim.Agent>? NavigateToAgentRequested;
         public Action<WalkerSim.Agent>? TrackAgentRequested;
         public Action? StopTrackingRequested;
+        public Action? GroupColorsChanged;
 
         [RelayCommand]
         public void GoToAgent()
@@ -465,7 +531,9 @@ namespace Editor.ViewModels
         [RelayCommand]
         public void AddProcessorToSelectedSystem()
         {
-            SelectedSystem?.AddProcessor();
+            var proc = SelectedSystem?.AddProcessor();
+            if (proc != null)
+                TreeSelectedItem = proc;
         }
 
         [RelayCommand]
@@ -487,6 +555,7 @@ namespace Editor.ViewModels
                 m.ConfigChanged = ReloadConfigLive;
                 SelectedSystem.Processors.Add(m);
                 TreeSelectedItem = m;
+                ReloadConfigLive();
             }
             else if (SelectedSystem != null)
             {
@@ -514,11 +583,14 @@ namespace Editor.ViewModels
         [RelayCommand]
         public void AddMovementSystem()
         {
+            var idx = Config.Processors.Count;
+            var c = WalkerSim.Drawing.ColorTable.GetColorForIndex(idx);
             var newGroup = new Config.MovementProcessorGroup
             {
                 Group = MovementSystems.Count == 0 ? -1 : 0,
                 SpeedScale = 1.0f,
-                PostSpawnBehavior = Config.PostSpawnBehavior.Wander
+                PostSpawnBehavior = Config.PostSpawnBehavior.Wander,
+                Color = $"#{c.R:X2}{c.G:X2}{c.B:X2}"
             };
 
             Config.Processors.Add(newGroup);
@@ -526,6 +598,7 @@ namespace Editor.ViewModels
             model.Name = $"System {MovementSystems.Count + 1}";
             MovementSystems.Add(model);
             RefreshAllGroupIndexOptions();
+            ReloadConfigLive();
         }
 
         [RelayCommand]
@@ -584,6 +657,8 @@ namespace Editor.ViewModels
             }
 
             _simulation.Reset(Config);
+            _agentsDirty = true;
+            GroupColorsChanged?.Invoke();
             UpdateSimulationStats();
             Logging.Info("Simulation reset");
 
@@ -627,12 +702,14 @@ namespace Editor.ViewModels
                 if (item is Models.AgentModel)
                     currentAgentCount++;
 
-            if (currentAgentCount == agents.Count)
+            if (currentAgentCount == agents.Count && !_agentsDirty)
             {
                 // Structure unchanged: just pull live data into the selected agent
                 SelectedAgent?.Pull();
                 return;
             }
+
+            _agentsDirty = false;
 
             // Structure changed (e.g. after a reset): rebuild grouped list
             var prevUnderlying = SelectedAgent?.Underlying;
@@ -720,6 +797,7 @@ namespace Editor.ViewModels
             model.Name = $"{system.Name} (Copy)";
             MovementSystems.Add(model);
             RefreshAllGroupIndexOptions();
+            ReloadConfigLive();
         }
 
         [RelayCommand]
@@ -731,6 +809,7 @@ namespace Editor.ViewModels
             Config.Processors.Remove(system.Underlying);
             MovementSystems.Remove(system);
             RefreshAllGroupIndexOptions();
+            ReloadConfigLive();
         }
 
         private void RefreshAllGroupIndexOptions()
@@ -761,10 +840,10 @@ namespace Editor.ViewModels
 
         private void ReloadConfigLive()
         {
-            // Only reload if simulation is running (mimics legacy editor behavior)
             if (!_suppressReset)
             {
                 _simulation.ReloadConfig(Config);
+                GroupColorsChanged?.Invoke();
             }
         }
 

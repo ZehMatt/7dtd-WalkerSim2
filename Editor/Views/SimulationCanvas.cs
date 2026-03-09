@@ -71,8 +71,23 @@ namespace Editor.Views
 
         private DateTime _lastRenderTime = DateTime.UtcNow;
 
-        /// <summary>Called by the canvas when the user drags and cancels tracking.</summary>
+                /// <summary>Called by the canvas when the user drags and cancels tracking.</summary>
         public Action? TrackingStopped;
+
+        // Tool support
+        public Action<Vector3>? OnCanvasClick;
+
+        /// <summary>
+        /// World-space radius for the tool preview circle drawn at the cursor.
+        /// Set to NaN to disable the preview.
+        /// </summary>
+        public float ToolPreviewRadius { get; set; } = float.NaN;
+
+        // Mouse position for tool preview
+        private Vector3 _mouseWorldPosition = Vector3.Zero;
+        // Whether the pointer has moved enough to count as a pan rather than a click
+        private bool _hasPanned = false;
+        private const double PanThreshold = 4.0;
 
         private static double Lerp(double a, double b, double t) => a + (b - a) * t;
 
@@ -101,6 +116,16 @@ namespace Editor.Views
         {
             ClipToBounds = true;
             Cursor = new Cursor(StandardCursorType.Arrow);
+        }
+
+        private bool _toolActive = false;
+
+        /// <summary>Call this whenever the active tool changes to update the cursor.</summary>
+        public void SetToolActive(bool active)
+        {
+            _toolActive = active;
+            if (!_isDragging)
+                Cursor = new Cursor(active ? StandardCursorType.Cross : StandardCursorType.Arrow);
         }
 
         public double Zoom => _zoom;
@@ -206,59 +231,129 @@ namespace Editor.Views
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
-            if (e.GetCurrentPoint(this).Properties.IsMiddleButtonPressed ||
-                e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            var props = e.GetCurrentPoint(this).Properties;
+            if (props.IsMiddleButtonPressed || props.IsLeftButtonPressed)
             {
                 _isDragging = true;
+                _hasPanned = false;
                 _dragStart = e.GetPosition(this);
-                Cursor = new Cursor(StandardCursorType.Hand);
+                // Show hand cursor only when not currently in tool mode
+                if (!_toolActive)
+                    Cursor = new Cursor(StandardCursorType.Hand);
                 e.Pointer.Capture(this);
                 e.Handled = true;
             }
         }
 
-        protected override void OnPointerMoved(PointerEventArgs e)
+                protected override void OnPointerMoved(PointerEventArgs e)
         {
             base.OnPointerMoved(e);
+
+            var pos = e.GetPosition(this);
+            _mouseWorldPosition = CanvasToWorld(pos);
+
             if (_isDragging)
             {
-                // Stop tracking if the user manually pans the view.
-                if (_trackedAgent != null)
-                {
-                    _trackedAgent = null;
-                    _highlightAgent = null;
-                    _highlightTimer = 0;
-                    _smoothActive = false;
-                    TrackingStopped?.Invoke();
-                }
+                var dx = pos.X - _dragStart.X;
+                var dy = pos.Y - _dragStart.Y;
 
-                var pos = e.GetPosition(this);
-                _panX += pos.X - _dragStart.X;
-                _panY += pos.Y - _dragStart.Y;
-                _dragStart = pos;
-                ClampPan();
-                InvalidateVisual();
-                e.Handled = true;
+                // Only pan when there is no active tool on the left button,
+                // or when middle button is used regardless.
+                bool isMiddle = e.GetCurrentPoint(this).Properties.IsMiddleButtonPressed;
+                if (isMiddle || !_toolActive)
+                {
+                    if (Math.Abs(dx) > PanThreshold || Math.Abs(dy) > PanThreshold)
+                        _hasPanned = true;
+
+                    // Stop tracking if the user manually pans the view.
+                    if (_hasPanned && _trackedAgent != null)
+                    {
+                        _trackedAgent = null;
+                        _highlightAgent = null;
+                        _highlightTimer = 0;
+                        _smoothActive = false;
+                        TrackingStopped?.Invoke();
+                    }
+
+                    _panX += pos.X - _dragStart.X;
+                    _panY += pos.Y - _dragStart.Y;
+                    _dragStart = pos;
+                    ClampPan();
+                    InvalidateVisual();
+                }
+                else
+                {
+                    // Tool active — don't pan, just redraw the preview circle
+                    InvalidateVisual();
+                }
             }
+            else
+            {
+                // Hovering — redraw so preview circle follows the cursor
+                if (!float.IsNaN(ToolPreviewRadius))
+                    InvalidateVisual();
+            }
+
+            e.Handled = true;
         }
 
-        protected override void OnPointerReleased(PointerReleasedEventArgs e)
+                protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             base.OnPointerReleased(e);
             if (_isDragging)
             {
                 _isDragging = false;
-                Cursor = new Cursor(StandardCursorType.Arrow);
+                Cursor = new Cursor(_toolActive ? StandardCursorType.Cross : StandardCursorType.Arrow);
                 e.Pointer.Capture(null);
+
+                // Fire the tool only when the pointer was not used for panning
+                bool isMiddle = e.InitialPressMouseButton == Avalonia.Input.MouseButton.Middle;
+                if (!isMiddle && !_hasPanned && _toolActive && OnCanvasClick != null)
+                {
+                    OnCanvasClick(_mouseWorldPosition);
+                }
+
                 e.Handled = true;
             }
         }
 
-        // Convert a simulation world position to canvas pixel coordinates (unzoomed)
+                // Convert a simulation world position to canvas pixel coordinates (unzoomed)
         private (double x, double y) SimToCanvas(Vector3 pos, double width, double height)
         {
             var mapped = _simulation.RemapPosition2D(pos, Vector3.Zero, new Vector3((float)width, (float)height));
             return (mapped.X, mapped.Y);
+        }
+
+        /// <summary>
+        /// Convert a screen/pointer position to simulation world coordinates,
+        /// accounting for viewport letterboxing, zoom and pan.
+        /// Inverse of the Render transform:
+        ///   screen = (world - vcx) * zoom + vcx + offsetX + panX
+        ///   → world = (screen - offsetX - panX - vcx) / zoom + vcx
+        /// </summary>
+        private Vector3 CanvasToWorld(Point screenPos)
+        {
+            var bounds = Bounds;
+            var width  = bounds.Width;
+            var height = bounds.Height;
+            if (width <= 0 || height <= 0)
+                return Vector3.Zero;
+
+            var worldHeight = height - BarHeight;
+            var viewSize    = Math.Min(width, worldHeight);
+            var offsetX     = Math.Floor((width    - viewSize) / 2.0);
+            var offsetY     = BarHeight + Math.Floor((worldHeight - viewSize) / 2.0);
+            var vcx         = viewSize / 2.0;
+            var vcy         = viewSize / 2.0;
+
+            // Invert the render transform
+            var worldX = (screenPos.X - offsetX - _panX - vcx) / _zoom + vcx;
+            var worldY = (screenPos.Y - offsetY - _panY - vcy) / _zoom + vcy;
+
+            var simX = (float)MathEx.Remap((float)worldX, 0f, (float)viewSize, _simulation.WorldMins.X, _simulation.WorldMaxs.X);
+            var simY = (float)MathEx.Remap((float)worldY, 0f, (float)viewSize, _simulation.WorldMins.Y, _simulation.WorldMaxs.Y);
+
+            return new Vector3(simX, simY, 0);
         }
 
         /// <summary>Compute the pan values that would center <paramref name="agent"/> at the given zoom.</summary>
@@ -309,6 +404,11 @@ namespace Editor.Views
             _highlightAgent = null;
             _highlightTimer = 0;
             _smoothActive = false;
+        }
+
+        public void InvalidateGroupBrushes()
+        {
+            _cachedGroupCount = -1;
         }
 
         private void EnsureGroupBrushes()
@@ -417,6 +517,9 @@ namespace Editor.Views
                 // Draw highlight/blink on top of everything.
                 if (_highlightAgent != null && _blinkPhase < 1.0)
                     RenderHighlightAgent(context, viewSize, viewSize);
+                // Draw active tool preview on top.
+                if (OnCanvasClick != null && !float.IsNaN(ToolPreviewRadius))
+                    RenderToolPreview(context, viewSize, viewSize);
             }
 
             // HUD bar — drawn in screen space, never affected by zoom/pan.
@@ -437,6 +540,27 @@ namespace Editor.Views
             var (cx, cy) = SimToCanvas(agent.Position, width, height);
             double r = 6.0 / _zoom;
             context.DrawEllipse(null, _highlightPen, new Point(cx, cy), r, r);
+        }
+
+        private IPen _toolPreviewPen;
+        private double _cachedToolPreviewPenZoom = -1;
+
+        private void RenderToolPreview(DrawingContext context, double width, double height)
+        {
+            // Rebuild the pen only when zoom changes so we don't allocate every frame.
+            if (_cachedToolPreviewPenZoom != _zoom)
+            {
+                _toolPreviewPen = new Pen(Brushes.Red, 1.5 / _zoom);
+                _cachedToolPreviewPenZoom = _zoom;
+            }
+
+            var (cx, cy) = SimToCanvas(_mouseWorldPosition, width, height);
+
+            // Convert world-space radius to canvas-space radius
+            var worldSize = _simulation.WorldSize;
+            double r = ToolPreviewRadius / worldSize.X * width;
+
+            context.DrawEllipse(null, _toolPreviewPen, new Point(cx, cy), r, r);
         }
 
         private void RenderRoads(DrawingContext context, double width, double height)

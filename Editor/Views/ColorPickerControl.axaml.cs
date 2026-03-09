@@ -1,5 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Media;
 using Editor.ViewModels;
 
 namespace Editor.Views
@@ -40,6 +42,24 @@ namespace Editor.Views
                 SetValue(ColorStringProperty, str);
                 _updatingFromVm = false;
             };
+
+            HexInput.LostFocus += OnHexInputLostFocus;
+        }
+
+        private void OnHexInputLostFocus(object? sender, RoutedEventArgs e)
+        {
+            var text = _vm.ColorString;
+            if (string.IsNullOrEmpty(text))
+            {
+                _vm.ColorString = "#FF00FF";
+                return;
+            }
+
+            try { Color.Parse(text); }
+            catch
+            {
+                _vm.ColorString = "#FF00FF";
+            }
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
