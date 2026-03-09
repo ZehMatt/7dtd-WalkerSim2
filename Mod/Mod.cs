@@ -244,7 +244,7 @@ namespace WalkerSim
                     "In order to apply the changes the simulation must be restarted, this can be done using 'walkersim restart' in the console.";
                 Logging.Warn(msg);
 
-                if (!GameManager.IsDedicatedServer)
+                if (Game.IsHost())
                 {
                     XUiC_ChatOutput.AddMessage(
                         GameManager.Instance.myEntityPlayerLocal.PlayerUI.xui,
