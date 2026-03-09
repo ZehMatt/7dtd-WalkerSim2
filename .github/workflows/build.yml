@@ -185,13 +185,13 @@ jobs:
         include:
           - os: windows-2025
             rid: win-x64
-            platform: Windows
+            platform: Windows-x64
           - os: ubuntu-latest
             rid: linux-x64
-            platform: Linux
-          - os: macos-latest
+            platform: Linux-x64
+          - os: macos-14
             rid: osx-arm64
-            platform: Mac
+            platform: Mac-arm64
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
@@ -242,7 +242,7 @@ jobs:
         dotnet-version: '8.0.x'
 
     - name: Publish Editor
-      run: dotnet publish Editor/Editor.csproj -c Release -r ${{ matrix.rid }} -o Publish/Editor/${{ matrix.platform }} -p:Platform=x64 --self-contained true
+      run: dotnet publish Editor/Editor.csproj -c Release -r ${{ matrix.rid }} -o Publish/Editor/${{ matrix.platform }} --self-contained true
 
     - name: Upload Editor artifact
       uses: actions/upload-artifact@v4
@@ -271,31 +271,31 @@ jobs:
     - name: Download Editor Windows artifact
       uses: actions/download-artifact@v4
       with:
-        pattern: WalkerSim2-Editor-Windows-*
-        path: release/Editor-Windows
+        pattern: WalkerSim2-Editor-Windows-x64-*
+        path: release/Editor-Windows-x64
         merge-multiple: true
 
     - name: Download Editor Linux artifact
       uses: actions/download-artifact@v4
       with:
-        pattern: WalkerSim2-Editor-Linux-*
-        path: release/Editor-Linux
+        pattern: WalkerSim2-Editor-Linux-x64-*
+        path: release/Editor-Linux-x64
         merge-multiple: true
 
     - name: Download Editor Mac artifact
       uses: actions/download-artifact@v4
       with:
-        pattern: WalkerSim2-Editor-Mac-*
-        path: release/Editor-Mac
+        pattern: WalkerSim2-Editor-Mac-arm64-*
+        path: release/Editor-Mac-arm64
         merge-multiple: true
 
     - name: Package release artifacts
       run: |
         cd release
         zip -r ../WalkerSim2-${{ env.BUILD_VERSION }}.zip Mod/
-        zip -r ../WalkerSim2-Editor-Windows-${{ env.BUILD_VERSION }}.zip Editor-Windows/
-        zip -r ../WalkerSim2-Editor-Linux-${{ env.BUILD_VERSION }}.zip Editor-Linux/
-        zip -r ../WalkerSim2-Editor-Mac-${{ env.BUILD_VERSION }}.zip Editor-Mac/
+        zip -r ../WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}.zip Editor-Windows-x64/
+        zip -r ../WalkerSim2-Editor-Linux-x64-${{ env.BUILD_VERSION }}.zip Editor-Linux-x64/
+        zip -r ../WalkerSim2-Editor-Mac-arm64-${{ env.BUILD_VERSION }}.zip Editor-Mac-arm64/
 
     - name: Release
       uses: softprops/action-gh-release@v2
@@ -306,6 +306,6 @@ jobs:
         generate_release_notes: false
         files: |
           WalkerSim2-${{ env.BUILD_VERSION }}.zip
-          WalkerSim2-Editor-Windows-${{ env.BUILD_VERSION }}.zip
-          WalkerSim2-Editor-Linux-${{ env.BUILD_VERSION }}.zip
-          WalkerSim2-Editor-Mac-${{ env.BUILD_VERSION }}.zip
+          WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}.zip
+          WalkerSim2-Editor-Linux-x64-${{ env.BUILD_VERSION }}.zip
+          WalkerSim2-Editor-Mac-arm64-${{ env.BUILD_VERSION }}.zip

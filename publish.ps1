@@ -91,7 +91,6 @@ function Publish-Editor {
         -c $Configuration `
         -r $RuntimeId `
         -o $outputDir `
-        -p:Platform=x64 `
         --self-contained true
 
     if ($LASTEXITCODE -ne 0) { throw "Editor publish failed for $RuntimeId" }

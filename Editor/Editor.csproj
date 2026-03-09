@@ -15,14 +15,8 @@
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
     <PublishTrimmed>True</PublishTrimmed>
     <PublishAot>True</PublishAot>
-    <Platforms>x64</Platforms>
+    <Platforms>AnyCPU;x64</Platforms>
     <BaseOutputPath>..\Build\Editor</BaseOutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IsPublishable>True</IsPublishable>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IsPublishable>True</IsPublishable>
   </PropertyGroup>
 
   <ItemGroup>
