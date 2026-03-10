@@ -45,6 +45,7 @@
 				<MenuItem Header="Events" x:Name="MenuViewEvents" ToggleType="CheckBox" IsChecked="True" Click="OnViewToggleClick"/>
 				<MenuItem Header="Prefabs" x:Name="MenuViewPrefabs" ToggleType="CheckBox" IsChecked="False" Click="OnViewToggleClick"/>
 				<MenuItem Header="Cities" x:Name="MenuViewCities" ToggleType="CheckBox" IsChecked="True" Click="OnViewToggleClick"/>
+				<MenuItem Header="Road Network" x:Name="MenuViewRoadNetwork" ToggleType="CheckBox" IsChecked="False" Click="OnViewToggleClick"/>
 			</MenuItem>
 
 			<MenuItem Header="Simulation">

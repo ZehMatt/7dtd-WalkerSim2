@@ -180,6 +180,11 @@ namespace WalkerSim
                 ctx.Serialize(ref agent.TargetCityIndex);
                 ctx.Serialize(ref agent.CityTime);
                 ctx.SerializeEnumByte(ref agent.CurrentTravelState);
+                ctx.Serialize(ref agent.RoadNodeTarget);
+                ctx.Serialize(ref agent.RoadNodeHistoryCount);
+                ctx.Serialize(ref agent.RoadNodeHistoryPos);
+                for (int h = 0; h < Agent.RoadNodeHistorySize; h++)
+                    ctx.Serialize(ref agent.RoadNodeHistory[h]);
 
                 if (ctx.IsReading)
                 {

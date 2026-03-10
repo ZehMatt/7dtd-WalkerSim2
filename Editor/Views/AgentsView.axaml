@@ -139,6 +139,16 @@
 								   Minimum="-1" Maximum="99999" Increment="1" FormatString="0" FontSize="12"/>
 				</Grid>
 				<Grid ColumnDefinitions="140,*">
+					<TextBlock Grid.Column="0" Text="Road Node Target:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+					<NumericUpDown Grid.Column="1" Value="{Binding SelectedAgent.RoadNodeTarget}"
+								   Minimum="-1" Maximum="99999" Increment="1" FormatString="0" FontSize="12"/>
+				</Grid>
+				<Grid ColumnDefinitions="140,*">
+					<TextBlock Grid.Column="0" Text="Road History:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+					<TextBlock Grid.Column="1" Text="{Binding SelectedAgent.RoadNodeHistory}" FontSize="11"
+							   TextWrapping="Wrap" VerticalAlignment="Center"/>
+				</Grid>
+				<Grid ColumnDefinitions="140,*">
 					<TextBlock Grid.Column="0" Text="Last Update Tick:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
 					<TextBlock Grid.Column="1" Text="{Binding SelectedAgent.LastUpdateTick}" FontSize="12"/>
 				</Grid>

@@ -98,7 +98,7 @@ namespace Editor.Models
             { Config.MovementProcessorType.AvoidOtherGroup,new("Distance", "Power", null, null, "Steer away from nearby agents from other groups within the given distance.") },
             { Config.MovementProcessorType.Wind,           new(null, "Power", null, null, "Apply a global wind force that pushes agents in a consistent direction.") },
             { Config.MovementProcessorType.WindInverted,   new(null, "Power", null, null, "Apply a global wind force in the opposite direction of the current wind.") },
-            { Config.MovementProcessorType.StickToRoads,   new(null, "Power", null, null, "Attract agents towards nearby roads, making them prefer road paths.") },
+            { Config.MovementProcessorType.StickToRoads,   new(null, "Power", null, null, "Agents navigate along roads using a waypoint graph. At intersections they pick a direction, at dead ends they turn around. Power controls attraction strength.") },
             { Config.MovementProcessorType.AvoidRoads,     new(null, "Power", null, null, "Repel agents away from roads, making them prefer off-road paths.") },
             { Config.MovementProcessorType.StickToPOIs,    new(null, "Power", null, null, "Attract agents towards nearby points of interest (POIs/prefabs).") },
             { Config.MovementProcessorType.AvoidPOIs,      new("Distance", "Power", null, null, "Repel agents away from points of interest (POIs/prefabs) within the given distance.") },

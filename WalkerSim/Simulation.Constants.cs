@@ -27,7 +27,9 @@ namespace WalkerSim
             // Version 16: Walk type.
             // Version 17: Boo
             // Version 18: Make WalkType an enum.
-            public const uint SaveVersion = 18;
+            // Version 19: Road graph navigation state.
+            // Version 20: Road node history circular buffer (10 entries).
+            public const uint SaveVersion = 20;
         }
     }
 }

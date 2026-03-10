@@ -515,49 +515,268 @@ namespace WalkerSim
             return (state.WindDir * -1.0f) * power;
         }
 
+        // How close (bitmap pixels) to a node before advancing to the next.
+        private const float RoadNodeArrivalDist = 6f;
+        // Max distance to search for a road node when first entering.
+        private const float RoadNodeSearchDist = 40f;
+        // Reset road navigation if the agent drifts this far from its target node.
+        private const float RoadNodeDriftDist = 60f;
+        // Force magnitude scale to keep force similar to old implementation.
+        private const float RoadForceScale = 10f;
+
         private static Vector3 StickToRoads(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             if (state.MapData == null)
-            {
                 return Vector3.Zero;
-            }
 
             var roads = state.MapData.Roads;
             if (roads == null)
-            {
                 return Vector3.Zero;
-            }
+
+            var graph = roads.Graph;
+            if (graph == null || graph.Nodes.Length == 0)
+                return Vector3.Zero;
 
             var pos = agent.Position;
             var worldMins = state.WorldMins;
             var worldMaxs = state.WorldMaxs;
 
-            // Remap the position to the roads bitmap.
-            var x = MathEx.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, roads.Width);
-            var y = MathEx.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, roads.Height);
+            // Remap to bitmap coordinates.
+            float bx = MathEx.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, roads.Width);
+            float by = MathEx.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, roads.Height);
 
-            int ix = (int)x;
-            int iy = (int)y;
-
-            var closest = roads.GetClosestRoad(ix, iy, (int)agent.Velocity.X, (int)agent.Velocity.Y);
-            if (closest.Type == RoadType.None)
+            // If the agent has arrived at a city, stop road navigation entirely
+            // so CityVisitor can wander the agent within the city bounds.
+            if (agent.CurrentTravelState == Agent.TravelState.Arrived)
             {
+                agent.RoadNodeTarget = -1;
+                agent.ClearRoadNodeHistory();
                 return Vector3.Zero;
             }
 
-            float dx = (float)(closest.X - ix);
-            float dy = (float)(closest.Y - iy);
-
-            if (closest.Type == RoadType.Asphalt)
+            // Check if the agent has a city target from CityVisitor; if so, bias
+            // intersection choices toward the city so both processors cooperate.
+            float biasX = float.NaN, biasY = float.NaN;
+            bool approachingCity = false;
+            if (agent.TargetCityIndex >= 0 &&
+                agent.CurrentTravelState == Agent.TravelState.Approaching &&
+                state.MapData.Cities != null)
             {
-                return new Vector3(dx * 0.75f, dy * 0.75f) * power;
-            }
-            else if (closest.Type == RoadType.Offroad)
-            {
-                return new Vector3(dx * 0.5f, dy * 0.5f) * power;
+                var cities = state.MapData.Cities;
+                if (agent.TargetCityIndex < cities.CityList.Count)
+                {
+                    var city = cities.CityList[agent.TargetCityIndex];
+                    biasX = MathEx.Remap(city.Position.X, worldMins.X, worldMaxs.X, 0f, roads.Width);
+                    biasY = MathEx.Remap(city.Position.Y, worldMins.Y, worldMaxs.Y, 0f, roads.Height);
+                    approachingCity = true;
+                }
             }
 
-            return Vector3.Zero;
+            // Validate current target is still in range.
+            if (agent.RoadNodeTarget >= 0)
+            {
+                if (agent.RoadNodeTarget >= graph.Nodes.Length)
+                {
+                    // Graph changed (different map), reset.
+                    agent.RoadNodeTarget = -1;
+                    agent.ClearRoadNodeHistory();
+                }
+                else
+                {
+                    var target = graph.Nodes[agent.RoadNodeTarget];
+                    float dtx = target.X - bx;
+                    float dty = target.Y - by;
+                    float distToTargetSqr = dtx * dtx + dty * dty;
+
+                    if (distToTargetSqr > RoadNodeDriftDist * RoadNodeDriftDist)
+                    {
+                        // Too far from target, reset navigation.
+                        agent.RoadNodeTarget = -1;
+                        agent.ClearRoadNodeHistory();
+                    }
+                    else if (distToTargetSqr < RoadNodeArrivalDist * RoadNodeArrivalDist)
+                    {
+                        // Arrived at target, push to history and pick next node.
+                        agent.PushRoadNodeHistory(agent.RoadNodeTarget);
+                        agent.RoadNodeTarget = PickNextRoadNode(graph, agent, agent.Velocity, state.PRNG, biasX, biasY);
+                    }
+                }
+            }
+
+            // Find initial target if we don't have one.
+            if (agent.RoadNodeTarget < 0)
+            {
+                int nearest = graph.FindNearestNode(bx, by);
+                if (nearest < 0)
+                    return Vector3.Zero;
+
+                var nearestNode = graph.Nodes[nearest];
+                float ndx = nearestNode.X - bx;
+                float ndy = nearestNode.Y - by;
+                if (ndx * ndx + ndy * ndy > RoadNodeSearchDist * RoadNodeSearchDist)
+                    return Vector3.Zero; // Too far from any road.
+
+                // We're near this node, pick a connected node to walk toward.
+                agent.ClearRoadNodeHistory();
+                agent.PushRoadNodeHistory(nearest);
+                agent.RoadNodeTarget = PickNextRoadNode(graph, agent, agent.Velocity, state.PRNG, biasX, biasY);
+
+                if (agent.RoadNodeTarget < 0)
+                    agent.RoadNodeTarget = nearest; // Isolated node, just attract to it.
+            }
+
+            // Steer toward the target node.
+            {
+                var target = graph.Nodes[agent.RoadNodeTarget];
+                float dx = target.X - bx;
+                float dy = target.Y - by;
+                float dist = (float)System.Math.Sqrt(dx * dx + dy * dy);
+
+                if (dist > 0.1f)
+                {
+                    dx /= dist;
+                    dy /= dist;
+                }
+
+                float typeScale = target.Type == RoadType.Asphalt ? 0.75f : 0.5f;
+
+                // When approaching a city, check if the target road node actually
+                // gets us closer. If not, return zero and let CityVisitor guide
+                // the agent off-road toward the city.
+                if (approachingCity)
+                {
+                    float curDistSqr = (biasX - bx) * (biasX - bx) + (biasY - by) * (biasY - by);
+                    float tgtDistSqr = (biasX - target.X) * (biasX - target.X) + (biasY - target.Y) * (biasY - target.Y);
+                    if (tgtDistSqr >= curDistSqr)
+                        return Vector3.Zero; // Road node is farther from city; let CityVisitor take over.
+                }
+
+                return new Vector3(dx * typeScale * RoadForceScale, dy * typeScale * RoadForceScale) * power;
+            }
+        }
+
+        /// <summary>
+        /// Picks the next road node to navigate toward.
+        /// Uses the agent's circular history buffer to avoid revisiting recent nodes.
+        /// When biasX/biasY are not NaN, intersection choices prefer the node closest
+        /// to the bias target (used for CityVisitor cooperation).
+        /// </summary>
+        private static int PickNextRoadNode(RoadGraph graph, Agent agent,
+            Vector3 velocity, Random prng, float biasX = float.NaN, float biasY = float.NaN)
+        {
+            // The most recently pushed history entry is the node we just arrived at.
+            int arrivedAt = agent.RoadNodeHistoryCount > 0
+                ? agent.RoadNodeHistory[(agent.RoadNodeHistoryPos - 1 + Agent.RoadNodeHistorySize) % Agent.RoadNodeHistorySize]
+                : -1;
+
+            if (arrivedAt < 0 || arrivedAt >= graph.Nodes.Length)
+                return -1;
+
+            var node = graph.Nodes[arrivedAt];
+            var connections = node.Connections;
+
+            if (connections.Length == 0)
+                return -1; // Isolated node.
+
+            if (connections.Length == 1)
+                return connections[0]; // Dead end: traverse back.
+
+            bool hasBias = !float.IsNaN(biasX);
+
+            // At intersections (3+ connections) without a bias target, 33% chance to pick randomly for variety.
+            bool pickRandom = !hasBias && connections.Length >= 3 && prng.Next(3) == 0;
+
+            // Prepare velocity direction for velocity-aligned selection.
+            float velX = velocity.X;
+            float velY = velocity.Y;
+            float velLen = (float)System.Math.Sqrt(velX * velX + velY * velY);
+            if (velLen > 0.01f) { velX /= velLen; velY /= velLen; }
+
+            // Count how many non-history candidates we have.
+            int availableCount = 0;
+            for (int i = 0; i < connections.Length; i++)
+            {
+                if (!agent.IsInRoadNodeHistory(connections[i]))
+                    availableCount++;
+            }
+
+            // If history would exclude all candidates, the agent has explored this
+            // area thoroughly. Clear history (keeping only the current node) so it
+            // picks a fresh direction based on velocity.
+            if (availableCount == 0)
+            {
+                int current = arrivedAt;
+                agent.ClearRoadNodeHistory();
+                agent.PushRoadNodeHistory(current);
+
+                // Recount after clearing.
+                availableCount = 0;
+                for (int i = 0; i < connections.Length; i++)
+                {
+                    if (!agent.IsInRoadNodeHistory(connections[i]))
+                        availableCount++;
+                }
+            }
+
+            int bestIdx = -1;
+            float bestScore = float.MaxValue;
+            float bestDot = -2f;
+            int fallbackIdx = -1;
+            int candidateCount = 0;
+
+            for (int i = 0; i < connections.Length; i++)
+            {
+                int connIdx = connections[i];
+
+                if (agent.IsInRoadNodeHistory(connIdx))
+                {
+                    if (fallbackIdx < 0) fallbackIdx = connIdx;
+                    continue;
+                }
+
+                candidateCount++;
+
+                if (pickRandom)
+                {
+                    if (prng.Next(candidateCount) == 0)
+                        bestIdx = connIdx;
+                }
+                else if (hasBias)
+                {
+                    var nextNode = graph.Nodes[connIdx];
+                    float dx = nextNode.X - biasX;
+                    float dy = nextNode.Y - biasY;
+                    float distSqr = dx * dx + dy * dy;
+                    if (distSqr < bestScore)
+                    {
+                        bestScore = distSqr;
+                        bestIdx = connIdx;
+                    }
+                }
+                else if (velLen > 0.01f)
+                {
+                    var nextNode = graph.Nodes[connIdx];
+                    var currentNode = graph.Nodes[arrivedAt];
+                    float dx = nextNode.X - currentNode.X;
+                    float dy = nextNode.Y - currentNode.Y;
+                    float len = (float)System.Math.Sqrt(dx * dx + dy * dy);
+                    if (len > 0) { dx /= len; dy /= len; }
+
+                    float dot = velX * dx + velY * dy;
+                    if (dot > bestDot)
+                    {
+                        bestDot = dot;
+                        bestIdx = connIdx;
+                    }
+                }
+                else
+                {
+                    if (prng.Next(candidateCount) == 0)
+                        bestIdx = connIdx;
+                }
+            }
+
+            return bestIdx >= 0 ? bestIdx : (fallbackIdx >= 0 ? fallbackIdx : connections[0]);
         }
 
         private static Vector3 AvoidRoads(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)

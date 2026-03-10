@@ -213,6 +213,7 @@ namespace Editor.Views
                 case "MenuViewEvents":       SimCanvas.ShowEvents       = item.IsChecked; break;
                 case "MenuViewPrefabs":      SimCanvas.ShowPrefabs      = item.IsChecked; break;
                 case "MenuViewCities":       SimCanvas.ShowCities       = item.IsChecked; break;
+                case "MenuViewRoadNetwork": SimCanvas.ShowRoadNetwork  = item.IsChecked; break;
             }
 
             SimCanvas.InvalidateVisual();

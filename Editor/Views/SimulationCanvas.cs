@@ -136,6 +136,7 @@ namespace Editor.Views
         public bool ShowEvents { get; set; } = true;
         public bool ShowPrefabs { get; set; } = false;
         public bool ShowCities { get; set; } = true;
+        public bool ShowRoadNetwork { get; set; } = false;
 
         public SimulationCanvas()
         {
@@ -554,6 +555,8 @@ namespace Editor.Views
                     RenderRoads(context, viewSize, viewSize);
                 if (ShowCities)
                     RenderCities(context, viewSize, viewSize);
+                if (ShowRoadNetwork)
+                    RenderRoadNetwork(context, viewSize, viewSize);
                 if (ShowPrefabs)
                     RenderPrefabs(context, viewSize, viewSize);
                 if (ShowAgents)
@@ -670,6 +673,90 @@ namespace Editor.Views
             }
 
             return bmp;
+        }
+
+        private IPen _roadNetworkEdgePen;
+        private SolidColorBrush _roadNetworkNodeBrush;
+        private SolidColorBrush _roadNetworkDeadEndBrush;
+        private SolidColorBrush _roadNetworkIntersectionBrush;
+        private double _cachedRoadNetworkPenZoom = -1;
+
+        private void RenderRoadNetwork(DrawingContext context, double width, double height)
+        {
+            var mapData = _simulation.MapData;
+            if (mapData?.Roads == null) return;
+
+            var roads = mapData.Roads;
+            var graph = roads.Graph;
+            if (graph == null || graph.Nodes.Length == 0) return;
+
+            int rw = roads.Width;
+            int rh = roads.Height;
+            if (rw == 0 || rh == 0) return;
+
+            // Rebuild pens/brushes when zoom changes.
+            if (_cachedRoadNetworkPenZoom != _zoom)
+            {
+                _roadNetworkEdgePen = new Pen(new SolidColorBrush(Color.FromArgb(120, 0, 200, 255)), 1.0 / _zoom);
+                _roadNetworkNodeBrush = new SolidColorBrush(Color.FromArgb(200, 0, 200, 255));
+                _roadNetworkDeadEndBrush = new SolidColorBrush(Color.FromArgb(220, 255, 80, 80));
+                _roadNetworkIntersectionBrush = new SolidColorBrush(Color.FromArgb(220, 255, 220, 0));
+                _cachedRoadNetworkPenZoom = _zoom;
+            }
+
+            double scaleX = width / rw;
+            double scaleY = height / rh;
+
+            var nodes = graph.Nodes;
+
+            // Draw edges first (behind nodes).
+            for (int i = 0; i < nodes.Length; i++)
+            {
+                ref var node = ref nodes[i];
+                double nx = node.X * scaleX;
+                double ny = node.Y * scaleY;
+                var from = new Point(nx, ny);
+
+                for (int c = 0; c < node.Connections.Length; c++)
+                {
+                    int ci = node.Connections[c];
+                    // Only draw each edge once (lower index → higher index).
+                    if (ci <= i) continue;
+                    ref var other = ref nodes[ci];
+                    var to = new Point(other.X * scaleX, other.Y * scaleY);
+                    context.DrawLine(_roadNetworkEdgePen, from, to);
+                }
+            }
+
+            // Draw nodes on top.
+            double nodeRadius = 1.5 / _zoom;
+            double deadEndRadius = 2.5 / _zoom;
+            double intersectionRadius = 2.0 / _zoom;
+
+            for (int i = 0; i < nodes.Length; i++)
+            {
+                ref var node = ref nodes[i];
+                double nx = node.X * scaleX;
+                double ny = node.Y * scaleY;
+                var center = new Point(nx, ny);
+
+                int connCount = node.Connections.Length;
+                if (connCount <= 1)
+                {
+                    // Dead end — red, larger
+                    context.DrawEllipse(_roadNetworkDeadEndBrush, null, center, deadEndRadius, deadEndRadius);
+                }
+                else if (connCount >= 3)
+                {
+                    // Intersection — yellow
+                    context.DrawEllipse(_roadNetworkIntersectionBrush, null, center, intersectionRadius, intersectionRadius);
+                }
+                else
+                {
+                    // Normal node — cyan
+                    context.DrawEllipse(_roadNetworkNodeBrush, null, center, nodeRadius, nodeRadius);
+                }
+            }
         }
 
         private void RenderBiomes(DrawingContext context, double width, double height)

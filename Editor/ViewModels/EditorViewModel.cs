@@ -807,7 +807,9 @@ namespace Editor.ViewModels
                 {
                     Type = proc.Type,
                     Distance = proc.Distance,
-                    Power = proc.Power
+                    Power = proc.Power,
+                    Param1 = proc.Param1,
+                    Param2 = proc.Param2
                 });
             }
 

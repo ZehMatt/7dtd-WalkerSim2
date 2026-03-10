@@ -40,6 +40,8 @@ namespace Editor.Models
         [ObservableProperty] private float _velocityX;
         [ObservableProperty] private float _velocityY;
         [ObservableProperty] private int _targetCityIndex;
+        [ObservableProperty] private int _roadNodeTarget;
+        [ObservableProperty] private string _roadNodeHistory = "";
         [ObservableProperty] private uint _lastUpdateTick;
         [ObservableProperty] private uint _lastSpawnTick;
 
@@ -64,6 +66,8 @@ namespace Editor.Models
             _velocityX          = _agent.Velocity.X;
             _velocityY          = _agent.Velocity.Y;
             _targetCityIndex    = _agent.TargetCityIndex;
+            _roadNodeTarget     = _agent.RoadNodeTarget;
+            _roadNodeHistory    = FormatRoadHistory(_agent);
             _lastUpdateTick     = _agent.LastUpdateTick;
             _lastSpawnTick      = _agent.LastSpawnTick;
 #pragma warning restore MVVMTK0034
@@ -81,12 +85,32 @@ namespace Editor.Models
         partial void OnHealthChanged(float value)                   => _agent.Health = value;
         partial void OnMaxHealthChanged(float value)                => _agent.MaxHealth = value;
         partial void OnTargetCityIndexChanged(int value)            => _agent.TargetCityIndex = value;
-
+        partial void OnRoadNodeTargetChanged(int value)              => _agent.RoadNodeTarget = value;
         partial void OnPositionXChanged(float value) => _agent.Position = new Vector3(value, _agent.Position.Y, _agent.Position.Z);
         partial void OnPositionYChanged(float value) => _agent.Position = new Vector3(_agent.Position.X, value, _agent.Position.Z);
         partial void OnPositionZChanged(float value) => _agent.Position = new Vector3(_agent.Position.X, _agent.Position.Y, value);
 
         partial void OnVelocityXChanged(float value) => _agent.Velocity = new Vector3(value, _agent.Velocity.Y, _agent.Velocity.Z);
         partial void OnVelocityYChanged(float value) => _agent.Velocity = new Vector3(_agent.Velocity.X, value, _agent.Velocity.Z);
+
+        private static string FormatRoadHistory(Agent agent)
+        {
+            if (agent.RoadNodeHistoryCount == 0)
+                return "(empty)";
+
+            var sb = new System.Text.StringBuilder();
+            // Show oldest to newest.
+            int start = agent.RoadNodeHistoryCount < Agent.RoadNodeHistorySize
+                ? 0
+                : agent.RoadNodeHistoryPos;
+
+            for (int i = 0; i < agent.RoadNodeHistoryCount; i++)
+            {
+                int idx = (start + i) % Agent.RoadNodeHistorySize;
+                if (i > 0) sb.Append(" → ");
+                sb.Append(agent.RoadNodeHistory[idx]);
+            }
+            return sb.ToString();
+        }
     }
 }
