@@ -37,7 +37,7 @@
 				</Button>
 				<Border Width="1" Background="{DynamicResource EditorBorderMid}" Margin="4,2"/>
 				<Button Command="{Binding DuplicateSelectedCommand}"
-						IsEnabled="{Binding HasSelection}"
+						IsEnabled="{Binding HasSelectedSystemOnly}"
 						Content="Duplicate"
 						Padding="8,4" FontSize="12"/>
 				<Button Classes="danger"

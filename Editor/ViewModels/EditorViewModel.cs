@@ -50,6 +50,7 @@ namespace Editor.ViewModels
         {
             SelectedProcessor = null;
             OnPropertyChanged(nameof(HasSelectedSystem));
+            OnPropertyChanged(nameof(HasSelectedSystemOnly));
             OnPropertyChanged(nameof(HasSelection));
             OnPropertyChanged(nameof(HasNoSelection));
         }
@@ -61,8 +62,10 @@ namespace Editor.ViewModels
         {
             OnPropertyChanged(nameof(HasSelectedSystem));
             OnPropertyChanged(nameof(HasSelectedProcessor));
+            OnPropertyChanged(nameof(HasSelectedSystemOnly));
             OnPropertyChanged(nameof(HasSelection));
             OnPropertyChanged(nameof(HasNoSelection));
+            OnPropertyChanged(nameof(MovementProcessorTypeOptions));
         }
 
         // HasSelectedSystem = a system is selected (regardless of whether a processor is also selected).
@@ -70,6 +73,7 @@ namespace Editor.ViewModels
         public bool HasSelectedSystem => SelectedSystem != null;
         public bool HasSelectedProcessor => SelectedProcessor != null;
         public bool HasSelection => SelectedSystem != null || SelectedProcessor != null;
+        public bool HasSelectedSystemOnly => SelectedSystem != null && SelectedProcessor == null;
         public bool HasNoSelection => !HasSelection;
 
         // TreeView two-way binding target.  Setting it updates SelectedSystem / SelectedProcessor.
@@ -80,13 +84,18 @@ namespace Editor.ViewModels
         {
             if (value is Models.MovementProcessorGroupModel sys)
             {
-                SelectedSystem = sys;
+                // Explicitly clear processor — OnSelectedSystemChanged won't fire
+                // if SelectedSystem is already this system (e.g. clicking the system
+                // node after having one of its processors selected).
                 SelectedProcessor = null;
+                SelectedSystem = sys;
             }
             else if (value is Models.MovementProcessorModel proc)
             {
-                SelectedProcessor = proc;
+                // Set SelectedSystem first so its changed handler clears
+                // SelectedProcessor, then set SelectedProcessor after.
                 SelectedSystem = MovementSystems.FirstOrDefault(s => s.Processors.Contains(proc));
+                SelectedProcessor = proc;
             }
             else
             {
@@ -431,7 +440,34 @@ namespace Editor.ViewModels
 
         public Config.WanderingSpeed[] WanderingSpeedOptions { get; } = (Config.WanderingSpeed[])Enum.GetValues(typeof(Config.WanderingSpeed));
 
-        public Config.MovementProcessorType[] MovementProcessorTypeOptions { get; } = ((Config.MovementProcessorType[])Enum.GetValues(typeof(Config.MovementProcessorType))).Where(t => t != Config.MovementProcessorType.Invalid).ToArray();
+        private static readonly Config.MovementProcessorType[] AllProcessorTypes =
+            ((Config.MovementProcessorType[])Enum.GetValues(typeof(Config.MovementProcessorType)))
+            .Where(t => t != Config.MovementProcessorType.Invalid).ToArray();
+
+        /// <summary>
+        /// Returns processor types available for the currently selected processor.
+        /// Excludes types already used by sibling processors in the same system,
+        /// but always includes the selected processor's own current type.
+        /// </summary>
+        public Config.MovementProcessorType[] MovementProcessorTypeOptions
+        {
+            get
+            {
+                var sys = SelectedSystem;
+                var proc = SelectedProcessor;
+                if (sys == null)
+                    return AllProcessorTypes;
+
+                var usedTypes = new System.Collections.Generic.HashSet<Config.MovementProcessorType>();
+                foreach (var p in sys.Processors)
+                {
+                    if (p != proc) // Don't exclude the current processor's own type.
+                        usedTypes.Add(p.Type);
+                }
+
+                return AllProcessorTypes.Where(t => !usedTypes.Contains(t)).ToArray();
+            }
+        }
 
         public WalkerSim.Agent.State[] AgentStateOptions { get; } = (WalkerSim.Agent.State[])Enum.GetValues(typeof(WalkerSim.Agent.State));
         public WalkerSim.Agent.SubState[] AgentSubStateOptions { get; } = (WalkerSim.Agent.SubState[])Enum.GetValues(typeof(WalkerSim.Agent.SubState));
@@ -554,49 +590,37 @@ namespace Editor.ViewModels
         [RelayCommand]
         public void DuplicateSelected()
         {
-            if (SelectedProcessor != null && SelectedSystem != null)
-            {
-                var source = SelectedProcessor.Underlying;
-                var newProc = new Config.MovementProcessor
-                {
-                    Type = source.Type,
-                    Distance = source.Distance,
-                    Power = source.Power
-                };
-                SelectedSystem.Underlying.Entries.Add(newProc);
-                var m = new Models.MovementProcessorModel(newProc);
-                var capSys = SelectedSystem;
-                m.RemoveSelfCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(() => capSys.RemoveProcessor(m));
-                m.ConfigChanged = ReloadConfigLive;
-                SelectedSystem.Processors.Add(m);
-                TreeSelectedItem = m;
-                ReloadConfigLive();
-            }
-            else if (SelectedSystem != null)
-            {
-                DuplicateMovementSystem(SelectedSystem);
-            }
+            // Only systems can be duplicated, not individual processors.
+            var sys = SelectedSystem ?? (SelectedProcessor != null
+                ? MovementSystems.FirstOrDefault(s => s.Processors.Contains(SelectedProcessor))
+                : null);
+            if (sys != null)
+                DuplicateMovementSystem(sys);
         }
 
         [RelayCommand]
         public void RemoveSelected()
         {
-            if (SelectedProcessor != null && SelectedSystem != null)
+            // Capture locals — TreeView selection changes during Remove can
+            // null out SelectedProcessor/SelectedSystem mid-method.
+            var proc = SelectedProcessor;
+            var sys = SelectedSystem;
+
+            if (proc != null && sys != null)
             {
-                var sys = SelectedSystem;
                 var procs = sys.Processors;
-                int idx = procs.IndexOf(SelectedProcessor);
-                sys.RemoveProcessor(SelectedProcessor);
+                int idx = procs.IndexOf(proc);
+                sys.RemoveProcessor(proc);
                 SelectedProcessor = null;
                 if (procs.Count > 0)
                     TreeSelectedItem = procs[idx < procs.Count ? idx : procs.Count - 1];
                 else
                     TreeSelectedItem = sys;
             }
-            else if (SelectedSystem != null)
+            else if (sys != null)
             {
-                int idx = MovementSystems.IndexOf(SelectedSystem);
-                RemoveMovementSystem(SelectedSystem);
+                int idx = MovementSystems.IndexOf(sys);
+                RemoveMovementSystem(sys);
                 if (MovementSystems.Count > 0)
                     TreeSelectedItem = MovementSystems[idx < MovementSystems.Count ? idx : MovementSystems.Count - 1];
                 else
@@ -815,7 +839,7 @@ namespace Editor.ViewModels
 
             Config.Processors.Add(newGroup);
             var model = CreateMovementSystemModel(newGroup);
-            model.Name = $"{system.Name} (Copy)";
+            model.Name = $"{system.DisplayName} (Copy)";
             MovementSystems.Add(model);
             RefreshAllGroupIndexOptions();
             ReloadConfigLive();

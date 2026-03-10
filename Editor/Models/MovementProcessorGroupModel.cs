@@ -172,11 +172,22 @@ namespace Editor.Models
             OnPropertyChanged(nameof(SelectedGroupOption));
         }
 
+        private static readonly Config.MovementProcessorType[] AllProcessorTypes =
+            ((Config.MovementProcessorType[])System.Enum.GetValues(typeof(Config.MovementProcessorType)))
+            .Where(t => t != Config.MovementProcessorType.Invalid).ToArray();
+
         public MovementProcessorModel AddProcessor()
         {
+            // Pick the first type not already used in this system.
+            var usedTypes = new HashSet<Config.MovementProcessorType>(
+                Processors.Select(p => p.Type));
+            var available = AllProcessorTypes.Where(t => !usedTypes.Contains(t)).ToArray();
+            if (available.Length == 0)
+                return null; // All types used.
+
             var newProcessor = new Config.MovementProcessor
             {
-                Type = Config.MovementProcessorType.FlockAnyGroup,
+                Type = available[0],
                 Distance = 50f,
                 Power = 0.0001f
             };
