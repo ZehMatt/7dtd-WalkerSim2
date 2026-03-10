@@ -244,9 +244,10 @@ jobs:
     - name: Publish Editor
       run: dotnet publish Editor/Editor.csproj -c Release -r ${{ matrix.rid }} -o Publish/Editor/${{ matrix.platform }} --self-contained true
 
-    - name: Remove .pdb files from publish output
+    - name: Remove debug symbols from publish output
       shell: pwsh
-      run: Get-ChildItem -Path "Publish/Editor/${{ matrix.platform }}" -Filter "*.pdb" -Recurse | Remove-Item -Force
+      run: |
+        Get-ChildItem -Path "Publish/Editor/${{ matrix.platform }}" -Include "*.pdb","*.dbg" -Recurse | Remove-Item -Force
 
     - name: Create macOS .app bundle
       if: runner.os == 'macOS'
