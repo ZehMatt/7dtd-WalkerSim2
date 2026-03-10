@@ -168,6 +168,12 @@ namespace Editor.ViewModels
             set { Config.SpawnProtectionTime = value; OnPropertyChanged(); if (!_suppressReset) ResetSimulation(); }
         }
 
+        public bool InfiniteZombieLifetime
+        {
+            get => Config.InfiniteZombieLifetime;
+            set { Config.InfiniteZombieLifetime = value; OnPropertyChanged(); }
+        }
+
         // Wrapper properties for movement processor parameters to support live editing
         private Models.MovementProcessorModel? _selectedMovementProcessor;
 
@@ -533,6 +539,7 @@ namespace Editor.ViewModels
             OnPropertyChanged(nameof(FastForwardAtStart));
             OnPropertyChanged(nameof(PauseDuringBloodmoon));
             OnPropertyChanged(nameof(SpawnProtectionTime));
+            OnPropertyChanged(nameof(InfiniteZombieLifetime));
             _suppressReset = false;
         }
 

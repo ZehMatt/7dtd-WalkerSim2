@@ -134,6 +134,13 @@
 							   Increment="1"/>
 			</StackPanel>
 
+			<!-- Prevent Lifetime Expiration -->
+			<CheckBox IsChecked="{Binding InfiniteZombieLifetime, Mode=TwoWay}"
+					  Margin="0,4,0,8">
+				<controls:LabelWithHelp LabelText="Prevent Lifetime Expiration"
+					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#infinitezombielifetime"/>
+			</CheckBox>
+
 		</StackPanel>
 	</ScrollViewer>
 

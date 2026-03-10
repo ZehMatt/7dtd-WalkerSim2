@@ -138,6 +138,12 @@
                     </xs:annotation>
                 </xs:element>
 
+                <xs:element name="InfiniteZombieLifetime" type="xs:boolean" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>When enabled, zombies spawned by WalkerSim will have their lifetime set to the maximum value, preventing them from dying due to the game's built-in lifetime expiration</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+
                 <xs:element name="MaxSpawnedZombies">
                     <xs:annotation>
                         <xs:documentation>

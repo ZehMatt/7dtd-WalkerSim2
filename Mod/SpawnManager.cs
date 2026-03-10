@@ -192,6 +192,40 @@ namespace WalkerSim
             stats.Health.MaxPassive = PassiveEffects.None;
         }
 
+        public static void ApplyLifeTime(Config config, Agent agent, EntityAlive spawnedAgent)
+        {
+            // Handle zombie lifetime.
+            if (config.InfiniteZombieLifetime)
+            {
+                // Infinite lifetime: prevent the game from killing zombies due to lifetime expiration.
+                if (spawnedAgent is EntityHuman spawnedHuman)
+                {
+                    spawnedHuman.timeToDie = ulong.MaxValue;
+                }
+                else if (spawnedAgent is EntityZombieDog spawnedDog)
+                {
+                    spawnedDog.timeToDie = ulong.MaxValue;
+                }
+
+                agent.TimeToDie = ulong.MaxValue;
+            }
+            else if (agent.TimeToDie != ulong.MaxValue)
+            {
+                // Keep maximum assigned lifetime.
+                if (spawnedAgent is EntityHuman spawnedHuman)
+                {
+                    spawnedHuman.timeToDie = agent.TimeToDie;
+                }
+                else if (spawnedAgent is EntityZombieDog spawnedDog)
+                {
+                    spawnedDog.timeToDie = agent.TimeToDie;
+                }
+
+                Logging.CondInfo(config.LoggingOpts.Spawns,
+                    () => $"Using previous time to die: {agent.TimeToDie}");
+            }
+        }
+
         public static void ApplyEntityState(Config config, Agent agent, EntityAlive spawnedAgent)
         {
             Logging.DbgInfo("Applying entity state for agent {0}, entity id {1}, class id {2}, health {3}, dismemberment {4}",
@@ -202,6 +236,7 @@ namespace WalkerSim
                 agent.Dismemberment
                 );
 
+            ApplyLifeTime(config, agent, spawnedAgent);
             ApplyHealthState(config, agent, spawnedAgent);
             ApplyDismemberment(agent, spawnedAgent);
 
@@ -860,22 +895,6 @@ namespace WalkerSim
                     Logging.Info("  Spawned with Buff: {0}",
                         buff.BuffName);
                 }
-            }
-
-            // Keep maximum assigned lifetime.
-            if (agent.TimeToDie != ulong.MaxValue)
-            {
-                if (spawnedAgent is EntityHuman spawnedHuman)
-                {
-                    spawnedHuman.timeToDie = agent.TimeToDie;
-                }
-                else if (spawnedAgent is EntityZombieDog spawnedDog)
-                {
-                    spawnedDog.timeToDie = agent.TimeToDie;
-                }
-
-                Logging.CondInfo(config.LoggingOpts.Spawns,
-                    () => $"Using previous time to die: {agent.TimeToDie}, remaining: {remainingLifeTime}");
             }
 
             ApplyEntityState(config, agent, spawnedAgent);

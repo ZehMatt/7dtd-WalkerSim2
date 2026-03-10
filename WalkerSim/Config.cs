@@ -208,6 +208,9 @@ namespace WalkerSim
         [XmlElement("SpawnProtectionTime")]
         public uint SpawnProtectionTime = 300;
 
+        [XmlElement("InfiniteZombieLifetime")]
+        public bool InfiniteZombieLifetime = false;
+
         [XmlElement("MaxSpawnedZombies")]
         public string MaxSpawnedZombies = "75%";
 
@@ -313,6 +316,7 @@ namespace WalkerSim
                 FastForwardAtStart = true,
                 PauseDuringBloodmoon = true,
                 SpawnProtectionTime = 300,
+                InfiniteZombieLifetime = false,
                 MaxSpawnedZombies = "75%",
                 Processors = new List<MovementProcessorGroup>
                 {
