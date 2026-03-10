@@ -108,7 +108,6 @@ namespace Editor.Views
                 new Vector(96, 96),
                 Avalonia.Platform.PixelFormat.Bgra8888,
                 Avalonia.Platform.AlphaFormat.Premul);
-
         }
 
         public override void Render(DrawingContext context)
@@ -170,6 +169,7 @@ namespace Editor.Views
             double t = _time;
 
             double bassE = 0, leadE = 0, percE = 0, leadNote = 0;
+            double choirE = 0, fluteE = 0, bassNote = 0, energy = 0, pizzE = 0;
             int chord = 0;
             var synth = Synth;
             if (synth != null)
@@ -179,22 +179,20 @@ namespace Editor.Views
                 percE = synth.VisPerc;
                 leadNote = synth.VisLeadNote;
                 chord = synth.VisChord;
+                choirE = synth.VisChoir;
+                fluteE = synth.VisFlute;
+                bassNote = synth.VisBassNote;
+                energy = synth.VisEnergy;
+                pizzE = synth.VisPizz;
             }
 
             double cr = -0.7 + 0.15 * Math.Cos(t * 0.3);
             double ci = 0.27015 + 0.15 * Math.Sin(t * 0.25);
-
             double shiftU = t * 0.4;
             double shiftV = t * 0.15;
-
             double lookX = Math.Sin(t * 0.15) * w * 0.12 + Math.Sin(t * 0.27) * w * 0.05;
             double lookY = Math.Cos(t * 0.11) * h * 0.10 + Math.Cos(t * 0.23) * h * 0.04;
-
-            double hueBase = chord * 1.571 + t * 0.08;
-            double hueFromMusic = leadNote * 0.8 + leadE * 1.5;
-            double saturation = 0.6 + bassE * 0.35;
-            double percBright = 1.0 + percE * 0.4;
-
+            double percBright = 1.0 + percE * 0.5 + energy * 0.3;
             double cx = w * 0.5;
             double cy = h * 0.5;
             double maxDist = Math.Sqrt(w * w + h * h) * 0.5;
@@ -207,8 +205,11 @@ namespace Editor.Views
                     double dy2 = y - cy - lookY;
                     double dist2 = Math.Sqrt(dx2 * dx2 + dy2 * dy2);
 
-                    double u = ((int)(32.0 * 128.0 / (dist2 + 1.0)) / 256.0 + shiftU) % 1.0;
-                    double v = ((int)(256.0 * Math.Atan2(dy2, dx2) / (2.0 * Math.PI)) / 256.0 + shiftV) % 1.0;
+                    double angle = Math.Atan2(dy2, dx2) / (2.0 * Math.PI);
+                    double depth = 128.0 / (dist2 + 1.0);
+
+                    double u = ((int)(32.0 * depth) / 256.0 + shiftU) % 1.0;
+                    double v = ((int)(256.0 * angle) / 256.0 + shiftV) % 1.0;
 
                     double zr = (u - 0.5) * 3.0;
                     double zi = (v - 0.5) * 3.0;
@@ -217,40 +218,92 @@ namespace Editor.Views
 
                     double depthFade = Math.Clamp(dist2 / maxDist, 0, 1);
                     double brightness = (0.15 + 0.85 * (1.0 - depthFade)) * percBright;
+                    double absAngle = (angle + 0.5) % 1.0;
 
                     int r, g, b;
                     if (iter == MaxIter)
                     {
-                        r = 0;
-                        g = 0;
-                        b = 0;
+                        double voidBase = 0.06 + bassE * 0.12 + energy * 0.05;
+                        double voidHue = chord * 1.571 + bassNote * 1.5 + t * 0.06;
+                        r = (int)(voidBase * 255 * (Math.Sin(voidHue) * 0.3 + 0.4));
+                        g = (int)(voidBase * 255 * (Math.Sin(voidHue + 2.094) * 0.3 + 0.3));
+                        b = (int)(voidBase * 255 * (Math.Sin(voidHue + 4.189) * 0.3 + 0.5));
                     }
                     else
                     {
-                        double hue = frac * 4.0 + hueBase + hueFromMusic;
+                        double hue = frac * 4.0 + chord * 1.571 + t * 0.06;
+
+                        double depthMix = depthFade;
+                        hue += bassNote * 2.0 * (1.0 - depthMix) * bassE;
+                        hue += fluteE * 3.0 * depthMix;
+
+                        double angleSin = Math.Sin(absAngle * 2 * Math.PI);
+                        double angleCos = Math.Cos(absAngle * 2 * Math.PI);
+                        hue += leadNote * 2.5 * leadE * Math.Max(0, angleSin);
+                        hue += choirE * 2.0 * Math.Max(0, -angleSin);
+                        hue += pizzE * 1.5 * Math.Max(0, angleCos);
+
+                        double band = (iter % 6) / 6.0;
+                        hue += band * (bassE * 1.0 + energy * 0.8);
+
                         double hr = Math.Sin(hue) * 0.5 + 0.5;
                         double hg = Math.Sin(hue + 2.094) * 0.5 + 0.5;
                         double hb = Math.Sin(hue + 4.189) * 0.5 + 0.5;
+
+                        double warmZone = Math.Max(0, angleSin) * (1.0 - depthMix);
+                        if (choirE > 0.1)
+                        {
+                            double warm = choirE * warmZone * 0.4;
+                            hr = Math.Min(1, hr + warm);
+                            hb = Math.Max(0, hb - warm * 0.6);
+                        }
+
+                        double coolZone = Math.Max(0, -angleSin) * depthMix;
+                        if (fluteE > 0.1)
+                        {
+                            double cool = fluteE * coolZone * 0.6;
+                            hb = Math.Min(1, hb + cool);
+                            hg = Math.Min(1, hg + cool * 0.3);
+                            hr = Math.Max(0, hr - cool * 0.4);
+                        }
+
+                        double pizzZone = Math.Max(0, angleCos);
+                        if (pizzE > 0.05)
+                            hg = Math.Min(1, hg + pizzE * pizzZone * 0.3);
+
+                        double saturation = 0.4 + choirE * 0.3 * (1.0 - depthMix)
+                                          + fluteE * 0.3 * depthMix
+                                          + bassE * 0.15 + leadE * 0.1;
 
                         double gray = (hr + hg + hb) / 3.0;
                         hr = gray + (hr - gray) * saturation;
                         hg = gray + (hg - gray) * saturation;
                         hb = gray + (hb - gray) * saturation;
 
-                        double iterBright = frac * frac;
+                        double iterBright = Math.Sqrt(frac) * 0.7 + frac * 0.3;
                         r = (int)(hr * iterBright * 255 * brightness);
                         g = (int)(hg * iterBright * 255 * brightness);
                         b = (int)(hb * iterBright * 255 * brightness);
                     }
 
-                    // Bell hit: bright white flash on Julia set edges
                     if (leadE > 0.01 && iter > MaxIter / 3 && iter < MaxIter)
                     {
+                        double leadZone = Math.Max(0, Math.Sin(absAngle * 2 * Math.PI));
                         double proximity = (double)(iter - MaxIter / 3) / (MaxIter - MaxIter / 3);
-                        int white = (int)(proximity * proximity * leadE * 400);
-                        r = Math.Min(255, r + white);
-                        g = Math.Min(255, g + white);
-                        b = Math.Min(255, b + white);
+                        double flash = proximity * proximity * leadE * 300 * (0.3 + 0.7 * leadZone);
+                        double noteTint = Math.Clamp(leadNote, 0, 1);
+                        r = Math.Min(255, r + (int)(flash * (1.0 - noteTint * 0.3)));
+                        g = Math.Min(255, g + (int)(flash * (0.8 + noteTint * 0.2)));
+                        b = Math.Min(255, b + (int)(flash * (0.5 + noteTint * 0.5)));
+                    }
+
+                    if (pizzE > 0.05 && iter > MaxIter / 2 && iter < MaxIter)
+                    {
+                        double pizzZone2 = Math.Max(0, Math.Cos(absAngle * 2 * Math.PI));
+                        double edge = (double)(iter - MaxIter / 2) / (MaxIter - MaxIter / 2);
+                        double spark = edge * pizzE * 150 * (0.3 + 0.7 * pizzZone2);
+                        g = Math.Min(255, g + (int)(spark * 0.8));
+                        b = Math.Min(255, b + (int)(spark * 0.4));
                     }
 
                     int px = y * fb.RowBytes + x * 4;
@@ -264,7 +317,6 @@ namespace Editor.Views
                 }
             }
 
-            // Blur pass
             int stride = fb.RowBytes;
             Array.Copy(pixels, _bloomBuf, totalBytes);
             for (int y = 1; y < h - 1; y++)
@@ -283,7 +335,6 @@ namespace Editor.Views
                 }
             }
 
-            // Bloom pass
             Array.Copy(pixels, _bloomBuf, totalBytes);
             for (int y = 2; y < h - 2; y++)
             {
@@ -316,12 +367,10 @@ namespace Editor.Views
 
         private static readonly SolidColorBrush _creditFgBrush = new SolidColorBrush(Color.FromRgb(150, 255, 150));
         private static readonly SolidColorBrush _creditShBrush = new SolidColorBrush(Color.FromArgb(180, 0, 0, 0));
-
         private static readonly RenderOptions _upscaleOptions = new RenderOptions { BitmapInterpolationMode = BitmapInterpolationMode.HighQuality };
 
         private double _charWidth;
         private bool _charWidthMeasured;
-
         private FormattedText[] _creditTextCache;
         private FormattedText[] _creditShadowCache;
 
