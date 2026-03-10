@@ -166,9 +166,9 @@ jobs:
 
     - name: Prepare Mod artifact
       run: |
-        mkdir artifact\Mods\WalkerSim2
+        mkdir artifact\WalkerSim2
         echo .pdb > exclude.txt
-        xcopy /I /Y /F ".\Build\Release\Mod\*" ".\artifact\Mods\WalkerSim2\" /EXCLUDE:exclude.txt
+        xcopy /I /Y /F ".\Build\Release\Mod\*" ".\artifact\WalkerSim2\" /EXCLUDE:exclude.txt
         del exclude.txt
 
     - name: Upload Mod artifact
@@ -244,6 +244,24 @@ jobs:
     - name: Publish Editor
       run: dotnet publish Editor/Editor.csproj -c Release -r ${{ matrix.rid }} -o Publish/Editor/${{ matrix.platform }} --self-contained true
 
+    - name: Remove .pdb files from publish output
+      shell: pwsh
+      run: Get-ChildItem -Path "Publish/Editor/${{ matrix.platform }}" -Filter "*.pdb" -Recurse | Remove-Item -Force
+
+    - name: Create macOS .app bundle
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        APP="Publish/Editor/${{ matrix.platform }}/WalkerSim Editor.app"
+        mkdir -p "$APP/Contents/MacOS"
+        mkdir -p "$APP/Contents/Resources"
+        # Move all published files into the bundle
+        find "Publish/Editor/${{ matrix.platform }}" -maxdepth 1 -not -name '*.app' -not -path "Publish/Editor/${{ matrix.platform }}" -exec mv {} "$APP/Contents/MacOS/" \;
+        # Copy Info.plist and substitute version
+        sed "s/VERSION/${{ env.BUILD_VERSION }}/g" Editor/Assets/Info.plist > "$APP/Contents/Info.plist"
+        # Make the main executable runnable
+        chmod +x "$APP/Contents/MacOS/Editor"
+
     - name: Upload Editor artifact
       uses: actions/upload-artifact@v4
       with:
@@ -291,8 +309,9 @@ jobs:
 
     - name: Package release artifacts
       run: |
-        cd release
-        zip -r ../WalkerSim2-${{ env.BUILD_VERSION }}.zip Mod/
+        cd release/Mod
+        zip -r ../../WalkerSim2-${{ env.BUILD_VERSION }}.zip WalkerSim2/
+        cd ..
         zip -r ../WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}.zip Editor-Windows-x64/
         zip -r ../WalkerSim2-Editor-Linux-x64-${{ env.BUILD_VERSION }}.zip Editor-Linux-x64/
         zip -r ../WalkerSim2-Editor-Mac-arm64-${{ env.BUILD_VERSION }}.zip Editor-Mac-arm64/
