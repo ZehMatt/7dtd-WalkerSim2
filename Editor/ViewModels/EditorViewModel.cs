@@ -432,16 +432,16 @@ namespace Editor.ViewModels
 
         public System.Collections.ObjectModel.ObservableCollection<Models.LogEntry> LogEntries { get; } = new System.Collections.ObjectModel.ObservableCollection<Models.LogEntry>();
 
-        public Config.WorldLocation[] StartPositionOptions { get; } = (Config.WorldLocation[])Enum.GetValues(typeof(Config.WorldLocation));
+        public Config.WorldLocation[] StartPositionOptions { get; } = Enum.GetValues<Config.WorldLocation>();
 
-        public Config.WorldLocation[] RespawnPositionOptions { get; } = (Config.WorldLocation[])Enum.GetValues(typeof(Config.WorldLocation));
+        public Config.WorldLocation[] RespawnPositionOptions { get; } = Enum.GetValues<Config.WorldLocation>();
 
-        public Config.PostSpawnBehavior[] PostSpawnBehaviorOptions { get; } = (Config.PostSpawnBehavior[])Enum.GetValues(typeof(Config.PostSpawnBehavior));
+        public Config.PostSpawnBehavior[] PostSpawnBehaviorOptions { get; } = Enum.GetValues<Config.PostSpawnBehavior>();
 
-        public Config.WanderingSpeed[] WanderingSpeedOptions { get; } = (Config.WanderingSpeed[])Enum.GetValues(typeof(Config.WanderingSpeed));
+        public Config.WanderingSpeed[] WanderingSpeedOptions { get; } = Enum.GetValues<Config.WanderingSpeed>();
 
         private static readonly Config.MovementProcessorType[] AllProcessorTypes =
-            ((Config.MovementProcessorType[])Enum.GetValues(typeof(Config.MovementProcessorType)))
+            Enum.GetValues<Config.MovementProcessorType>()
             .Where(t => t != Config.MovementProcessorType.Invalid).ToArray();
 
         /// <summary>
@@ -469,10 +469,10 @@ namespace Editor.ViewModels
             }
         }
 
-        public WalkerSim.Agent.State[] AgentStateOptions { get; } = (WalkerSim.Agent.State[])Enum.GetValues(typeof(WalkerSim.Agent.State));
-        public WalkerSim.Agent.SubState[] AgentSubStateOptions { get; } = (WalkerSim.Agent.SubState[])Enum.GetValues(typeof(WalkerSim.Agent.SubState));
-        public WalkerSim.Agent.TravelState[] AgentTravelStateOptions { get; } = (WalkerSim.Agent.TravelState[])Enum.GetValues(typeof(WalkerSim.Agent.TravelState));
-        public WalkerSim.Agent.MoveType[] AgentMoveTypeOptions { get; } = (WalkerSim.Agent.MoveType[])Enum.GetValues(typeof(WalkerSim.Agent.MoveType));
+        public WalkerSim.Agent.State[] AgentStateOptions { get; } = Enum.GetValues<WalkerSim.Agent.State>();
+        public WalkerSim.Agent.SubState[] AgentSubStateOptions { get; } = Enum.GetValues<WalkerSim.Agent.SubState>();
+        public WalkerSim.Agent.TravelState[] AgentTravelStateOptions { get; } = Enum.GetValues<WalkerSim.Agent.TravelState>();
+        public WalkerSim.Agent.MoveType[] AgentMoveTypeOptions { get; } = Enum.GetValues<WalkerSim.Agent.MoveType>();
 
         // Suppress simulation reset during bulk config updates (e.g. import, OnConfigChanged)
         private bool _suppressReset = false;

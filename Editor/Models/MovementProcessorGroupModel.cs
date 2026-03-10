@@ -173,7 +173,7 @@ namespace Editor.Models
         }
 
         private static readonly Config.MovementProcessorType[] AllProcessorTypes =
-            ((Config.MovementProcessorType[])System.Enum.GetValues(typeof(Config.MovementProcessorType)))
+            System.Enum.GetValues<Config.MovementProcessorType>()
             .Where(t => t != Config.MovementProcessorType.Invalid).ToArray();
 
         public MovementProcessorModel AddProcessor()
