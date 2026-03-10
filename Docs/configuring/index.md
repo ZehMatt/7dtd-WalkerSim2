@@ -30,9 +30,10 @@ When you play offline by yourself, your game acts as both the player and the ser
 You have two options:
 
 ### Use the Editor Tool
-- A program with buttons and sliders that makes changing settings easy
+- A standalone program with buttons and sliders that makes changing settings easy
 - You can see a preview of how zombies will move
 - Good for people who don't like editing files
+- Since version 1.1, the Editor must be downloaded separately from the [releases page](https://github.com/ZehMatt/7dtd-WalkerSim2/releases)
 
 ### Edit the XML File Directly
 - Open `WalkerSim.xml` in Notepad or any text editor

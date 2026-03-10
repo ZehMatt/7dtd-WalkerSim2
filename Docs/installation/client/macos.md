@@ -1,7 +1,8 @@
 ## What You Need
 
 - 7 Days to Die installed through Steam
-- WalkerSim2 mod downloaded (like `WalkerSim2-0.9.3.zip`)
+- WalkerSim2 mod zip downloaded from the latest release (`WalkerSim2-{version}.zip`)
+- Optionally, the Editor tool (`WalkerSim2-Editor-Mac-arm64-{version}.zip`)
 
 ---
 
@@ -17,13 +18,13 @@ Example path:
 >```/Users/your_user_name/Library/Application Support/Steam/steamapps/common/7 Days To Die```
 
 !!! note
-      Folder paths may vary depending on your Linux distribution and installation method.
+      Folder paths may vary depending on your macOS setup and installation method.
 
 ---
 
 ## Step 2: Download and Extract WalkerSim2
 
-1. Download the latest WalkerSim2 release, e.g., `WalkerSim2-0.9.3.zip`.
+1. Download the latest `WalkerSim2-{version}.zip` from the [Releases](https://github.com/ZehMatt/WalkerSim2/releases) page.
 2. Use an extraction tool like **The Unarchiver** or the built-in **Archive Utility** to unpack the archive.
 3. You should get a folder named:
 
