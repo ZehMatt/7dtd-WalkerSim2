@@ -35,7 +35,7 @@ namespace Editor.Views
             "-- Shoutouts to friends and supporters --",
             "",
             "ALo",
-            "AaronVanGeffen",
+            "Aaron",
             "Abaddon",
             "Broxzier",
             "Duncanspumpkin",

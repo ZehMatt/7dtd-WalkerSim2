@@ -215,6 +215,17 @@
 												   FormatString="F1" FontSize="12"/>
 								</Grid>
 
+								<!-- Description -->
+								<Border Background="{DynamicResource EditorPanelBackground}"
+										CornerRadius="4"
+										Padding="10,8"
+										Margin="0,8,0,0">
+									<TextBlock Text="{Binding Description}"
+											   TextWrapping="Wrap"
+											   FontSize="12"
+											   Foreground="{DynamicResource EditorTextMuted}"/>
+								</Border>
+
 							</StackPanel>
 						</DataTemplate>
 

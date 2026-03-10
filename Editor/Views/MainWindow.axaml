@@ -145,42 +145,51 @@
 		</Menu>
 
 		<!-- Main Content Grid -->
-		<Grid>
+		<Grid x:Name="MainGrid">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="600" MinWidth="200" MaxWidth="600"/>
 				<ColumnDefinition Width="4"/>
+				<ColumnDefinition Width="Auto"/>
 				<ColumnDefinition Width="*"/>
 			</Grid.ColumnDefinitions>
 
 			<!-- Left Sidebar -->
-			<Border Grid.Column="0"
+			<Border x:Name="SidebarBorder" Grid.Column="0"
 					Background="{DynamicResource EditorSidebarBackground}"
 					BorderBrush="{DynamicResource EditorBorder}"
 					BorderThickness="0,0,1,0">
 				<DockPanel>
 
 					<!-- Tab Bar at Top -->
-					<StackPanel Orientation="Horizontal"
-								DockPanel.Dock="Top"
-								Background="{DynamicResource EditorPanelBackground}"
-								MinHeight="40">
+					<Grid DockPanel.Dock="Top"
+						  Background="{DynamicResource EditorPanelBackground}"
+						  MinHeight="40"
+						  ColumnDefinitions="*,Auto">
+						<StackPanel Grid.Column="0" Orientation="Horizontal">
 
-						<ToggleButton Classes="TabButton"
-									  Content="Base Parameters"
-									  x:Name="BaseParamsTab"
-									  IsChecked="True"
-									  Click="OnBaseParamsTabClick"/>
+							<ToggleButton Classes="TabButton"
+										  Content="Base Parameters"
+										  x:Name="BaseParamsTab"
+										  IsChecked="True"
+										  Click="OnBaseParamsTabClick"/>
 
-						<ToggleButton Classes="TabButton"
-									  Content="Movement Systems"
-									  x:Name="MovementSystemsTab"
-									  Click="OnMovementSystemsTabClick"/>
+							<ToggleButton Classes="TabButton"
+										  Content="Movement Systems"
+										  x:Name="MovementSystemsTab"
+										  Click="OnMovementSystemsTabClick"/>
 
-						<ToggleButton Classes="TabButton"
-									  Content="Agents"
-									  x:Name="AgentsTab"
-									  Click="OnAgentsTabClick"/>
-					</StackPanel>
+							<ToggleButton Classes="TabButton"
+										  Content="Agents"
+										  x:Name="AgentsTab"
+										  Click="OnAgentsTabClick"/>
+						</StackPanel>
+						<Button Grid.Column="1"
+								Content="&#x25C2;"
+								Classes="CollapseButton"
+								Click="OnHideSidebarClick"
+								VerticalAlignment="Center"
+								Margin="0,0,4,0"/>
+					</Grid>
 
 					<!-- Content Area — each panel fills the remaining space independently -->
 					<Grid>
@@ -204,13 +213,27 @@
 			</Border>
 
 			<!-- Resizer -->
-			<GridSplitter Grid.Column="1"
+			<GridSplitter x:Name="SidebarSplitter" Grid.Column="1"
 						  Width="4"
 						  ResizeDirection="Columns"
 						  Background="{DynamicResource EditorAccent}"/>
 
+			<!-- Sidebar Show Button (visible when sidebar is collapsed) -->
+			<Border x:Name="SidebarShowButton"
+					Grid.Column="2"
+					IsVisible="False"
+					Background="{DynamicResource EditorPanelBackground}"
+					BorderBrush="{DynamicResource EditorBorder}"
+					BorderThickness="0,0,1,0">
+				<Button Content="&#x25B8;"
+						Classes="CollapseButton"
+						Click="OnShowSidebarClick"
+						VerticalAlignment="Top"
+						Margin="0,4"/>
+			</Border>
+
 			<!-- Right Panel - Simulation and Log -->
-			<Grid Grid.Column="2" Background="{DynamicResource EditorBackground}">
+			<Grid x:Name="RightGrid" Grid.Column="3" Background="{DynamicResource EditorBackground}">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="*" />
 					<RowDefinition Height="4" />
@@ -281,13 +304,26 @@
 				</Border>
 
 				<!-- Resize Grip -->
-				<GridSplitter Grid.Row="1"
+				<GridSplitter x:Name="LogSplitter" Grid.Row="1"
 							  Height="4"
 							  ResizeDirection="Rows"
 							  Background="{DynamicResource EditorAccent}"/>
 
+				<!-- Log Show Bar (visible when log is collapsed) -->
+				<Button x:Name="LogShowBar"
+						Grid.Row="2"
+						Content="&#x25B4; Log"
+						Classes="SmallButton"
+						Click="OnShowLogClick"
+						IsVisible="False"
+						HorizontalAlignment="Stretch"
+						VerticalAlignment="Stretch"
+						HorizontalContentAlignment="Center"
+						VerticalContentAlignment="Center"
+						Padding="0"/>
+
 				<!-- Log Panel -->
-				<Border Grid.Row="2"
+				<Border x:Name="LogBorder" Grid.Row="2"
 						BorderBrush="{DynamicResource EditorBorder}"
 						BorderThickness="1,0,0,0"
 						Background="{DynamicResource EditorSidebarBackground}">
@@ -302,7 +338,7 @@
 								Background="{DynamicResource EditorPanelBackground}"
 								BorderBrush="{DynamicResource EditorBorder}"
 								BorderThickness="0,0,0,1">
-							<Grid ColumnDefinitions="*,Auto">
+							<Grid ColumnDefinitions="*,Auto,Auto">
 								<TextBlock Grid.Column="0"
 										   Text="Log"
 										   Classes="LogHeader"
@@ -313,6 +349,12 @@
 										Classes="SmallButton"
 										Command="{Binding ClearLogCommand}"
 										Margin="8,0"/>
+								<Button Grid.Column="2"
+										Content="&#x25BE;"
+										Classes="CollapseButton"
+										Click="OnHideLogClick"
+										VerticalAlignment="Center"
+										Margin="0,0,4,0"/>
 							</Grid>
 						</Border>
 
@@ -420,6 +462,22 @@
 		</Style>
 		<Style Selector="Button.SmallButton:pointerover">
 			<Setter Property="Background" Value="{DynamicResource EditorAccent}"/>
+			<Setter Property="Foreground" Value="{DynamicResource EditorTextBright}"/>
+		</Style>
+		<Style Selector="Button.CollapseButton">
+			<Setter Property="Padding" Value="6,2"/>
+			<Setter Property="FontSize" Value="14"/>
+			<Setter Property="FontWeight" Value="Bold"/>
+			<Setter Property="MinWidth" Value="28"/>
+			<Setter Property="MinHeight" Value="28"/>
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="Foreground" Value="{DynamicResource EditorTextMuted}"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="VerticalContentAlignment" Value="Center"/>
+		</Style>
+		<Style Selector="Button.CollapseButton:pointerover">
+			<Setter Property="Background" Value="{DynamicResource EditorBorder}"/>
 			<Setter Property="Foreground" Value="{DynamicResource EditorTextBright}"/>
 		</Style>
 		<Style Selector="Button.danger">

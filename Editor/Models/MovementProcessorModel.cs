@@ -40,6 +40,7 @@ namespace Editor.Models
             OnPropertyChanged(nameof(PowerLabel));
             OnPropertyChanged(nameof(Param1Label));
             OnPropertyChanged(nameof(Param2Label));
+            OnPropertyChanged(nameof(Description));
             ConfigChanged?.Invoke();
         }
 
@@ -80,31 +81,31 @@ namespace Editor.Models
         }
 
         // Per-type parameter metadata
-        private record struct ParamMeta(string? DistanceLabel, string? PowerLabel, string? Param1Label, string? Param2Label);
+        private record struct ParamMeta(string? DistanceLabel, string? PowerLabel, string? Param1Label, string? Param2Label, string Description);
 
-        private static readonly ParamMeta DefaultMeta = new("Distance", "Power", null, null);
+        private static readonly ParamMeta DefaultMeta = new("Distance", "Power", null, null, "Unknown processor type.");
 
         private static readonly Dictionary<Config.MovementProcessorType, ParamMeta> MetaMap = new()
         {
-            { Config.MovementProcessorType.FlockAnyGroup,  new("Distance", "Power", null, null) },
-            { Config.MovementProcessorType.AlignAnyGroup,  new("Distance", "Power", null, null) },
-            { Config.MovementProcessorType.AvoidAnyGroup,  new("Distance", "Power", null, null) },
-            { Config.MovementProcessorType.FlockSameGroup, new("Distance", "Power", null, null) },
-            { Config.MovementProcessorType.AlignSameGroup, new("Distance", "Power", null, null) },
-            { Config.MovementProcessorType.AvoidSameGroup, new("Distance", "Power", null, null) },
-            { Config.MovementProcessorType.FlockOtherGroup,new("Distance", "Power", null, null) },
-            { Config.MovementProcessorType.AlignOtherGroup,new("Distance", "Power", null, null) },
-            { Config.MovementProcessorType.AvoidOtherGroup,new("Distance", "Power", null, null) },
-            { Config.MovementProcessorType.Wind,           new(null, "Power", null, null) },
-            { Config.MovementProcessorType.WindInverted,   new(null, "Power", null, null) },
-            { Config.MovementProcessorType.StickToRoads,   new(null, "Power", null, null) },
-            { Config.MovementProcessorType.AvoidRoads,     new(null, "Power", null, null) },
-            { Config.MovementProcessorType.StickToPOIs,    new(null, "Power", null, null) },
-            { Config.MovementProcessorType.AvoidPOIs,      new("Distance", "Power", null, null) },
-            { Config.MovementProcessorType.WorldEvents,    new(null, "Power", null, null) },
-            { Config.MovementProcessorType.PreferCities,   new(null, "Power", null, null) },
-            { Config.MovementProcessorType.AvoidCities,    new("Distance", "Power", null, null) },
-            { Config.MovementProcessorType.CityVisitor,    new(null, "Power", "Min Stay (min)", "Max Stay (min)") },
+            { Config.MovementProcessorType.FlockAnyGroup,  new("Distance", "Power", null, null, "Steer towards nearby agents from any group within the given distance.") },
+            { Config.MovementProcessorType.AlignAnyGroup,  new("Distance", "Power", null, null, "Align direction with nearby agents from any group within the given distance.") },
+            { Config.MovementProcessorType.AvoidAnyGroup,  new("Distance", "Power", null, null, "Steer away from nearby agents from any group within the given distance.") },
+            { Config.MovementProcessorType.FlockSameGroup, new("Distance", "Power", null, null, "Steer towards nearby agents belonging to the same group within the given distance.") },
+            { Config.MovementProcessorType.AlignSameGroup, new("Distance", "Power", null, null, "Align direction with nearby agents belonging to the same group within the given distance.") },
+            { Config.MovementProcessorType.AvoidSameGroup, new("Distance", "Power", null, null, "Steer away from nearby agents belonging to the same group within the given distance.") },
+            { Config.MovementProcessorType.FlockOtherGroup,new("Distance", "Power", null, null, "Steer towards nearby agents from other groups within the given distance.") },
+            { Config.MovementProcessorType.AlignOtherGroup,new("Distance", "Power", null, null, "Align direction with nearby agents from other groups within the given distance.") },
+            { Config.MovementProcessorType.AvoidOtherGroup,new("Distance", "Power", null, null, "Steer away from nearby agents from other groups within the given distance.") },
+            { Config.MovementProcessorType.Wind,           new(null, "Power", null, null, "Apply a global wind force that pushes agents in a consistent direction.") },
+            { Config.MovementProcessorType.WindInverted,   new(null, "Power", null, null, "Apply a global wind force in the opposite direction of the current wind.") },
+            { Config.MovementProcessorType.StickToRoads,   new(null, "Power", null, null, "Attract agents towards nearby roads, making them prefer road paths.") },
+            { Config.MovementProcessorType.AvoidRoads,     new(null, "Power", null, null, "Repel agents away from roads, making them prefer off-road paths.") },
+            { Config.MovementProcessorType.StickToPOIs,    new(null, "Power", null, null, "Attract agents towards nearby points of interest (POIs/prefabs).") },
+            { Config.MovementProcessorType.AvoidPOIs,      new("Distance", "Power", null, null, "Repel agents away from points of interest (POIs/prefabs) within the given distance.") },
+            { Config.MovementProcessorType.WorldEvents,    new(null, "Power", null, null, "Attract agents towards active world events such as sounds and explosions.") },
+            { Config.MovementProcessorType.PreferCities,   new(null, "Power", null, null, "Attract agents towards city areas, making them gravitate towards urban zones.") },
+            { Config.MovementProcessorType.AvoidCities,    new("Distance", "Power", null, null, "Repel agents away from city areas within the given distance.") },
+            { Config.MovementProcessorType.CityVisitor,    new(null, "Power", "Min Stay (min)", "Max Stay (min)", "Agents visit cities and stay for a random duration between min and max stay time.") },
         };
 
         private ParamMeta GetMeta() => MetaMap.TryGetValue(Type, out var m) ? m : DefaultMeta;
@@ -118,5 +119,7 @@ namespace Editor.Models
         public string PowerLabel => GetMeta().PowerLabel ?? "Power";
         public string Param1Label => GetMeta().Param1Label ?? "Param1";
         public string Param2Label => GetMeta().Param2Label ?? "Param2";
+
+        public string Description => GetMeta().Description;
     }
 }

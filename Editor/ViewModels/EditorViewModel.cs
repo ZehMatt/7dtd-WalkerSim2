@@ -36,7 +36,8 @@ namespace Editor.ViewModels
                 using var stream = Avalonia.Platform.AssetLoader.Open(uri);
                 using var reader = new System.IO.StreamReader(stream);
                 var cfg = Config.LoadFromStream(reader);
-                if (cfg != null) return cfg;
+                if (cfg != null)
+                    return cfg;
             }
             catch { }
             return Config.GetDefault();
@@ -169,7 +170,7 @@ namespace Editor.ViewModels
 
         // Wrapper properties for movement processor parameters to support live editing
         private Models.MovementProcessorModel? _selectedMovementProcessor;
-        
+
         public Models.MovementProcessorModel SelectedMovementProcessor
         {
             get => _selectedMovementProcessor ??= MovementSystems.FirstOrDefault(s => s.Processors.Count > 0).Processors[0];
@@ -186,7 +187,8 @@ namespace Editor.ViewModels
                 {
                     proc.Distance = value;
                     OnPropertyChanged();
-                    if (!_suppressReset) _simulation.ReloadConfig(Config);
+                    if (!_suppressReset)
+                        _simulation.ReloadConfig(Config);
                 }
             }
         }
@@ -201,7 +203,8 @@ namespace Editor.ViewModels
                 {
                     proc.Power = value;
                     OnPropertyChanged();
-                    if (!_suppressReset) _simulation.ReloadConfig(Config);
+                    if (!_suppressReset)
+                        _simulation.ReloadConfig(Config);
                 }
             }
         }
@@ -324,8 +327,8 @@ namespace Editor.ViewModels
         public float ActiveToolPreviewRadius => ActiveTool switch
         {
             EditorTool.EmitSound => SoundRadius,
-            EditorTool.Kill      => KillRadius,
-            _                    => float.NaN,
+            EditorTool.Kill => KillRadius,
+            _ => float.NaN,
         };
 
         /// <summary>Called by SimulationCanvas when the user clicks the world.</summary>
@@ -357,11 +360,11 @@ namespace Editor.ViewModels
             }
         }
 
-        [RelayCommand] public void ActivateEmitSound()         => ActiveTool = EditorTool.EmitSound;
-        [RelayCommand] public void ActivateKill()              => ActiveTool = EditorTool.Kill;
-        [RelayCommand] public void ActivateAddPlayer()         => ActiveTool = EditorTool.AddPlayer;
+        [RelayCommand] public void ActivateEmitSound() => ActiveTool = EditorTool.EmitSound;
+        [RelayCommand] public void ActivateKill() => ActiveTool = EditorTool.Kill;
+        [RelayCommand] public void ActivateAddPlayer() => ActiveTool = EditorTool.AddPlayer;
         [RelayCommand] public void ActivateSetPlayerPosition() => ActiveTool = EditorTool.SetPlayerPosition;
-        [RelayCommand] public void CancelTool()                => ActiveTool = EditorTool.None;
+        [RelayCommand] public void CancelTool() => ActiveTool = EditorTool.None;
 
         // Wired up by MainWindow.axaml.cs to the SimulationCanvas.
         public Action<WalkerSim.Agent>? NavigateToAgentRequested;
@@ -422,7 +425,7 @@ namespace Editor.ViewModels
 
         public Config.WanderingSpeed[] WanderingSpeedOptions { get; } = (Config.WanderingSpeed[])Enum.GetValues(typeof(Config.WanderingSpeed));
 
-        public Config.MovementProcessorType[] MovementProcessorTypeOptions { get; } = (Config.MovementProcessorType[])Enum.GetValues(typeof(Config.MovementProcessorType));
+        public Config.MovementProcessorType[] MovementProcessorTypeOptions { get; } = ((Config.MovementProcessorType[])Enum.GetValues(typeof(Config.MovementProcessorType))).Where(t => t != Config.MovementProcessorType.Invalid).ToArray();
 
         public WalkerSim.Agent.State[] AgentStateOptions { get; } = (WalkerSim.Agent.State[])Enum.GetValues(typeof(WalkerSim.Agent.State));
         public WalkerSim.Agent.SubState[] AgentSubStateOptions { get; } = (WalkerSim.Agent.SubState[])Enum.GetValues(typeof(WalkerSim.Agent.SubState));
@@ -574,14 +577,23 @@ namespace Editor.ViewModels
             if (SelectedProcessor != null && SelectedSystem != null)
             {
                 var sys = SelectedSystem;
+                var procs = sys.Processors;
+                int idx = procs.IndexOf(SelectedProcessor);
                 sys.RemoveProcessor(SelectedProcessor);
                 SelectedProcessor = null;
-                TreeSelectedItem = sys;
+                if (procs.Count > 0)
+                    TreeSelectedItem = procs[idx < procs.Count ? idx : procs.Count - 1];
+                else
+                    TreeSelectedItem = sys;
             }
             else if (SelectedSystem != null)
             {
+                int idx = MovementSystems.IndexOf(SelectedSystem);
                 RemoveMovementSystem(SelectedSystem);
-                TreeSelectedItem = null;
+                if (MovementSystems.Count > 0)
+                    TreeSelectedItem = MovementSystems[idx < MovementSystems.Count ? idx : MovementSystems.Count - 1];
+                else
+                    TreeSelectedItem = null;
             }
         }
 
@@ -615,7 +627,6 @@ namespace Editor.ViewModels
             _simulation.Start();
             IsSimulationRunning = true;
             IsSimulationPaused = false;
-            Logging.Info("Simulation started");
         }
 
         [RelayCommand]
@@ -627,7 +638,6 @@ namespace Editor.ViewModels
             _simulation.Stop();
             IsSimulationRunning = false;
             IsSimulationPaused = false;
-            Logging.Info("Simulation stopped");
         }
 
         [RelayCommand]
@@ -638,7 +648,6 @@ namespace Editor.ViewModels
 
             _simulation.SetPaused(true);
             IsSimulationPaused = true;
-            Logging.Info("Simulation paused");
         }
 
         [RelayCommand]
@@ -649,7 +658,6 @@ namespace Editor.ViewModels
 
             _simulation.SetPaused(false);
             IsSimulationPaused = false;
-            Logging.Info("Simulation resumed");
         }
 
         [RelayCommand]
@@ -665,7 +673,6 @@ namespace Editor.ViewModels
             _agentsDirty = true;
             GroupColorsChanged?.Invoke();
             UpdateSimulationStats();
-            Logging.Info("Simulation reset");
 
             if (wasRunning)
             {
@@ -833,13 +840,13 @@ namespace Editor.ViewModels
         {
             var model = new Models.MovementProcessorGroupModel(group);
             model.ConfigChanged = ReloadConfigLive;
-            
+
             // Wire up ConfigChanged for all existing processors
             foreach (var proc in model.Processors)
             {
                 proc.ConfigChanged = ReloadConfigLive;
             }
-            
+
             return model;
         }
 
@@ -960,7 +967,7 @@ namespace Editor.ViewModels
             catch (System.Exception ex)
             {
                 Logging.Exception(ex);
-                                Logging.Err($"Failed to export configuration: {ex.Message}");
+                Logging.Err($"Failed to export configuration: {ex.Message}");
             }
         }
 
@@ -1006,7 +1013,7 @@ namespace Editor.ViewModels
 
                     // Update config from loaded state
                     Config = _simulation.Config;
-                    
+
                     // Update world selection if loaded world is available
                     var loadedWorldName = _simulation.WorldName;
                     if (!string.IsNullOrEmpty(loadedWorldName))

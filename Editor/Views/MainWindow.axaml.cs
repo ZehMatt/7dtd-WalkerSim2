@@ -16,6 +16,8 @@ namespace Editor.Views
         private ScrollViewer? _logScrollViewer;
         private const double NearBottomThreshold = 40.0;
         private bool _renderingPaused;
+        private double _savedSidebarWidth = 600;
+        private double _savedLogHeight = 150;
 
         public MainWindow()
         {
@@ -215,6 +217,68 @@ namespace Editor.Views
 
             SimCanvas.InvalidateVisual();
         }
+
+        // ── Panel visibility ─────────────────────────────────────────────────────
+
+        private void SetSidebarVisible(bool show)
+        {
+            var sidebarCol = MainGrid.ColumnDefinitions[0];
+            var splitterCol = MainGrid.ColumnDefinitions[1];
+            if (show)
+            {
+                sidebarCol.Width = new GridLength(_savedSidebarWidth, GridUnitType.Pixel);
+                sidebarCol.MinWidth = 200;
+                sidebarCol.MaxWidth = 600;
+                splitterCol.Width = new GridLength(4, GridUnitType.Pixel);
+                SidebarBorder.IsVisible = true;
+                SidebarSplitter.IsVisible = true;
+                SidebarShowButton.IsVisible = false;
+            }
+            else
+            {
+                _savedSidebarWidth = sidebarCol.ActualWidth;
+                sidebarCol.MinWidth = 0;
+                sidebarCol.MaxWidth = 0;
+                sidebarCol.Width = new GridLength(0, GridUnitType.Pixel);
+                splitterCol.Width = new GridLength(0, GridUnitType.Pixel);
+                SidebarBorder.IsVisible = false;
+                SidebarSplitter.IsVisible = false;
+                SidebarShowButton.IsVisible = true;
+            }
+        }
+
+        private void OnHideSidebarClick(object? sender, RoutedEventArgs e) => SetSidebarVisible(false);
+        private void OnShowSidebarClick(object? sender, RoutedEventArgs e) => SetSidebarVisible(true);
+
+        private void SetLogVisible(bool show)
+        {
+            var logRow = RightGrid.RowDefinitions[2];
+            var splitterRow = RightGrid.RowDefinitions[1];
+            if (show)
+            {
+                logRow.Height = new GridLength(_savedLogHeight, GridUnitType.Pixel);
+                logRow.MinHeight = 50;
+                logRow.MaxHeight = 400;
+                splitterRow.Height = new GridLength(4, GridUnitType.Pixel);
+                LogBorder.IsVisible = true;
+                LogSplitter.IsVisible = true;
+                LogShowBar.IsVisible = false;
+            }
+            else
+            {
+                _savedLogHeight = logRow.ActualHeight;
+                logRow.MinHeight = 0;
+                logRow.MaxHeight = double.PositiveInfinity;
+                logRow.Height = GridLength.Auto;
+                splitterRow.Height = new GridLength(0, GridUnitType.Pixel);
+                LogBorder.IsVisible = false;
+                LogSplitter.IsVisible = false;
+                LogShowBar.IsVisible = true;
+            }
+        }
+
+        private void OnHideLogClick(object? sender, RoutedEventArgs e) => SetLogVisible(false);
+        private void OnShowLogClick(object? sender, RoutedEventArgs e) => SetLogVisible(true);
 
         // ── Log auto-scroll ──────────────────────────────────────────────────────
 
