@@ -34,6 +34,9 @@ Common locations to load from:
 - `<7 Days to Die>\Data\Worlds\<World>\WalkerSim.xml` (world-specific config)
 - `%APPDATA%\GeneratedWorlds\<Your World>\WalkerSim.xml` (generated world config)
 
+!!! tip "Try the example configurations"
+    Download any of the [example configurations](configuration/examples/index.md) and load them directly into the Editor to see different movement behaviors in action. This is a great way to understand how processors interact before building your own setup.
+
 ### Exporting Your Configuration
 
 Once you're happy with your setup, you must export it to use in the game:
