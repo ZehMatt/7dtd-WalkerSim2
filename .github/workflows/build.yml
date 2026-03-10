@@ -259,7 +259,7 @@ jobs:
         # Generate .icns from the source icon PNG
         ICONSET="AppIcon.iconset"
         mkdir -p "$ICONSET"
-        SRC="Art/icon-512_t.png"
+        SRC="Editor/Assets/icon-512.png"
         sips -z 16 16     "$SRC" --out "$ICONSET/icon_16x16.png"
         sips -z 32 32     "$SRC" --out "$ICONSET/icon_16x16@2x.png"
         sips -z 32 32     "$SRC" --out "$ICONSET/icon_32x32.png"
@@ -338,6 +338,68 @@ jobs:
         name: ${{ env.BUILD_VERSION }}
         tag_name: ${{ env.BUILD_VERSION }}
         make_latest: true
+        generate_release_notes: false
+        files: |
+          WalkerSim2-${{ env.BUILD_VERSION }}.zip
+          WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}.zip
+          WalkerSim2-Editor-Linux-x64-${{ env.BUILD_VERSION }}.zip
+          WalkerSim2-Editor-Mac-arm64-${{ env.BUILD_VERSION }}.zip
+
+  prerelease:
+    name: Pre-Release
+    if: startsWith(github.ref, 'refs/heads/prerelease/')
+    needs: [build-mod, build-editor]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Determine version
+      run: |
+        VERSION="${GITHUB_REF_NAME#prerelease/}"
+        echo "BUILD_VERSION=${VERSION}-beta" >> $GITHUB_ENV
+
+    - name: Download Mod artifact
+      uses: actions/download-artifact@v4
+      with:
+        pattern: WalkerSim2-Mod-*
+        path: release/Mod
+        merge-multiple: true
+
+    - name: Download Editor Windows artifact
+      uses: actions/download-artifact@v4
+      with:
+        pattern: WalkerSim2-Editor-Windows-x64-*
+        path: release/Editor-Windows-x64
+        merge-multiple: true
+
+    - name: Download Editor Linux artifact
+      uses: actions/download-artifact@v4
+      with:
+        pattern: WalkerSim2-Editor-Linux-x64-*
+        path: release/Editor-Linux-x64
+        merge-multiple: true
+
+    - name: Download Editor Mac artifact
+      uses: actions/download-artifact@v4
+      with:
+        pattern: WalkerSim2-Editor-Mac-arm64-*
+        path: release/Editor-Mac-arm64
+        merge-multiple: true
+
+    - name: Package release artifacts
+      run: |
+        cd release/Mod
+        zip -r ../../WalkerSim2-${{ env.BUILD_VERSION }}.zip WalkerSim2/
+        cd ..
+        zip -r ../WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}.zip Editor-Windows-x64/
+        zip -r ../WalkerSim2-Editor-Linux-x64-${{ env.BUILD_VERSION }}.zip Editor-Linux-x64/
+        zip -r ../WalkerSim2-Editor-Mac-arm64-${{ env.BUILD_VERSION }}.zip Editor-Mac-arm64/
+
+    - name: Pre-Release
+      uses: softprops/action-gh-release@v2
+      with:
+        name: ${{ env.BUILD_VERSION }}
+        tag_name: ${{ env.BUILD_VERSION }}
+        prerelease: true
+        make_latest: false
         generate_release_notes: false
         files: |
           WalkerSim2-${{ env.BUILD_VERSION }}.zip
