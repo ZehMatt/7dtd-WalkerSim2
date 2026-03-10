@@ -141,16 +141,26 @@ namespace WalkerSim
                 var entDist = UnityEngine.Vector3.Distance(entPos, position);
                 if (entDist > distance)
                 {
+                    // Beyond the maximum distance the sound can be heard.
                     continue;
                 }
 
+                // Closer enemies pinpoint the sound more accurately; farther ones get a wider spread.
+                var distRatio = entDist / distance; // 0.0 at source, 1.0 at max hearing range
+                var spread = Math.Min(distance * distRatio * 0.5f, 20f);
+                var randomOffset = UnityEngine.Random.insideUnitSphere * spread;
+                randomOffset.y = 0f;
+                var investigatePos = position + randomOffset;
+
+                // Get the ground position at the investigate position.
+                var actualHeight = world.GetHeightAt(investigatePos.x, investigatePos.z);
+
+                investigatePos.y = actualHeight + 1.5f;
+
                 Logging.CondInfo(logEvents, () => $"Alerting enemy {ent.entityId} at {entPos} to noise at {position}, distance: {entDist}.");
 
-                // Prevent them from digging.
-                var heightOffset = new UnityEngine.Vector3(0, 1.5f, 0);
-
                 // Have them interested for for 2~ min, assuming 30 ticks a second.
-                ent.SetInvestigatePosition(position + heightOffset, 3600, true);
+                ent.SetInvestigatePosition(investigatePos, 3600, true);
             }
         }
     }
