@@ -700,22 +700,12 @@ namespace WalkerSim
                     availableCount++;
             }
 
-            // If history would exclude all candidates, the agent has explored this
-            // area thoroughly. Clear history (keeping only the current node) so it
-            // picks a fresh direction based on velocity.
+            // All neighbors are already in history — clear and pick any neighbor.
             if (availableCount == 0)
             {
-                int current = arrivedAt;
                 agent.ClearRoadNodeHistory();
-                agent.PushRoadNodeHistory(current);
-
-                // Recount after clearing.
-                availableCount = 0;
-                for (int i = 0; i < connections.Length; i++)
-                {
-                    if (!agent.IsInRoadNodeHistory(connections[i]))
-                        availableCount++;
-                }
+                agent.PushRoadNodeHistory(arrivedAt);
+                return connections[prng.Next(connections.Length)];
             }
 
             int bestIdx = -1;

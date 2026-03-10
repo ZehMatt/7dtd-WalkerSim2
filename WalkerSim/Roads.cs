@@ -281,6 +281,197 @@ namespace WalkerSim
                 nodes[i] = node;
             }
 
+            // Pass 3: Remove small disconnected components (< MinComponentSize nodes).
+            const int MinComponentSize = 10;
+            var componentId = new int[nodes.Count];
+            for (int i = 0; i < componentId.Length; i++)
+                componentId[i] = -1;
+
+            int numComponents = 0;
+            var componentSizes = new List<int>();
+            var queue = new Queue<int>();
+
+            for (int i = 0; i < nodes.Count; i++)
+            {
+                if (componentId[i] >= 0) continue;
+
+                int id = numComponents++;
+                int size = 0;
+                queue.Enqueue(i);
+                componentId[i] = id;
+
+                while (queue.Count > 0)
+                {
+                    int cur = queue.Dequeue();
+                    size++;
+                    foreach (int conn in connectionLists[cur])
+                    {
+                        if (componentId[conn] < 0)
+                        {
+                            componentId[conn] = id;
+                            queue.Enqueue(conn);
+                        }
+                    }
+                }
+
+                componentSizes.Add(size);
+            }
+
+            // Build a set of nodes to keep.
+            int removedNodes = 0;
+            var keep = new bool[nodes.Count];
+            for (int i = 0; i < nodes.Count; i++)
+            {
+                if (componentId[i] >= 0 && componentSizes[componentId[i]] >= MinComponentSize)
+                    keep[i] = true;
+                else
+                    removedNodes++;
+            }
+
+            if (removedNodes > 0)
+            {
+                // Build old→new index mapping.
+                var newIndex = new int[nodes.Count];
+                int nextIdx = 0;
+                for (int i = 0; i < nodes.Count; i++)
+                    newIndex[i] = keep[i] ? nextIdx++ : -1;
+
+                var newNodes = new List<RoadNode>(nextIdx);
+                for (int i = 0; i < nodes.Count; i++)
+                {
+                    if (!keep[i]) continue;
+                    var node = nodes[i];
+                    // Remap connections, dropping references to removed nodes.
+                    var newConns = new List<int>();
+                    foreach (int conn in connectionLists[i])
+                    {
+                        if (keep[conn])
+                            newConns.Add(newIndex[conn]);
+                    }
+                    node.Connections = newConns.ToArray();
+                    newNodes.Add(node);
+                }
+
+                // Rebuild the grid.
+                for (int i = 0; i < graph._nodeGrid.Length; i++)
+                {
+                    int old = graph._nodeGrid[i];
+                    graph._nodeGrid[i] = old >= 0 && keep[old] ? newIndex[old] : -1;
+                }
+
+                nodes = newNodes;
+                Logging.Info("Pruned {0} nodes from {1} small components (< {2} nodes)",
+                    removedNodes, componentSizes.FindAll(s => s < MinComponentSize).Count, MinComponentSize);
+            }
+
+            // Pass 4: Merge isolated clusters into the largest component by
+            // bridging each smaller component to its nearest neighbor component.
+            {
+                // Compute connected components.
+                var compId = new int[nodes.Count];
+                for (int i = 0; i < compId.Length; i++) compId[i] = -1;
+                int nComp = 0;
+                var compSizes = new List<int>();
+                var bfsQueue = new Queue<int>();
+                for (int i = 0; i < nodes.Count; i++)
+                {
+                    if (compId[i] >= 0) continue;
+                    int cid = nComp++;
+                    int size = 0;
+                    bfsQueue.Enqueue(i);
+                    compId[i] = cid;
+                    while (bfsQueue.Count > 0)
+                    {
+                        int cur = bfsQueue.Dequeue();
+                        size++;
+                        foreach (int c in nodes[cur].Connections)
+                        {
+                            if (compId[c] < 0)
+                            {
+                                compId[c] = cid;
+                                bfsQueue.Enqueue(c);
+                            }
+                        }
+                    }
+                    compSizes.Add(size);
+                }
+
+                if (nComp > 1)
+                {
+                    // Find the largest component.
+                    int largestComp = 0;
+                    for (int i = 1; i < compSizes.Count; i++)
+                    {
+                        if (compSizes[i] > compSizes[largestComp])
+                            largestComp = i;
+                    }
+
+                    var connLists = new List<int>[nodes.Count];
+                    for (int i = 0; i < nodes.Count; i++)
+                        connLists[i] = new List<int>(nodes[i].Connections);
+
+                    int bridged = 0;
+
+                    // For each non-largest component, find the nearest node pair to
+                    // any node in a different (already-merged) component and bridge them.
+                    for (int comp = 0; comp < nComp; comp++)
+                    {
+                        if (comp == largestComp) continue;
+
+                        float bestDist = float.MaxValue;
+                        int bestA = -1, bestB = -1;
+
+                        for (int i = 0; i < nodes.Count; i++)
+                        {
+                            if (compId[i] != comp) continue;
+
+                            for (int j = 0; j < nodes.Count; j++)
+                            {
+                                if (compId[j] == comp) continue;
+
+                                float dx = nodes[i].X - nodes[j].X;
+                                float dy = nodes[i].Y - nodes[j].Y;
+                                float dist = dx * dx + dy * dy;
+                                if (dist < bestDist)
+                                {
+                                    bestDist = dist;
+                                    bestA = i;
+                                    bestB = j;
+                                }
+                            }
+                        }
+
+                        if (bestA >= 0 && bestB >= 0)
+                        {
+                            connLists[bestA].Add(bestB);
+                            connLists[bestB].Add(bestA);
+                            bridged++;
+
+                            // Merge component IDs so subsequent components see the merge.
+                            int oldComp = comp;
+                            int newComp = compId[bestB];
+                            for (int i = 0; i < compId.Length; i++)
+                            {
+                                if (compId[i] == oldComp)
+                                    compId[i] = newComp;
+                            }
+                        }
+                    }
+
+                    if (bridged > 0)
+                    {
+                        for (int i = 0; i < nodes.Count; i++)
+                        {
+                            var node = nodes[i];
+                            node.Connections = connLists[i].ToArray();
+                            nodes[i] = node;
+                        }
+                        Logging.Info("Bridged {0} isolated clusters into main network", bridged);
+                    }
+                }
+            }
+
+            // Finalize.
             graph.Nodes = nodes.ToArray();
 
             int deadEnds = 0;
