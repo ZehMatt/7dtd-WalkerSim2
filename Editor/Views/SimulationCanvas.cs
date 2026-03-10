@@ -64,14 +64,14 @@ namespace Editor.Views
         private const double TrackZoom = 6.0;
 
         // Smooth pan / zoom target
-        private bool   _smoothActive;
+        private bool _smoothActive;
         private double _smoothTargetPanX;
         private double _smoothTargetPanY;
         private double _smoothTargetZoom = 1.0;
 
         private DateTime _lastRenderTime = DateTime.UtcNow;
 
-                /// <summary>Called by the canvas when the user drags and cancels tracking.</summary>
+        /// <summary>Called by the canvas when the user drags and cancels tracking.</summary>
         public Action? TrackingStopped;
 
         // Tool support
@@ -89,17 +89,42 @@ namespace Editor.Views
         private bool _hasPanned = false;
         private const double PanThreshold = 4.0;
 
+        // Cached settings
+        private Editor.MouseButton _panButton = EditorSettings.Instance.PanButton;
+        private Editor.ZoomModifier _zoomModifier = EditorSettings.Instance.ZoomModifier;
+
+        // Cached HUD bar brushes and objects (avoid per-frame allocations)
+        private static readonly SolidColorBrush _hudBarBgDark = new SolidColorBrush(Color.FromArgb(210, 30, 30, 30));
+        private static readonly SolidColorBrush _hudBarBgLight = new SolidColorBrush(Color.FromArgb(220, 240, 240, 240));
+        private static readonly SolidColorBrush _hudBarBorderDark = new SolidColorBrush(Color.FromArgb(255, 58, 58, 58));
+        private static readonly SolidColorBrush _hudBarBorderLight = new SolidColorBrush(Color.FromArgb(255, 160, 160, 160));
+        private static readonly SolidColorBrush _hudArrowDark = new SolidColorBrush(Colors.White);
+        private static readonly SolidColorBrush _hudArrowLight = new SolidColorBrush(Color.FromRgb(30, 30, 30));
+        private static readonly SolidColorBrush _hudTextPrimaryDark = new SolidColorBrush(Color.FromArgb(200, 200, 200, 200));
+        private static readonly SolidColorBrush _hudTextPrimaryLight = new SolidColorBrush(Color.FromArgb(220, 30, 30, 30));
+        private static readonly SolidColorBrush _hudTextSecondaryDark = new SolidColorBrush(Color.FromArgb(140, 180, 180, 180));
+        private static readonly SolidColorBrush _hudTextSecondaryLight = new SolidColorBrush(Color.FromArgb(180, 80, 80, 80));
+        private static readonly Typeface _hudTypeface = new Typeface(FontFamily.Default);
+        private static readonly SolidColorBrush _highlightPenBrush = new SolidColorBrush(Color.FromArgb(255, 255, 220, 0));
+
+        // Reusable PathGeometry for wind arrow (mutated in-place each frame)
+        private readonly PathGeometry _arrowGeo;
+        private readonly PathFigure _arrowFig;
+        private readonly LineSegment _arrowSeg1;
+        private readonly LineSegment _arrowSeg2;
+
         private static double Lerp(double a, double b, double t) => a + (b - a) * t;
 
         private void EnsureScaledPens()
         {
-            if (_cachedPenZoom == _zoom) return;
+            if (_cachedPenZoom == _zoom)
+                return;
             double t = 1.0 / _zoom;
-            _playerPen  = new Pen(_playerPenBrush, t);
-            _eventPen   = new Pen(_eventPenBrush, t);
-            _cityPen    = new Pen(_cityPenBrush, t);
-            _prefabPen  = new Pen(_prefabPenBrush, t * 0.5);
-            _highlightPen = new Pen(new SolidColorBrush(Color.FromArgb(255, 255, 220, 0)), t * 2.0);
+            _playerPen = new Pen(_playerPenBrush, t);
+            _eventPen = new Pen(_eventPenBrush, t);
+            _cityPen = new Pen(_cityPenBrush, t);
+            _prefabPen = new Pen(_prefabPenBrush, t * 0.5);
+            _highlightPen = new Pen(_highlightPenBrush, t * 2.0);
             _cachedPenZoom = _zoom;
         }
 
@@ -116,6 +141,22 @@ namespace Editor.Views
         {
             ClipToBounds = true;
             Cursor = new Cursor(StandardCursorType.Arrow);
+
+            // Pre-build reusable arrow geometry
+            _arrowSeg1 = new LineSegment { Point = default };
+            _arrowSeg2 = new LineSegment { Point = default };
+            _arrowFig = new PathFigure { IsClosed = true, IsFilled = true };
+            _arrowFig.Segments.Add(_arrowSeg1);
+            _arrowFig.Segments.Add(_arrowSeg2);
+            _arrowGeo = new PathGeometry();
+            _arrowGeo.Figures.Add(_arrowFig);
+        }
+
+        public void ApplySettings()
+        {
+            var s = EditorSettings.Instance;
+            _panButton = s.PanButton;
+            _zoomModifier = s.ZoomModifier;
         }
 
         private bool _toolActive = false;
@@ -179,7 +220,8 @@ namespace Editor.Views
         {
             var w = Bounds.Width;
             var h = Bounds.Height;
-            if (w <= 0 || h <= 0) return;
+            if (w <= 0 || h <= 0)
+                return;
 
             var viewSize = Math.Min(w, h - BarHeight);
             var worldHalf = (viewSize * _zoom) / 2.0;
@@ -197,8 +239,14 @@ namespace Editor.Views
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
             base.OnPointerWheelChanged(e);
-            var ctrl = (e.KeyModifiers & KeyModifiers.Control) != 0;
-            if (ctrl)
+            var zoomActive = _zoomModifier switch
+            {
+                Editor.ZoomModifier.Ctrl => (e.KeyModifiers & KeyModifiers.Control) != 0,
+                Editor.ZoomModifier.Shift => (e.KeyModifiers & KeyModifiers.Shift) != 0,
+                Editor.ZoomModifier.None => true,
+                _ => (e.KeyModifiers & KeyModifiers.Control) != 0,
+            };
+            if (zoomActive)
             {
                 // Zoom toward the cursor position.
                 var pos = e.GetPosition(this);
@@ -232,20 +280,25 @@ namespace Editor.Views
         {
             base.OnPointerPressed(e);
             var props = e.GetCurrentPoint(this).Properties;
-            if (props.IsMiddleButtonPressed || props.IsLeftButtonPressed)
+            bool isPanButton = _panButton switch
+            {
+                Editor.MouseButton.Left => props.IsLeftButtonPressed,
+                Editor.MouseButton.Right => props.IsRightButtonPressed,
+                Editor.MouseButton.Middle => props.IsMiddleButtonPressed,
+                _ => props.IsRightButtonPressed,
+            };
+            if (props.IsMiddleButtonPressed || isPanButton)
             {
                 _isDragging = true;
                 _hasPanned = false;
                 _dragStart = e.GetPosition(this);
-                // Show hand cursor only when not currently in tool mode
-                if (!_toolActive)
-                    Cursor = new Cursor(StandardCursorType.Hand);
+                Cursor = new Cursor(StandardCursorType.Hand);
                 e.Pointer.Capture(this);
                 e.Handled = true;
             }
         }
 
-                protected override void OnPointerMoved(PointerEventArgs e)
+        protected override void OnPointerMoved(PointerEventArgs e)
         {
             base.OnPointerMoved(e);
 
@@ -257,35 +310,24 @@ namespace Editor.Views
                 var dx = pos.X - _dragStart.X;
                 var dy = pos.Y - _dragStart.Y;
 
-                // Only pan when there is no active tool on the left button,
-                // or when middle button is used regardless.
-                bool isMiddle = e.GetCurrentPoint(this).Properties.IsMiddleButtonPressed;
-                if (isMiddle || !_toolActive)
-                {
-                    if (Math.Abs(dx) > PanThreshold || Math.Abs(dy) > PanThreshold)
-                        _hasPanned = true;
+                if (Math.Abs(dx) > PanThreshold || Math.Abs(dy) > PanThreshold)
+                    _hasPanned = true;
 
-                    // Stop tracking if the user manually pans the view.
-                    if (_hasPanned && _trackedAgent != null)
-                    {
-                        _trackedAgent = null;
-                        _highlightAgent = null;
-                        _highlightTimer = 0;
-                        _smoothActive = false;
-                        TrackingStopped?.Invoke();
-                    }
-
-                    _panX += pos.X - _dragStart.X;
-                    _panY += pos.Y - _dragStart.Y;
-                    _dragStart = pos;
-                    ClampPan();
-                    InvalidateVisual();
-                }
-                else
+                // Stop tracking if the user manually pans the view.
+                if (_hasPanned && _trackedAgent != null)
                 {
-                    // Tool active — don't pan, just redraw the preview circle
-                    InvalidateVisual();
+                    _trackedAgent = null;
+                    _highlightAgent = null;
+                    _highlightTimer = 0;
+                    _smoothActive = false;
+                    TrackingStopped?.Invoke();
                 }
+
+                _panX += pos.X - _dragStart.X;
+                _panY += pos.Y - _dragStart.Y;
+                _dragStart = pos;
+                ClampPan();
+                InvalidateVisual();
             }
             else
             {
@@ -297,7 +339,7 @@ namespace Editor.Views
             e.Handled = true;
         }
 
-                protected override void OnPointerReleased(PointerReleasedEventArgs e)
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             base.OnPointerReleased(e);
             if (_isDragging)
@@ -305,19 +347,18 @@ namespace Editor.Views
                 _isDragging = false;
                 Cursor = new Cursor(_toolActive ? StandardCursorType.Cross : StandardCursorType.Arrow);
                 e.Pointer.Capture(null);
-
-                // Fire the tool only when the pointer was not used for panning
-                bool isMiddle = e.InitialPressMouseButton == Avalonia.Input.MouseButton.Middle;
-                if (!isMiddle && !_hasPanned && _toolActive && OnCanvasClick != null)
-                {
-                    OnCanvasClick(_mouseWorldPosition);
-                }
-
+                e.Handled = true;
+            }
+            else if (e.InitialPressMouseButton == Avalonia.Input.MouseButton.Left
+                && _panButton != Editor.MouseButton.Left
+                && _toolActive && OnCanvasClick != null)
+            {
+                OnCanvasClick(_mouseWorldPosition);
                 e.Handled = true;
             }
         }
 
-                // Convert a simulation world position to canvas pixel coordinates (unzoomed)
+        // Convert a simulation world position to canvas pixel coordinates (unzoomed)
         private (double x, double y) SimToCanvas(Vector3 pos, double width, double height)
         {
             var mapped = _simulation.RemapPosition2D(pos, Vector3.Zero, new Vector3((float)width, (float)height));
@@ -334,17 +375,17 @@ namespace Editor.Views
         private Vector3 CanvasToWorld(Point screenPos)
         {
             var bounds = Bounds;
-            var width  = bounds.Width;
+            var width = bounds.Width;
             var height = bounds.Height;
             if (width <= 0 || height <= 0)
                 return Vector3.Zero;
 
             var worldHeight = height - BarHeight;
-            var viewSize    = Math.Min(width, worldHeight);
-            var offsetX     = Math.Floor((width    - viewSize) / 2.0);
-            var offsetY     = BarHeight + Math.Floor((worldHeight - viewSize) / 2.0);
-            var vcx         = viewSize / 2.0;
-            var vcy         = viewSize / 2.0;
+            var viewSize = Math.Min(width, worldHeight);
+            var offsetX = Math.Floor((width - viewSize) / 2.0);
+            var offsetY = BarHeight + Math.Floor((worldHeight - viewSize) / 2.0);
+            var vcx = viewSize / 2.0;
+            var vcy = viewSize / 2.0;
 
             // Invert the render transform
             var worldX = (screenPos.X - offsetX - _panX - vcx) / _zoom + vcx;
@@ -434,7 +475,8 @@ namespace Editor.Views
             var bounds = Bounds;
             var width = bounds.Width;
             var height = bounds.Height;
-            if (width <= 0 || height <= 0) return;
+            if (width <= 0 || height <= 0)
+                return;
 
             // ── Animation step ─────────────────────────────────────────────────────
             var now = DateTime.UtcNow;
@@ -506,14 +548,21 @@ namespace Editor.Views
             using (context.PushClip(new Rect(0, BarHeight, width, height - BarHeight)))
             using (context.PushTransform(transform))
             {
-                if (ShowBiomes) RenderBiomes(context, viewSize, viewSize);
-                if (ShowRoads) RenderRoads(context, viewSize, viewSize);
-                if (ShowCities) RenderCities(context, viewSize, viewSize);
-                if (ShowPrefabs) RenderPrefabs(context, viewSize, viewSize);
-                if (ShowAgents) RenderAgents(context, viewSize, viewSize);
-                if (ShowActiveAgents) RenderActiveAgents(context, viewSize, viewSize);
+                if (ShowBiomes)
+                    RenderBiomes(context, viewSize, viewSize);
+                if (ShowRoads)
+                    RenderRoads(context, viewSize, viewSize);
+                if (ShowCities)
+                    RenderCities(context, viewSize, viewSize);
+                if (ShowPrefabs)
+                    RenderPrefabs(context, viewSize, viewSize);
+                if (ShowAgents)
+                    RenderAgents(context, viewSize, viewSize);
+                if (ShowActiveAgents)
+                    RenderActiveAgents(context, viewSize, viewSize);
                 RenderPlayers(context, viewSize, viewSize);
-                if (ShowEvents) RenderEvents(context, viewSize, viewSize);
+                if (ShowEvents)
+                    RenderEvents(context, viewSize, viewSize);
                 // Draw highlight/blink on top of everything.
                 if (_highlightAgent != null && _blinkPhase < 1.0)
                     RenderHighlightAgent(context, viewSize, viewSize);
@@ -534,7 +583,8 @@ namespace Editor.Views
         private void RenderHighlightAgent(DrawingContext context, double width, double height)
         {
             var agent = _highlightAgent;
-            if (agent == null) return;
+            if (agent == null)
+                return;
 
             EnsureScaledPens();
             var (cx, cy) = SimToCanvas(agent.Position, width, height);
@@ -566,10 +616,12 @@ namespace Editor.Views
         private void RenderRoads(DrawingContext context, double width, double height)
         {
             var mapData = _simulation.MapData;
-            if (mapData?.Roads == null) return;
+            if (mapData?.Roads == null)
+                return;
 
             var roads = mapData.Roads;
-            if (roads.Width == 0 || roads.Height == 0) return;
+            if (roads.Width == 0 || roads.Height == 0)
+                return;
 
             if (_roadsBitmap == null || _cachedRoadsPath != roads.Name)
             {
@@ -600,7 +652,8 @@ namespace Editor.Views
                     for (int x = 0; x < roads.Width; x++)
                     {
                         var roadType = roads.GetRoadType(x, y);
-                        if (roadType == RoadType.None) continue;
+                        if (roadType == RoadType.None)
+                            continue;
 
                         byte alpha = roadType == RoadType.Asphalt ? (byte)100 : (byte)50;
                         int idx = y * stride + x * 4;
@@ -622,7 +675,8 @@ namespace Editor.Views
         private void RenderBiomes(DrawingContext context, double width, double height)
         {
             var mapData = _simulation.MapData;
-            if (mapData?.Biomes == null) return;
+            if (mapData?.Biomes == null)
+                return;
 
             var biomes = mapData.Biomes;
             if (_biomesBitmap == null || _cachedBiomesPath != biomes.Name)
@@ -640,7 +694,8 @@ namespace Editor.Views
         {
             int w = biomes.Width;
             int h = biomes.Height;
-            if (w == 0 || h == 0) return null;
+            if (w == 0 || h == 0)
+                return null;
 
             var bmp = new WriteableBitmap(
                 new PixelSize(w, h),
@@ -655,7 +710,8 @@ namespace Editor.Views
 
                 foreach (var region in biomes.Regions)
                 {
-                    if (region.Type == Biomes.Type.Invalid) continue;
+                    if (region.Type == Biomes.Type.Invalid)
+                        continue;
 
                     var wsc = Biomes.GetColorForType(region.Type);
                     byte ra = 128;
@@ -665,7 +721,8 @@ namespace Editor.Views
 
                     foreach (var (px, py) in region.Points)
                     {
-                        if (px < 0 || py < 0 || px >= w || py >= h) continue;
+                        if (px < 0 || py < 0 || px >= w || py >= h)
+                            continue;
                         int idx = py * stride + px * 4;
                         pixels[idx + 0] = rb;
                         pixels[idx + 1] = rg;
@@ -683,13 +740,15 @@ namespace Editor.Views
         private void RenderAgents(DrawingContext context, double width, double height)
         {
             var agents = _simulation.Agents;
-            if (agents == null) return;
+            if (agents == null)
+                return;
 
             // Draw at 1/zoom so the rect is always 1 screen pixel after the zoom transform.
             double px = 1.0 / _zoom;
             foreach (var agent in agents)
             {
-                if (agent.CurrentState != Agent.State.Wandering) continue;
+                if (agent.CurrentState != Agent.State.Wandering)
+                    continue;
 
                 var (cx, cy) = SimToCanvas(agent.Position, width, height);
                 var brush = _groupBrushes.Length > 0 ? _groupBrushes[agent.Group % _groupBrushes.Length] : Brushes.White;
@@ -700,13 +759,15 @@ namespace Editor.Views
         private void RenderActiveAgents(DrawingContext context, double width, double height)
         {
             var active = _simulation.Active;
-            if (active == null) return;
+            if (active == null)
+                return;
 
             double px = 1.0 / _zoom;
             foreach (var kv in active)
             {
                 var agent = kv.Value;
-                if (agent.CurrentState != Agent.State.Active) continue;
+                if (agent.CurrentState != Agent.State.Active)
+                    continue;
 
                 var (cx, cy) = SimToCanvas(agent.Position, width, height);
                 context.FillRectangle(_activeAgentBrush, new Rect(cx, cy, px, px));
@@ -747,7 +808,8 @@ namespace Editor.Views
         private void RenderPrefabs(DrawingContext context, double width, double height)
         {
             var mapData = _simulation.MapData;
-            if (mapData?.Prefabs?.Decorations == null) return;
+            if (mapData?.Prefabs?.Decorations == null)
+                return;
 
             var worldSize = _simulation.WorldSize;
 
@@ -763,7 +825,8 @@ namespace Editor.Views
         private void RenderCities(DrawingContext context, double width, double height)
         {
             var mapData = _simulation.MapData;
-            if (mapData?.Cities?.CityList == null) return;
+            if (mapData?.Cities?.CityList == null)
+                return;
 
             var worldSize = _simulation.WorldSize;
 
@@ -778,25 +841,46 @@ namespace Editor.Views
             }
         }
 
+        // Cached pen for wind arrow shaft
+        private static readonly Pen _arrowPenDark = new Pen(_hudArrowDark, 1.5);
+        private static readonly Pen _arrowPenLight = new Pen(_hudArrowLight, 1.5);
+
+        // Cached HUD header texts (static labels, created once per theme)
+        private FormattedText _hudH1, _hudH2, _hudH3;
+        // Cached HUD value texts (recreated only when string content changes)
+        private string _hudV1Str, _hudV2Str, _hudV3Str;
+        private FormattedText _hudV1, _hudV2, _hudV3;
+        private bool _hudLastDark;
+
+        private void EnsureHudHeaders(bool dark)
+        {
+            if (_hudH1 != null && _hudLastDark == dark)
+                return;
+            _hudLastDark = dark;
+            var sec = dark ? _hudTextSecondaryDark : _hudTextSecondaryLight;
+            _hudH1 = new FormattedText("Wind Dir", CultureInfo.CurrentCulture, FlowDirection.LeftToRight, _hudTypeface, 10, sec);
+            _hudH2 = new FormattedText("Wind Target", CultureInfo.CurrentCulture, FlowDirection.LeftToRight, _hudTypeface, 10, sec);
+            _hudH3 = new FormattedText("Next Change", CultureInfo.CurrentCulture, FlowDirection.LeftToRight, _hudTypeface, 10, sec);
+            _hudV1Str = _hudV2Str = _hudV3Str = null;
+        }
+
+        private FormattedText HudVal(string s, ref string prev, ref FormattedText ft, bool dark)
+        {
+            if (s == prev && ft != null)
+                return ft;
+            prev = s;
+            ft = new FormattedText(s, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, _hudTypeface, 12,
+                dark ? _hudTextPrimaryDark : _hudTextPrimaryLight);
+            return ft;
+        }
+
         private void RenderHUDBar(DrawingContext context, double width)
         {
             bool dark = Application.Current?.ActualThemeVariant != ThemeVariant.Light;
 
-            var barBg = dark
-                ? new SolidColorBrush(Color.FromArgb(210, 30, 30, 30))
-                : new SolidColorBrush(Color.FromArgb(220, 240, 240, 240));
-            var barBorder = dark
-                ? new SolidColorBrush(Color.FromArgb(255, 58, 58, 58))
-                : new SolidColorBrush(Color.FromArgb(255, 160, 160, 160));
-            IBrush arrowBrush = dark
-                ? Brushes.White
-                : new SolidColorBrush(Color.FromRgb(30, 30, 30));
-            var textPrimary = dark
-                ? new SolidColorBrush(Color.FromArgb(200, 200, 200, 200))
-                : new SolidColorBrush(Color.FromArgb(220, 30, 30, 30));
-            var textSecondary = dark
-                ? new SolidColorBrush(Color.FromArgb(140, 180, 180, 180))
-                : new SolidColorBrush(Color.FromArgb(180, 80, 80, 80));
+            var barBg = dark ? _hudBarBgDark : _hudBarBgLight;
+            var barBorder = dark ? _hudBarBorderDark : _hudBarBorderLight;
+            IBrush arrowBrush = dark ? _hudArrowDark : _hudArrowLight;
 
             // Background and border
             context.FillRectangle(barBg, new Rect(0, 0, width, BarHeight));
@@ -804,53 +888,48 @@ namespace Editor.Views
 
             var windDir = _simulation.WindDirection;
             double cx = 28, cy = BarHeight / 2.0;
-            double shaft = 8.0;   // half-length of the line
-            double headL = 7.0;   // arrowhead length
-            double headW = 4.0;   // arrowhead half-width
+            double shaft = 8.0;
+            double headL = 7.0;
+            double headW = 4.0;
 
             double angle = Math.Atan2(windDir.Y, windDir.X);
             double cos = Math.Cos(angle), sin = Math.Sin(angle);
             double perpCos = Math.Cos(angle + Math.PI / 2), perpSin = Math.Sin(angle + Math.PI / 2);
 
-            // Shaft: from tail to where head base starts
-            var tail     = new Point(cx - cos * shaft, cy - sin * shaft);
+            var tail = new Point(cx - cos * shaft, cy - sin * shaft);
             var headBase = new Point(cx + cos * (shaft - headL), cy + sin * (shaft - headL));
-            var tip      = new Point(cx + cos * shaft, cy + sin * shaft);
+            var tip = new Point(cx + cos * shaft, cy + sin * shaft);
 
-            var pen = new Pen(arrowBrush, 1.5);
-            context.DrawLine(pen, tail, headBase);
+            context.DrawLine(dark ? _arrowPenDark : _arrowPenLight, tail, headBase);
 
-            // Filled triangle arrowhead
+            // Reuse cached arrow geometry, just update points
             var wing1 = new Point(headBase.X + perpCos * headW, headBase.Y + perpSin * headW);
             var wing2 = new Point(headBase.X - perpCos * headW, headBase.Y - perpSin * headW);
-            var geo = new PathGeometry();
-            var fig = new PathFigure { StartPoint = tip, IsClosed = true, IsFilled = true };
-            fig.Segments.Add(new LineSegment { Point = wing1 });
-            fig.Segments.Add(new LineSegment { Point = wing2 });
-            geo.Figures.Add(fig);
-            context.DrawGeometry(arrowBrush, null, geo);
+            _arrowFig.StartPoint = tip;
+            _arrowSeg1.Point = wing1;
+            _arrowSeg2.Point = wing2;
+            context.DrawGeometry(arrowBrush, null, _arrowGeo);
 
-            // Labels
-            var typeface = new Typeface(FontFamily.Default);
-
-            void DrawHudText(string header, string value, ref double x)
-            {
-                var headerText = new FormattedText(header, CultureInfo.CurrentCulture,
-                    FlowDirection.LeftToRight, typeface, 10, textSecondary);
-                var valueText = new FormattedText(value, CultureInfo.CurrentCulture,
-                    FlowDirection.LeftToRight, typeface, 12, textPrimary);
-                context.DrawText(headerText, new Point(x, cy - headerText.Height - 1));
-                context.DrawText(valueText,  new Point(x, cy + 1));
-                x += Math.Max(headerText.Width, valueText.Width) + 16;
-            }
+            EnsureHudHeaders(dark);
 
             double textX = cx + shaft + 8;
-            var windDir2 = _simulation.WindDirection;
             var windTarget = _simulation.WindDirectionTarget;
             var nextChange = _simulation.TickNextWindChange;
-            DrawHudText("Wind Dir",    $"{windDir2.X:0.00}, {windDir2.Y:0.00}", ref textX);
-            DrawHudText("Wind Target", $"{windTarget.X:0.00}, {windTarget.Y:0.00}", ref textX);
-            DrawHudText("Next Change", nextChange.ToString(), ref textX);
+
+            var v1 = HudVal($"{windDir.X:0.00}, {windDir.Y:0.00}", ref _hudV1Str, ref _hudV1, dark);
+            var v2 = HudVal($"{windTarget.X:0.00}, {windTarget.Y:0.00}", ref _hudV2Str, ref _hudV2, dark);
+            var v3 = HudVal(nextChange.ToString(), ref _hudV3Str, ref _hudV3, dark);
+
+            context.DrawText(_hudH1, new Point(textX, cy - _hudH1.Height - 1));
+            context.DrawText(v1, new Point(textX, cy + 1));
+            textX += Math.Max(_hudH1.Width, v1.Width) + 16;
+
+            context.DrawText(_hudH2, new Point(textX, cy - _hudH2.Height - 1));
+            context.DrawText(v2, new Point(textX, cy + 1));
+            textX += Math.Max(_hudH2.Width, v2.Width) + 16;
+
+            context.DrawText(_hudH3, new Point(textX, cy - _hudH3.Height - 1));
+            context.DrawText(v3, new Point(textX, cy + 1));
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)

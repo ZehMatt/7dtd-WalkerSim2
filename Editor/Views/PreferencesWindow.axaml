@@ -1,0 +1,72 @@
+<Window xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		x:Class="Editor.Views.PreferencesWindow"
+		Title="Preferences"
+		Width="500" Height="500"
+		MinWidth="400" MinHeight="400"
+		WindowStartupLocation="CenterOwner"
+		CanResize="True">
+
+	<DockPanel Margin="16">
+		<!-- Bottom buttons -->
+		<StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+					HorizontalAlignment="Right" Spacing="8" Margin="0,16,0,0">
+			<Button Content="Reset to Defaults" Click="OnResetClick"/>
+			<Button Content="Cancel" Click="OnCancelClick"/>
+			<Button Content="Save" Click="OnSaveClick" Classes="accent"/>
+		</StackPanel>
+
+		<ScrollViewer>
+			<StackPanel Spacing="16">
+				<!-- Canvas Controls -->
+				<TextBlock Text="Canvas Controls" FontWeight="Bold" FontSize="14"/>
+				<Border BorderBrush="{DynamicResource EditorBorder}" BorderThickness="1"
+						CornerRadius="4" Padding="12">
+					<StackPanel Spacing="10">
+						<Grid ColumnDefinitions="150,*" RowDefinitions="Auto,Auto">
+							<TextBlock Grid.Row="0" Grid.Column="0" Text="Pan Button"
+									   VerticalAlignment="Center"/>
+							<ComboBox Grid.Row="0" Grid.Column="1" x:Name="PanButtonCombo"
+									  HorizontalAlignment="Stretch"/>
+
+							<TextBlock Grid.Row="1" Grid.Column="0" Text="Zoom Modifier"
+									   VerticalAlignment="Center" Margin="0,8,0,0"/>
+							<ComboBox Grid.Row="1" Grid.Column="1" x:Name="ZoomModifierCombo"
+									  HorizontalAlignment="Stretch" Margin="0,8,0,0"/>
+						</Grid>
+					</StackPanel>
+				</Border>
+
+				<!-- Detected Game Folders -->
+				<TextBlock Text="Detected Game Folders" FontWeight="Bold" FontSize="14"/>
+				<Border BorderBrush="{DynamicResource EditorBorder}" BorderThickness="1"
+						CornerRadius="4" Padding="12">
+					<StackPanel>
+						<ListBox x:Name="DetectedFoldersList" MinHeight="40" MaxHeight="120"
+								 IsEnabled="False"/>
+						<TextBlock Text="Auto-detected from Steam and registry. These are always included."
+								   FontSize="11" Foreground="{DynamicResource EditorTextMuted}"
+								   Margin="0,6,0,0" TextWrapping="Wrap"/>
+					</StackPanel>
+				</Border>
+
+				<!-- Additional Game Folders -->
+				<TextBlock Text="Additional Game Folders" FontWeight="Bold" FontSize="14"/>
+				<Border BorderBrush="{DynamicResource EditorBorder}" BorderThickness="1"
+						CornerRadius="4" Padding="12">
+					<DockPanel>
+						<StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+									Spacing="8" Margin="0,8,0,0">
+							<Button Content="Add..." Click="OnAddFolderClick"/>
+							<Button Content="Remove" Click="OnRemoveFolderClick" x:Name="RemoveFolderBtn"/>
+						</StackPanel>
+						<TextBlock DockPanel.Dock="Bottom" Text="Extra folders to scan for worlds (e.g. custom install locations)."
+								   FontSize="11" Foreground="{DynamicResource EditorTextMuted}"
+								   Margin="0,8,0,0" TextWrapping="Wrap"/>
+						<ListBox x:Name="FoldersList" MinHeight="60" MaxHeight="140"/>
+					</DockPanel>
+				</Border>
+			</StackPanel>
+		</ScrollViewer>
+	</DockPanel>
+</Window>

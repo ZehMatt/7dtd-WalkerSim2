@@ -25,7 +25,16 @@ namespace Editor
                 }
             }
 
-            foreach (var installPath in FindGamePaths())
+            var gamePaths = FindGamePaths();
+
+            // Include user-configured game folders from settings
+            foreach (var extra in EditorSettings.Instance.GameFolders)
+            {
+                if (Directory.Exists(extra))
+                    gamePaths.Add(extra);
+            }
+
+            foreach (var installPath in gamePaths)
             {
                 // Worlds bundled with the game
                 var worldsPath = Path.Combine(installPath, "Data", "Worlds");
@@ -99,7 +108,7 @@ namespace Editor
 
         // Game install discovery
 
-        private static List<string> FindGamePaths()
+        public static List<string> FindGamePaths()
         {
             var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 

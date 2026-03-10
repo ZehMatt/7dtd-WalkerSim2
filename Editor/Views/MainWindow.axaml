@@ -36,6 +36,8 @@
 					<MenuItem Header="Out" InputGesture="Ctrl+Subtract" Click="OnZoomOutClick"/>
 				</MenuItem>
 				<Separator/>
+				<MenuItem Header="Pause Rendering" x:Name="MenuViewPauseRendering" ToggleType="CheckBox" IsChecked="False" Click="OnViewToggleClick"/>
+				<Separator/>
 				<MenuItem Header="Biomes" x:Name="MenuViewBiomes" ToggleType="CheckBox" IsChecked="False" Click="OnViewToggleClick"/>
 				<MenuItem Header="Roads" x:Name="MenuViewRoads" ToggleType="CheckBox" IsChecked="True" Click="OnViewToggleClick"/>
 				<MenuItem Header="Inactive Agents" x:Name="MenuViewAgents" ToggleType="CheckBox" IsChecked="True" Click="OnViewToggleClick"/>
@@ -130,8 +132,15 @@
 				<MenuItem Header="Set Player Position..." Click="OnToolSetPlayerPositionClick"/>
 			</MenuItem>
 
+			<MenuItem Header="Settings">
+				<MenuItem Header="Preferences..." Click="OnPreferencesClick"/>
+			</MenuItem>
+
 			<MenuItem Header="Help">
 				<MenuItem Header="Documentation" Click="OnDocumentationClick"/>
+				<MenuItem Header="Discord" Click="OnDiscordClick"/>
+				<Separator/>
+				<MenuItem Header="About" Click="OnAboutClick"/>
 			</MenuItem>
 		</Menu>
 

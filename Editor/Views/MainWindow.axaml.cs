@@ -15,6 +15,7 @@ namespace Editor.Views
         private DispatcherTimer? _updateTimer;
         private ScrollViewer? _logScrollViewer;
         private const double NearBottomThreshold = 40.0;
+        private bool _renderingPaused;
 
         public MainWindow()
         {
@@ -78,7 +79,8 @@ namespace Editor.Views
             if (AgentsPanel.IsVisible && DataContext is EditorViewModel vm2)
                 vm2.RefreshAgentModels();
 
-            SimCanvas.InvalidateVisual();
+            if (!_renderingPaused)
+                SimCanvas.InvalidateVisual();
         }
 
         // ── Tab switching ──────────────────────────────────────────────────────────
@@ -150,6 +152,21 @@ namespace Editor.Views
                 vm.ActivateSetPlayerPositionCommand.Execute(null);
         }
 
+        // ── Settings ──────────────────────────────────────────────────────────────
+
+        private async void OnPreferencesClick(object? sender, RoutedEventArgs e)
+        {
+            var window = new PreferencesWindow();
+            await window.ShowDialog(this);
+
+            if (window.SettingsSaved)
+                SimCanvas.ApplySettings();
+
+            // Always repopulate worlds — folders may have changed
+            if (DataContext is EditorViewModel vm)
+                vm.ReloadWorldList();
+        }
+
         // ── Help ──────────────────────────────────────────────────────────────────
 
         private void OnDocumentationClick(object? sender, RoutedEventArgs e)
@@ -163,6 +180,21 @@ namespace Editor.Views
             catch { }
         }
 
+        private void OnDiscordClick(object? sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo { FileName = "https://discord.gg/9QGHS4wbFu", UseShellExecute = true });
+            }
+            catch { }
+        }
+
+        private async void OnAboutClick(object? sender, RoutedEventArgs e)
+        {
+            var window = new AboutWindow();
+            await window.ShowDialog(this);
+        }
+
         // ── View toggles ──────────────────────────────────────────────────────────
 
         private void OnViewToggleClick(object? sender, RoutedEventArgs e)
@@ -171,6 +203,7 @@ namespace Editor.Views
 
             switch (item.Name)
             {
+                case "MenuViewPauseRendering": _renderingPaused = item.IsChecked; return;
                 case "MenuViewBiomes":       SimCanvas.ShowBiomes       = item.IsChecked; break;
                 case "MenuViewRoads":        SimCanvas.ShowRoads        = item.IsChecked; break;
                 case "MenuViewAgents":       SimCanvas.ShowAgents       = item.IsChecked; break;

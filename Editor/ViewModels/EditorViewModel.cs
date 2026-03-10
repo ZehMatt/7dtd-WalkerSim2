@@ -494,6 +494,11 @@ namespace Editor.ViewModels
             });
         }
 
+        public void ReloadWorldList()
+        {
+            Task.Run(LoadWorldList);
+        }
+
         partial void OnSelectedWorldNameChanged(string value)
         {
             if (string.IsNullOrEmpty(value))
