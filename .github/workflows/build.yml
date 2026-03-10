@@ -247,7 +247,7 @@ jobs:
     - name: Remove debug symbols from publish output
       shell: pwsh
       run: |
-        Get-ChildItem -Path "Publish/Editor/${{ matrix.platform }}" -Include "*.pdb","*.dbg" -Recurse | Remove-Item -Force
+        Get-ChildItem -Path "Publish/Editor/${{ matrix.platform }}" -Include "*.pdb","*.dbg","*.dsym" -Recurse | Remove-Item -Force -Recurse
 
     - name: Create macOS .app bundle
       if: runner.os == 'macOS'
