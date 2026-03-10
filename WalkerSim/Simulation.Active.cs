@@ -29,7 +29,7 @@ namespace WalkerSim
             _state.Active.TryAdd(entityId, agent);
 
             var log = Config.LoggingOpts.Spawns || EditorMode || Utils.IsDebugMode();
-            Logging.CondInfo(log, "Added agent with entity id {0} to active list, list size {1}", entityId, _state.Active.Count);
+            Logging.CondInfo(log, () => $"Added agent with entity id {entityId} to active list, list size {_state.Active.Count}");
         }
 
         public void MarkAgentDead(Agent agent)
@@ -47,6 +47,19 @@ namespace WalkerSim
                 // Mark to be respawned.
                 agent.CurrentState = Agent.State.Respawning;
             }
+        }
+
+        public int KillAgentsInRadius(Vector3 position, float radius)
+        {
+            var hitAgents = new FixedBufferList<Agent>(30000);
+            QueryCells(position, -1, radius, hitAgents);
+            int count = 0;
+            foreach (var agent in hitAgents)
+            {
+                MarkAgentDead(agent);
+                count++;
+            }
+            return count;
         }
 
         private bool IsInsidePlayerMaxView(Vector3 pos)
@@ -93,7 +106,7 @@ namespace WalkerSim
                 if (insidePlayerView)
                     continue;
 
-                Logging.CondInfo(log, "Agent {0} is outside player view, despawning {1}...", agent.Index, agent.EntityId);
+                Logging.CondInfo(log, () => $"Agent {agent.Index} is outside player view, despawning {agent.EntityId}...");
 
                 // Handle the despawn.
                 if (_agentDespawnHandler != null)

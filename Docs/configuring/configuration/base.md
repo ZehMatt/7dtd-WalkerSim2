@@ -145,6 +145,16 @@ Here are all the settings you can change:
 
 **Example**: Set to 600 (10 minutes) to give yourself more time to gather supplies. Set to 0 to start with zombies immediately.
 
+### InfiniteZombieLifetime
+
+**What it does**: Prevents zombies spawned by WalkerSim from dying due to the game's built-in lifetime expiration. The base game assigns a limited lifetime to spawned zombies, causing them to suddenly die after some time. Enabling this setting overrides that behavior. This does not make zombies invincible to damage — they can still be killed normally by players.
+
+**Value**: True (prevent expiration) or False (use game default lifetime)
+
+**Default**: False
+
+**When to use it**: Enable this if you notice zombies suddenly dying for no apparent reason. This is caused by the game's internal lifetime system and is unrelated to player damage.
+
 ### MaxSpawnedZombies
 
 **What it does**: Limits how many zombies WalkerSim can spawn in the game world at once.
@@ -165,32 +175,3 @@ Here are all the settings you can change:
 **Example**: Set to "50%" for fewer zombies, "100%" to use the full game limit, or "32" to always spawn a maximum of 32 zombies regardless of game settings.
 
 ---
-
-## Example Settings
-
-Here's a basic example you can copy and paste:
-
-```xml
-<WalkerSim>
-  <Logging>
-    <General>true</General>
-    <Spawns>false</Spawns>
-    <Despawns>false</Despawns>
-    <EntityClassSelection>false</EntityClassSelection>
-    <Events>false</Events>
-  </Logging>
-  <RandomSeed>12345</RandomSeed>
-  <PopulationDensity>200</PopulationDensity>
-  <SpawnActivationRadius>96</SpawnActivationRadius>
-  <StartAgentsGrouped>true</StartAgentsGrouped>
-  <EnhancedSoundAwareness>true</EnhancedSoundAwareness>
-  <SoundDistanceScale>1.0</SoundDistanceScale>
-  <FastForwardAtStart>true</FastForwardAtStart>
-  <GroupSize>20</GroupSize>
-  <AgentStartPosition>RandomPOI</AgentStartPosition>
-  <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>
-  <PauseDuringBloodmoon>true</PauseDuringBloodmoon>
-  <SpawnProtectionTime>300</SpawnProtectionTime>
-  <MaxSpawnedZombies>75%</MaxSpawnedZombies>
-</WalkerSim>
-```

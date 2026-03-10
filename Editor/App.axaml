@@ -1,0 +1,81 @@
+<Application xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 x:Class="Editor.App"
+			 x:CompileBindings="True"
+			 xmlns:local="using:Editor"
+			 xmlns:controls="using:Editor.Controls"
+			 RequestedThemeVariant="Default">
+	<!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+	<Application.DataTemplates>
+		<local:ViewLocator/>
+	</Application.DataTemplates>
+
+	<Application.Styles>
+		<FluentTheme />
+		<!-- Suppress validation error overlay; range is enforced by Minimum/Maximum and the clamp behavior below. -->
+		<Style Selector="NumericUpDown /template/ DataValidationErrors">
+			<Setter Property="ErrorTemplate" Value="{x:Null}"/>
+		</Style>
+		<!-- Clamp value immediately as the user types, globally for all NumericUpDown controls. -->
+		<Style Selector="NumericUpDown">
+			<Setter Property="(controls:NumericUpDownBehavior.ClampImmediately)" Value="True"/>
+		</Style>
+	</Application.Styles>
+
+	<Application.Resources>
+		<ResourceDictionary>
+			<!-- Sharp corners globally (not theme-sensitive) -->
+			<CornerRadius x:Key="ControlCornerRadius">0</CornerRadius>
+			<CornerRadius x:Key="OverlayCornerRadius">0</CornerRadius>
+			<CornerRadius x:Key="TextControlCornerRadius">0</CornerRadius>
+			<CornerRadius x:Key="ComboBoxCornerRadius">0</CornerRadius>
+
+			<ResourceDictionary.ThemeDictionaries>
+
+				<ResourceDictionary x:Key="Dark">
+					<SolidColorBrush x:Key="EditorBackground" Color="#1e1e1e"/>
+					<SolidColorBrush x:Key="EditorSidebarBackground" Color="#252525"/>
+					<SolidColorBrush x:Key="EditorPanelBackground" Color="#2d2d2d"/>
+					<SolidColorBrush x:Key="EditorBorder" Color="#3a3a3a"/>
+					<SolidColorBrush x:Key="EditorBorderMid" Color="#3d3d3d"/>
+					<SolidColorBrush x:Key="EditorTextMuted" Color="#888888"/>
+					<SolidColorBrush x:Key="EditorTextSecondary" Color="#bbbbbb"/>
+					<SolidColorBrush x:Key="EditorTextNormal" Color="#cccccc"/>
+					<SolidColorBrush x:Key="EditorTextBright" Color="#ffffff"/>
+					<SolidColorBrush x:Key="EditorTextPlaceholder" Color="#666666"/>
+					<SolidColorBrush x:Key="EditorAccent" Color="#0078d4"/>
+					<SolidColorBrush x:Key="EditorDanger" Color="#d13438"/>
+					<SolidColorBrush x:Key="LogInfo" Color="#ffffff"/>
+					<SolidColorBrush x:Key="LogWarning" Color="#ffff00"/>
+					<SolidColorBrush x:Key="LogError" Color="#ff4444"/>
+					<SolidColorBrush x:Key="InfoBannerBg" Color="#1a2a1a"/>
+					<SolidColorBrush x:Key="InfoBannerBorder" Color="#2a4a2a"/>
+					<SolidColorBrush x:Key="InfoBannerFg" Color="#88aa88"/>
+				</ResourceDictionary>
+
+				<ResourceDictionary x:Key="Light">
+					<SolidColorBrush x:Key="EditorBackground" Color="#f3f3f3"/>
+					<SolidColorBrush x:Key="EditorSidebarBackground" Color="#e8e8e8"/>
+					<SolidColorBrush x:Key="EditorPanelBackground" Color="#f0f0f0"/>
+					<SolidColorBrush x:Key="EditorBorder" Color="#c0c0c0"/>
+					<SolidColorBrush x:Key="EditorBorderMid" Color="#d0d0d0"/>
+					<SolidColorBrush x:Key="EditorTextMuted" Color="#555555"/>
+					<SolidColorBrush x:Key="EditorTextSecondary" Color="#444444"/>
+					<SolidColorBrush x:Key="EditorTextNormal" Color="#1a1a1a"/>
+					<SolidColorBrush x:Key="EditorTextBright" Color="#000000"/>
+					<SolidColorBrush x:Key="EditorTextPlaceholder" Color="#777777"/>
+					<SolidColorBrush x:Key="EditorAccent" Color="#0067b8"/>
+					<SolidColorBrush x:Key="EditorDanger" Color="#c42b1c"/>
+					<SolidColorBrush x:Key="LogInfo" Color="#1a1a1a"/>
+					<SolidColorBrush x:Key="LogWarning" Color="#6f5300"/>
+					<SolidColorBrush x:Key="LogError" Color="#b81c1c"/>
+					<SolidColorBrush x:Key="InfoBannerBg" Color="#dff2d8"/>
+					<SolidColorBrush x:Key="InfoBannerBorder" Color="#7cc87c"/>
+					<SolidColorBrush x:Key="InfoBannerFg" Color="#1e5e1e"/>
+				</ResourceDictionary>
+
+			</ResourceDictionary.ThemeDictionaries>
+		</ResourceDictionary>
+	</Application.Resources>
+</Application>

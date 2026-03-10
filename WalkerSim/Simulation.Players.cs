@@ -34,10 +34,7 @@ namespace WalkerSim
             _state.Players.TryAdd(entityId, player);
 
             Logging.CondInfo(Config.LoggingOpts.General,
-                "Player added in simulation, entity id: {0}, position: {1}, spawn delay: {2} ticks",
-                entityId,
-                player.Position,
-                spawnDelay);
+                () => $"Player added in simulation, entity id: {entityId}, position: {player.Position}, spawn delay: {spawnDelay} ticks");
         }
 
         public void RemovePlayer(int entityId)
@@ -47,8 +44,7 @@ namespace WalkerSim
                 player.IsAlive = false;
 
                 Logging.CondInfo(Config.LoggingOpts.General,
-                    "Player removed from simulation, entity id: {0}",
-                    entityId);
+                    () => $"Player removed from simulation, entity id: {entityId}");
             }
         }
 
@@ -66,10 +62,7 @@ namespace WalkerSim
             if (_state.Players.TryGetValue(entityId, out var player))
             {
                 Logging.CondInfo(Config.LoggingOpts.General,
-                    "Player spawned in simulation, entity id: {0}, position: {1}, spawn activation delay: {2} ticks",
-                    entityId,
-                    player.Position,
-                    spawnDelay);
+                    () => $"Player spawned in simulation, entity id: {entityId}, position: {player.Position}, spawn activation delay: {spawnDelay} ticks");
 
                 player.IsAlive = true;
                 player.NextPossibleSpawnTime = UnscaledTicks + spawnDelay;

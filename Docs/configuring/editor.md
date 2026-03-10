@@ -1,8 +1,18 @@
 # Editor Tool
 
-The Editor is a program that lets you test and set up the mod **outside of the game**. It simulates the zombie movement on your computer so you can see how your settings will work before using them in 7 Days to Die.
+The Editor is a standalone program that lets you test and set up the mod **outside of the game**. It simulates the zombie movement on your computer so you can see how your settings will work before using them in 7 Days to Die.
 
 The Editor does NOT require the game to be running - it's a standalone preview tool.
+
+## Download
+
+As of version 1.1, the Editor is no longer included with the mod and must be downloaded separately from the [releases page](https://github.com/ZehMatt/7dtd-WalkerSim2/releases). Download the appropriate version for your platform:
+
+- **Windows**: `WalkerSim2-Editor-Windows-x64-{version}.zip`
+- **macOS**: `WalkerSim2-Editor-Mac-arm64-{version}.zip`
+- **Linux**: `WalkerSim2-Editor-Linux-x64-{version}.zip`
+
+Extract the zip file and run the Editor executable.
 
 ![WalkerSim Editor](../img/editor-1.png)
 
@@ -23,6 +33,9 @@ Common locations to load from:
 - `Mods/WalkerSim2/WalkerSim.xml` (the default mod config)
 - `<7 Days to Die>\Data\Worlds\<World>\WalkerSim.xml` (world-specific config)
 - `%APPDATA%\GeneratedWorlds\<Your World>\WalkerSim.xml` (generated world config)
+
+!!! tip "Try the example configurations"
+    Download any of the [example configurations](configuration/examples/index.md) and load them directly into the Editor to see different movement behaviors in action. This is a great way to understand how processors interact before building your own setup.
 
 ### Exporting Your Configuration
 
@@ -50,8 +63,8 @@ The simulation state (`.bin` files) contains all zombie positions, health, and c
 
 You can load these game-generated state files to test from a specific point:
 
-- **Load State**: `File` > `Load State` - Loads a `walkersim.bin` file from a game save
-- **Save State**: `File` > `Save State` - Saves the current editor simulation to a `.bin` file
+- **Load State**: `Simulation` > `State` > `Load State` - Loads a `walkersim.bin` file from a game save
+- **Save State**: `Simulation` > `State` > `Save State` - Saves the current editor simulation to a `.bin` file
 
 This is useful for:
 

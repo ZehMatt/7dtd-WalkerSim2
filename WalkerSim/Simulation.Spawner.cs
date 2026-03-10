@@ -100,7 +100,7 @@ namespace WalkerSim
                 {
                     // We have reached the maximum amount of agents alive, do not spawn more.
                     Logging.CondInfo(Config.LoggingOpts.Spawns,
-                        $"Maximum amount of agents alive reached, max: {_maxAllowedAliveAgents}, pending spawns: {_pendingSpawns.Count}, active agents: {_state.Active.Count}");
+                        () => $"Maximum amount of agents alive reached, max: {_maxAllowedAliveAgents}, pending spawns: {_pendingSpawns.Count}, active agents: {_state.Active.Count}");
 
                     // Increase delay, no need to try again so soon when it is not possible to spawn more agents.
                     _nextSpawnCheck = now.AddMilliseconds(2000);
@@ -127,9 +127,7 @@ namespace WalkerSim
                 {
                     // Too many active agents nearby, do not spawn more.
                     Logging.CondInfo(Config.LoggingOpts.Spawns,
-                        "Player {0} has too many active agents nearby ({1}), skipping spawn...",
-                        player.EntityId,
-                        activeNearby);
+                        () => $"Player {player.EntityId} has too many active agents nearby ({activeNearby}), skipping spawn...");
 
                     // Delay the test for this player.
                     player.NextPossibleSpawnTime = UnscaledTicks + SecondsToTicks(1);
@@ -181,10 +179,7 @@ namespace WalkerSim
                     }
 
                     Logging.CondInfo(Config.LoggingOpts.Spawns,
-                        "Agent {0} near player {1} at {2}m, spawning...",
-                        agent.Index,
-                        player.EntityId,
-                        dist);
+                        () => $"Agent {agent.Index} near player {player.EntityId} at {dist}m, spawning...");
 
                     agent.LastSpawnTick = UnscaledTicks;
                     agent.CurrentState = Agent.State.PendingSpawn;

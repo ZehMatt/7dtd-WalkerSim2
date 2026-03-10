@@ -7,9 +7,10 @@ env:
   APP_ID: "294420"
   DEPOT_ID: "294422"
   MANIFEST_ID: "4777960841829662519"
+
 jobs:
-  Build:
-    name: Build
+  build-mod:
+    name: Build Mod
     if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) }}
     runs-on: windows-2025
     defaults:
@@ -20,21 +21,17 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
-        
+
     - name: Fetch tags
-      run: |
-        git fetch --tags --force
-      shell: cmd
-      
-    - name: Setup build info (Windows)
+      run: git fetch --tags --force
+
+    - name: Setup build info
       env:
         COMMIT_SHA: ${{ github.sha }}
         BRANCH_NAME: ${{ github.ref_name }}
       run: |
-          # Log working directory and environment
           echo "Working directory: $PWD" | Out-Host
           echo "Branch name: $env:BRANCH_NAME" | Out-Host
-          # Determine version
           if ($env:BRANCH_NAME -like 'release/*') {
             $version = $env:BRANCH_NAME -replace '^release/', ''
             echo "Release branch version (raw): $version" | Out-Host
@@ -50,7 +47,6 @@ jobs:
               echo "No tags found, defaulting to version 0.0.0" | Out-Host
             }
           }
-          # Validate version format (x.y.z)
           if ($version -match '^\d+\.\d+\.\d+$') {
             echo "BUILD_VERSION=$version" >> $env:GITHUB_ENV
             echo "Valid version: $version" | Out-Host
@@ -59,30 +55,20 @@ jobs:
             echo "BUILD_VERSION=$version" >> $env:GITHUB_ENV
             echo "Invalid version format, defaulting to 0.9.5" | Out-Host
           }
-          # Set commit hash (first 12 characters)
           $sha12 = $env:COMMIT_SHA.Substring(0,12)
           echo "COMMIT_SHA=$sha12" >> $env:GITHUB_ENV
           echo "Commit SHA: $sha12" | Out-Host
-          # Update BuildInfo.cs
           $buildInfoFile = "$env:GITHUB_WORKSPACE\WalkerSim\BuildInfo.cs"
-          echo "BuildInfo.cs path: $buildInfoFile" | Out-Host
           if (-Not (Test-Path $buildInfoFile)) {
             echo "Error: $buildInfoFile does not exist" | Out-Host
-            dir -Recurse | Where-Object { $_.Name -eq "BuildInfo.cs" } | ForEach-Object { echo "Found BuildInfo.cs at: $($_.FullName)" } | Out-Host
             exit 1
           }
-          # Log BuildInfo.cs content before update
-          echo "BuildInfo.cs content before update:" | Out-Host
-          Get-Content -Path $buildInfoFile | Out-Host
-          # Perform replacements
           $content = Get-Content -Path $buildInfoFile -Raw
           $content = $content -replace '\[assembly: AssemblyMetadata\("Commit", "[^"]*"\)\]', "[assembly: AssemblyMetadata(`"Commit`", `"$sha12`")]"
           $content = $content -replace '\[assembly: AssemblyVersion\("[^"]*"\)\]', "[assembly: AssemblyVersion(`"$version`")]"
           $content = $content -replace '\[assembly: AssemblyFileVersion\("[^"]*"\)\]', "[assembly: AssemblyFileVersion(`"$version.0`")]"
           Set-Content -Path $buildInfoFile -Value $content
-          # Log BuildInfo.cs content after update
-          echo "BuildInfo.cs content after update:" | Out-Host
-          Get-Content -Path $buildInfoFile | Out-Host
+          echo "BuildInfo.cs updated" | Out-Host
       shell: powershell
 
     - name: Cache DepotDownloader
@@ -163,9 +149,10 @@ jobs:
     - name: Restore nuget packages
       run: nuget restore WalkerSim2.sln
 
-    - name: Build
+    - name: Build Mod and Tests
       run: |
-        msbuild WalkerSim2.sln -t:rebuild -property:Configuration=Release
+        msbuild Mod\Mod.csproj -t:rebuild -property:Configuration=Release -property:Platform=x64
+        msbuild Tests\Tests.csproj -t:rebuild -property:Configuration=Release -property:Platform=x64
 
     - name: Run tests
       uses: josepho0918/vstest-action@e6f6fd4212c7e41d549732d346865cf0d0afbf33
@@ -174,39 +161,185 @@ jobs:
           /**/*test*.dll
           !./**/*TestAdapter.dll
           !./**/obj/**
-        searchFolder: ./Build/Release/Tests
+        searchFolder: ./Tests/bin/x64/Release
         runInParallel: true
 
-    - name: Prepare artifacts
-      id: prepare-artifacts
+    - name: Prepare Mod artifact
       run: |
-        mkdir artifact
-        mkdir artifact\Mods
-        mkdir artifact\Mods\WalkerSim2
+        mkdir artifact\WalkerSim2
         echo .pdb > exclude.txt
-        xcopy /I /Y /F ".\Build\Release\*" ".\artifact\Mods\WalkerSim2\" /EXCLUDE:exclude.txt
+        xcopy /I /Y /F ".\Build\Release\Mod\*" ".\artifact\WalkerSim2\" /EXCLUDE:exclude.txt
         del exclude.txt
 
-    - name: Publish artifacts
+    - name: Upload Mod artifact
       uses: actions/upload-artifact@v4
       with:
-        name: WalkerSim2-${{ env.BUILD_VERSION }}${{ startsWith(github.ref, 'refs/heads/release/') && '' || '-' }}${{ env.COMMIT_SHA }}
-        path: |
-          ./artifact/**/*
+        name: WalkerSim2-Mod-${{ env.BUILD_VERSION }}-${{ env.COMMIT_SHA }}
+        path: ./artifact/**/*
 
-    - name: Prepare release
-      if: startsWith(github.ref, 'refs/heads/release/')
+  build-editor:
+    name: Build Editor (${{ matrix.platform }})
+    if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-2025
+            rid: win-x64
+            platform: Windows-x64
+          - os: ubuntu-latest
+            rid: linux-x64
+            platform: Linux-x64
+          - os: macos-14
+            rid: osx-arm64
+            platform: Mac-arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Fetch tags
+      run: git fetch --tags --force
+
+    - name: Setup build info
+      env:
+        COMMIT_SHA: ${{ github.sha }}
+        BRANCH_NAME: ${{ github.ref_name }}
+      shell: pwsh
       run: |
-        $zipFileName = "WalkerSim2-${{ env.BUILD_VERSION }}.zip"
-        $sourceDirectory = ".\artifact"
-        Compress-Archive -Path $sourceDirectory\* -DestinationPath $zipFileName
-        echo "Created $zipFileName"
-      id: prepare-release
-      shell: powershell
+          Write-Host "Branch name: $env:BRANCH_NAME"
+          if ($env:BRANCH_NAME -like 'release/*') {
+            $version = $env:BRANCH_NAME -replace '^release/', ''
+          } else {
+            $gitOutput = (git describe --tags --abbrev=0 2>&1)
+            $latestTag = ($gitOutput | Select-String -NotMatch "fatal").Line
+            if ($latestTag) {
+              $version = $latestTag
+            } else {
+              $version = "0.0.0"
+            }
+          }
+          if ($version -match '^\d+\.\d+\.\d+$') {
+            echo "BUILD_VERSION=$version" >> $env:GITHUB_ENV
+          } else {
+            $version = "0.9.5"
+            echo "BUILD_VERSION=$version" >> $env:GITHUB_ENV
+          }
+          $sha12 = $env:COMMIT_SHA.Substring(0,12)
+          echo "COMMIT_SHA=$sha12" >> $env:GITHUB_ENV
+          $buildInfoFile = Join-Path $env:GITHUB_WORKSPACE "WalkerSim/BuildInfo.cs"
+          $content = Get-Content -Path $buildInfoFile -Raw
+          $content = $content -replace '\[assembly: AssemblyMetadata\("Commit", "[^"]*"\)\]', "[assembly: AssemblyMetadata(`"Commit`", `"$sha12`")]"
+          $content = $content -replace '\[assembly: AssemblyVersion\("[^"]*"\)\]', "[assembly: AssemblyVersion(`"$version`")]"
+          $content = $content -replace '\[assembly: AssemblyFileVersion\("[^"]*"\)\]', "[assembly: AssemblyFileVersion(`"$version.0`")]"
+          Set-Content -Path $buildInfoFile -Value $content
+          Write-Host "BuildInfo.cs updated to version $version ($sha12)"
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Publish Editor
+      run: dotnet publish Editor/Editor.csproj -c Release -r ${{ matrix.rid }} -o Publish/Editor/${{ matrix.platform }} --self-contained true
+
+    - name: Remove debug symbols from publish output
+      shell: pwsh
+      run: |
+        Get-ChildItem -Path "Publish/Editor/${{ matrix.platform }}" -Include "*.pdb","*.dbg","*.dsym" -Recurse | Remove-Item -Force -Recurse
+
+    - name: Create macOS .app bundle
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        APP="Publish/Editor/${{ matrix.platform }}/WalkerSim Editor.app"
+        mkdir -p "$APP/Contents/MacOS"
+        mkdir -p "$APP/Contents/Resources"
+        # Generate .icns from the source icon PNG
+        ICONSET="AppIcon.iconset"
+        mkdir -p "$ICONSET"
+        SRC="Editor/Assets/icon-512.png"
+        sips -z 16 16     "$SRC" --out "$ICONSET/icon_16x16.png"
+        sips -z 32 32     "$SRC" --out "$ICONSET/icon_16x16@2x.png"
+        sips -z 32 32     "$SRC" --out "$ICONSET/icon_32x32.png"
+        sips -z 64 64     "$SRC" --out "$ICONSET/icon_32x32@2x.png"
+        sips -z 128 128   "$SRC" --out "$ICONSET/icon_128x128.png"
+        sips -z 256 256   "$SRC" --out "$ICONSET/icon_128x128@2x.png"
+        sips -z 256 256   "$SRC" --out "$ICONSET/icon_256x256.png"
+        sips -z 512 512   "$SRC" --out "$ICONSET/icon_256x256@2x.png"
+        cp "$SRC"                       "$ICONSET/icon_512x512.png"
+        iconutil -c icns "$ICONSET" -o "$APP/Contents/Resources/AppIcon.icns"
+        rm -rf "$ICONSET"
+        # Move all published files into the bundle
+        find "Publish/Editor/${{ matrix.platform }}" -maxdepth 1 -not -name '*.app' -not -path "Publish/Editor/${{ matrix.platform }}" -exec mv {} "$APP/Contents/MacOS/" \;
+        # Copy Info.plist and substitute version
+        sed "s/VERSION/${{ env.BUILD_VERSION }}/g" Editor/Assets/Info.plist > "$APP/Contents/Info.plist"
+        # Make the main executable runnable
+        chmod +x "$APP/Contents/MacOS/Editor"
+
+    - name: Rename publish output
+      shell: bash
+      run: mv "Publish/Editor/${{ matrix.platform }}" "Publish/Editor/WalkerSim Editor"
+
+    - name: Upload Editor artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: WalkerSim2-Editor-${{ matrix.platform }}-${{ env.BUILD_VERSION }}-${{ env.COMMIT_SHA }}
+        path: Publish/Editor/
+
+  release:
+    name: Release
+    if: startsWith(github.ref, 'refs/heads/release/')
+    needs: [build-mod, build-editor]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Determine version
+      run: |
+        VERSION="${GITHUB_REF_NAME#release/}"
+        echo "BUILD_VERSION=$VERSION" >> $GITHUB_ENV
+
+    - name: Download Mod artifact
+      uses: actions/download-artifact@v4
+      with:
+        pattern: WalkerSim2-Mod-*
+        path: release/Mod
+        merge-multiple: true
+
+    - name: Download Editor Windows artifact
+      uses: actions/download-artifact@v4
+      with:
+        pattern: WalkerSim2-Editor-Windows-x64-*
+        path: release/Editor-Windows-x64
+        merge-multiple: true
+
+    - name: Download Editor Linux artifact
+      uses: actions/download-artifact@v4
+      with:
+        pattern: WalkerSim2-Editor-Linux-x64-*
+        path: release/Editor-Linux-x64
+        merge-multiple: true
+
+    - name: Download Editor Mac artifact
+      uses: actions/download-artifact@v4
+      with:
+        pattern: WalkerSim2-Editor-Mac-arm64-*
+        path: release/Editor-Mac-arm64
+        merge-multiple: true
+
+    - name: Package release artifacts
+      run: |
+        cd release/Mod
+        zip -r ../../WalkerSim2-${{ env.BUILD_VERSION }}.zip WalkerSim2/
+        cd ../Editor-Windows-x64
+        zip -r ../../WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}.zip "WalkerSim Editor"/
+        cd ../Editor-Linux-x64
+        zip -r ../../WalkerSim2-Editor-Linux-x64-${{ env.BUILD_VERSION }}.zip "WalkerSim Editor"/
+        cd ../Editor-Mac-arm64
+        zip -r ../../WalkerSim2-Editor-Mac-arm64-${{ env.BUILD_VERSION }}.zip "WalkerSim Editor"/
 
     - name: Release
       uses: softprops/action-gh-release@v2
-      if: startsWith(github.ref, 'refs/heads/release/')
       with:
         name: ${{ env.BUILD_VERSION }}
         tag_name: ${{ env.BUILD_VERSION }}
@@ -214,3 +347,70 @@ jobs:
         generate_release_notes: false
         files: |
           WalkerSim2-${{ env.BUILD_VERSION }}.zip
+          WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}.zip
+          WalkerSim2-Editor-Linux-x64-${{ env.BUILD_VERSION }}.zip
+          WalkerSim2-Editor-Mac-arm64-${{ env.BUILD_VERSION }}.zip
+
+  prerelease:
+    name: Pre-Release
+    if: startsWith(github.ref, 'refs/heads/prerelease/')
+    needs: [build-mod, build-editor]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Determine version
+      run: |
+        VERSION="${GITHUB_REF_NAME#prerelease/}"
+        echo "BUILD_VERSION=${VERSION}-beta" >> $GITHUB_ENV
+
+    - name: Download Mod artifact
+      uses: actions/download-artifact@v4
+      with:
+        pattern: WalkerSim2-Mod-*
+        path: release/Mod
+        merge-multiple: true
+
+    - name: Download Editor Windows artifact
+      uses: actions/download-artifact@v4
+      with:
+        pattern: WalkerSim2-Editor-Windows-x64-*
+        path: release/Editor-Windows-x64
+        merge-multiple: true
+
+    - name: Download Editor Linux artifact
+      uses: actions/download-artifact@v4
+      with:
+        pattern: WalkerSim2-Editor-Linux-x64-*
+        path: release/Editor-Linux-x64
+        merge-multiple: true
+
+    - name: Download Editor Mac artifact
+      uses: actions/download-artifact@v4
+      with:
+        pattern: WalkerSim2-Editor-Mac-arm64-*
+        path: release/Editor-Mac-arm64
+        merge-multiple: true
+
+    - name: Package release artifacts
+      run: |
+        cd release/Mod
+        zip -r ../../WalkerSim2-${{ env.BUILD_VERSION }}.zip WalkerSim2/
+        cd ../Editor-Windows-x64
+        zip -r ../../WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}.zip "WalkerSim Editor"/
+        cd ../Editor-Linux-x64
+        zip -r ../../WalkerSim2-Editor-Linux-x64-${{ env.BUILD_VERSION }}.zip "WalkerSim Editor"/
+        cd ../Editor-Mac-arm64
+        zip -r ../../WalkerSim2-Editor-Mac-arm64-${{ env.BUILD_VERSION }}.zip "WalkerSim Editor"/
+
+    - name: Pre-Release
+      uses: softprops/action-gh-release@v2
+      with:
+        name: ${{ env.BUILD_VERSION }}
+        tag_name: ${{ env.BUILD_VERSION }}
+        prerelease: true
+        make_latest: false
+        generate_release_notes: false
+        files: |
+          WalkerSim2-${{ env.BUILD_VERSION }}.zip
+          WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}.zip
+          WalkerSim2-Editor-Linux-x64-${{ env.BUILD_VERSION }}.zip
+          WalkerSim2-Editor-Mac-arm64-${{ env.BUILD_VERSION }}.zip

@@ -38,20 +38,6 @@ namespace WalkerSim
             }
         }
 
-        private static void Message(bool log, Level level, string message)
-        {
-            if (!log)
-                return;
-
-            lock (_lock)
-            {
-                foreach (var sink in _sinks)
-                {
-                    sink.Message(level, message);
-                }
-            }
-        }
-
         public static void AddSink(ISink sink)
         {
             if (sink == null)
@@ -79,18 +65,21 @@ namespace WalkerSim
 
         public static void Exception(System.Exception ex) => Message(Level.Error, ex.ToString());
 
-        // Conditional
-        public static void CondInfo(bool log, string message) => Message(log, Level.Info, message);
+        // Conditional - fully lazy evaluation via delegate.
+        public static void CondInfo(bool log, Func<string> messageFunc)
+        {
+            if (log) Message(Level.Info, messageFunc());
+        }
 
-        public static void CondInfo(bool log, string format, params object[] args) => Message(log, Level.Info, string.Format(format, args));
+        public static void CondErr(bool log, Func<string> messageFunc)
+        {
+            if (log) Message(Level.Error, messageFunc());
+        }
 
-        public static void CondErr(bool log, string message) => Message(log, Level.Error, message);
-
-        public static void CondErr(bool log, string format, params object[] args) => Message(log, Level.Error, string.Format(format, args));
-
-        public static void CondWrn(bool log, string message) => Message(log, Level.Warning, message);
-
-        public static void CondWrn(bool log, string format, params object[] args) => Message(log, Level.Warning, string.Format(format, args));
+        public static void CondWrn(bool log, Func<string> messageFunc)
+        {
+            if (log) Message(Level.Warning, messageFunc());
+        }
 
         // Debug-only methods
         [Conditional("DEBUG")]

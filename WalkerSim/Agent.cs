@@ -1,6 +1,6 @@
 namespace WalkerSim
 {
-    internal class Agent : GridObject
+    public class Agent : GridObject
     {
         public enum State
         {
@@ -37,6 +37,7 @@ namespace WalkerSim
             LeftLowerLeg = 1 << 6,
             RightUpperLeg = 1 << 7,
             RightLowerLeg = 1 << 8,
+            LowerBody = LeftUpperLeg | LeftLowerLeg | RightUpperLeg | RightLowerLeg,
         }
 
         public enum MoveType
@@ -64,11 +65,17 @@ namespace WalkerSim
         public int TargetCityIndex = -1;
         public uint CityTime = 0;
         public TravelState CurrentTravelState = TravelState.Idle;
+        public int RoadNodeTarget = -1;
+        public const int RoadNodeHistorySize = 20;
+        public ushort[] RoadNodeHistory = new ushort[RoadNodeHistorySize];
+        public byte RoadNodeHistoryPos = 0;  // Next write position (circular).
+        public byte RoadNodeHistoryCount = 0; // Number of valid entries (max RoadNodeHistorySize).
         public DismembermentMask Dismemberment = DismembermentMask.None;
         public MoveType WalkType = MoveType.Normal;
 
         public Agent()
         {
+            ClearRoadNodeHistory();
         }
 
         public Agent(int index, int group)
@@ -83,8 +90,35 @@ namespace WalkerSim
             TargetCityIndex = -1;
             CityTime = 0;
             CurrentTravelState = TravelState.Idle;
+            RoadNodeTarget = -1;
+            ClearRoadNodeHistory();
 
             ResetSpawnData();
+        }
+
+        public void ClearRoadNodeHistory()
+        {
+            System.Array.Clear(RoadNodeHistory, 0, RoadNodeHistorySize);
+            RoadNodeHistoryPos = 0;
+            RoadNodeHistoryCount = 0;
+        }
+
+        public void PushRoadNodeHistory(int nodeIndex)
+        {
+            RoadNodeHistory[RoadNodeHistoryPos] = (ushort)nodeIndex;
+            RoadNodeHistoryPos = (byte)((RoadNodeHistoryPos + 1) % RoadNodeHistorySize);
+            if (RoadNodeHistoryCount < RoadNodeHistorySize)
+                RoadNodeHistoryCount++;
+        }
+
+        public bool IsInRoadNodeHistory(int nodeIndex)
+        {
+            for (int i = 0; i < RoadNodeHistoryCount; i++)
+            {
+                if (RoadNodeHistory[i] == nodeIndex)
+                    return true;
+            }
+            return false;
         }
 
         public void ResetSpawnData()

@@ -138,6 +138,12 @@
                     </xs:annotation>
                 </xs:element>
 
+                <xs:element name="InfiniteZombieLifetime" type="xs:boolean" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>When enabled, zombies spawned by WalkerSim will have their lifetime set to the maximum value, preventing them from dying due to the game's built-in lifetime expiration</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+
                 <xs:element name="MaxSpawnedZombies">
                     <xs:annotation>
                         <xs:documentation>
@@ -202,6 +208,24 @@
                                                         </xs:documentation>
                                                     </xs:annotation>
                                                 </xs:attribute>
+                                                <xs:attribute name="Param1" type="xs:decimal"
+                                                    use="optional">
+                                                    <xs:annotation>
+                                                        <xs:documentation>
+                                                            Generic parameter 1,
+                                                            interpretation depends on processor type
+                                                        </xs:documentation>
+                                                    </xs:annotation>
+                                                </xs:attribute>
+                                                <xs:attribute name="Param2" type="xs:decimal"
+                                                    use="optional">
+                                                    <xs:annotation>
+                                                        <xs:documentation>
+                                                            Generic parameter 2,
+                                                            interpretation depends on processor type
+                                                        </xs:documentation>
+                                                    </xs:annotation>
+                                                </xs:attribute>
                                             </xs:complexType>
                                         </xs:element>
                                     </xs:sequence>
@@ -236,6 +260,14 @@
                                         <xs:annotation>
                                             <xs:documentation>
                                                 Overrides the movement speed of the agent after its spawned while wandering, if set to NoOverride it will use the game settings for wander speed
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+
+                                    <xs:attribute name="Name" type="xs:string" use="optional">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                Optional display name for this processor group
                                             </xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>

@@ -20,6 +20,12 @@ nav:
             - Movement Systems:
                 - Movement Systems: configuring/configuration/systems.md
                 - Processors: configuring/configuration/processors.md
+        - Examples:
+            - configuring/configuration/examples/index.md
+            - Classic Boids: configuring/configuration/examples/classic-boids.md
+            - City Migrators: configuring/configuration/examples/city-migrators.md
+            - Loose Swarm: configuring/configuration/examples/loose-swarm.md
+            - Road Horde: configuring/configuration/examples/road-horde.md
         - Spawn Group Masks (Advanced): configuring/spawn-groups.md
     - Sound System: sounds.md
     - Console Commands: commands.md
@@ -28,6 +34,7 @@ nav:
 theme: 
     name: material
     logo: img/logo.png
+    favicon: img/favicon.ico
     palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default

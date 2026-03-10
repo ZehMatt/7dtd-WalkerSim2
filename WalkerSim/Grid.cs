@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace WalkerSim
 {
-    internal class GridObject
+    public class GridObject
     {
         public Vector3 Position = Vector3.Zero;
         public int CellIndex = -1;

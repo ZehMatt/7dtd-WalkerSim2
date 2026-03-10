@@ -36,6 +36,14 @@ namespace WalkerSim
                 _writer.Write(value);
         }
 
+        public void Serialize(ref ushort value)
+        {
+            if (_isReading)
+                value = _reader.ReadUInt16();
+            else
+                _writer.Write(value);
+        }
+
         public void Serialize(ref int value, bool compressed = true)
         {
             if (_isReading)

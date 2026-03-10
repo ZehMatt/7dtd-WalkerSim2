@@ -79,10 +79,10 @@ Zombies move against the wind direction.
 ## Behaviors Using Roads
 
 ### StickToRoads
-Zombies move toward the nearest road and follow it.
+Zombies navigate along roads using a waypoint graph built from the map's road data. When near a road, agents follow it node-to-node. At intersections they pick a direction (usually continuing forward, sometimes turning). At dead ends they turn around and walk back to the last intersection. Agents that drift too far from their target road node will re-acquire the nearest road.
 
 - Uses Distance: No
-- Example: Zombies walk along roads and highways
+- Example: Zombies walk along roads and highways, properly traversing intersections and turning around at dead ends
 
 ### AvoidRoads
 Zombies move away from roads.
@@ -119,12 +119,12 @@ Zombies avoid cities and stay in the wilderness. When inside a city, they push t
 - Example: Zombies avoid populated areas and are found in forests, mountains, and rural areas
 
 ### CityVisitor
-Zombies travel to cities using a stateful behavior with three phases: selecting a target city, traveling to it, and exploring it for 20 minutes before selecting a new destination.
+Zombies travel to cities using a stateful behavior with three phases: selecting a target city, traveling to it, and exploring it before selecting a new destination. The stay duration is configurable via Param1 (minimum) and Param2 (maximum), specified in real-time minutes.
 
 **How it works:**
 - **Idle Phase**: Selects a random target city using weighted selection (larger cities are more likely to be chosen)
 - **Approaching Phase**: Travels toward the target city until arrival
-- **Arrived Phase**: Explores the city for 20 minutes with hash-based wandering patterns that change every 60 seconds, then returns to Idle
+- **Arrived Phase**: Explores the city for a random duration between Param1 and Param2 real-time minutes with hash-based wandering patterns that change every 60 seconds, then returns to Idle
 
 The selection is deterministic based on agent group and current time, causing agents to pick new destinations at different times. Unlike PreferCities (which keeps agents in one general area), CityVisitor makes agents migrate between cities, creating dynamic population shifts across the map.
 

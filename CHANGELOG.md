@@ -1,4 +1,16 @@
-# 1.0.5 (in progress)
+# 1.1 (in progress)
+- Fix: Warning about configuration changes incorrectly shown on non-hosts.
+- Fix: Agents getting stuck on roads with dead ends.
+- Fix: Sound events now use distance-based positioning instead of exact coordinates.
+- Improve: Rewritten Editor as a standalone cross-platform application (Windows, macOS, Linux).
+- Improve: Fast advancing the simulation is now more accurate.
+- Improve: StickToRoads processor now builds a road network graph, agents can now traverse roads without an additional influence.
+- Improve: Rebalanced spawning logic, this should now truly reflect vanilla spawning chances.
+- Improve: macOS builds now produce a proper .app bundle with icon.
+- Feature: Added `InfiniteZombieLifetime` option to prevent zombie lifetime expiration (#40).
+- Feature: Added example configurations with documentation (Classic Boids, City Migrators, Loose Swarm, Road Horde).
+- Change: Editor is now a separate download from the mod.
+- Change: Removed the legacy editor.
 
 # 1.0.4
 - Fix: Walk type not being reset, can carry onto new spawned agents.

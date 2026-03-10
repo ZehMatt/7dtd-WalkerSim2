@@ -1,0 +1,249 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:vm="using:Editor.ViewModels"
+			 xmlns:models="using:Editor.Models"
+			 xmlns:converters="using:Editor.Converters"
+			 xmlns:views="using:Editor.Views"
+			 xmlns:controls="using:Editor.Controls"
+			 x:Class="Editor.Views.MovementSystemsView"
+			 x:Name="RootControl"
+			 x:DataType="vm:EditorViewModel"
+			 x:CompileBindings="True">
+
+	<DockPanel>
+
+		<!-- Toolbar -->
+		<Border DockPanel.Dock="Top"
+				Background="{DynamicResource EditorSidebarBackground}"
+				BorderBrush="{DynamicResource EditorBorderMid}"
+				BorderThickness="0,0,0,1"
+				Padding="8,6">
+			<StackPanel Orientation="Horizontal" Spacing="4">
+				<Button Classes="accent"
+						Command="{Binding AddMovementSystemCommand}"
+						Padding="8,4" FontSize="12">
+					<StackPanel Orientation="Horizontal" Spacing="4">
+						<TextBlock Text="+"/>
+						<TextBlock Text="System"/>
+					</StackPanel>
+				</Button>
+				<Button Command="{Binding AddProcessorToSelectedSystemCommand}"
+						IsEnabled="{Binding HasSelectedSystem}"
+						Padding="8,4" FontSize="12">
+					<StackPanel Orientation="Horizontal" Spacing="4">
+						<TextBlock Text="+"/>
+						<TextBlock Text="Processor"/>
+					</StackPanel>
+				</Button>
+				<Border Width="1" Background="{DynamicResource EditorBorderMid}" Margin="4,2"/>
+				<Button Command="{Binding DuplicateSelectedCommand}"
+						IsEnabled="{Binding HasSelectedSystemOnly}"
+						Content="Duplicate"
+						Padding="8,4" FontSize="12"/>
+				<Button Classes="danger"
+						Command="{Binding RemoveSelectedCommand}"
+						IsEnabled="{Binding HasSelection}"
+						Content="Remove"
+						Padding="8,4" FontSize="12"/>
+			</StackPanel>
+		</Border>
+
+		<!-- Tree (left) + splitter + property panel (right) -->
+		<Grid ColumnDefinitions="220,4,*">
+
+			<!-- Tree -->
+			<Border Grid.Column="0"
+					BorderBrush="{DynamicResource EditorBorderMid}"
+					BorderThickness="0,0,1,0">
+				<TreeView x:Name="SystemsTree"
+						  ItemsSource="{Binding MovementSystems}"
+						  SelectedItem="{Binding TreeSelectedItem, Mode=TwoWay}"
+						  AutoScrollToSelectedItem="True">
+					<TreeView.DataTemplates>
+						<TreeDataTemplate DataType="models:MovementProcessorGroupModel"
+										  ItemsSource="{Binding Processors}">
+							<StackPanel Orientation="Horizontal" Spacing="6">
+								<Border Width="10" Height="10"
+										CornerRadius="2"
+										Background="{Binding Color, Converter={x:Static converters:StringToBrushConverter.Instance}}"
+										BorderBrush="{DynamicResource EditorBorderMid}"
+										BorderThickness="1"
+										VerticalAlignment="Center"/>
+								<TextBlock Text="{Binding DisplayName}"
+										   VerticalAlignment="Center"
+										   FontSize="13"/>
+							</StackPanel>
+						</TreeDataTemplate>
+						<DataTemplate DataType="models:MovementProcessorModel">
+							<TextBlock Text="{Binding Type}"
+									   FontSize="12"
+									   Foreground="{DynamicResource EditorTextSecondary}"/>
+						</DataTemplate>
+					</TreeView.DataTemplates>
+				</TreeView>
+			</Border>
+
+			<!-- Drag splitter -->
+			<GridSplitter Grid.Column="1"
+						  ResizeDirection="Columns"
+						  Background="{DynamicResource EditorBorderMid}"
+						  ResizeBehavior="PreviousAndNext"/>
+
+			<!-- Property panel -->
+			<ScrollViewer Grid.Column="2"
+						  HorizontalScrollBarVisibility="Disabled">
+				<ContentControl Content="{Binding TreeSelectedItem}" Margin="12,10">
+					<ContentControl.DataTemplates>
+
+						<!-- System properties -->
+						<DataTemplate DataType="models:MovementProcessorGroupModel">
+							<StackPanel Spacing="8">
+								<TextBlock Text="Movement System"
+										   FontWeight="SemiBold"
+										   FontSize="13"
+										   Foreground="{DynamicResource EditorTextNormal}"
+										   Margin="0,0,0,4"/>
+
+								<!-- Name -->
+								<Grid ColumnDefinitions="140,*">
+									<TextBlock Grid.Column="0" Text="Name:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+									<TextBox Grid.Column="1" Text="{Binding Name, Mode=TwoWay}" Watermark="{Binding DisplayName}" FontSize="12"/>
+								</Grid>
+
+								<!-- Affected Group -->
+								<Grid ColumnDefinitions="140,*">
+									<controls:LabelWithHelp Grid.Column="0" LabelText="Affected Group:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"
+										HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/systems.html#group-number"/>
+									<ComboBox Grid.Column="1"
+											  ItemsSource="{Binding GroupIndexOptions}"
+											  SelectedItem="{Binding SelectedGroupOption, Mode=TwoWay}"
+											  HorizontalAlignment="Stretch" FontSize="12"/>
+								</Grid>
+
+								<!-- Speed Scale -->
+								<Grid ColumnDefinitions="140,*">
+									<controls:LabelWithHelp Grid.Column="0" LabelText="Speed Scale:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"
+										HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/systems.html#speedscale"/>
+									<NumericUpDown Grid.Column="1"
+												   Value="{Binding SpeedScale}"
+												   Minimum="0" Maximum="10" Increment="0.1"
+												   FormatString="F2" FontSize="12"/>
+								</Grid>
+
+								<!-- Color -->
+								<Grid ColumnDefinitions="140,*">
+									<controls:LabelWithHelp Grid.Column="0" LabelText="Color:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"
+										HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/systems.html#color"/>
+									<views:ColorPickerControl Grid.Column="1"
+															  ColorString="{Binding Color, Mode=TwoWay}"/>
+								</Grid>
+
+								<!-- Post Spawn Behavior -->
+								<Grid ColumnDefinitions="140,*">
+									<controls:LabelWithHelp Grid.Column="0" LabelText="Post Spawn:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"
+										HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/systems.html#postspawnbehavior"/>
+									<ComboBox Grid.Column="1"
+											  SelectedItem="{Binding PostSpawnBehavior, Mode=TwoWay}"
+											  ItemsSource="{Binding DataContext.PostSpawnBehaviorOptions, ElementName=RootControl}"
+											  HorizontalAlignment="Stretch" FontSize="12"/>
+								</Grid>
+
+								<!-- Wander Speed -->
+								<Grid ColumnDefinitions="140,*">
+									<controls:LabelWithHelp Grid.Column="0" LabelText="Wander Speed:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"
+										HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/systems.html#postspawnwanderspeed"/>
+									<ComboBox Grid.Column="1"
+											  SelectedItem="{Binding PostSpawnWanderSpeed, Mode=TwoWay}"
+											  ItemsSource="{Binding DataContext.WanderingSpeedOptions, ElementName=RootControl}"
+											  HorizontalAlignment="Stretch" FontSize="12"/>
+								</Grid>
+
+							</StackPanel>
+						</DataTemplate>
+
+						<!-- Processor properties -->
+						<DataTemplate DataType="models:MovementProcessorModel">
+							<StackPanel Spacing="8">
+								<TextBlock Text="Movement Processor"
+										   FontWeight="SemiBold"
+										   FontSize="13"
+										   Foreground="{DynamicResource EditorTextNormal}"
+										   Margin="0,0,0,4"/>
+
+								<!-- Type -->
+								<Grid ColumnDefinitions="110,*">
+									<TextBlock Grid.Column="0" Text="Type:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+									<ComboBox Grid.Column="1"
+											  SelectedItem="{Binding Type, Mode=TwoWay}"
+											  ItemsSource="{Binding DataContext.MovementProcessorTypeOptions, ElementName=RootControl}"
+											  HorizontalAlignment="Stretch" FontSize="12"/>
+								</Grid>
+
+								<!-- Distance -->
+								<Grid ColumnDefinitions="110,*" IsVisible="{Binding ShowDistance}">
+									<TextBlock Grid.Column="0" Text="{Binding DistanceLabel, StringFormat='{}{0}:'}" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+									<NumericUpDown Grid.Column="1"
+												   Value="{Binding Distance}"
+												   Minimum="0" Maximum="10000" Increment="1"
+												   FormatString="F1" FontSize="12"/>
+								</Grid>
+
+								<!-- Power -->
+								<Grid ColumnDefinitions="110,*" IsVisible="{Binding ShowPower}">
+									<TextBlock Grid.Column="0" Text="{Binding PowerLabel, StringFormat='{}{0}:'}" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+									<NumericUpDown Grid.Column="1"
+												   Value="{Binding Power}"
+												   Minimum="0" Maximum="1" Increment="0.01"
+												   FormatString="F2" FontSize="12"/>
+								</Grid>
+
+								<!-- Param1 -->
+								<Grid ColumnDefinitions="110,*" IsVisible="{Binding ShowParam1}">
+									<TextBlock Grid.Column="0" Text="{Binding Param1Label, StringFormat='{}{0}:'}" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+									<NumericUpDown Grid.Column="1"
+												   Value="{Binding Param1}"
+												   Minimum="0" Maximum="10000" Increment="1"
+												   FormatString="F1" FontSize="12"/>
+								</Grid>
+
+								<!-- Param2 -->
+								<Grid ColumnDefinitions="110,*" IsVisible="{Binding ShowParam2}">
+									<TextBlock Grid.Column="0" Text="{Binding Param2Label, StringFormat='{}{0}:'}" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+									<NumericUpDown Grid.Column="1"
+												   Value="{Binding Param2}"
+												   Minimum="0" Maximum="10000" Increment="1"
+												   FormatString="F1" FontSize="12"/>
+								</Grid>
+
+								<!-- Description -->
+								<Border Background="{DynamicResource EditorPanelBackground}"
+										CornerRadius="4"
+										Padding="10,8"
+										Margin="0,8,0,0">
+									<TextBlock Text="{Binding Description}"
+											   TextWrapping="Wrap"
+											   FontSize="12"
+											   Foreground="{DynamicResource EditorTextMuted}"/>
+								</Border>
+
+							</StackPanel>
+						</DataTemplate>
+
+					</ContentControl.DataTemplates>
+				</ContentControl>
+			</ScrollViewer>
+
+		</Grid>
+	</DockPanel>
+
+	<UserControl.Styles>
+		<Style Selector="Button.danger">
+			<Setter Property="Background" Value="{DynamicResource EditorDanger}"/>
+			<Setter Property="Foreground" Value="{DynamicResource EditorTextBright}"/>
+		</Style>
+		<Style Selector="TreeViewItem">
+			<Setter Property="Padding" Value="2,3"/>
+		</Style>
+	</UserControl.Styles>
+
+</UserControl>

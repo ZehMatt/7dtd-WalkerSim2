@@ -1,0 +1,490 @@
+<Window xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:vm="using:Editor.ViewModels"
+		xmlns:views="using:Editor.Views"
+		xmlns:converters="using:Editor.Converters"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		mc:Ignorable="d" d:DesignWidth="1400" d:DesignHeight="925"
+		x:Class="Editor.Views.MainWindow"
+		x:CompileBindings="True"
+		x:DataType="vm:EditorViewModel"
+		Icon="/Assets/icon.ico"
+		Title="WalkerSim Editor">
+
+	<Design.DataContext>
+		<vm:EditorViewModel/>
+	</Design.DataContext>
+
+	<DockPanel>
+		<!-- Top Menu Bar -->
+		<Menu DockPanel.Dock="Top">
+			<MenuItem Header="File">
+				<MenuItem Header="Import Configuration"
+						  Command="{Binding ImportConfigurationCommand}"/>
+				<MenuItem Header="Export Configuration"
+						  Command="{Binding ExportConfigurationCommand}"/>
+				<Separator/>
+				<MenuItem Header="Exit"/>
+			</MenuItem>
+
+			<MenuItem Header="View">
+				<MenuItem Header="Zoom">
+					<MenuItem Header="Reset" Click="OnZoomResetClick"/>
+					<Separator/>
+					<MenuItem Header="In" InputGesture="Ctrl+Add" Click="OnZoomInClick"/>
+					<MenuItem Header="Out" InputGesture="Ctrl+Subtract" Click="OnZoomOutClick"/>
+				</MenuItem>
+				<Separator/>
+				<MenuItem Header="Pause Rendering" x:Name="MenuViewPauseRendering" ToggleType="CheckBox" IsChecked="False" Click="OnViewToggleClick"/>
+				<Separator/>
+				<MenuItem Header="Biomes" x:Name="MenuViewBiomes" ToggleType="CheckBox" IsChecked="False" Click="OnViewToggleClick"/>
+				<MenuItem Header="Roads" x:Name="MenuViewRoads" ToggleType="CheckBox" IsChecked="True" Click="OnViewToggleClick"/>
+				<MenuItem Header="Inactive Agents" x:Name="MenuViewAgents" ToggleType="CheckBox" IsChecked="True" Click="OnViewToggleClick"/>
+				<MenuItem Header="Active Agents" x:Name="MenuViewActiveAgents" ToggleType="CheckBox" IsChecked="True" Click="OnViewToggleClick"/>
+				<MenuItem Header="Events" x:Name="MenuViewEvents" ToggleType="CheckBox" IsChecked="True" Click="OnViewToggleClick"/>
+				<MenuItem Header="Prefabs" x:Name="MenuViewPrefabs" ToggleType="CheckBox" IsChecked="False" Click="OnViewToggleClick"/>
+				<MenuItem Header="Cities" x:Name="MenuViewCities" ToggleType="CheckBox" IsChecked="True" Click="OnViewToggleClick"/>
+				<MenuItem Header="Road Network" x:Name="MenuViewRoadNetwork" ToggleType="CheckBox" IsChecked="False" Click="OnViewToggleClick"/>
+			</MenuItem>
+
+			<MenuItem Header="Simulation">
+				<MenuItem Header="Start"
+						  InputGesture="F5"
+						  IsEnabled="{Binding CanStart}"
+						  Command="{Binding StartSimulationCommand}"/>
+				<MenuItem Header="Stop"
+						  InputGesture="Shift+F5"
+						  IsEnabled="{Binding CanStop}"
+						  Command="{Binding StopSimulationCommand}"/>
+				<MenuItem Header="Reset"
+						  Command="{Binding ResetSimulationCommand}"/>
+				<Separator/>
+				<MenuItem Header="Pause"
+						  IsEnabled="{Binding CanPause}"
+						  Command="{Binding PauseSimulationCommand}"/>
+				<MenuItem Header="Resume"
+						  IsEnabled="{Binding CanResume}"
+						  Command="{Binding ResumeSimulationCommand}"/>
+				<MenuItem Header="Speed"
+						  IsEnabled="{Binding CanSetSpeed}">
+					<MenuItem Header="1x"
+							  ToggleType="CheckBox"
+							  Command="{Binding SetSimulationSpeedCommand}"
+							  CommandParameter="1"
+							  IsChecked="{Binding CurrentSpeed, Converter={x:Static converters:EqualityConverter.Instance}, ConverterParameter=1}"/>
+					<MenuItem Header="2x"
+							  ToggleType="CheckBox"
+							  Command="{Binding SetSimulationSpeedCommand}"
+							  CommandParameter="2"
+							  IsChecked="{Binding CurrentSpeed, Converter={x:Static converters:EqualityConverter.Instance}, ConverterParameter=2}"/>
+					<MenuItem Header="4x"
+							  ToggleType="CheckBox"
+							  Command="{Binding SetSimulationSpeedCommand}"
+							  CommandParameter="4"
+							  IsChecked="{Binding CurrentSpeed, Converter={x:Static converters:EqualityConverter.Instance}, ConverterParameter=4}"/>
+					<MenuItem Header="16x"
+							  ToggleType="CheckBox"
+							  Command="{Binding SetSimulationSpeedCommand}"
+							  CommandParameter="16"
+							  IsChecked="{Binding CurrentSpeed, Converter={x:Static converters:EqualityConverter.Instance}, ConverterParameter=16}"/>
+					<MenuItem Header="32x"
+							  ToggleType="CheckBox"
+							  Command="{Binding SetSimulationSpeedCommand}"
+							  CommandParameter="32"
+							  IsChecked="{Binding CurrentSpeed, Converter={x:Static converters:EqualityConverter.Instance}, ConverterParameter=32}"/>
+					<MenuItem Header="48x"
+							  ToggleType="CheckBox"
+							  Command="{Binding SetSimulationSpeedCommand}"
+							  CommandParameter="48"
+							  IsChecked="{Binding CurrentSpeed, Converter={x:Static converters:EqualityConverter.Instance}, ConverterParameter=48}"/>
+					<MenuItem Header="64x"
+							  ToggleType="CheckBox"
+							  Command="{Binding SetSimulationSpeedCommand}"
+							  CommandParameter="64"
+							  IsChecked="{Binding CurrentSpeed, Converter={x:Static converters:EqualityConverter.Instance}, ConverterParameter=64}"/>
+				</MenuItem>
+				<MenuItem Header="Advance One Tick"
+						  IsEnabled="{Binding CanAdvance}"
+						  Command="{Binding AdvanceOneTickCommand}"
+						  InputGesture="F7"/>
+				<Separator/>
+				<MenuItem Header="State">
+					<MenuItem Header="Load State..."
+							  Command="{Binding LoadStateCommand}"/>
+					<MenuItem Header="Save State..."
+							  Command="{Binding SaveStateCommand}"/>
+				</MenuItem>
+			</MenuItem>
+
+			<MenuItem Header="Tools">
+				<MenuItem Header="Emit Sound">
+					<MenuItem Header="64 m"  Tag="64"  Click="OnToolEmitSoundClick"/>
+					<MenuItem Header="72 m"  Tag="72"  Click="OnToolEmitSoundClick"/>
+					<MenuItem Header="96 m"  Tag="96"  Click="OnToolEmitSoundClick"/>
+					<MenuItem Header="128 m" Tag="128" Click="OnToolEmitSoundClick"/>
+					<MenuItem Header="160 m" Tag="160" Click="OnToolEmitSoundClick"/>
+					<MenuItem Header="250 m" Tag="250" Click="OnToolEmitSoundClick"/>
+					<MenuItem Header="400 m" Tag="400" Click="OnToolEmitSoundClick"/>
+				</MenuItem>
+				<MenuItem Header="Kill..." Click="OnToolKillClick"/>
+				<Separator/>
+				<MenuItem Header="Add Player" Click="OnToolAddPlayerClick"/>
+				<MenuItem Header="Set Player Position..." Click="OnToolSetPlayerPositionClick"/>
+			</MenuItem>
+
+			<MenuItem Header="Settings">
+				<MenuItem Header="Preferences..." Click="OnPreferencesClick"/>
+			</MenuItem>
+
+			<MenuItem Header="Help">
+				<MenuItem Header="Documentation" Click="OnDocumentationClick"/>
+				<MenuItem Header="Discord" Click="OnDiscordClick"/>
+				<Separator/>
+				<MenuItem Header="About" Click="OnAboutClick"/>
+			</MenuItem>
+		</Menu>
+
+		<!-- Main Content Grid -->
+		<Grid x:Name="MainGrid">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="600" MinWidth="200" MaxWidth="600"/>
+				<ColumnDefinition Width="4"/>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="*"/>
+			</Grid.ColumnDefinitions>
+
+			<!-- Left Sidebar -->
+			<Border x:Name="SidebarBorder" Grid.Column="0"
+					Background="{DynamicResource EditorSidebarBackground}"
+					BorderBrush="{DynamicResource EditorBorder}"
+					BorderThickness="0,0,1,0">
+				<DockPanel>
+
+					<!-- Tab Bar at Top -->
+					<Grid DockPanel.Dock="Top"
+						  Background="{DynamicResource EditorPanelBackground}"
+						  MinHeight="40"
+						  ColumnDefinitions="*,Auto">
+						<StackPanel Grid.Column="0" Orientation="Horizontal">
+
+							<ToggleButton Classes="TabButton"
+										  Content="Base Parameters"
+										  x:Name="BaseParamsTab"
+										  IsChecked="True"
+										  Click="OnBaseParamsTabClick"/>
+
+							<ToggleButton Classes="TabButton"
+										  Content="Movement Systems"
+										  x:Name="MovementSystemsTab"
+										  Click="OnMovementSystemsTabClick"/>
+
+							<ToggleButton Classes="TabButton"
+										  Content="Agents"
+										  x:Name="AgentsTab"
+										  Click="OnAgentsTabClick"/>
+						</StackPanel>
+						<Button Grid.Column="1"
+								Content="&#x25C2;"
+								Classes="CollapseButton"
+								Click="OnHideSidebarClick"
+								VerticalAlignment="Center"
+								Margin="0,0,4,0"/>
+					</Grid>
+
+					<!-- Content Area — each panel fills the remaining space independently -->
+					<Grid>
+						<!-- Base Parameters: scrollable -->
+						<ScrollViewer VerticalScrollBarVisibility="Auto"
+									  IsVisible="True"
+									  x:Name="BaseParametersPanel">
+							<views:BaseParametersView/>
+						</ScrollViewer>
+
+						<!-- Movement Systems: has its own internal scroll -->
+						<views:MovementSystemsView x:Name="MovementSystemsPanel"
+												   IsVisible="False"/>
+
+						<!-- Agents: has its own internal split + scroll -->
+						<views:AgentsView x:Name="AgentsPanel"
+										  IsVisible="False"/>
+					</Grid>
+
+				</DockPanel>
+			</Border>
+
+			<!-- Resizer -->
+			<GridSplitter x:Name="SidebarSplitter" Grid.Column="1"
+						  Width="4"
+						  ResizeDirection="Columns"
+						  Background="{DynamicResource EditorAccent}"/>
+
+			<!-- Sidebar Show Button (visible when sidebar is collapsed) -->
+			<Border x:Name="SidebarShowButton"
+					Grid.Column="2"
+					IsVisible="False"
+					Background="{DynamicResource EditorPanelBackground}"
+					BorderBrush="{DynamicResource EditorBorder}"
+					BorderThickness="0,0,1,0">
+				<Button Content="&#x25B8;"
+						Classes="CollapseButton"
+						Click="OnShowSidebarClick"
+						VerticalAlignment="Top"
+						Margin="0,4"/>
+			</Border>
+
+			<!-- Right Panel - Simulation and Log -->
+			<Grid x:Name="RightGrid" Grid.Column="3" Background="{DynamicResource EditorBackground}">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="*" />
+					<RowDefinition Height="4" />
+					<RowDefinition Height="150" MinHeight="50" MaxHeight="400"/>
+				</Grid.RowDefinitions>
+
+				<!-- Simulation Canvas -->
+				<Border Grid.Row="0"
+						BorderBrush="{DynamicResource EditorBorder}"
+						BorderThickness="0,0,0,1">
+					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="*"/>
+							<RowDefinition Height="Auto"/>
+						</Grid.RowDefinitions>
+
+						<!-- Canvas Area -->
+						<Border Grid.Row="0"
+								Background="{DynamicResource EditorBackground}"
+								Padding="0">
+							<views:SimulationCanvas x:Name="SimCanvas"
+													HorizontalAlignment="Stretch"
+													VerticalAlignment="Stretch"/>
+						</Border>
+
+						<!-- Stats Panel -->
+						<Border Grid.Row="1"
+								Background="{DynamicResource EditorPanelBackground}"
+								BorderBrush="{DynamicResource EditorBorder}"
+								BorderThickness="0,1,0,0"
+								Padding="8">
+							<WrapPanel Orientation="Horizontal">
+								<StackPanel Margin="0,0,24,4">
+									<TextBlock Text="Total Agents" Classes="StatLabel"/>
+									<TextBlock Text="{Binding TotalAgents}" Classes="StatValue"/>
+								</StackPanel>
+								<StackPanel Margin="0,0,24,4">
+									<TextBlock Text="Active" Classes="StatLabel"/>
+									<TextBlock Text="{Binding ActiveAgents}" Classes="StatValue"/>
+								</StackPanel>
+								<StackPanel Margin="0,0,24,4">
+									<TextBlock Text="Inactive" Classes="StatLabel"/>
+									<TextBlock Text="{Binding InactiveAgents}" Classes="StatValue"/>
+								</StackPanel>
+								<StackPanel Margin="0,0,24,4">
+									<TextBlock Text="Groups" Classes="StatLabel"/>
+									<TextBlock Text="{Binding GroupCount}" Classes="StatValue"/>
+								</StackPanel>
+								<StackPanel Margin="0,0,24,4">
+									<TextBlock Text="Ticks" Classes="StatLabel"/>
+									<TextBlock Text="{Binding SimulationTicks}" Classes="StatValue"/>
+								</StackPanel>
+								<StackPanel Margin="0,0,24,4">
+									<TextBlock Text="Sim Time" Classes="StatLabel"/>
+									<TextBlock Text="{Binding SimulationTime}" Classes="StatValue"/>
+								</StackPanel>
+								<StackPanel Margin="0,0,24,4">
+									<TextBlock Text="Tick Time" Classes="StatLabel"/>
+									<TextBlock Text="{Binding TickTime}" Classes="StatValue"/>
+								</StackPanel>
+								<StackPanel Margin="0,0,24,4">
+									<TextBlock Text="Update Time" Classes="StatLabel"/>
+									<TextBlock Text="{Binding UpdateTime}" Classes="StatValue"/>
+								</StackPanel>
+							</WrapPanel>
+						</Border>
+					</Grid>
+				</Border>
+
+				<!-- Resize Grip -->
+				<GridSplitter x:Name="LogSplitter" Grid.Row="1"
+							  Height="4"
+							  ResizeDirection="Rows"
+							  Background="{DynamicResource EditorAccent}"/>
+
+				<!-- Log Show Bar (visible when log is collapsed) -->
+				<Button x:Name="LogShowBar"
+						Grid.Row="2"
+						Content="&#x25B4; Log"
+						Classes="SmallButton"
+						Click="OnShowLogClick"
+						IsVisible="False"
+						HorizontalAlignment="Stretch"
+						VerticalAlignment="Stretch"
+						HorizontalContentAlignment="Center"
+						VerticalContentAlignment="Center"
+						Padding="0"/>
+
+				<!-- Log Panel -->
+				<Border x:Name="LogBorder" Grid.Row="2"
+						BorderBrush="{DynamicResource EditorBorder}"
+						BorderThickness="1,0,0,0"
+						Background="{DynamicResource EditorSidebarBackground}">
+					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="28"/>
+							<RowDefinition Height="*"/>
+						</Grid.RowDefinitions>
+
+						<!-- Log Header -->
+						<Border Grid.Row="0"
+								Background="{DynamicResource EditorPanelBackground}"
+								BorderBrush="{DynamicResource EditorBorder}"
+								BorderThickness="0,0,0,1">
+							<Grid ColumnDefinitions="*,Auto,Auto">
+								<TextBlock Grid.Column="0"
+										   Text="Log"
+										   Classes="LogHeader"
+										   Margin="8,0"
+										   VerticalAlignment="Center"/>
+								<Button Grid.Column="1"
+										Content="Clear"
+										Classes="SmallButton"
+										Command="{Binding ClearLogCommand}"
+										Margin="8,0"/>
+								<Button Grid.Column="2"
+										Content="&#x25BE;"
+										Classes="CollapseButton"
+										Click="OnHideLogClick"
+										VerticalAlignment="Center"
+										Margin="0,0,4,0"/>
+							</Grid>
+						</Border>
+
+						<!-- Log Entries -->
+						<ListBox x:Name="LogListBox"
+								 Grid.Row="1"
+								 ItemsSource="{Binding LogEntries}"
+								 SelectionMode="Multiple"
+								 Background="Transparent"
+								 ScrollViewer.VerticalScrollBarVisibility="Auto"
+								 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+								 Padding="0">
+							<ListBox.ItemContainerTheme>
+								<ControlTheme TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+									<Setter Property="Padding" Value="0"/>
+									<Setter Property="Margin" Value="0"/>
+								</ControlTheme>
+							</ListBox.ItemContainerTheme>
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<Grid ColumnDefinitions="80,*" Margin="4,1">
+										<SelectableTextBlock Grid.Column="0"
+															 Text="{Binding Timestamp}"
+															 FontFamily="Consolas,JetBrains Mono,Monospace,Courier New"
+															 FontSize="11"
+															 Foreground="{DynamicResource EditorTextMuted}"
+															 VerticalAlignment="Top"/>
+										<SelectableTextBlock Grid.Column="1"
+															 Text="{Binding Message}"
+															 FontFamily="Consolas,JetBrains Mono,Monospace,Courier New"
+															 FontSize="11"
+															 Foreground="{Binding Foreground}"
+															 TextWrapping="Wrap"
+															 VerticalAlignment="Top"/>
+									</Grid>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+					</Grid>
+				</Border>
+
+			</Grid>
+
+		</Grid>
+
+	</DockPanel>
+
+	<Window.Styles>
+		<Style Selector="ToggleButton.TabButton">
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Foreground" Value="{DynamicResource EditorTextMuted}"/>
+			<Setter Property="Padding" Value="20,0"/>
+			<Setter Property="Height" Value="44"/>
+			<Setter Property="HorizontalAlignment" Value="Stretch"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="VerticalContentAlignment" Value="Center"/>
+			<Setter Property="FontSize" Value="14"/>
+		</Style>
+		<Style Selector="ToggleButton.TabButton:pointerover">
+			<Setter Property="Background" Value="{DynamicResource EditorBorder}"/>
+			<Setter Property="Foreground" Value="{DynamicResource EditorTextNormal}"/>
+		</Style>
+		<Style Selector="ToggleButton.TabButton:checked">
+			<Setter Property="Background" Value="{DynamicResource EditorBackground}"/>
+			<Setter Property="Foreground" Value="{DynamicResource EditorTextBright}"/>
+			<Setter Property="BorderThickness" Value="0,0,0,2"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource EditorAccent}"/>
+			<Setter Property="FontWeight" Value="SemiBold"/>
+		</Style>
+		<Style Selector="TextBlock.LogEntry">
+			<Setter Property="FontFamily" Value="Consolas,JetBrains Mono,Mono,courier"/>
+			<Setter Property="FontSize" Value="11"/>
+			<Setter Property="Foreground" Value="{DynamicResource EditorTextNormal}"/>
+		</Style>
+		<Style Selector="TextBlock.LogHeader">
+			<Setter Property="FontSize" Value="12"/>
+			<Setter Property="FontWeight" Value="SemiBold"/>
+			<Setter Property="Foreground" Value="{DynamicResource EditorTextNormal}"/>
+		</Style>
+		<Style Selector="TextBlock.StatLabel">
+			<Setter Property="FontSize" Value="10"/>
+			<Setter Property="Foreground" Value="{DynamicResource EditorTextMuted}"/>
+			<Setter Property="Margin" Value="0,0,0,2"/>
+		</Style>
+		<Style Selector="TextBlock.StatValue">
+			<Setter Property="FontSize" Value="14"/>
+			<Setter Property="FontWeight" Value="SemiBold"/>
+			<Setter Property="Foreground" Value="{DynamicResource EditorTextBright}"/>
+			<Setter Property="FontFamily" Value="Consolas,JetBrains Mono,Mono,courier"/>
+		</Style>
+		<Style Selector="TextBlock.PlaceholderText">
+			<Setter Property="FontSize" Value="14"/>
+			<Setter Property="Foreground" Value="{DynamicResource EditorTextMuted}"/>
+		</Style>
+		<Style Selector="TextBlock.PlaceholderText">
+			<Setter Property="Foreground" Value="{DynamicResource EditorTextPlaceholder}"/>
+			<Setter Property="FontSize" Value="16"/>
+		</Style>
+		<Style Selector="Button.SmallButton">
+			<Setter Property="Padding" Value="8,4"/>
+			<Setter Property="FontSize" Value="11"/>
+			<Setter Property="Background" Value="{DynamicResource EditorBorder}"/>
+			<Setter Property="Foreground" Value="{DynamicResource EditorTextNormal}"/>
+		</Style>
+		<Style Selector="Button.SmallButton:pointerover">
+			<Setter Property="Background" Value="{DynamicResource EditorAccent}"/>
+			<Setter Property="Foreground" Value="{DynamicResource EditorTextBright}"/>
+		</Style>
+		<Style Selector="Button.CollapseButton">
+			<Setter Property="Padding" Value="6,2"/>
+			<Setter Property="FontSize" Value="14"/>
+			<Setter Property="FontWeight" Value="Bold"/>
+			<Setter Property="MinWidth" Value="28"/>
+			<Setter Property="MinHeight" Value="28"/>
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="Foreground" Value="{DynamicResource EditorTextMuted}"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="VerticalContentAlignment" Value="Center"/>
+		</Style>
+		<Style Selector="Button.CollapseButton:pointerover">
+			<Setter Property="Background" Value="{DynamicResource EditorBorder}"/>
+			<Setter Property="Foreground" Value="{DynamicResource EditorTextBright}"/>
+		</Style>
+		<Style Selector="Button.danger">
+			<Setter Property="Background" Value="{DynamicResource EditorDanger}"/>
+			<Setter Property="Foreground" Value="{DynamicResource EditorTextBright}"/>
+		</Style>
+	</Window.Styles>
+
+</Window>

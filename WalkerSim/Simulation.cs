@@ -40,7 +40,7 @@ namespace WalkerSim
                 return;
             }
 
-            Logging.CondInfo(Config.LoggingOpts.General, "Stopping simulation...");
+            Logging.CondInfo(Config.LoggingOpts.General, () => "Stopping simulation...");
 
             _shouldStop = true;
             _thread.Join();
@@ -84,7 +84,7 @@ namespace WalkerSim
                 _nextAutoSave = DateTime.Now.AddSeconds(_autoSaveInterval);
             }
 
-            Logging.CondInfo(Config.LoggingOpts.General, "Starting simulation...");
+            Logging.CondInfo(Config.LoggingOpts.General, () => "Starting simulation...");
 
             _running = true;
             _shouldStop = false;
@@ -450,9 +450,6 @@ namespace WalkerSim
                 // Ensure the position is not out of bounds.
                 Warp(agent);
 
-                agent.Velocity.X = (float)(prng.NextDouble() * 3f);
-                agent.Velocity.Y = (float)(prng.NextDouble() * 3f);
-
                 agents.Add(agent);
 
                 MoveInGrid(agent);
@@ -483,20 +480,19 @@ namespace WalkerSim
 
         private void ThreadUpdate()
         {
-            Logging.CondInfo(Config.LoggingOpts.General, "Started simulation.");
+            Logging.CondInfo(Config.LoggingOpts.General, () => "Started simulation.");
 
             if (Config.FastForwardAtStart && _state.Ticks == 0)
             {
                 Logging.CondInfo(Config.LoggingOpts.General,
-                    "Advancing simulation for {0} ticks...",
-                    Simulation.Limits.TicksToAdvanceOnStartup);
+                    () => $"Advancing simulation for {Simulation.Limits.TicksToAdvanceOnStartup} ticks...");
 
                 _isFastAdvancing = true;
 
                 var elapsed = Utils.Measure(() =>
                 {
                     var oldTimeScale = TimeScale;
-                    TimeScale = 128.0f;
+                    TimeScale = 64.0f;
                     for (uint num = 0u; num < Simulation.Limits.TicksToAdvanceOnStartup && !_shouldStop; num++)
                     {
                         Tick();
@@ -506,7 +502,7 @@ namespace WalkerSim
 
                 _isFastAdvancing = false;
 
-                Logging.CondInfo(Config.LoggingOpts.General, "... done, took {0}.", elapsed);
+                Logging.CondInfo(Config.LoggingOpts.General, () => $"... done, took {elapsed}.");
             }
 
             _updateTime.Restart();
@@ -527,8 +523,8 @@ namespace WalkerSim
                     continue;
                 }
 
-                accumulator = System.Math.Min(accumulator + scaledDt, 10.0f);
-                unscaledAccumulator = System.Math.Min(unscaledAccumulator + timeElapsed, 10.0f);
+                accumulator = System.Math.Min(accumulator + scaledDt, 20.0f);
+                unscaledAccumulator = System.Math.Min(unscaledAccumulator + timeElapsed, 20.0f);
 
                 while (unscaledAccumulator >= Constants.TickRate)
                 {
@@ -566,7 +562,7 @@ namespace WalkerSim
             _running = false;
             _shouldStop = false;
 
-            Logging.CondInfo(Config.LoggingOpts.General, "Simulation stopped.");
+            Logging.CondInfo(Config.LoggingOpts.General, () => "Simulation stopped.");
         }
 
         // Called from the main thread, this should be invoked from GameUpdate.
@@ -618,16 +614,16 @@ namespace WalkerSim
         {
             if (groupIndex >= _processors.Count)
             {
-                return Drawing.ColorTable.GetColorForIndex(groupIndex);
+                return Drawing.Color.Gray;
             }
 
             var proc = _processors[groupIndex];
             if (proc == null)
             {
-                return Drawing.ColorTable.GetColorForIndex(groupIndex);
+                return Drawing.Color.Gray;
             }
 
-            return _processors[groupIndex].Color;
+            return proc.Color;
         }
 
         static public uint MillisecondsToTicks(uint milliseconds)

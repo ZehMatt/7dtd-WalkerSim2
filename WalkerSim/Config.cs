@@ -118,11 +118,20 @@ namespace WalkerSim
 
             [XmlAttribute("Power")]
             public float Power = 0.0f;
+
+            [XmlAttribute("Param1")]
+            public float Param1 = 0.0f;
+
+            [XmlAttribute("Param2")]
+            public float Param2 = 0.0f;
         }
 
         [XmlType("ProcessorGroup")]
         public class MovementProcessorGroup
         {
+            [XmlAttribute("Name")]
+            public string Name = "";
+
             [XmlAttribute("Group")]
             public int Group = -1;
 
@@ -199,6 +208,9 @@ namespace WalkerSim
         [XmlElement("SpawnProtectionTime")]
         public uint SpawnProtectionTime = 300;
 
+        [XmlElement("InfiniteZombieLifetime")]
+        public bool InfiniteZombieLifetime = false;
+
         [XmlElement("MaxSpawnedZombies")]
         public string MaxSpawnedZombies = "75%";
 
@@ -227,6 +239,22 @@ namespace WalkerSim
             if (config.Processors == null)
             {
                 config.Processors = new List<MovementProcessorGroup>();
+            }
+
+            foreach (var proc in config.Processors)
+            {
+                if (string.IsNullOrEmpty(proc.Color))
+                    proc.Color = "#FF00FF";
+
+                foreach (var entry in proc.Entries)
+                {
+                    if (entry.Type == MovementProcessorType.CityVisitor &&
+                        entry.Param1 == 0f && entry.Param2 == 0f)
+                    {
+                        entry.Param1 = 20f;
+                        entry.Param2 = 35f;
+                    }
+                }
             }
         }
 
@@ -288,6 +316,7 @@ namespace WalkerSim
                 FastForwardAtStart = true,
                 PauseDuringBloodmoon = true,
                 SpawnProtectionTime = 300,
+                InfiniteZombieLifetime = false,
                 MaxSpawnedZombies = "75%",
                 Processors = new List<MovementProcessorGroup>
                 {

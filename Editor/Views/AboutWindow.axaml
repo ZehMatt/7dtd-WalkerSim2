@@ -1,0 +1,65 @@
+<Window xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:views="using:Editor.Views"
+		x:Class="Editor.Views.AboutWindow"
+		Title="About WalkerSim2"
+		Width="420" Height="460"
+		CanResize="False"
+		WindowStartupLocation="CenterOwner"
+		Background="#1a1a1a">
+
+	<Grid RowDefinitions="*,Auto">
+		<!-- VFX background with overlay text -->
+		<Grid Grid.Row="0">
+			<views:AboutVFX x:Name="Effect"/>
+
+			<!-- Info card pinned to top -->
+			<StackPanel VerticalAlignment="Top" HorizontalAlignment="Center"
+						Margin="20,20,20,0">
+				<Border Background="#CC000000" CornerRadius="6" Padding="24,16">
+					<StackPanel HorizontalAlignment="Center" Spacing="6">
+						<TextBlock Text="WalkerSim2"
+								   FontSize="28" FontWeight="Bold"
+								   Foreground="#00dd00"
+								   HorizontalAlignment="Center"
+								   FontFamily="Consolas,Courier New,monospace"/>
+						<TextBlock x:Name="VersionText"
+								   FontSize="13"
+								   Foreground="#88aa88"
+								   HorizontalAlignment="Center"
+								   FontFamily="Consolas,Courier New,monospace"/>
+						<TextBlock x:Name="CommitText"
+								   FontSize="11"
+								   Foreground="#667766"
+								   HorizontalAlignment="Center"
+								   FontFamily="Consolas,Courier New,monospace"/>
+						<Separator Margin="0,8" Background="#2a4a2a"/>
+						<TextBlock Text="Zombie horde simulation for 7 Days to Die"
+								   FontSize="11"
+								   Foreground="#88aa88"
+								   HorizontalAlignment="Center"
+								   TextWrapping="Wrap"
+								   TextAlignment="Center"
+								   FontFamily="Consolas,Courier New,monospace"/>
+					</StackPanel>
+				</Border>
+			</StackPanel>
+		</Grid>
+
+		<!-- Bottom bar -->
+		<Border Grid.Row="1" Background="#111111" Padding="16,10">
+			<Grid ColumnDefinitions="*,Auto">
+				<TextBlock Grid.Column="0"
+						   Text="github.com/ZehMatt/WalkerSim2"
+						   FontSize="11" Foreground="#557755"
+						   VerticalAlignment="Center"
+						   FontFamily="Consolas,Courier New,monospace"
+						   Cursor="Hand"
+						   x:Name="GithubLink"
+						   PointerPressed="OnGithubLinkClick"/>
+				<Button Grid.Column="1" Content="Close" Click="OnCloseClick"
+						MinWidth="70" HorizontalContentAlignment="Center"/>
+			</Grid>
+		</Border>
+	</Grid>
+</Window>

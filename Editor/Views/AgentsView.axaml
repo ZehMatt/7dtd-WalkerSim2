@@ -1,0 +1,217 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:vm="using:Editor.ViewModels"
+			 xmlns:models="using:Editor.Models"
+			 x:Class="Editor.Views.AgentsView"
+			 x:Name="RootControl"
+			 x:DataType="vm:EditorViewModel"
+			 x:CompileBindings="True">
+
+	<Grid RowDefinitions="Auto,Auto,*" ColumnDefinitions="220,4,*">
+
+		<!-- Info header spanning full width -->
+		<Border Grid.Row="0" Grid.ColumnSpan="3"
+				Background="{DynamicResource InfoBannerBg}"
+				BorderBrush="{DynamicResource InfoBannerBorder}"
+				BorderThickness="0,0,0,1"
+				Padding="12,7">
+			<TextBlock TextWrapping="Wrap"
+					   FontSize="11"
+					   Foreground="{DynamicResource InfoBannerFg}"
+					   Text="Changes made here only affect the live simulation state and are not part of the exported configuration. To save or restore simulation state, use Simulation → Debug."/>
+		</Border>
+
+		<!-- Separator line -->
+		<Border Grid.Row="1" Grid.ColumnSpan="3"
+				Height="1"
+				Background="{DynamicResource EditorBorderMid}"/>
+
+		<!-- Agent list -->
+		<Border Grid.Row="2" Grid.Column="0"
+				BorderBrush="{DynamicResource EditorBorderMid}"
+				BorderThickness="0,0,1,0">
+			<ListBox ItemsSource="{Binding AgentListItems}"
+					 SelectedItem="{Binding SelectedAgentListItem, Mode=TwoWay}"
+					 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+				<ListBox.DataTemplates>
+					<DataTemplate DataType="models:AgentGroupHeader">
+						<TextBlock Text="{Binding Label}"
+								   FontSize="11"
+								   FontWeight="SemiBold"
+								   Foreground="{DynamicResource EditorTextMuted}"
+								   Margin="4,6,0,2"/>
+					</DataTemplate>
+					<DataTemplate DataType="models:AgentModel">
+						<TextBlock Text="{Binding Label}"
+								   FontSize="12"
+								   Margin="14,0,0,0"
+								   Padding="2,1"/>
+					</DataTemplate>
+				</ListBox.DataTemplates>
+			</ListBox>
+		</Border>
+
+		<!-- Splitter -->
+		<GridSplitter Grid.Row="2" Grid.Column="1"
+					  ResizeDirection="Columns"
+					  Background="{DynamicResource EditorBorderMid}"
+					  ResizeBehavior="PreviousAndNext"/>
+
+		<!-- Property panel -->
+		<ScrollViewer Grid.Row="2" Grid.Column="2"
+					  HorizontalScrollBarVisibility="Disabled">
+			<StackPanel Classes="PropertyPanel"
+						Margin="12,10"
+						Spacing="4"
+						IsVisible="{Binding SelectedAgent, Converter={x:Static ObjectConverters.IsNotNull}}">
+
+				<TextBlock FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource EditorTextNormal}"
+						   Text="{Binding SelectedAgent.Label}"
+						   Margin="0,0,0,4"/>
+
+				<!-- Action buttons -->
+				<StackPanel Orientation="Horizontal" Spacing="6" Margin="0,0,0,8">
+					<Button Content="Go To"
+							Command="{Binding GoToAgentCommand}"
+							FontSize="12" Padding="8,4"/>
+					<Button Content="Track"
+							Command="{Binding TrackSelectedAgentCommand}"
+							IsVisible="{Binding IsNotTrackingAgent}"
+							FontSize="12" Padding="8,4"/>
+					<Button Content="Stop Tracking"
+							Classes="danger"
+							Command="{Binding StopTrackingAgentCommand}"
+							IsVisible="{Binding IsTrackingAgent}"
+							FontSize="12" Padding="8,4"/>
+				</StackPanel>
+				<TextBlock Text="Identity" FontSize="14" Foreground="{DynamicResource EditorTextMuted}" FontWeight="SemiBold" Margin="0,4,0,0"/>
+
+				<Grid ColumnDefinitions="140,*">
+					<TextBlock Grid.Column="0" Text="Index:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+					<TextBlock Grid.Column="1" Text="{Binding SelectedAgent.Index}" FontSize="12"/>
+				</Grid>
+				<Grid ColumnDefinitions="140,*">
+					<TextBlock Grid.Column="0" Text="Entity Id:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+					<TextBlock Grid.Column="1" Text="{Binding SelectedAgent.EntityId}" FontSize="12"/>
+				</Grid>
+				<Grid ColumnDefinitions="140,*">
+					<TextBlock Grid.Column="0" Text="Entity Class Id:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+					<TextBlock Grid.Column="1" Text="{Binding SelectedAgent.EntityClassId}" FontSize="12"/>
+				</Grid>
+				<Grid ColumnDefinitions="140,*">
+					<TextBlock Grid.Column="0" Text="Group:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+					<TextBlock Grid.Column="1" Text="{Binding SelectedAgent.Group}" FontSize="12" VerticalAlignment="Center"/>
+				</Grid>
+
+				<!-- State -->
+				<TextBlock Text="State" FontSize="14" Foreground="{DynamicResource EditorTextMuted}" FontWeight="SemiBold" Margin="0,4,0,0"/>
+				<Grid ColumnDefinitions="140,*">
+					<TextBlock Grid.Column="0" Text="State:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+					<ComboBox Grid.Column="1"
+							  ItemsSource="{Binding DataContext.AgentStateOptions, ElementName=RootControl}"
+							  SelectedItem="{Binding SelectedAgent.CurrentState, Mode=TwoWay}"
+							  HorizontalAlignment="Stretch" FontSize="12"/>
+				</Grid>
+				<Grid ColumnDefinitions="140,*">
+					<TextBlock Grid.Column="0" Text="Sub State:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+					<ComboBox Grid.Column="1"
+							  ItemsSource="{Binding DataContext.AgentSubStateOptions, ElementName=RootControl}"
+							  SelectedItem="{Binding SelectedAgent.CurrentSubState, Mode=TwoWay}"
+							  HorizontalAlignment="Stretch" FontSize="12"/>
+				</Grid>
+				<Grid ColumnDefinitions="140,*">
+					<TextBlock Grid.Column="0" Text="Travel State:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+					<ComboBox Grid.Column="1"
+							  ItemsSource="{Binding DataContext.AgentTravelStateOptions, ElementName=RootControl}"
+							  SelectedItem="{Binding SelectedAgent.CurrentTravelState, Mode=TwoWay}"
+							  HorizontalAlignment="Stretch" FontSize="12"/>
+				</Grid>
+				<Grid ColumnDefinitions="140,*">
+					<TextBlock Grid.Column="0" Text="Walk Type:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+					<ComboBox Grid.Column="1"
+							  ItemsSource="{Binding DataContext.AgentMoveTypeOptions, ElementName=RootControl}"
+							  SelectedItem="{Binding SelectedAgent.WalkType, Mode=TwoWay}"
+							  HorizontalAlignment="Stretch" FontSize="12"/>
+				</Grid>
+				<Grid ColumnDefinitions="140,*">
+					<TextBlock Grid.Column="0" Text="Target City:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+					<NumericUpDown Grid.Column="1" Value="{Binding SelectedAgent.TargetCityIndex}"
+								   Minimum="-1" Maximum="99999" Increment="1" FormatString="0" FontSize="12"/>
+				</Grid>
+				<Grid ColumnDefinitions="140,*">
+					<TextBlock Grid.Column="0" Text="Road Node Target:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+					<NumericUpDown Grid.Column="1" Value="{Binding SelectedAgent.RoadNodeTarget}"
+								   Minimum="-1" Maximum="99999" Increment="1" FormatString="0" FontSize="12"/>
+				</Grid>
+				<Grid ColumnDefinitions="140,*">
+					<TextBlock Grid.Column="0" Text="Road History:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+					<TextBlock Grid.Column="1" Text="{Binding SelectedAgent.RoadNodeHistory}" FontSize="11"
+							   TextWrapping="Wrap" VerticalAlignment="Center"/>
+				</Grid>
+				<Grid ColumnDefinitions="140,*">
+					<TextBlock Grid.Column="0" Text="Last Update Tick:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+					<TextBlock Grid.Column="1" Text="{Binding SelectedAgent.LastUpdateTick}" FontSize="12"/>
+				</Grid>
+				<Grid ColumnDefinitions="140,*">
+					<TextBlock Grid.Column="0" Text="Last Spawn Tick:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+					<TextBlock Grid.Column="1" Text="{Binding SelectedAgent.LastSpawnTick}" FontSize="12"/>
+				</Grid>
+
+
+				<!-- Health -->
+				<TextBlock Text="Health" FontSize="14" Foreground="{DynamicResource EditorTextMuted}" FontWeight="SemiBold" Margin="0,4,0,0"/>
+
+				<Grid ColumnDefinitions="140,*">
+					<TextBlock Grid.Column="0" Text="Health:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+					<NumericUpDown Grid.Column="1" Value="{Binding SelectedAgent.Health}"
+								   Minimum="-1" Maximum="99999" Increment="1" FormatString="F1" FontSize="12"/>
+				</Grid>
+				<Grid ColumnDefinitions="140,*">
+					<TextBlock Grid.Column="0" Text="Max Health:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+					<NumericUpDown Grid.Column="1" Value="{Binding SelectedAgent.MaxHealth}"
+								   Minimum="-1" Maximum="99999" Increment="1" FormatString="F1" FontSize="12"/>
+				</Grid>
+				<Grid ColumnDefinitions="140,*">
+					<TextBlock Grid.Column="0" Text="Orig. Max Health:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+					<TextBlock Grid.Column="1" Text="{Binding SelectedAgent.OriginalMaxHealth, StringFormat=F1}" FontSize="12"/>
+				</Grid>
+
+				<!-- Position -->
+				<TextBlock Text="Position" FontSize="14" Foreground="{DynamicResource EditorTextMuted}" FontWeight="SemiBold" Margin="0,4,0,0"/>
+
+				<Grid ColumnDefinitions="140,*">
+					<TextBlock Grid.Column="0" Text="X:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+					<NumericUpDown Grid.Column="1" Value="{Binding SelectedAgent.PositionX}"
+								   Minimum="-99999" Maximum="99999" Increment="1" FormatString="F1" FontSize="12"/>
+				</Grid>
+				<Grid ColumnDefinitions="140,*">
+					<TextBlock Grid.Column="0" Text="Y:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+					<NumericUpDown Grid.Column="1" Value="{Binding SelectedAgent.PositionY}"
+								   Minimum="-99999" Maximum="99999" Increment="1" FormatString="F1" FontSize="12"/>
+				</Grid>
+				<Grid ColumnDefinitions="140,*">
+					<TextBlock Grid.Column="0" Text="Velocity X:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+					<NumericUpDown Grid.Column="1" Value="{Binding SelectedAgent.VelocityX}"
+								   Minimum="-99999" Maximum="99999" Increment="0.001" FormatString="F3" FontSize="12"/>
+				</Grid>
+				<Grid ColumnDefinitions="140,*">
+					<TextBlock Grid.Column="0" Text="Velocity Y:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+					<NumericUpDown Grid.Column="1" Value="{Binding SelectedAgent.VelocityY}"
+								   Minimum="-99999" Maximum="99999" Increment="0.001" FormatString="F3" FontSize="12"/>
+				</Grid>
+
+			</StackPanel>
+		</ScrollViewer>
+
+	</Grid>
+
+	<UserControl.Styles>
+		<Style Selector="StackPanel.PropertyPanel > Grid">
+			<Setter Property="MinHeight" Value="30"/>
+		</Style>
+		<Style Selector="StackPanel.PropertyPanel > Grid > TextBlock">
+			<Setter Property="VerticalAlignment" Value="Center"/>
+		</Style>
+	</UserControl.Styles>
+
+</UserControl>

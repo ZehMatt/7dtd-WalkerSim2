@@ -58,24 +58,15 @@ namespace WalkerSim
             var eventDuration = noise.heatMapWorldTimeToLive / 60;
 
             // Log all variables from noise.
-            Logging.CondInfo(logEvents, "Noise: {0}, " +
-                " Volume: {1}, " +
-                "Duration: {2}, " +
-                "MuffledWhenCrouched: {3}, " +
-                "HeatMapStrength: {4}, " +
-                "HeatMapWorldTimeToLive: {5}, " +
-                "volumeScale: {6}, " +
-                "Travel Distance: {7}, " +
-                "Scaled Travel Distance: {8}",
-                               clipName,
-                               noise.volume,
-                               noise.duration,
-                               noise.muffledWhenCrouched,
-                               noise.heatMapStrength,
-                               noise.heatMapWorldTimeToLive,
-                               volumeScale,
-                               distance,
-                               distanceScaled);
+            Logging.CondInfo(logEvents, () => $"Noise: {clipName}, " +
+                $" Volume: {noise.volume}, " +
+                $"Duration: {noise.duration}, " +
+                $"MuffledWhenCrouched: {noise.muffledWhenCrouched}, " +
+                $"HeatMapStrength: {noise.heatMapStrength}, " +
+                $"HeatMapWorldTimeToLive: {noise.heatMapWorldTimeToLive}, " +
+                $"volumeScale: {volumeScale}, " +
+                $"Travel Distance: {distance}, " +
+                $"Scaled Travel Distance: {distanceScaled}");
 
             if (noise.heatMapStrength == 0.0f)
             {
@@ -150,17 +141,26 @@ namespace WalkerSim
                 var entDist = UnityEngine.Vector3.Distance(entPos, position);
                 if (entDist > distance)
                 {
+                    // Beyond the maximum distance the sound can be heard.
                     continue;
                 }
 
-                Logging.CondInfo(logEvents, "Alerting enemy {0} at {1} to noise at {2}, distance: {3}.",
-                             ent.entityId, entPos, position, entDist);
+                // Closer enemies pinpoint the sound more accurately; farther ones get a wider spread.
+                var distRatio = entDist / distance; // 0.0 at source, 1.0 at max hearing range
+                var spread = Math.Min(distance * distRatio * 0.5f, 20f);
+                var randomOffset = UnityEngine.Random.insideUnitSphere * spread;
+                randomOffset.y = 0f;
+                var investigatePos = position + randomOffset;
 
-                // Prevent them from digging.
-                var heightOffset = new UnityEngine.Vector3(0, 1.5f, 0);
+                // Get the ground position at the investigate position.
+                var actualHeight = world.GetHeightAt(investigatePos.x, investigatePos.z);
+
+                investigatePos.y = actualHeight + 1.5f;
+
+                Logging.CondInfo(logEvents, () => $"Alerting enemy {ent.entityId} at {entPos} to noise at {position}, distance: {entDist}.");
 
                 // Have them interested for for 2~ min, assuming 30 ticks a second.
-                ent.SetInvestigatePosition(position + heightOffset, 3600, true);
+                ent.SetInvestigatePosition(investigatePos, 3600, true);
             }
         }
     }
