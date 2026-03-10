@@ -193,8 +193,8 @@
 									<TextBlock Grid.Column="0" Text="{Binding PowerLabel, StringFormat='{}{0}:'}" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
 									<NumericUpDown Grid.Column="1"
 												   Value="{Binding Power}"
-												   Minimum="-1" Maximum="1" Increment="0.0001"
-												   FormatString="F4" FontSize="12"/>
+												   Minimum="0" Maximum="1" Increment="0.01"
+												   FormatString="F2" FontSize="12"/>
 								</Grid>
 
 								<!-- Param1 -->

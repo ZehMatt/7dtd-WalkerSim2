@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.31911.260
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegacyEditor", "LegacyEditor\LegacyEditor.csproj", "{BAED52F2-7BC2-43B2-B097-0CC2D830FDF8}"
-EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "WalkerSim", "WalkerSim\WalkerSim.shproj", "{8BD1723C-67B3-45A9-B177-FEB49F2407D8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mod", "Mod\Mod.csproj", "{5E392257-9B08-4E5E-8ED3-9FF143A25CCF}"
@@ -24,10 +22,6 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{BAED52F2-7BC2-43B2-B097-0CC2D830FDF8}.Debug|x64.ActiveCfg = Debug|x64
-		{BAED52F2-7BC2-43B2-B097-0CC2D830FDF8}.Debug|x64.Build.0 = Debug|x64
-		{BAED52F2-7BC2-43B2-B097-0CC2D830FDF8}.Release|x64.ActiveCfg = Release|x64
-		{BAED52F2-7BC2-43B2-B097-0CC2D830FDF8}.Release|x64.Build.0 = Release|x64
 		{5E392257-9B08-4E5E-8ED3-9FF143A25CCF}.Debug|x64.ActiveCfg = Debug|x64
 		{5E392257-9B08-4E5E-8ED3-9FF143A25CCF}.Debug|x64.Build.0 = Debug|x64
 		{5E392257-9B08-4E5E-8ED3-9FF143A25CCF}.Release|x64.ActiveCfg = Release|x64
@@ -51,7 +45,6 @@ Global
 		WalkerSim\WalkerSim.projitems*{5e392257-9b08-4e5e-8ed3-9ff143a25ccf}*SharedItemsImports = 4
 		WalkerSim\WalkerSim.projitems*{8bd1723c-67b3-45a9-b177-feb49f2407d8}*SharedItemsImports = 13
 		WalkerSim\WalkerSim.projitems*{9a5c48f2-f53f-45e4-acf4-e70605a0bc21}*SharedItemsImports = 4
-		WalkerSim\WalkerSim.projitems*{baed52f2-7bc2-43b2-b097-0cc2d830fdf8}*SharedItemsImports = 4
 		WalkerSim\WalkerSim.projitems*{bfb39fad-119a-4045-ab4f-17ea962cfb11}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

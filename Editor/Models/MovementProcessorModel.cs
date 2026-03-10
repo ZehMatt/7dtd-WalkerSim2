@@ -32,6 +32,10 @@ namespace Editor.Models
         partial void OnTypeChanged(Config.MovementProcessorType value)
         {
             _processor.Type = value;
+            var meta = GetMeta();
+            // Apply default param values for the new type.
+            Param1 = meta.DefaultParam1;
+            Param2 = meta.DefaultParam2;
             OnPropertyChanged(nameof(ShowDistance));
             OnPropertyChanged(nameof(ShowPower));
             OnPropertyChanged(nameof(ShowParam1));
@@ -68,6 +72,9 @@ namespace Editor.Models
         partial void OnParam1Changed(float value)
         {
             _processor.Param1 = value;
+            // Ensure Param2 (max) is not less than Param1 (min).
+            if (Param2 < value)
+                Param2 = value;
             ConfigChanged?.Invoke();
         }
 
@@ -76,12 +83,22 @@ namespace Editor.Models
 
         partial void OnParam2Changed(float value)
         {
+            // Ensure Param2 (max) is not less than Param1 (min).
+            if (value < Param1)
+            {
+                var min = Param1;
+                _processor.Param2 = min;
+                // Defer the UI update so the NumericUpDown picks it up after its own update.
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => Param2 = min);
+                ConfigChanged?.Invoke();
+                return;
+            }
             _processor.Param2 = value;
             ConfigChanged?.Invoke();
         }
 
         // Per-type parameter metadata
-        private record struct ParamMeta(string? DistanceLabel, string? PowerLabel, string? Param1Label, string? Param2Label, string Description);
+        private record struct ParamMeta(string? DistanceLabel, string? PowerLabel, string? Param1Label, string? Param2Label, string Description, float DefaultParam1 = 0f, float DefaultParam2 = 0f);
 
         private static readonly ParamMeta DefaultMeta = new("Distance", "Power", null, null, "Unknown processor type.");
 
@@ -105,7 +122,7 @@ namespace Editor.Models
             { Config.MovementProcessorType.WorldEvents,    new(null, "Power", null, null, "Attract agents towards active world events such as sounds and explosions.") },
             { Config.MovementProcessorType.PreferCities,   new(null, "Power", null, null, "Attract agents towards city areas, making them gravitate towards urban zones.") },
             { Config.MovementProcessorType.AvoidCities,    new("Distance", "Power", null, null, "Repel agents away from city areas within the given distance.") },
-            { Config.MovementProcessorType.CityVisitor,    new(null, "Power", "Min Stay (min)", "Max Stay (min)", "Agents visit cities and stay for a random duration between min and max stay time.") },
+            { Config.MovementProcessorType.CityVisitor,    new(null, "Power", "Min Stay (min)", "Max Stay (min)", "Agents visit cities and stay for a random duration between min and max stay time (in real-time minutes).", 20f, 40f) },
         };
 
         private ParamMeta GetMeta() => MetaMap.TryGetValue(Type, out var m) ? m : DefaultMeta;

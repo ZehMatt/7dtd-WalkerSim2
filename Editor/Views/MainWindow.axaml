@@ -109,7 +109,7 @@
 						  Command="{Binding AdvanceOneTickCommand}"
 						  InputGesture="F7"/>
 				<Separator/>
-				<MenuItem Header="Debug">
+				<MenuItem Header="State">
 					<MenuItem Header="Load State..."
 							  Command="{Binding LoadStateCommand}"/>
 					<MenuItem Header="Save State..."

@@ -680,6 +680,7 @@ namespace Editor.Views
         private SolidColorBrush _roadNetworkDeadEndBrush;
         private SolidColorBrush _roadNetworkIntersectionBrush;
         private double _cachedRoadNetworkPenZoom = -1;
+        private double _cachedRoadNetworkScaleX = -1;
 
         private void RenderRoadNetwork(DrawingContext context, double width, double height)
         {
@@ -694,18 +695,20 @@ namespace Editor.Views
             int rh = roads.Height;
             if (rw == 0 || rh == 0) return;
 
-            // Rebuild pens/brushes when zoom changes.
-            if (_cachedRoadNetworkPenZoom != _zoom)
+            double scaleX = width / rw;
+            double scaleY = height / rh;
+
+            // Rebuild pens/brushes when zoom or scale changes.
+            if (_cachedRoadNetworkPenZoom != _zoom || _cachedRoadNetworkScaleX != scaleX)
             {
-                _roadNetworkEdgePen = new Pen(new SolidColorBrush(Color.FromArgb(120, 0, 200, 255)), 1.0 / _zoom);
+                double lineW = scaleX * 0.8;
+                _roadNetworkEdgePen = new Pen(new SolidColorBrush(Color.FromArgb(120, 0, 200, 255)), lineW);
                 _roadNetworkNodeBrush = new SolidColorBrush(Color.FromArgb(200, 0, 200, 255));
                 _roadNetworkDeadEndBrush = new SolidColorBrush(Color.FromArgb(220, 255, 80, 80));
                 _roadNetworkIntersectionBrush = new SolidColorBrush(Color.FromArgb(220, 255, 220, 0));
                 _cachedRoadNetworkPenZoom = _zoom;
+                _cachedRoadNetworkScaleX = scaleX;
             }
-
-            double scaleX = width / rw;
-            double scaleY = height / rh;
 
             var nodes = graph.Nodes;
 
@@ -728,10 +731,10 @@ namespace Editor.Views
                 }
             }
 
-            // Draw nodes on top.
-            double nodeRadius = 1.5 / _zoom;
-            double deadEndRadius = 2.5 / _zoom;
-            double intersectionRadius = 2.0 / _zoom;
+            // Draw nodes on top. Radii scale with the map so they match road pixels.
+            double nodeRadius = scaleX * 0.75;
+            double deadEndRadius = scaleX * 1.25;
+            double intersectionRadius = scaleX * 1.0;
 
             for (int i = 0; i < nodes.Length; i++)
             {
