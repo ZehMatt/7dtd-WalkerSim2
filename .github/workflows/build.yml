@@ -278,11 +278,15 @@ jobs:
         # Make the main executable runnable
         chmod +x "$APP/Contents/MacOS/Editor"
 
+    - name: Rename publish output
+      shell: bash
+      run: mv "Publish/Editor/${{ matrix.platform }}" "Publish/Editor/WalkerSim Editor"
+
     - name: Upload Editor artifact
       uses: actions/upload-artifact@v4
       with:
         name: WalkerSim2-Editor-${{ matrix.platform }}-${{ env.BUILD_VERSION }}-${{ env.COMMIT_SHA }}
-        path: Publish/Editor/${{ matrix.platform }}/
+        path: Publish/Editor/
 
   release:
     name: Release
@@ -327,10 +331,12 @@ jobs:
       run: |
         cd release/Mod
         zip -r ../../WalkerSim2-${{ env.BUILD_VERSION }}.zip WalkerSim2/
-        cd ..
-        zip -r ../WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}.zip Editor-Windows-x64/
-        zip -r ../WalkerSim2-Editor-Linux-x64-${{ env.BUILD_VERSION }}.zip Editor-Linux-x64/
-        zip -r ../WalkerSim2-Editor-Mac-arm64-${{ env.BUILD_VERSION }}.zip Editor-Mac-arm64/
+        cd ../Editor-Windows-x64
+        zip -r ../../WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}.zip "WalkerSim Editor"/
+        cd ../Editor-Linux-x64
+        zip -r ../../WalkerSim2-Editor-Linux-x64-${{ env.BUILD_VERSION }}.zip "WalkerSim Editor"/
+        cd ../Editor-Mac-arm64
+        zip -r ../../WalkerSim2-Editor-Mac-arm64-${{ env.BUILD_VERSION }}.zip "WalkerSim Editor"/
 
     - name: Release
       uses: softprops/action-gh-release@v2
@@ -388,10 +394,12 @@ jobs:
       run: |
         cd release/Mod
         zip -r ../../WalkerSim2-${{ env.BUILD_VERSION }}.zip WalkerSim2/
-        cd ..
-        zip -r ../WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}.zip Editor-Windows-x64/
-        zip -r ../WalkerSim2-Editor-Linux-x64-${{ env.BUILD_VERSION }}.zip Editor-Linux-x64/
-        zip -r ../WalkerSim2-Editor-Mac-arm64-${{ env.BUILD_VERSION }}.zip Editor-Mac-arm64/
+        cd ../Editor-Windows-x64
+        zip -r ../../WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}.zip "WalkerSim Editor"/
+        cd ../Editor-Linux-x64
+        zip -r ../../WalkerSim2-Editor-Linux-x64-${{ env.BUILD_VERSION }}.zip "WalkerSim Editor"/
+        cd ../Editor-Mac-arm64
+        zip -r ../../WalkerSim2-Editor-Mac-arm64-${{ env.BUILD_VERSION }}.zip "WalkerSim Editor"/
 
     - name: Pre-Release
       uses: softprops/action-gh-release@v2
