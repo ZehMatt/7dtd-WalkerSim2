@@ -1,69 +1,14 @@
 using System;
-using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Editor
 {
     public sealed class ChipSynth : IDisposable
     {
-        private const int WAVE_FORMAT_PCM = 1;
-        private const int CALLBACK_NULL = 0;
-        private const int WHDR_DONE = 0x01;
-        private const int WHDR_PREPARED = 0x02;
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct WAVEFORMATEX
-        {
-            public ushort wFormatTag;
-            public ushort nChannels;
-            public uint nSamplesPerSec;
-            public uint nAvgBytesPerSec;
-            public ushort nBlockAlign;
-            public ushort wBitsPerSample;
-            public ushort cbSize;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct WAVEHDR
-        {
-            public IntPtr lpData;
-            public uint dwBufferLength;
-            public uint dwBytesRecorded;
-            public IntPtr dwUser;
-            public uint dwFlags;
-            public uint dwLoops;
-            public IntPtr lpNext;
-            public IntPtr reserved;
-        }
-
-        [DllImport("winmm.dll")]
-        private static extern int waveOutOpen(out IntPtr hWaveOut, int uDeviceID,
-            ref WAVEFORMATEX lpFormat, IntPtr dwCallback, IntPtr dwInstance, int fdwOpen);
-
-        [DllImport("winmm.dll")]
-        private static extern int waveOutPrepareHeader(IntPtr hWaveOut, IntPtr lpWaveHdr, int uSize);
-
-        [DllImport("winmm.dll")]
-        private static extern int waveOutUnprepareHeader(IntPtr hWaveOut, IntPtr lpWaveHdr, int uSize);
-
-        [DllImport("winmm.dll")]
-        private static extern int waveOutWrite(IntPtr hWaveOut, IntPtr lpWaveHdr, int uSize);
-
-        [DllImport("winmm.dll")]
-        private static extern int waveOutClose(IntPtr hWaveOut);
-
-        [DllImport("winmm.dll")]
-        private static extern int waveOutReset(IntPtr hWaveOut);
-
-        [DllImport("winmm.dll")]
-        private static extern int waveOutSetVolume(IntPtr hWaveOut, uint dwVolume);
-
         private const int SampleRate = 22050;
         private const int NumBuffers = 2;
         private const int BufferSamples = 4096;
         private const int BufferBytes = BufferSamples * 2;
-        private static readonly int HdrSize = Marshal.SizeOf<WAVEHDR>();
-        private static readonly int FlagsOffset = IntPtr.Size + 4 + 4 + IntPtr.Size;
 
         private const double BPM = 80.0;
         private const double TotalBeats = 60.0;
@@ -71,14 +16,11 @@ namespace Editor
         private const double SmpPerBeat = SecPerBeat * SampleRate;
         private static readonly long TotalSmp = (long)(TotalBeats * SmpPerBeat);
 
-        private IntPtr _hWaveOut;
-        private readonly IntPtr[] _hdrPtrs = new IntPtr[NumBuffers];
-        private readonly GCHandle[] _pinned = new GCHandle[NumBuffers];
-        private readonly byte[][] _buffers = new byte[NumBuffers][];
+        private Audio _audio;
+        private byte[] _pcmBuffer;
         private Thread _thread;
         private volatile bool _running;
         private bool _disposed;
-        private bool _opened;
 
         private readonly double[] _csPhase0 = new double[6];
         private double _csFilt0;
@@ -152,49 +94,29 @@ namespace Editor
             0.990, 0.995, 0.998, 1.002, 1.005, 1.010
         };
 
-        public static bool IsSupported => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        public static bool IsSupported => Audio.IsSupported;
 
         public void Play()
         {
-            if (!IsSupported || _opened)
+            if (!IsSupported || _audio != null)
                 return;
 
             try
             {
-                var fmt = new WAVEFORMATEX
+                _audio = new Audio(SampleRate, 1, 16, BufferSamples, NumBuffers);
+                if (!_audio.Open())
                 {
-                    wFormatTag = WAVE_FORMAT_PCM,
-                    nChannels = 1,
-                    nSamplesPerSec = SampleRate,
-                    wBitsPerSample = 16,
-                    nBlockAlign = 2,
-                    nAvgBytesPerSec = SampleRate * 2,
-                    cbSize = 0
-                };
-
-                int result = waveOutOpen(out _hWaveOut, -1, ref fmt,
-                    IntPtr.Zero, IntPtr.Zero, CALLBACK_NULL);
-                if (result != 0)
+                    _audio = null;
                     return;
+                }
 
-                _opened = true;
-                waveOutSetVolume(_hWaveOut, 0xCC00_CC00);
+                _audio.SetVolume(0.8f);
+                _pcmBuffer = new byte[BufferBytes];
 
                 for (int i = 0; i < NumBuffers; i++)
                 {
-                    _buffers[i] = new byte[BufferBytes];
-                    _pinned[i] = GCHandle.Alloc(_buffers[i], GCHandleType.Pinned);
-
-                    _hdrPtrs[i] = Marshal.AllocHGlobal(HdrSize);
-                    var hdr = new WAVEHDR
-                    {
-                        lpData = _pinned[i].AddrOfPinnedObject(),
-                        dwBufferLength = BufferBytes,
-                    };
-                    Marshal.StructureToPtr(hdr, _hdrPtrs[i], false);
-                    waveOutPrepareHeader(_hWaveOut, _hdrPtrs[i], HdrSize);
-                    FillBuffer(i);
-                    waveOutWrite(_hWaveOut, _hdrPtrs[i], HdrSize);
+                    FillBuffer();
+                    _audio.SubmitBuffer(_pcmBuffer, BufferBytes);
                 }
 
                 _running = true;
@@ -207,7 +129,8 @@ namespace Editor
             }
             catch
             {
-                _opened = false;
+                _audio?.Dispose();
+                _audio = null;
             }
         }
 
@@ -216,33 +139,13 @@ namespace Editor
             _running = false;
             _thread?.Join(500);
 
-            if (!_opened)
+            if (_audio == null)
                 return;
 
-            try
-            {
-                waveOutReset(_hWaveOut);
-
-                for (int i = 0; i < NumBuffers; i++)
-                {
-                    if (_hdrPtrs[i] != IntPtr.Zero)
-                    {
-                        uint flags = ReadFlags(i);
-                        if ((flags & WHDR_PREPARED) != 0)
-                            waveOutUnprepareHeader(_hWaveOut, _hdrPtrs[i], HdrSize);
-
-                        Marshal.FreeHGlobal(_hdrPtrs[i]);
-                        _hdrPtrs[i] = IntPtr.Zero;
-                    }
-                    if (_pinned[i].IsAllocated)
-                        _pinned[i].Free();
-                }
-
-                waveOutClose(_hWaveOut);
-            }
+            try { _audio.Close(); }
             catch { }
 
-            _opened = false;
+            _audio = null;
         }
 
         public void Dispose()
@@ -254,29 +157,20 @@ namespace Editor
             Stop();
         }
 
-        private uint ReadFlags(int bufIdx)
-        {
-            return (uint)Marshal.ReadInt32(_hdrPtrs[bufIdx], FlagsOffset);
-        }
-
         private void StreamLoop()
         {
             while (_running)
             {
-                for (int i = 0; i < NumBuffers; i++)
+                if (_audio.IsBufferAvailable())
                 {
-                    uint flags = ReadFlags(i);
-                    if ((flags & WHDR_DONE) != 0)
-                    {
-                        FillBuffer(i);
-                        waveOutWrite(_hWaveOut, _hdrPtrs[i], HdrSize);
-                    }
+                    FillBuffer();
+                    _audio.SubmitBuffer(_pcmBuffer, BufferBytes);
                 }
                 Thread.Sleep(5);
             }
         }
 
-        private void FillBuffer(int bufIdx)
+        private void FillBuffer()
         {
             if (!_rvbInit)
             {
@@ -287,8 +181,6 @@ namespace Editor
                 _rvbInit = true;
             }
 
-            var buf = _buffers[bufIdx];
-
             for (int i = 0; i < BufferSamples; i++)
             {
                 double dry = GenerateSample();
@@ -297,8 +189,8 @@ namespace Editor
                 _samplePos++;
 
                 short pcm = (short)(Math.Clamp(sample, -1.0, 1.0) * 30000);
-                buf[i * 2] = (byte)(pcm & 0xFF);
-                buf[i * 2 + 1] = (byte)((pcm >> 8) & 0xFF);
+                _pcmBuffer[i * 2] = (byte)(pcm & 0xFF);
+                _pcmBuffer[i * 2 + 1] = (byte)((pcm >> 8) & 0xFF);
             }
 
             UpdateVisState();
