@@ -3,6 +3,7 @@
 - Fix: Agents getting stuck on roads with dead ends.
 - Fix: Sound events now use distance-based positioning instead of exact coordinates.
 - Fix: Sound events are stacked when the simulation is paused during bloodmoon.
+- Fix: Smell being ineffective because of the spawner source being set to `Biome`, make smell work the same for all spawner sources.
 - Improve: Rewritten Editor as a standalone cross-platform application (Windows, macOS, Linux).
 - Improve: Fast advancing the simulation is now more accurate.
 - Improve: StickToRoads processor now builds a road network graph, agents can now traverse roads without an additional influence.

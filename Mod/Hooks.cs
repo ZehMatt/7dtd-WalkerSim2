@@ -1,4 +1,5 @@
 using HarmonyLib;
+using UnityEngine;
 
 namespace WalkerSim
 {
@@ -110,6 +111,26 @@ namespace WalkerSim
             WalkerSimMod.GetZombieWanderingSpeed(__instance, ref __result);
         }
     }
+
+    [HarmonyPatch(typeof(EntityPlayer), nameof(EntityPlayer.DetectUsScale))]
+    class EntityPlayerDetectUsScaleHook
+    {
+        static bool Prefix(EntityPlayer __instance, ref float __result, EntityAlive _entity)
+        {
+            if (__instance.prefab != null &&
+                __instance.prefab.prefab.DifficultyTier >= 1 &&
+                Time.time - __instance.prefabTimeIn > 60f &&
+                /* _entity.GetSpawnerSource() == EnumSpawnerSource.Biome && */ // This is stupid, we want smell to work for all zombies.
+                _entity is EntityEnemy)
+            {
+                __result = 0.3f;
+                return false;
+            }
+            __result = 1f;
+            return false;
+        }
+    }
+
 
     static class Hooks
     {
