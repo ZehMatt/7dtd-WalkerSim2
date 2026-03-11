@@ -2,6 +2,7 @@
 - Fix: Warning about configuration changes incorrectly shown on non-hosts.
 - Fix: Agents getting stuck on roads with dead ends.
 - Fix: Sound events now use distance-based positioning instead of exact coordinates.
+- Fix: Sound events are stacked when the simulation is paused during bloodmoon.
 - Improve: Rewritten Editor as a standalone cross-platform application (Windows, macOS, Linux).
 - Improve: Fast advancing the simulation is now more accurate.
 - Improve: StickToRoads processor now builds a road network graph, agents can now traverse roads without an additional influence.

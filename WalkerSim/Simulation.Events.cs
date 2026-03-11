@@ -82,6 +82,11 @@ namespace WalkerSim
             Logging.CondInfo(Config.LoggingOpts.Events,
                 () => $"Adding sound event at {pos}, radius: {radius}, duration: {duration}");
 
+            if (Config.PauseDuringBloodmoon && _state.IsBloodmoon)
+            {
+                return;
+            }
+
             var data = new EventData
             {
                 Type = EventType.Noise,
