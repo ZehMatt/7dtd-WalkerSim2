@@ -151,6 +151,74 @@ namespace Editor
         [DllImport("libasound.so.2")]
         private static extern int snd_pcm_close(IntPtr pcm);
 
+        [DllImport("libasound.so.2")]
+        private static extern int snd_device_name_hint(int card,
+            [MarshalAs(UnmanagedType.LPUTF8Str)] string iface, out IntPtr hints);
+
+        [DllImport("libasound.so.2")]
+        private static extern IntPtr snd_device_name_get_hint(IntPtr hint,
+            [MarshalAs(UnmanagedType.LPUTF8Str)] string id);
+
+        [DllImport("libasound.so.2")]
+        private static extern int snd_device_name_free_hint(IntPtr hints);
+
+        [DllImport("libc.so.6", EntryPoint = "free")]
+        private static extern void posix_free(IntPtr ptr);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void snd_lib_error_handler_t(
+            IntPtr file, int line, IntPtr function, int err, IntPtr fmt);
+
+        [DllImport("libasound.so.2")]
+        private static extern int snd_lib_error_set_handler(IntPtr handler);
+
+        private static snd_lib_error_handler_t _alsaNoOpErrorHandler;
+
+        private static void AlsaSuppressErrors()
+        {
+            _alsaNoOpErrorHandler = (file, line, function, err, fmt) => { };
+            snd_lib_error_set_handler(
+                Marshal.GetFunctionPointerForDelegate(_alsaNoOpErrorHandler));
+        }
+
+        private static void AlsaRestoreErrors()
+        {
+            snd_lib_error_set_handler(IntPtr.Zero);
+            _alsaNoOpErrorHandler = null;
+        }
+
+        private static System.Collections.Generic.List<string> EnumerateAlsaDevices()
+        {
+            var devices = new System.Collections.Generic.List<string>();
+            if (snd_device_name_hint(-1, "pcm", out IntPtr hints) < 0)
+                return devices;
+
+            try
+            {
+                for (int i = 0; ; i++)
+                {
+                    IntPtr entry = Marshal.ReadIntPtr(hints, i * IntPtr.Size);
+                    if (entry == IntPtr.Zero)
+                        break;
+
+                    IntPtr namePtr = snd_device_name_get_hint(entry, "NAME");
+                    if (namePtr != IntPtr.Zero)
+                    {
+                        string name = Marshal.PtrToStringUTF8(namePtr);
+                        posix_free(namePtr);
+                        if (!string.IsNullOrEmpty(name) && name != "null")
+                            devices.Add(name);
+                    }
+                }
+            }
+            finally
+            {
+                snd_device_name_free_hint(hints);
+            }
+
+            return devices;
+        }
+
         #endregion
 
         // Format configuration.
@@ -570,22 +638,36 @@ namespace Editor
 
         private bool OpenAlsa()
         {
-            if (snd_pcm_open(out _alsaPcm, "default", SND_PCM_STREAM_PLAYBACK, 0) < 0)
-                return false;
-
             uint latencyUs = (uint)((long)_bufferFrames * 1000000 / _sampleRate);
+            var devices = EnumerateAlsaDevices();
 
-            if (snd_pcm_set_params(_alsaPcm, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED,
-                    (uint)_channels, (uint)_sampleRate, 1, latencyUs) < 0)
+            AlsaSuppressErrors();
+            try
             {
-                snd_pcm_close(_alsaPcm);
-                _alsaPcm = IntPtr.Zero;
+                foreach (var device in devices)
+                {
+                    if (snd_pcm_open(out _alsaPcm, device, SND_PCM_STREAM_PLAYBACK, 0) < 0)
+                        continue;
+
+                    if (snd_pcm_set_params(_alsaPcm, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED,
+                            (uint)_channels, (uint)_sampleRate, 1, latencyUs) < 0)
+                    {
+                        snd_pcm_close(_alsaPcm);
+                        _alsaPcm = IntPtr.Zero;
+                        continue;
+                    }
+
+                    _backend = Backend.Alsa;
+                    _opened = true;
+                    return true;
+                }
+
                 return false;
             }
-
-            _backend = Backend.Alsa;
-            _opened = true;
-            return true;
+            finally
+            {
+                AlsaRestoreErrors();
+            }
         }
 
         private bool SubmitAlsa(byte[] data, int length)
