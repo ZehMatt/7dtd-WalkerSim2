@@ -360,7 +360,7 @@ jobs:
     - name: Determine version
       run: |
         VERSION="${GITHUB_REF_NAME#prerelease/}"
-        echo "BUILD_VERSION=${VERSION}-beta" >> $GITHUB_ENV
+        echo "BUILD_VERSION=${VERSION}" >> $GITHUB_ENV
 
     - name: Download Mod artifact
       uses: actions/download-artifact@v4
