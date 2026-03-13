@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
+using System.Xml;
 
 namespace WalkerSim
 {
@@ -15,23 +15,11 @@ namespace WalkerSim
 
         public class SpawnGroup
         {
-            [XmlAttribute("Color")]
             public string ColorString { get; set; }
-
-            [XmlAttribute("EntityGroupDay")]
             public string EntityGroupDay { get; set; }
-
-            [XmlAttribute("EntityGroupNight")]
             public string EntityGroupNight { get; set; }
 
             public Drawing.Color Color { get { return Drawing.Color.FromHtml(ColorString); } }
-        }
-
-        [XmlRoot("SpawnGroups")]
-        public class SpawnGroupsData
-        {
-            [XmlElement("SpawnGroup")]
-            public List<SpawnGroup> Groups { get; set; }
         }
 
         public bool Load(string worldFolder, int worldSizeX, int worldSizeY)
@@ -80,19 +68,20 @@ namespace WalkerSim
 
         private List<SpawnGroup> LoadSpawnGroups(string spawnGroupsFile)
         {
-            var res = new List<SpawnGroup>();
             try
             {
-                var serializer = new XmlSerializer(typeof(SpawnGroupsData));
-                using (var reader = new StreamReader(spawnGroupsFile))
+                var doc = new XmlDocument();
+                doc.Load(spawnGroupsFile);
+                var groups = new List<SpawnGroup>();
+                foreach (XmlNode el in doc.DocumentElement.GetElementsByTagName("SpawnGroup"))
                 {
-                    var data = (SpawnGroupsData)serializer.Deserialize(reader);
-                    if (data == null || data.Groups == null)
-                    {
-                        return null;
-                    }
-                    return data.Groups;
+                    var group = new SpawnGroup();
+                    group.ColorString = el.Attributes["Color"]?.Value;
+                    group.EntityGroupDay = el.Attributes["EntityGroupDay"]?.Value;
+                    group.EntityGroupNight = el.Attributes["EntityGroupNight"]?.Value;
+                    groups.Add(group);
                 }
+                return groups.Count > 0 ? groups : null;
             }
             catch
             {

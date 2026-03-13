@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Xml.Serialization;
+using System.Xml;
 
 namespace WalkerSim
 {
@@ -15,41 +15,25 @@ namespace WalkerSim
             public int HeightMapHeight;
         }
 
-        [XmlRoot("prefabs")]
         public class PrefabsData
         {
-            [XmlElement("decoration")]
             public Decoration[] Decorations;
         }
 
         public class Decoration
         {
-            [XmlAttribute("type")]
             public string Type;
-
-            [XmlAttribute("name")]
             public string Name;
-
-            [XmlIgnore]
             public Vector3 Position;
-
-            [XmlIgnore]
             public Vector3 Bounds = new Vector3(64, 64);
 
-            [XmlAttribute("position")]
             public string PositionString
             {
-                get => Position.ToString();
-                set
-                {
-                    Position = Vector3.Parse(value, true);
-                }
+                get { return Position.ToString(); }
+                set { Position = Vector3.Parse(value, true); }
             }
 
-            [XmlAttribute("rotation")]
             public int Rotation;
-
-            [XmlAttribute("y_is_groundlevel")]
             public bool YIsGroundlevel;
         }
 
@@ -212,20 +196,26 @@ namespace WalkerSim
 
             try
             {
-                var serializer = new XmlSerializer(typeof(PrefabsData));
-                using (var reader = new System.IO.StreamReader(filePath))
+                var doc = new XmlDocument();
+                doc.Load(filePath);
+                var decorations = new List<Decoration>();
+                foreach (XmlNode el in doc.DocumentElement.GetElementsByTagName("decoration"))
                 {
-                    res = (PrefabsData)serializer.Deserialize(reader);
+                    var dec = new Decoration();
+                    dec.Type = el.Attributes["type"]?.Value;
+                    dec.Name = el.Attributes["name"]?.Value;
+                    var posAttr = el.Attributes["position"]?.Value;
+                    if (posAttr != null)
+                        dec.PositionString = posAttr;
+                    var rotAttr = el.Attributes["rotation"]?.Value;
+                    if (rotAttr != null && int.TryParse(rotAttr, out int rot))
+                        dec.Rotation = rot;
+                    var yAttr = el.Attributes["y_is_groundlevel"]?.Value;
+                    dec.YIsGroundlevel = yAttr != null && bool.TryParse(yAttr, out bool yVal) && yVal;
+                    decorations.Add(dec);
                 }
-
-                if (res.Decorations == null)
-                {
-                    res.Decorations = new Decoration[0];
-                }
-                else
-                {
-                    //MergePrefabs(res);
-                }
+                res = new PrefabsData();
+                res.Decorations = decorations.ToArray();
             }
             catch (System.Exception)
             {

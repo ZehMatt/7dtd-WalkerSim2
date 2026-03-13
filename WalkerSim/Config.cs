@@ -1,220 +1,108 @@
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
-using System.Xml.Serialization;
+using System.Xml;
 
 namespace WalkerSim
 {
-    [XmlRoot("WalkerSim", Namespace = "http://zeh.matt/WalkerSim", IsNullable = false)]
     public class Config
     {
-        [XmlNamespaceDeclarations]
-        public XmlSerializerNamespaces Xmlns { get; set; }
-
-        [XmlAttribute("schemaLocation", Namespace = "http://www.w3.org/2001/XMLSchema-instance")]
-        public string SchemaLocation { get; set; }
-
-        public Config()
-        {
-            Xmlns = new XmlSerializerNamespaces();
-            Xmlns.Add("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-            Xmlns.Add("xsd", "http://www.w3.org/2001/XMLSchema");
-
-            // Define the schema location
-            SchemaLocation = "http://zeh.matt/WalkerSim WalkerSimSchema.xsd";
-        }
-
         public enum WanderingSpeed
         {
-            [XmlEnum("NoOverride")]
             NoOverride = 0,
-            [XmlEnum("Walk")]
             Walk,
-            [XmlEnum("Jog")]
             Jog,
-            [XmlEnum("Run")]
             Run,
-            [XmlEnum("Sprint")]
             Sprint,
-            [XmlEnum("Nightmare")]
             Nightmare,
         }
 
         public enum PostSpawnBehavior
         {
-            [XmlEnum("Wander")]
             Wander = 0,
-            [XmlEnum("ChaseActivator")]
             ChaseActivator,
-            [XmlEnum("Nothing")]
             Nothing,
         }
 
         public enum WorldLocation
         {
-            [XmlEnum("None")]
             None = 0,
-            [XmlEnum("RandomBorderLocation")]
             RandomBorderLocation,
-            [XmlEnum("RandomLocation")]
             RandomLocation,
-            [XmlEnum("RandomPOI")]
             RandomPOI,
-            [XmlEnum("RandomCity")]
             RandomCity,
-            [XmlEnum("Mixed")]
             Mixed,
         }
 
         public enum MovementProcessorType
         {
             Invalid = 0,
-            [XmlEnum("FlockAnyGroup")]
             FlockAnyGroup,
-            [XmlEnum("AlignAnyGroup")]
             AlignAnyGroup,
-            [XmlEnum("AvoidAnyGroup")]
             AvoidAnyGroup,
-            [XmlEnum("FlockSameGroup")]
             FlockSameGroup,
-            [XmlEnum("AlignSameGroup")]
             AlignSameGroup,
-            [XmlEnum("AvoidSameGroup")]
             AvoidSameGroup,
-            [XmlEnum("FlockOtherGroup")]
             FlockOtherGroup,
-            [XmlEnum("AlignOtherGroup")]
             AlignOtherGroup,
-            [XmlEnum("AvoidOtherGroup")]
             AvoidOtherGroup,
-            [XmlEnum("Wind")]
             Wind,
-            [XmlEnum("WindInverted")]
             WindInverted,
-            [XmlEnum("StickToRoads")]
             StickToRoads,
-            [XmlEnum("AvoidRoads")]
             AvoidRoads,
-            [XmlEnum("StickToPOIs")]
             StickToPOIs,
-            [XmlEnum("AvoidPOIs")]
             AvoidPOIs,
-            [XmlEnum("WorldEvents")]
             WorldEvents,
-            [XmlEnum("PreferCities")]
             PreferCities,
-            [XmlEnum("AvoidCities")]
             AvoidCities,
-            [XmlEnum("CityVisitor")]
             CityVisitor,
         }
 
         public class MovementProcessor
         {
-            [XmlAttribute("Type")]
             public MovementProcessorType Type;
-
-            [XmlAttribute("Distance")]
             public float Distance = 0.0f;
-
-            [XmlAttribute("Power")]
             public float Power = 0.0f;
-
-            [XmlAttribute("Param1")]
             public float Param1 = 0.0f;
-
-            [XmlAttribute("Param2")]
             public float Param2 = 0.0f;
         }
 
-        [XmlType("ProcessorGroup")]
         public class MovementProcessorGroup
         {
-            [XmlAttribute("Name")]
             public string Name = "";
-
-            [XmlAttribute("Group")]
             public int Group = -1;
-
-            [XmlAttribute("SpeedScale")]
             public float SpeedScale = 1.0f;
-
-            [XmlAttribute("PostSpawnBehavior")]
             public PostSpawnBehavior PostSpawnBehavior = PostSpawnBehavior.Wander;
-
-            [XmlAttribute("PostSpawnWanderSpeed")]
             public WanderingSpeed PostSpawnWanderSpeed = WanderingSpeed.Walk;
-
-            [XmlAttribute("Color")]
             public string Color = "";
-
-            [XmlElement("Processor")]
             public List<MovementProcessor> Entries = new List<MovementProcessor>();
         }
 
         public class LoggingOptions
         {
-            [XmlElement("General")]
             public bool General = true;
-
-            [XmlElement("Spawns")]
             public bool Spawns = false;
-
-            [XmlElement("Despawns")]
             public bool Despawns = false;
-
-            [XmlElement("EntityClassSelection")]
             public bool EntityClassSelection = false;
-
-            [XmlElement("Events")]
             public bool Events = false;
         }
 
-        [XmlElement("Logging")]
         public LoggingOptions LoggingOpts;
-
-        [XmlElement("RandomSeed")]
         public int RandomSeed = 1337;
-
-        [XmlElement("PopulationDensity")]
         public int PopulationDensity = 300;
-
-        [XmlElement("SpawnActivationRadius")]
         public int SpawnActivationRadius = 96;
-
-        [XmlElement("StartAgentsGrouped")]
         public bool StartAgentsGrouped = true;
-
-        [XmlElement("EnhancedSoundAwareness")]
         public bool EnhancedSoundAwareness = true;
-
-        [XmlElement("SoundDistanceScale")]
         public float SoundDistanceScale = 1.0f;
-
-        [XmlElement("FastForwardAtStart")]
         public bool FastForwardAtStart = true;
-
-        [XmlElement("GroupSize")]
         public int GroupSize = 200;
-
-        [XmlElement("AgentStartPosition")]
         public WorldLocation StartPosition = WorldLocation.RandomLocation;
-
-        [XmlElement("AgentRespawnPosition")]
         public WorldLocation RespawnPosition = WorldLocation.None;
-
-        [XmlElement("PauseDuringBloodmoon")]
         public bool PauseDuringBloodmoon = true;
-
-        [XmlElement("SpawnProtectionTime")]
         public uint SpawnProtectionTime = 300;
-
-        [XmlElement("InfiniteZombieLifetime")]
         public bool InfiniteZombieLifetime = false;
-
-        [XmlElement("MaxSpawnedZombies")]
         public string MaxSpawnedZombies = "75%";
-
-        [XmlArray("MovementProcessors")]
         public List<MovementProcessorGroup> Processors;
 
         private static void SanitizeConfig(Config config)
@@ -260,7 +148,7 @@ namespace WalkerSim
 
         public static Config LoadFromFile(string filePath)
         {
-            using (var reader = new System.IO.StreamReader(filePath))
+            using (var reader = new StreamReader(filePath))
             {
                 return LoadFromStream(reader);
             }
@@ -268,24 +156,87 @@ namespace WalkerSim
 
         public static Config LoadFromText(string text)
         {
-            var stream = new StringReader(text);
-            return LoadFromStream(stream);
+            using (var reader = new StringReader(text))
+            {
+                return LoadFromStream(reader);
+            }
         }
 
-        public static Config LoadFromStream(System.IO.TextReader reader)
+        public static Config LoadFromStream(TextReader reader)
         {
             try
             {
-                var serializer = new XmlSerializer(typeof(Config));
+                var doc = new XmlDocument();
+                doc.Load(reader);
 
-                var config = (Config)serializer.Deserialize(reader);
-                if (config == null)
-                    return null;
+                var nsMgr = new XmlNamespaceManager(doc.NameTable);
+                nsMgr.AddNamespace("ws", "http://zeh.matt/WalkerSim");
+
+                var root = doc.DocumentElement;
+                var config = new Config();
+
+                // Logging
+                var loggingNode = root.SelectSingleNode("ws:Logging", nsMgr);
+                if (loggingNode != null)
+                {
+                    config.LoggingOpts = new LoggingOptions();
+                    config.LoggingOpts.General = ReadBool(loggingNode, "ws:General", nsMgr, true);
+                    config.LoggingOpts.Spawns = ReadBool(loggingNode, "ws:Spawns", nsMgr, false);
+                    config.LoggingOpts.Despawns = ReadBool(loggingNode, "ws:Despawns", nsMgr, false);
+                    config.LoggingOpts.EntityClassSelection = ReadBool(loggingNode, "ws:EntityClassSelection", nsMgr, false);
+                    config.LoggingOpts.Events = ReadBool(loggingNode, "ws:Events", nsMgr, false);
+                }
+
+                config.RandomSeed = ReadInt(root, "ws:RandomSeed", nsMgr, 1337);
+                config.PopulationDensity = ReadInt(root, "ws:PopulationDensity", nsMgr, 300);
+                config.SpawnActivationRadius = ReadInt(root, "ws:SpawnActivationRadius", nsMgr, 96);
+                config.StartAgentsGrouped = ReadBool(root, "ws:StartAgentsGrouped", nsMgr, true);
+                config.EnhancedSoundAwareness = ReadBool(root, "ws:EnhancedSoundAwareness", nsMgr, true);
+                config.SoundDistanceScale = ReadFloat(root, "ws:SoundDistanceScale", nsMgr, 1.0f);
+                config.FastForwardAtStart = ReadBool(root, "ws:FastForwardAtStart", nsMgr, true);
+                config.GroupSize = ReadInt(root, "ws:GroupSize", nsMgr, 200);
+                config.StartPosition = ReadEnum(root, "ws:AgentStartPosition", nsMgr, WorldLocation.RandomLocation);
+                config.RespawnPosition = ReadEnum(root, "ws:AgentRespawnPosition", nsMgr, WorldLocation.None);
+                config.PauseDuringBloodmoon = ReadBool(root, "ws:PauseDuringBloodmoon", nsMgr, true);
+                config.SpawnProtectionTime = ReadUInt(root, "ws:SpawnProtectionTime", nsMgr, 300);
+                config.InfiniteZombieLifetime = ReadBool(root, "ws:InfiniteZombieLifetime", nsMgr, false);
+                config.MaxSpawnedZombies = ReadString(root, "ws:MaxSpawnedZombies", nsMgr, "75%");
+
+                // Movement Processors
+                var processorsNode = root.SelectSingleNode("ws:MovementProcessors", nsMgr);
+                if (processorsNode != null)
+                {
+                    config.Processors = new List<MovementProcessorGroup>();
+                    foreach (XmlNode groupNode in processorsNode.SelectNodes("ws:ProcessorGroup", nsMgr))
+                    {
+                        var group = new MovementProcessorGroup();
+                        group.Name = ReadAttrString(groupNode, "Name", "");
+                        group.Group = ReadAttrInt(groupNode, "Group", -1);
+                        group.SpeedScale = ReadAttrFloat(groupNode, "SpeedScale", 1.0f);
+                        group.PostSpawnBehavior = ReadAttrEnum(groupNode, "PostSpawnBehavior", PostSpawnBehavior.Wander);
+                        group.PostSpawnWanderSpeed = ReadAttrEnum(groupNode, "PostSpawnWanderSpeed", WanderingSpeed.Walk);
+                        group.Color = ReadAttrString(groupNode, "Color", "");
+
+                        group.Entries = new List<MovementProcessor>();
+                        foreach (XmlNode procNode in groupNode.SelectNodes("ws:Processor", nsMgr))
+                        {
+                            var proc = new MovementProcessor();
+                            proc.Type = ReadAttrEnum(procNode, "Type", MovementProcessorType.Invalid);
+                            proc.Distance = ReadAttrFloat(procNode, "Distance", 0.0f);
+                            proc.Power = ReadAttrFloat(procNode, "Power", 0.0f);
+                            proc.Param1 = ReadAttrFloat(procNode, "Param1", 0.0f);
+                            proc.Param2 = ReadAttrFloat(procNode, "Param2", 0.0f);
+                            group.Entries.Add(proc);
+                        }
+
+                        config.Processors.Add(group);
+                    }
+                }
 
                 SanitizeConfig(config);
                 return config;
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Logging.Exception(ex);
                 return null;
@@ -389,15 +340,173 @@ namespace WalkerSim
 
         public void Export(TextWriter writer)
         {
-            var serializer = new XmlSerializer(typeof(Config));
-            try
+            var settings = new XmlWriterSettings
             {
-                serializer.Serialize(writer, this);
-            }
-            catch (System.Exception)
+                Indent = true,
+                IndentChars = "  ",
+                OmitXmlDeclaration = false,
+            };
+
+            using (var xw = XmlWriter.Create(writer, settings))
             {
-                throw;
+                xw.WriteStartDocument();
+                xw.WriteStartElement("WalkerSim", "http://zeh.matt/WalkerSim");
+                xw.WriteAttributeString("xmlns", "xsi", null, "http://www.w3.org/2001/XMLSchema-instance");
+                xw.WriteAttributeString("xmlns", "xsd", null, "http://www.w3.org/2001/XMLSchema");
+                xw.WriteAttributeString("xsi", "schemaLocation", "http://www.w3.org/2001/XMLSchema-instance",
+                    "http://zeh.matt/WalkerSim WalkerSimSchema.xsd");
+
+                // Logging
+                if (LoggingOpts != null)
+                {
+                    xw.WriteStartElement("Logging");
+                    WriteElement(xw, "General", XmlConvert.ToString(LoggingOpts.General));
+                    WriteElement(xw, "Spawns", XmlConvert.ToString(LoggingOpts.Spawns));
+                    WriteElement(xw, "Despawns", XmlConvert.ToString(LoggingOpts.Despawns));
+                    WriteElement(xw, "EntityClassSelection", XmlConvert.ToString(LoggingOpts.EntityClassSelection));
+                    WriteElement(xw, "Events", XmlConvert.ToString(LoggingOpts.Events));
+                    xw.WriteEndElement();
+                }
+
+                WriteElement(xw, "RandomSeed", XmlConvert.ToString(RandomSeed));
+                WriteElement(xw, "PopulationDensity", XmlConvert.ToString(PopulationDensity));
+                WriteElement(xw, "SpawnActivationRadius", XmlConvert.ToString(SpawnActivationRadius));
+                WriteElement(xw, "StartAgentsGrouped", XmlConvert.ToString(StartAgentsGrouped));
+                WriteElement(xw, "EnhancedSoundAwareness", XmlConvert.ToString(EnhancedSoundAwareness));
+                WriteElement(xw, "SoundDistanceScale", XmlConvert.ToString(SoundDistanceScale));
+                WriteElement(xw, "FastForwardAtStart", XmlConvert.ToString(FastForwardAtStart));
+                WriteElement(xw, "GroupSize", XmlConvert.ToString(GroupSize));
+                WriteElement(xw, "AgentStartPosition", StartPosition.ToString());
+                WriteElement(xw, "AgentRespawnPosition", RespawnPosition.ToString());
+                WriteElement(xw, "PauseDuringBloodmoon", XmlConvert.ToString(PauseDuringBloodmoon));
+                WriteElement(xw, "SpawnProtectionTime", XmlConvert.ToString(SpawnProtectionTime));
+                WriteElement(xw, "InfiniteZombieLifetime", XmlConvert.ToString(InfiniteZombieLifetime));
+                WriteElement(xw, "MaxSpawnedZombies", MaxSpawnedZombies ?? "75%");
+
+                // Movement Processors
+                if (Processors != null && Processors.Count > 0)
+                {
+                    xw.WriteStartElement("MovementProcessors");
+                    foreach (var group in Processors)
+                    {
+                        xw.WriteStartElement("ProcessorGroup");
+                        if (!string.IsNullOrEmpty(group.Name))
+                            xw.WriteAttributeString("Name", group.Name);
+                        xw.WriteAttributeString("Group", XmlConvert.ToString(group.Group));
+                        xw.WriteAttributeString("SpeedScale", XmlConvert.ToString(group.SpeedScale));
+                        xw.WriteAttributeString("PostSpawnBehavior", group.PostSpawnBehavior.ToString());
+                        xw.WriteAttributeString("PostSpawnWanderSpeed", group.PostSpawnWanderSpeed.ToString());
+                        if (!string.IsNullOrEmpty(group.Color))
+                            xw.WriteAttributeString("Color", group.Color);
+
+                        foreach (var proc in group.Entries)
+                        {
+                            xw.WriteStartElement("Processor");
+                            xw.WriteAttributeString("Type", proc.Type.ToString());
+                            xw.WriteAttributeString("Distance", XmlConvert.ToString(proc.Distance));
+                            xw.WriteAttributeString("Power", XmlConvert.ToString(proc.Power));
+                            if (proc.Param1 != 0f)
+                                xw.WriteAttributeString("Param1", XmlConvert.ToString(proc.Param1));
+                            if (proc.Param2 != 0f)
+                                xw.WriteAttributeString("Param2", XmlConvert.ToString(proc.Param2));
+                            xw.WriteEndElement();
+                        }
+
+                        xw.WriteEndElement();
+                    }
+                    xw.WriteEndElement();
+                }
+
+                xw.WriteEndElement();
+                xw.WriteEndDocument();
             }
         }
+
+        private static void WriteElement(XmlWriter xw, string name, string value)
+        {
+            xw.WriteStartElement(name);
+            xw.WriteString(value);
+            xw.WriteEndElement();
+        }
+
+        #region XML Parsing Helpers
+
+        private static string ReadString(XmlNode parent, string xpath, XmlNamespaceManager nsMgr, string defaultValue)
+        {
+            var node = parent.SelectSingleNode(xpath, nsMgr);
+            return node != null ? node.InnerText : defaultValue;
+        }
+
+        private static int ReadInt(XmlNode parent, string xpath, XmlNamespaceManager nsMgr, int defaultValue)
+        {
+            var node = parent.SelectSingleNode(xpath, nsMgr);
+            if (node != null && int.TryParse(node.InnerText, NumberStyles.Integer, CultureInfo.InvariantCulture, out int result))
+                return result;
+            return defaultValue;
+        }
+
+        private static uint ReadUInt(XmlNode parent, string xpath, XmlNamespaceManager nsMgr, uint defaultValue)
+        {
+            var node = parent.SelectSingleNode(xpath, nsMgr);
+            if (node != null && uint.TryParse(node.InnerText, NumberStyles.Integer, CultureInfo.InvariantCulture, out uint result))
+                return result;
+            return defaultValue;
+        }
+
+        private static float ReadFloat(XmlNode parent, string xpath, XmlNamespaceManager nsMgr, float defaultValue)
+        {
+            var node = parent.SelectSingleNode(xpath, nsMgr);
+            if (node != null && float.TryParse(node.InnerText, NumberStyles.Float, CultureInfo.InvariantCulture, out float result))
+                return result;
+            return defaultValue;
+        }
+
+        private static bool ReadBool(XmlNode parent, string xpath, XmlNamespaceManager nsMgr, bool defaultValue)
+        {
+            var node = parent.SelectSingleNode(xpath, nsMgr);
+            if (node != null && bool.TryParse(node.InnerText, out bool result))
+                return result;
+            return defaultValue;
+        }
+
+        private static T ReadEnum<T>(XmlNode parent, string xpath, XmlNamespaceManager nsMgr, T defaultValue) where T : struct
+        {
+            var node = parent.SelectSingleNode(xpath, nsMgr);
+            if (node != null && Enum.TryParse(node.InnerText, out T result))
+                return result;
+            return defaultValue;
+        }
+
+        private static string ReadAttrString(XmlNode node, string name, string defaultValue)
+        {
+            var attr = node.Attributes[name];
+            return attr != null ? attr.Value : defaultValue;
+        }
+
+        private static int ReadAttrInt(XmlNode node, string name, int defaultValue)
+        {
+            var attr = node.Attributes[name];
+            if (attr != null && int.TryParse(attr.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int result))
+                return result;
+            return defaultValue;
+        }
+
+        private static float ReadAttrFloat(XmlNode node, string name, float defaultValue)
+        {
+            var attr = node.Attributes[name];
+            if (attr != null && float.TryParse(attr.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out float result))
+                return result;
+            return defaultValue;
+        }
+
+        private static T ReadAttrEnum<T>(XmlNode node, string name, T defaultValue) where T : struct
+        {
+            var attr = node.Attributes[name];
+            if (attr != null && Enum.TryParse(attr.Value, out T result))
+                return result;
+            return defaultValue;
+        }
+
+        #endregion
     }
 }
