@@ -249,6 +249,15 @@ jobs:
       run: |
         Get-ChildItem -Path "Publish/Editor/${{ matrix.platform }}" -Include "*.pdb","*.dbg","*.dsym" -Recurse | Remove-Item -Force -Recurse
 
+    - name: Setup Examples folder
+      shell: pwsh
+      run: |
+        $outDir = "Publish/Editor/${{ matrix.platform }}"
+        $examplesDir = "$outDir/Examples"
+        New-Item -ItemType Directory -Path $examplesDir -Force | Out-Null
+        Move-Item -Path "$outDir/WalkerSim.xml" -Destination "$examplesDir/Default.xml" -Force
+        Copy-Item -Path "Editor/Examples/*.xml" -Destination $examplesDir
+
     - name: Create macOS .app bundle
       if: runner.os == 'macOS'
       shell: bash
