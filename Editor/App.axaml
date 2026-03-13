@@ -4,8 +4,7 @@
 			 x:CompileBindings="True"
 			 xmlns:local="using:Editor"
 			 xmlns:controls="using:Editor.Controls"
-			 RequestedThemeVariant="Default">
-	<!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+			 RequestedThemeVariant="Dark">
 
 	<Application.DataTemplates>
 		<local:ViewLocator/>

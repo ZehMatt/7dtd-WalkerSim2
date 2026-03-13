@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
@@ -18,6 +19,7 @@ namespace Editor.Views
             InitializeComponent();
 
             // Populate combo boxes
+            ThemeCombo.ItemsSource = Enum.GetValues<AppTheme>();
             PanButtonCombo.ItemsSource = Enum.GetValues<MouseButton>();
             ZoomModifierCombo.ItemsSource = Enum.GetValues<ZoomModifier>();
 
@@ -35,6 +37,7 @@ namespace Editor.Views
         private void LoadFromSettings()
         {
             var settings = EditorSettings.Instance;
+            ThemeCombo.SelectedItem = settings.Theme;
             PanButtonCombo.SelectedItem = settings.PanButton;
             ZoomModifierCombo.SelectedItem = settings.ZoomModifier;
 
@@ -46,6 +49,8 @@ namespace Editor.Views
         private void ApplyToSettings()
         {
             var settings = EditorSettings.Instance;
+            if (ThemeCombo.SelectedItem is AppTheme theme)
+                settings.Theme = theme;
             if (PanButtonCombo.SelectedItem is MouseButton pan)
                 settings.PanButton = pan;
             if (ZoomModifierCombo.SelectedItem is ZoomModifier zoom)
@@ -70,9 +75,19 @@ namespace Editor.Views
 
         private void OnResetClick(object sender, RoutedEventArgs e)
         {
+            ThemeCombo.SelectedItem = AppTheme.Dark;
             PanButtonCombo.SelectedItem = MouseButton.Right;
             ZoomModifierCombo.SelectedItem = ZoomModifier.Ctrl;
             _folders.Clear();
+        }
+
+        private void OnThemeChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ThemeCombo.SelectedItem is AppTheme theme &&
+                Application.Current is App app)
+            {
+                app.ApplyTheme(theme);
+            }
         }
 
         private async void OnAddFolderClick(object sender, RoutedEventArgs e)

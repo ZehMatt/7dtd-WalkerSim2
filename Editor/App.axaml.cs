@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Styling;
 using Editor.ViewModels;
 using Editor.Views;
 
@@ -12,7 +13,19 @@ namespace Editor
         {
             AvaloniaXamlLoader.Load(this);
 
+            ApplyTheme(EditorSettings.Instance.Theme);
+
             WalkerSim.Simulation.Instance.EditorMode = true;
+        }
+
+        public void ApplyTheme(AppTheme theme)
+        {
+            RequestedThemeVariant = theme switch
+            {
+                AppTheme.Light => ThemeVariant.Light,
+                AppTheme.System => ThemeVariant.Default,
+                _ => ThemeVariant.Dark,
+            };
         }
 
         public override void OnFrameworkInitializationCompleted()
