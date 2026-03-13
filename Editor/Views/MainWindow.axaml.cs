@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -57,11 +56,11 @@ namespace Editor.Views
                         ScrollLogIfNeeded(entry.IsError);
                     };
                     vm2.NavigateToAgentRequested = a => SimCanvas.GoToAgent(a);
-                    vm2.TrackAgentRequested      = a => SimCanvas.TrackAgent(a);
-                    vm2.StopTrackingRequested    = () => SimCanvas.StopTracking();
-                    vm2.GroupColorsChanged        = () => SimCanvas.InvalidateGroupBrushes();
-                    SimCanvas.TrackingStopped    = () => vm2.IsTrackingAgent = false;
-                    SimCanvas.OnCanvasClick      = pos => vm2.HandleCanvasClick(pos);
+                    vm2.TrackAgentRequested = a => SimCanvas.TrackAgent(a);
+                    vm2.StopTrackingRequested = () => SimCanvas.StopTracking();
+                    vm2.GroupColorsChanged = () => SimCanvas.InvalidateGroupBrushes();
+                    SimCanvas.TrackingStopped = () => vm2.IsTrackingAgent = false;
+                    SimCanvas.OnCanvasClick = pos => vm2.HandleCanvasClick(pos);
                 }
             };
         }
@@ -130,7 +129,8 @@ namespace Editor.Views
 
         private void OnToolEmitSoundClick(object? sender, RoutedEventArgs e)
         {
-            if (DataContext is not EditorViewModel vm) return;
+            if (DataContext is not EditorViewModel vm)
+                return;
             if (sender is MenuItem { Tag: string tag } && float.TryParse(tag, out float radius))
                 vm.SoundRadius = radius;
             vm.ActivateEmitSoundCommand.Execute(null);
@@ -201,19 +201,38 @@ namespace Editor.Views
 
         private void OnViewToggleClick(object? sender, RoutedEventArgs e)
         {
-            if (sender is not MenuItem item) return;
+            if (sender is not MenuItem item)
+                return;
 
             switch (item.Name)
             {
-                case "MenuViewPauseRendering": _renderingPaused = item.IsChecked; return;
-                case "MenuViewBiomes":       SimCanvas.ShowBiomes       = item.IsChecked; break;
-                case "MenuViewRoads":        SimCanvas.ShowRoads        = item.IsChecked; break;
-                case "MenuViewAgents":       SimCanvas.ShowAgents       = item.IsChecked; break;
-                case "MenuViewActiveAgents": SimCanvas.ShowActiveAgents = item.IsChecked; break;
-                case "MenuViewEvents":       SimCanvas.ShowEvents       = item.IsChecked; break;
-                case "MenuViewPrefabs":      SimCanvas.ShowPrefabs      = item.IsChecked; break;
-                case "MenuViewCities":       SimCanvas.ShowCities       = item.IsChecked; break;
-                case "MenuViewRoadNetwork": SimCanvas.ShowRoadNetwork  = item.IsChecked; break;
+                case "MenuViewPauseRendering":
+                    _renderingPaused = item.IsChecked;
+                    return;
+                case "MenuViewBiomes":
+                    SimCanvas.ShowBiomes = item.IsChecked;
+                    break;
+                case "MenuViewRoads":
+                    SimCanvas.ShowRoads = item.IsChecked;
+                    break;
+                case "MenuViewAgents":
+                    SimCanvas.ShowAgents = item.IsChecked;
+                    break;
+                case "MenuViewActiveAgents":
+                    SimCanvas.ShowActiveAgents = item.IsChecked;
+                    break;
+                case "MenuViewEvents":
+                    SimCanvas.ShowEvents = item.IsChecked;
+                    break;
+                case "MenuViewPrefabs":
+                    SimCanvas.ShowPrefabs = item.IsChecked;
+                    break;
+                case "MenuViewCities":
+                    SimCanvas.ShowCities = item.IsChecked;
+                    break;
+                case "MenuViewRoadNetwork":
+                    SimCanvas.ShowRoadNetwork = item.IsChecked;
+                    break;
             }
 
             SimCanvas.InvalidateVisual();
@@ -229,7 +248,7 @@ namespace Editor.Views
             {
                 sidebarCol.Width = new GridLength(_savedSidebarWidth, GridUnitType.Pixel);
                 sidebarCol.MinWidth = 200;
-                sidebarCol.MaxWidth = 600;
+                sidebarCol.MaxWidth = double.PositiveInfinity;
                 splitterCol.Width = new GridLength(4, GridUnitType.Pixel);
                 SidebarBorder.IsVisible = true;
                 SidebarSplitter.IsVisible = true;
@@ -239,8 +258,8 @@ namespace Editor.Views
             {
                 _savedSidebarWidth = sidebarCol.ActualWidth;
                 sidebarCol.MinWidth = 0;
-                sidebarCol.MaxWidth = 0;
-                sidebarCol.Width = new GridLength(0, GridUnitType.Pixel);
+                sidebarCol.MaxWidth = double.PositiveInfinity;
+                sidebarCol.Width = new GridLength(1, GridUnitType.Auto);
                 splitterCol.Width = new GridLength(0, GridUnitType.Pixel);
                 SidebarBorder.IsVisible = false;
                 SidebarSplitter.IsVisible = false;
@@ -285,7 +304,8 @@ namespace Editor.Views
 
         private ScrollViewer? GetLogScrollViewer()
         {
-            if (_logScrollViewer != null) return _logScrollViewer;
+            if (_logScrollViewer != null)
+                return _logScrollViewer;
             _logScrollViewer = LogListBox.GetVisualDescendants()
                 .OfType<ScrollViewer>()
                 .FirstOrDefault();
@@ -295,7 +315,8 @@ namespace Editor.Views
         private void ScrollLogIfNeeded(bool forceScroll)
         {
             var sv = GetLogScrollViewer();
-            if (sv == null) return;
+            if (sv == null)
+                return;
 
             bool nearBottom = (sv.Extent.Height - sv.Offset.Y - sv.Viewport.Height) <= NearBottomThreshold;
             if (forceScroll || nearBottom)
