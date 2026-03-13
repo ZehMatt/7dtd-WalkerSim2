@@ -18,6 +18,18 @@
 
 		<ScrollViewer>
 			<StackPanel Spacing="16">
+				<!-- Appearance -->
+				<TextBlock Text="Appearance" FontWeight="Bold" FontSize="14"/>
+				<Border BorderBrush="{DynamicResource EditorBorder}" BorderThickness="1"
+						CornerRadius="4" Padding="12">
+					<Grid ColumnDefinitions="150,*">
+						<TextBlock Grid.Column="0" Text="Theme" VerticalAlignment="Center"/>
+						<ComboBox Grid.Column="1" x:Name="ThemeCombo"
+								  HorizontalAlignment="Stretch"
+								  SelectionChanged="OnThemeChanged"/>
+					</Grid>
+				</Border>
+
 				<!-- Canvas Controls -->
 				<TextBlock Text="Canvas Controls" FontWeight="Bold" FontSize="14"/>
 				<Border BorderBrush="{DynamicResource EditorBorder}" BorderThickness="1"

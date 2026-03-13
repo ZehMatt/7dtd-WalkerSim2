@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Xml.Serialization;
 
 namespace WalkerSim
 {
@@ -84,12 +83,10 @@ namespace WalkerSim
 
         private bool SerializeConfig(State state, SerializationContext ctx)
         {
-            var configSerializer = new XmlSerializer(typeof(Config));
-
             if (ctx.IsWriting)
             {
                 var textWriter = new StringWriter();
-                configSerializer.Serialize(textWriter, state.Config);
+                state.Config.Export(textWriter);
                 var configXml = textWriter.ToString();
                 ctx.Serialize(ref configXml);
             }
@@ -97,8 +94,7 @@ namespace WalkerSim
             {
                 string configXml = null;
                 ctx.Serialize(ref configXml);
-                var textReader = new StringReader(configXml);
-                state.Config = (Config)configSerializer.Deserialize(textReader);
+                state.Config = Config.LoadFromText(configXml);
             }
 
             return true;

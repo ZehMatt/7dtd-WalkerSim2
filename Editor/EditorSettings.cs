@@ -20,6 +20,13 @@ namespace Editor
         Shift
     }
 
+    public enum AppTheme
+    {
+        Dark,
+        Light,
+        System
+    }
+
     [JsonSourceGenerationOptions(WriteIndented = true)]
     [JsonSerializable(typeof(EditorSettings))]
     internal partial class EditorSettingsContext : JsonSerializerContext { }
@@ -43,6 +50,9 @@ namespace Editor
                 return _instance;
             }
         }
+
+        // Appearance
+        public AppTheme Theme { get; set; } = AppTheme.Dark;
 
         // Canvas controls
         public MouseButton PanButton { get; set; } = MouseButton.Right;
@@ -86,6 +96,7 @@ namespace Editor
 
         public void ResetToDefaults()
         {
+            Theme = AppTheme.Dark;
             PanButton = MouseButton.Right;
             ZoomModifier = ZoomModifier.Ctrl;
             GameFolders.Clear();

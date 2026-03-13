@@ -1,10 +1,9 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using Avalonia.Styling;
 using Editor.ViewModels;
 using Editor.Views;
-using System.Linq;
 
 namespace Editor
 {
@@ -14,16 +13,25 @@ namespace Editor
         {
             AvaloniaXamlLoader.Load(this);
 
+            ApplyTheme(EditorSettings.Instance.Theme);
+
             WalkerSim.Simulation.Instance.EditorMode = true;
+        }
+
+        public void ApplyTheme(AppTheme theme)
+        {
+            RequestedThemeVariant = theme switch
+            {
+                AppTheme.Light => ThemeVariant.Light,
+                AppTheme.System => ThemeVariant.Default,
+                _ => ThemeVariant.Dark,
+            };
         }
 
         public override void OnFrameworkInitializationCompleted()
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
-                // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
-                DisableAvaloniaDataAnnotationValidation();
                 desktop.MainWindow = new MainWindow
                 {
                     DataContext = new EditorViewModel(),
@@ -31,19 +39,6 @@ namespace Editor
             }
 
             base.OnFrameworkInitializationCompleted();
-        }
-
-        private void DisableAvaloniaDataAnnotationValidation()
-        {
-            // Get an array of plugins to remove
-            var dataValidationPluginsToRemove =
-                BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
-
-            // remove each entry found
-            foreach (var plugin in dataValidationPluginsToRemove)
-            {
-                BindingPlugins.DataValidators.Remove(plugin);
-            }
         }
     }
 }
