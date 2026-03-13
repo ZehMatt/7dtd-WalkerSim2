@@ -24,7 +24,7 @@ namespace Editor.Views
             {
                 _synth = new ChipSynth();
                 _synth.Play();
-                Effect.Synth = _synth;
+                VFX.Synth = _synth;
             }
         }
 

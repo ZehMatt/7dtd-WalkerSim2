@@ -11,7 +11,7 @@
 	<Grid RowDefinitions="*,Auto">
 		<!-- VFX background with overlay text -->
 		<Grid Grid.Row="0">
-			<views:AboutVFX x:Name="Effect"/>
+			<views:AboutVFX x:Name="VFX"/>
 
 			<!-- Info card pinned to top -->
 			<StackPanel VerticalAlignment="Top" HorizontalAlignment="Center"
