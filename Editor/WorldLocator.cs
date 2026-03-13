@@ -139,7 +139,7 @@ namespace Editor
             }
 
             // Handle case where editor is running from inside Mods/WalkerSim
-            var exe = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            var exe = Path.GetDirectoryName(AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar));
             if (exe != null)
             {
                 var candidate = Path.GetFullPath(Path.Combine(exe, "..", ".."));
