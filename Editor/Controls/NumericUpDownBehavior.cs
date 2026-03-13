@@ -1,9 +1,9 @@
-using System;
-using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Threading;
+using System;
+using System.Globalization;
 
 namespace Editor.Controls
 {
@@ -39,18 +39,23 @@ namespace Editor.Controls
 
         private static void OnTemplateApplied(object? sender, TemplateAppliedEventArgs e)
         {
-            if (sender is not NumericUpDown nud) return;
+            if (sender is not NumericUpDown nud)
+                return;
             var textBox = e.NameScope.Find<TextBox>("PART_TextBox");
-            if (textBox == null) return;
+            if (textBox == null)
+                return;
 
             textBox.TextChanged += (_, _) =>
             {
                 var text = textBox.Text;
-                if (string.IsNullOrEmpty(text)) return;
+                if (string.IsNullOrEmpty(text))
+                    return;
                 // Only act on text that parses as a number; partial inputs like "-" or "." are left alone.
-                if (!decimal.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsed)) return;
+                if (!decimal.TryParse(text, NumberStyles.Any, CultureInfo.CurrentCulture, out var parsed))
+                    return;
                 var clamped = Math.Clamp(parsed, nud.Minimum, nud.Maximum);
-                if (clamped == parsed) return;
+                if (clamped == parsed)
+                    return;
                 // Post so this runs after Avalonia's own TextChanged handler has finished
                 // and cleared its _updateFromTextInput flag, allowing the text to be refreshed.
                 Dispatcher.UIThread.Post(() => nud.Value = clamped);
