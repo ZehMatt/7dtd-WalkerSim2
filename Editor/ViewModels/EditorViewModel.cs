@@ -944,7 +944,10 @@ namespace Editor.ViewModels
                     foreach (var proc in Config.Processors)
                     {
                         var m = CreateMovementSystemModel(proc);
-                        m.Name = $"System {++sysIdx}";
+                        if (string.IsNullOrEmpty(m.Name))
+                            m.Name = $"System {++sysIdx}";
+                        else
+                            sysIdx++;
                         MovementSystems.Add(m);
                     }
                     RefreshAllGroupIndexOptions();
@@ -1064,7 +1067,10 @@ namespace Editor.ViewModels
                     foreach (var proc in Config.Processors)
                     {
                         var m = CreateMovementSystemModel(proc);
-                        m.Name = $"System {++sysIdx}";
+                        if (string.IsNullOrEmpty(m.Name))
+                            m.Name = $"System {++sysIdx}";
+                        else
+                            sysIdx++;
                         MovementSystems.Add(m);
                     }
                     RefreshAllGroupIndexOptions();
