@@ -635,7 +635,7 @@ namespace Editor.ViewModels
             var c = WalkerSim.Drawing.ColorTable.GetColorForIndex(idx);
             var newGroup = new Config.MovementProcessorGroup
             {
-                Group = MovementSystems.Count == 0 ? -1 : 0,
+                Group = -1,
                 SpeedScale = 1.0f,
                 PostSpawnBehavior = Config.PostSpawnBehavior.Wander,
                 Color = $"#{c.R:X2}{c.G:X2}{c.B:X2}"

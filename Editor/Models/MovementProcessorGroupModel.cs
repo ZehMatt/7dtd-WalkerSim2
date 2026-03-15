@@ -189,7 +189,7 @@ namespace Editor.Models
             {
                 Type = available[0],
                 Distance = 50f,
-                Power = 0.0001f
+                Power = 0.10f
             };
             _group.Entries.Add(newProcessor);
             var m = new MovementProcessorModel(newProcessor);
