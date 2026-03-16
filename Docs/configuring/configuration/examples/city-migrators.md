@@ -47,14 +47,14 @@ Agents spawn in cities and travel between them using roads. The **CityVisitor** 
   <SpawnProtectionTime>300</SpawnProtectionTime>
   <InfiniteZombieLifetime>false</InfiniteZombieLifetime>
   <MaxSpawnedZombies>75%</MaxSpawnedZombies>
-  <MovementProcessors>
-    <ProcessorGroup Name="System 1" Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#DD44DD">
+  <Systems>
+    <System Name="System 1" Weight="1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#DD44DD">
       <Processor Type="CityVisitor" Distance="0" Power="0.9" Param1="15" Param2="30" />
       <Processor Type="StickToRoads" Distance="0" Power="0.5" Param1="0" Param2="0" />
       <Processor Type="AlignSameGroup" Distance="20" Power="0.6" Param1="0" Param2="0" />
       <Processor Type="AvoidSameGroup" Distance="10" Power="1" Param1="0" Param2="0" />
       <Processor Type="WorldEvents" Distance="0" Power="0.7" Param1="0" Param2="0" />
-    </ProcessorGroup>
-  </MovementProcessors>
+    </System>
+  </Systems>
 </WalkerSim>
 ```

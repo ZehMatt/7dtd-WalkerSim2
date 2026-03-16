@@ -90,6 +90,9 @@ namespace WalkerSim
             public bool Events = false;
         }
 
+        public const int CurrentVersion = 2;
+
+        public int Version = CurrentVersion;
         public LoggingOptions LoggingOpts;
         public int RandomSeed = 1337;
         public int PopulationDensity = 300;
@@ -177,6 +180,8 @@ namespace WalkerSim
                 var root = doc.DocumentElement;
                 var config = new Config();
 
+                config.Version = ReadAttrInt(root, "Version", 0);
+
                 // Logging
                 var loggingNode = root.SelectSingleNode("ws:Logging", nsMgr);
                 if (loggingNode != null)
@@ -204,12 +209,12 @@ namespace WalkerSim
                 config.InfiniteZombieLifetime = ReadBool(root, "ws:InfiniteZombieLifetime", nsMgr, false);
                 config.MaxSpawnedZombies = ReadString(root, "ws:MaxSpawnedZombies", nsMgr, "75%");
 
-                // Movement Processors
-                var processorsNode = root.SelectSingleNode("ws:MovementProcessors", nsMgr);
+                // Systems
+                var processorsNode = root.SelectSingleNode("ws:Systems", nsMgr);
                 if (processorsNode != null)
                 {
                     config.Processors = new List<MovementProcessorGroup>();
-                    foreach (XmlNode groupNode in processorsNode.SelectNodes("ws:ProcessorGroup", nsMgr))
+                    foreach (XmlNode groupNode in processorsNode.SelectNodes("ws:System", nsMgr))
                     {
                         var group = new MovementProcessorGroup();
                         group.Name = ReadAttrString(groupNode, "Name", "");
@@ -357,6 +362,7 @@ namespace WalkerSim
                 xw.WriteAttributeString("xmlns", "xsd", null, "http://www.w3.org/2001/XMLSchema");
                 xw.WriteAttributeString("xsi", "schemaLocation", "http://www.w3.org/2001/XMLSchema-instance",
                     "http://zeh.matt/WalkerSim WalkerSimSchema.xsd");
+                xw.WriteAttributeString("Version", XmlConvert.ToString(CurrentVersion));
 
                 // Logging
                 if (LoggingOpts != null)
@@ -385,13 +391,13 @@ namespace WalkerSim
                 WriteElement(xw, "InfiniteZombieLifetime", XmlConvert.ToString(InfiniteZombieLifetime));
                 WriteElement(xw, "MaxSpawnedZombies", MaxSpawnedZombies ?? "75%");
 
-                // Movement Processors
+                // Systems
                 if (Processors != null && Processors.Count > 0)
                 {
-                    xw.WriteStartElement("MovementProcessors");
+                    xw.WriteStartElement("Systems");
                     foreach (var group in Processors)
                     {
-                        xw.WriteStartElement("ProcessorGroup");
+                        xw.WriteStartElement("System");
                         if (!string.IsNullOrEmpty(group.Name))
                             xw.WriteAttributeString("Name", group.Name);
                         xw.WriteAttributeString("Weight", XmlConvert.ToString(group.Weight));
