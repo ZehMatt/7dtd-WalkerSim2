@@ -1,13 +1,39 @@
 using System.Collections.Generic;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WalkerSim;
 
 namespace Editor.Models
 {
+    public class BiomeOption
+    {
+        public string Name { get; }
+        public Biomes.Type Value { get; }
+        public BiomeOption(string name, Biomes.Type value) { Name = name; Value = value; }
+        public override string ToString() => Name;
+    }
+
     public partial class MovementProcessorModel : ObservableObject
     {
         private readonly Config.MovementProcessor _processor;
+
+        public static BiomeOption[] BiomeOptions { get; } = Biomes.ValidTypes
+            .Select(t => new BiomeOption(BiomeDisplayName(t), t))
+            .ToArray();
+
+        private static string BiomeDisplayName(Biomes.Type t)
+        {
+            switch (t)
+            {
+                case Biomes.Type.Snow: return "Snow";
+                case Biomes.Type.PineForest: return "Pine Forest";
+                case Biomes.Type.Desert: return "Desert";
+                case Biomes.Type.Wasteland: return "Wasteland";
+                case Biomes.Type.BurntForest: return "Burnt Forest";
+                default: return t.ToString();
+            }
+        }
 
         public MovementProcessorModel(Config.MovementProcessor processor)
         {
@@ -17,6 +43,7 @@ namespace Editor.Models
             _power = processor.Power;
             _param1 = processor.Param1;
             _param2 = processor.Param2;
+            _selectedBiome = BiomeOptions.FirstOrDefault(b => (byte)b.Value == (byte)processor.Param1) ?? BiomeOptions[0];
         }
 
         public Config.MovementProcessor Underlying => _processor;
@@ -45,8 +72,27 @@ namespace Editor.Models
             OnPropertyChanged(nameof(Param1Label));
             OnPropertyChanged(nameof(Param2Label));
             OnPropertyChanged(nameof(Description));
+            OnPropertyChanged(nameof(ShowBiomeSelector));
+            // When switching to a biome processor, sync Param1 from the biome selector.
+            if (ShowBiomeSelector)
+            {
+                Param1 = (float)(byte)SelectedBiome.Value;
+            }
             ConfigChanged?.Invoke();
         }
+
+        [ObservableProperty]
+        private BiomeOption _selectedBiome;
+
+        partial void OnSelectedBiomeChanged(BiomeOption value)
+        {
+            if (value == null) return;
+            Param1 = (float)(byte)value.Value;
+        }
+
+        public bool ShowBiomeSelector =>
+            Type == Config.MovementProcessorType.StickToBiome ||
+            Type == Config.MovementProcessorType.AvoidBiome;
 
         [ObservableProperty]
         private float _distance;
@@ -123,6 +169,8 @@ namespace Editor.Models
             { Config.MovementProcessorType.PreferCities,   new(null, "Power", null, null, "Attract agents towards city areas, making them gravitate towards urban zones.") },
             { Config.MovementProcessorType.AvoidCities,    new("Distance", "Power", null, null, "Repel agents away from city areas within the given distance.") },
             { Config.MovementProcessorType.CityVisitor,    new(null, "Power", "Min Stay (min)", "Max Stay (min)", "Agents visit cities and stay for a random duration between min and max stay time (in real-time minutes).", 20f, 40f) },
+            { Config.MovementProcessorType.StickToBiome,   new(null, "Power", null, null, "Attract agents towards a specific biome type using its signed distance field. Agents outside the biome are pulled toward it.", (float)Biomes.Type.PineForest) },
+            { Config.MovementProcessorType.AvoidBiome,     new(null, "Power", null, null, "Repel agents away from a specific biome type using its signed distance field. Agents inside the biome are pushed out.", (float)Biomes.Type.PineForest) },
         };
 
         private ParamMeta GetMeta() => MetaMap.TryGetValue(Type, out var m) ? m : DefaultMeta;

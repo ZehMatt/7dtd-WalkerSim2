@@ -110,14 +110,15 @@
 									<TextBox Grid.Column="1" Text="{Binding Name, Mode=TwoWay}" Watermark="{Binding DisplayName}" FontSize="12"/>
 								</Grid>
 
-								<!-- Affected Group -->
+								<!-- Distribution Weight -->
 								<Grid ColumnDefinitions="140,*">
-									<controls:LabelWithHelp Grid.Column="0" LabelText="Affected Group:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"
-										HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/systems.html#group-number"/>
-									<ComboBox Grid.Column="1"
-											  ItemsSource="{Binding GroupIndexOptions}"
-											  SelectedItem="{Binding SelectedGroupOption, Mode=TwoWay}"
-											  HorizontalAlignment="Stretch" FontSize="12"/>
+									<controls:LabelWithHelp Grid.Column="0" LabelText="Weight:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"
+										HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/systems.html#weight"/>
+									<NumericUpDown Grid.Column="1"
+												   Value="{Binding Weight}"
+												   Minimum="0.01" Maximum="100" Increment="0.1"
+												   FormatString="0.##"
+												   HorizontalAlignment="Stretch" FontSize="12"/>
 								</Grid>
 
 								<!-- Speed Scale -->
@@ -195,6 +196,15 @@
 												   Value="{Binding Power}"
 												   Minimum="0" Maximum="1" Increment="0.01"
 												   FormatString="F2" FontSize="12"/>
+								</Grid>
+
+								<!-- Biome selector (for StickToBiome/AvoidBiome) -->
+								<Grid ColumnDefinitions="110,*" IsVisible="{Binding ShowBiomeSelector}">
+									<TextBlock Grid.Column="0" Text="Biome:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
+									<ComboBox Grid.Column="1"
+											  SelectedItem="{Binding SelectedBiome, Mode=TwoWay}"
+											  ItemsSource="{x:Static models:MovementProcessorModel.BiomeOptions}"
+											  HorizontalAlignment="Stretch" FontSize="12"/>
 								</Grid>
 
 								<!-- Param1 -->

@@ -171,7 +171,7 @@ namespace WalkerSim.Console
                     for (int i = 0; i < config.Processors.Count; i++)
                     {
                         var group = config.Processors[i];
-                        ConsoleOutput.Log("  Group {0}:", group.Group == -1 ? "Any" : group.Group.ToString());
+                        ConsoleOutput.Log("  System {0} (Weight: {1}):", string.IsNullOrEmpty(group.Name) ? (i + 1).ToString() : group.Name, group.Weight);
                         ConsoleOutput.Log("    Speed Scale: {0}", group.SpeedScale);
                         ConsoleOutput.Log("    Post Spawn Behavior: {0}", group.PostSpawnBehavior);
                         ConsoleOutput.Log("    Post Spawn Wander Speed: {0}", group.PostSpawnWanderSpeed);

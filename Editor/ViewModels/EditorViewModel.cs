@@ -108,13 +108,13 @@ namespace Editor.ViewModels
         public int PopulationDensity
         {
             get => Config.PopulationDensity;
-            set { Config.PopulationDensity = value; OnPropertyChanged(); RefreshAllGroupIndexOptions(); if (!_suppressReset) ResetSimulation(); }
+            set { Config.PopulationDensity = value; OnPropertyChanged(); RefreshAllSystemIndices(); if (!_suppressReset) ResetSimulation(); }
         }
 
         public int GroupSize
         {
             get => Config.GroupSize;
-            set { Config.GroupSize = value; OnPropertyChanged(); RefreshAllGroupIndexOptions(); if (!_suppressReset) ResetSimulation(); }
+            set { Config.GroupSize = value; OnPropertyChanged(); RefreshAllSystemIndices(); if (!_suppressReset) ResetSimulation(); }
         }
 
         public int RandomSeed
@@ -502,7 +502,7 @@ namespace Editor.ViewModels
             MovementSystems = new ObservableCollection<Models.MovementProcessorGroupModel>(
                 Config.Processors.Select(p => CreateMovementSystemModel(p))
             );
-            RefreshAllGroupIndexOptions();
+            RefreshAllSystemIndices();
 
             // Setup logging
             Logging.AddSink(this);
@@ -635,7 +635,7 @@ namespace Editor.ViewModels
             var c = WalkerSim.Drawing.ColorTable.GetColorForIndex(idx);
             var newGroup = new Config.MovementProcessorGroup
             {
-                Group = -1,
+                Weight = 1.0f,
                 SpeedScale = 1.0f,
                 PostSpawnBehavior = Config.PostSpawnBehavior.Wander,
                 Color = $"#{c.R:X2}{c.G:X2}{c.B:X2}"
@@ -645,7 +645,7 @@ namespace Editor.ViewModels
             var model = CreateMovementSystemModel(newGroup);
             model.Name = $"System {MovementSystems.Count + 1}";
             MovementSystems.Add(model);
-            RefreshAllGroupIndexOptions();
+            RefreshAllSystemIndices();
             ReloadConfigLive();
         }
 
@@ -762,10 +762,20 @@ namespace Editor.ViewModels
                 System.Linq.Enumerable.GroupBy(agents, a => a.Group),
                 g => g.Key);
 
+            // Build group-to-system name mapping.
+            var groupToSystem = _simulation.GroupToSystemIndex;
+
             Models.AgentModel? newSelected = null;
             foreach (var group in grouped)
             {
-                AgentListItems.Add(new Models.AgentGroupHeader(group.Key));
+                var systemName = "";
+                if (groupToSystem != null && group.Key >= 0 && group.Key < groupToSystem.Length)
+                {
+                    var sysIdx = groupToSystem[group.Key];
+                    if (sysIdx >= 0 && sysIdx < MovementSystems.Count)
+                        systemName = MovementSystems[sysIdx].DisplayName;
+                }
+                AgentListItems.Add(new Models.AgentGroupHeader(group.Key, systemName));
                 foreach (var agent in group)
                 {
                     var model = new Models.AgentModel(agent);
@@ -817,7 +827,7 @@ namespace Editor.ViewModels
             var source = system.Underlying;
             var newGroup = new Config.MovementProcessorGroup
             {
-                Group = source.Group,
+                Weight = source.Weight,
                 SpeedScale = source.SpeedScale,
                 PostSpawnBehavior = source.PostSpawnBehavior,
                 PostSpawnWanderSpeed = source.PostSpawnWanderSpeed,
@@ -841,7 +851,7 @@ namespace Editor.ViewModels
             var model = CreateMovementSystemModel(newGroup);
             model.Name = $"{system.DisplayName} (Copy)";
             MovementSystems.Add(model);
-            RefreshAllGroupIndexOptions();
+            RefreshAllSystemIndices();
             ReloadConfigLive();
         }
 
@@ -853,19 +863,15 @@ namespace Editor.ViewModels
 
             Config.Processors.Remove(system.Underlying);
             MovementSystems.Remove(system);
-            RefreshAllGroupIndexOptions();
+            RefreshAllSystemIndices();
             ReloadConfigLive();
         }
 
-        private void RefreshAllGroupIndexOptions()
+        private void RefreshAllSystemIndices()
         {
-            var totalGroups = Config.GroupSize > 0
-                ? (Config.PopulationDensity + Config.GroupSize - 1) / Config.GroupSize
-                : 0;
             for (int i = 0; i < MovementSystems.Count; i++)
             {
                 MovementSystems[i].SystemIndex = i + 1;
-                MovementSystems[i].RefreshGroupOptions(MovementSystems, totalGroups);
             }
         }
 
@@ -950,7 +956,7 @@ namespace Editor.ViewModels
                             sysIdx++;
                         MovementSystems.Add(m);
                     }
-                    RefreshAllGroupIndexOptions();
+                    RefreshAllSystemIndices();
                     _suppressReset = false;
 
                     // Reset simulation with new config (OnConfigChanged will refresh all UI bindings)
@@ -1073,7 +1079,7 @@ namespace Editor.ViewModels
                             sysIdx++;
                         MovementSystems.Add(m);
                     }
-                    RefreshAllGroupIndexOptions();
+                    RefreshAllSystemIndices();
                     _suppressReset = false;
 
                     // Update stats

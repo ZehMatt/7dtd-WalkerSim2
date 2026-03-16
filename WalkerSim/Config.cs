@@ -57,6 +57,8 @@ namespace WalkerSim
             PreferCities,
             AvoidCities,
             CityVisitor,
+            StickToBiome,
+            AvoidBiome,
         }
 
         public class MovementProcessor
@@ -71,7 +73,7 @@ namespace WalkerSim
         public class MovementProcessorGroup
         {
             public string Name = "";
-            public int Group = -1;
+            public float Weight = 1.0f;
             public float SpeedScale = 1.0f;
             public PostSpawnBehavior PostSpawnBehavior = PostSpawnBehavior.Wander;
             public WanderingSpeed PostSpawnWanderSpeed = WanderingSpeed.Walk;
@@ -211,7 +213,7 @@ namespace WalkerSim
                     {
                         var group = new MovementProcessorGroup();
                         group.Name = ReadAttrString(groupNode, "Name", "");
-                        group.Group = ReadAttrInt(groupNode, "Group", -1);
+                        group.Weight = ReadAttrFloat(groupNode, "Weight", 1.0f);
                         group.SpeedScale = ReadAttrFloat(groupNode, "SpeedScale", 1.0f);
                         group.PostSpawnBehavior = ReadAttrEnum(groupNode, "PostSpawnBehavior", PostSpawnBehavior.Wander);
                         group.PostSpawnWanderSpeed = ReadAttrEnum(groupNode, "PostSpawnWanderSpeed", WanderingSpeed.Walk);
@@ -272,7 +274,7 @@ namespace WalkerSim
                 Processors = new List<MovementProcessorGroup>
                 {
                     new MovementProcessorGroup {
-                        Group = -1,
+                        Weight = 1.0f,
                         SpeedScale = 1.0f,
                         Entries = new List<MovementProcessor> {
                             new MovementProcessor()
@@ -392,7 +394,7 @@ namespace WalkerSim
                         xw.WriteStartElement("ProcessorGroup");
                         if (!string.IsNullOrEmpty(group.Name))
                             xw.WriteAttributeString("Name", group.Name);
-                        xw.WriteAttributeString("Group", XmlConvert.ToString(group.Group));
+                        xw.WriteAttributeString("Weight", XmlConvert.ToString(group.Weight));
                         xw.WriteAttributeString("SpeedScale", XmlConvert.ToString(group.SpeedScale));
                         xw.WriteAttributeString("PostSpawnBehavior", group.PostSpawnBehavior.ToString());
                         xw.WriteAttributeString("PostSpawnWanderSpeed", group.PostSpawnWanderSpeed.ToString());

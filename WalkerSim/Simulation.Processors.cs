@@ -152,7 +152,6 @@ namespace WalkerSim
         {
             public List<Processor> Entries;
             public float SpeedScale = 1.0f;
-            public int Group = -1;
             public Config.PostSpawnBehavior PostSpawnBehavior = Config.PostSpawnBehavior.Wander;
             public Config.WanderingSpeed PostSpawnWanderingSpeed = Config.WanderingSpeed.NoOverride;
             public Drawing.Color Color;
@@ -188,9 +187,17 @@ namespace WalkerSim
             { Config.MovementProcessorType.PreferCities, PreferCities },
             { Config.MovementProcessorType.AvoidCities, AvoidCities },
             { Config.MovementProcessorType.CityVisitor, CityVisitor },
+            { Config.MovementProcessorType.StickToBiome, StickToBiome },
+            { Config.MovementProcessorType.AvoidBiome, AvoidBiome },
         };
 
         private List<MovementProcessor> _processors = new List<MovementProcessor>();
+        private int[] _groupToSystemIndex = System.Array.Empty<int>();
+
+        /// <summary>
+        /// Returns the system index (0-based, into Config.Processors) for each spawn group.
+        /// </summary>
+        public int[] GroupToSystemIndex => _groupToSystemIndex;
 
         private MovementProcessorDelegate GetProcessorDelegate(Config.MovementProcessorType type)
         {
@@ -212,32 +219,13 @@ namespace WalkerSim
                 return;
             }
 
-            // Zero init the list based on group count.
-            for (int i = 0; i < _state.GroupCount; i++)
-            {
-                _processors.Add(null);
-            }
-
-            // Build a list of groups, some specify the exact group some are generic.
-            List<MovementProcessor> genericGroups = new List<MovementProcessor>();
-            List<MovementProcessor> specificGroups = new List<MovementProcessor>();
+            // Build the list of movement processors from config.
+            var configProcessors = new List<MovementProcessor>();
+            var weights = new List<float>();
 
             foreach (var processorGroup in _state.Config.Processors)
             {
                 var processors = new List<Processor>();
-
-                // Use a local group index to avoid mutating the config object.
-                var groupIndex = processorGroup.Group;
-                if (groupIndex != -1)
-                {
-                    if (groupIndex >= _state.GroupCount)
-                    {
-                        Logging.Err("A processor group specifies an invalid group index, available groups: {0}, specified: {1}, fallback to any.", _state.GroupCount, groupIndex);
-
-                        // Fallback to any group.
-                        groupIndex = -1;
-                    }
-                }
 
                 foreach (var processor in processorGroup.Entries)
                 {
@@ -255,14 +243,12 @@ namespace WalkerSim
                 {
                     Entries = processors,
                     SpeedScale = processorGroup.SpeedScale,
-                    Group = groupIndex,
                     PostSpawnBehavior = processorGroup.PostSpawnBehavior,
                     PostSpawnWanderingSpeed = processorGroup.PostSpawnWanderSpeed,
                 };
 
                 if (processorGroup.Color == "")
                 {
-                    // Assign a default color of purple.
                     group.Color = Drawing.Color.Magenta;
                 }
                 else
@@ -270,52 +256,69 @@ namespace WalkerSim
                     group.Color = Utils.ParseColor(processorGroup.Color);
                 }
 
-                if (group.Group < 0)
-                    genericGroups.Add(group);
-                else
-                    specificGroups.Add(group);
+                configProcessors.Add(group);
+                weights.Add(System.Math.Max(processorGroup.Weight, 0.01f));
             }
 
-            // Fill the generic ones but alternate.
-            if (genericGroups.Count > 0)
+            // Distribute spawn groups among systems proportionally by weight.
+            // Zero init the list based on group count.
+            for (int i = 0; i < _state.GroupCount; i++)
             {
+                _processors.Add(null);
+            }
+
+            _groupToSystemIndex = new int[_state.GroupCount];
+
+            if (configProcessors.Count == 1)
+            {
+                // Single system gets all groups.
                 for (int i = 0; i < _state.GroupCount; i++)
                 {
-                    var group = genericGroups[i % genericGroups.Count];
-                    var newGroup = new MovementProcessor()
-                    {
-                        Entries = group.Entries,
-                        SpeedScale = group.SpeedScale,
-                        Group = group.Group,
-                        Color = group.Color,
-                        PostSpawnBehavior = group.PostSpawnBehavior,
-                        PostSpawnWanderingSpeed = group.PostSpawnWanderingSpeed,
-                    };
-                    _processors[i] = newGroup;
+                    _processors[i] = configProcessors[0];
+                    _groupToSystemIndex[i] = 0;
                 }
             }
-
-            // Fill specific ones.
-            for (int i = 0; i < specificGroups.Count; i++)
+            else
             {
-                var group = specificGroups[i];
+                // Calculate how many groups each system gets based on weight.
+                float totalWeight = 0;
+                for (int i = 0; i < weights.Count; i++)
+                    totalWeight += weights[i];
 
-                if (group.Group >= _processors.Count)
+                // Assign groups proportionally, ensuring each system gets at least 1.
+                var groupCounts = new int[configProcessors.Count];
+                int assigned = 0;
+                for (int i = 0; i < configProcessors.Count; i++)
                 {
-                    Logging.Warn("Group specifies the group index {0} but there are only a total of {1} groups.", group.Group, _processors.Count);
+                    groupCounts[i] = System.Math.Max(1, (int)((_state.GroupCount * weights[i]) / totalWeight));
+                    assigned += groupCounts[i];
                 }
-                else
+
+                // Distribute any remaining (or remove excess) from the largest weight system.
+                int remainder = _state.GroupCount - assigned;
+                if (remainder != 0)
                 {
-                    var newGroup = new MovementProcessor()
+                    int largestIdx = 0;
+                    for (int i = 1; i < weights.Count; i++)
                     {
-                        Entries = group.Entries,
-                        SpeedScale = group.SpeedScale,
-                        Group = group.Group,
-                        Color = group.Color,
-                        PostSpawnBehavior = group.PostSpawnBehavior,
-                        PostSpawnWanderingSpeed = group.PostSpawnWanderingSpeed,
-                    };
-                    _processors[group.Group] = newGroup;
+                        if (weights[i] > weights[largestIdx])
+                            largestIdx = i;
+                    }
+                    groupCounts[largestIdx] += remainder;
+                    if (groupCounts[largestIdx] < 1)
+                        groupCounts[largestIdx] = 1;
+                }
+
+                // Fill the processor list by assigning contiguous ranges.
+                int groupIdx = 0;
+                for (int i = 0; i < configProcessors.Count && groupIdx < _state.GroupCount; i++)
+                {
+                    for (int j = 0; j < groupCounts[i] && groupIdx < _state.GroupCount; j++)
+                    {
+                        _processors[groupIdx] = configProcessors[i];
+                        _groupToSystemIndex[groupIdx] = i;
+                        groupIdx++;
+                    }
                 }
             }
 
@@ -1191,6 +1194,72 @@ namespace WalkerSim
             }
 
             return Vector3.Zero;
+        }
+
+        // Distance (in SDF pixels) over which the outer biome force ramps from zero to full.
+        private const float BiomeForceFalloff = 20f;
+        // How far inside (SDF pixels) agents still get a gentle inward nudge.
+        private const float BiomeInnerBand = 10f;
+        // Strength of the inner-band nudge relative to full power.
+        private const float BiomeInnerStrength = 0.25f;
+
+        private static Vector3 BiomeForce(Simulation sim, State state, Agent agent, float power, float param1, float sign)
+        {
+            if (state.MapData == null)
+                return Vector3.Zero;
+
+            var biomes = state.MapData.Biomes;
+            if (biomes == null || biomes.SDFWidth == 0)
+                return Vector3.Zero;
+
+            var biomeType = (Biomes.Type)(byte)param1;
+
+            // Remap agent position to biome-map pixel space.
+            var pos = agent.Position;
+            float bx = MathEx.Remap(pos.X, state.WorldMins.X, state.WorldMaxs.X, 0f, biomes.Width);
+            float by = MathEx.Remap(pos.Y, state.WorldMins.Y, state.WorldMaxs.Y, 0f, biomes.Height);
+
+            float sdf = biomes.SampleSDF(biomeType, bx, by);
+
+            // StickToBiome (sign>0): sdf<0 means outside, sdf>0 means inside.
+            // AvoidBiome  (sign<0): sdf>0 means inside (bad), sdf<0 means outside (good).
+            // 'depth' is positive when the agent is on the wrong side of the boundary.
+            float depth = sign > 0 ? -sdf : sdf;
+
+            float strength;
+            if (depth > 0f)
+            {
+                // Wrong side: ramp force up with distance from boundary.
+                strength = System.Math.Min(depth / BiomeForceFalloff, 1f);
+            }
+            else if (-depth < BiomeInnerBand)
+            {
+                // Right side but near the boundary: gentle nudge to stay inside.
+                // Fades linearly from BiomeInnerStrength at boundary to 0 at BiomeInnerBand.
+                strength = BiomeInnerStrength * (1f - (-depth / BiomeInnerBand));
+            }
+            else
+            {
+                // Deep on the right side: no force needed.
+                return Vector3.Zero;
+            }
+
+            var grad = biomes.SampleSDFGradient(biomeType, bx, by);
+            float len = grad.Magnitude();
+            if (len < 0.001f)
+                return Vector3.Zero;
+
+            return (grad / len) * (power * sign * strength);
+        }
+
+        private static Vector3 StickToBiome(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        {
+            return BiomeForce(sim, state, agent, power, param1, 1f);
+        }
+
+        private static Vector3 AvoidBiome(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        {
+            return BiomeForce(sim, state, agent, power, param1, -1f);
         }
 
     }

@@ -230,11 +230,12 @@
                                         </xs:element>
                                     </xs:sequence>
 
-                                    <xs:attribute name="Group" type="xs:integer" use="required">
+                                    <xs:attribute name="Weight" type="xs:decimal" use="optional" default="1">
                                         <xs:annotation>
                                             <xs:documentation>
-                                                Index of the group it should affect,
-                                                -1 applies to all else
+                                                Relative weight for distributing spawn groups
+                                                among systems. Higher weight means more groups
+                                                are assigned to this system.
                                             </xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>

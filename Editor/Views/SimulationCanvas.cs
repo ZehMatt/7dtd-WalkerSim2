@@ -6,6 +6,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using WalkerSim;
@@ -132,7 +133,7 @@ namespace Editor.Views
         public bool ShowAgents { get; set; } = true;
         public bool ShowActiveAgents { get; set; } = true;
         public bool ShowRoads { get; set; } = true;
-        public bool ShowBiomes { get; set; } = false;
+        public bool ShowBiomes { get; set; } = true;
         public bool ShowEvents { get; set; } = true;
         public bool ShowPrefabs { get; set; } = false;
         public bool ShowCities { get; set; } = true;
@@ -793,31 +794,40 @@ namespace Editor.Views
                 Avalonia.Platform.PixelFormat.Bgra8888,
                 Avalonia.Platform.AlphaFormat.Premul);
 
+            // Pre-compute premultiplied colors for each biome type.
+            var colorLookup = new Dictionary<Biomes.Type, (byte b, byte g, byte r, byte a)>();
+            foreach (var bt in Biomes.ValidTypes)
+            {
+                var wsc = Biomes.GetColorForType(bt);
+                byte a = 128;
+                colorLookup[bt] = (
+                    (byte)(wsc.B * a / 255),
+                    (byte)(wsc.G * a / 255),
+                    (byte)(wsc.R * a / 255),
+                    a);
+            }
+
             using (var buf = bmp.Lock())
             {
                 int stride = buf.RowBytes;
                 var pixels = new byte[h * stride];
 
-                foreach (var region in biomes.Regions)
+                for (int y = 0; y < h; y++)
                 {
-                    if (region.Type == Biomes.Type.Invalid)
-                        continue;
-
-                    var wsc = Biomes.GetColorForType(region.Type);
-                    byte ra = 128;
-                    byte rr = (byte)(wsc.R * ra / 255);
-                    byte rg = (byte)(wsc.G * ra / 255);
-                    byte rb = (byte)(wsc.B * ra / 255);
-
-                    foreach (var (px, py) in region.Points)
+                    for (int x = 0; x < w; x++)
                     {
-                        if (px < 0 || py < 0 || px >= w || py >= h)
+                        var bt = biomes.BiomeMap[x, y];
+                        if (bt == Biomes.Type.Invalid)
                             continue;
-                        int idx = py * stride + px * 4;
-                        pixels[idx + 0] = rb;
-                        pixels[idx + 1] = rg;
-                        pixels[idx + 2] = rr;
-                        pixels[idx + 3] = ra;
+
+                        if (!colorLookup.TryGetValue(bt, out var c))
+                            continue;
+
+                        int idx = y * stride + x * 4;
+                        pixels[idx + 0] = c.b;
+                        pixels[idx + 1] = c.g;
+                        pixels[idx + 2] = c.r;
+                        pixels[idx + 3] = c.a;
                     }
                 }
 
