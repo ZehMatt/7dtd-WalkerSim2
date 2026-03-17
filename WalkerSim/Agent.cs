@@ -4,6 +4,7 @@ namespace WalkerSim
     {
         public enum State
         {
+            Inactive,
             Dead,
             Wandering,
             PendingSpawn,
@@ -55,7 +56,7 @@ namespace WalkerSim
         public float Health = -1;
         public float MaxHealth = -1;
         public float OriginalMaxHealth = -1;
-        public State CurrentState = State.Dead;
+        public State CurrentState = State.Inactive;
         public uint LastUpdateTick = 0;
         public uint LastSpawnTick = 0;
         public SubState CurrentSubState = SubState.None;
@@ -85,7 +86,7 @@ namespace WalkerSim
             Position = Vector3.Zero;
             Velocity = Vector3.Zero;
             CellIndex = -1;
-            CurrentState = State.Wandering;
+            CurrentState = State.Inactive;
             LastUpdateTick = 0;
             TargetCityIndex = -1;
             CityTime = 0;

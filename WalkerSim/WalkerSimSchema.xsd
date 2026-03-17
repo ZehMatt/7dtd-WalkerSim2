@@ -157,6 +157,18 @@
                     </xs:simpleType>
                 </xs:element>
 
+                <xs:element name="PopulationStartPercent" type="xs:float" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>The percentage of the total population that is active on day 1. Defaults to 100 (all agents active immediately).</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+
+                <xs:element name="PopulationFullDay" type="xs:integer" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>The game day by which the population reaches 100%. Population scales linearly from PopulationStartPercent on day 1 to 100% on this day. Defaults to 1.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+
                 <xs:element name="Systems">
                     <xs:annotation>
                         <xs:documentation>Systems that determine agent movement behavior</xs:documentation>

@@ -946,10 +946,10 @@ namespace Editor.Views
         private static readonly Pen _arrowPenLight = new Pen(_hudArrowLight, 1.5);
 
         // Cached HUD header texts (static labels, created once per theme)
-        private FormattedText _hudH1, _hudH2, _hudH3;
+        private FormattedText _hudH1, _hudH2, _hudH3, _hudH4;
         // Cached HUD value texts (recreated only when string content changes)
-        private string _hudV1Str, _hudV2Str, _hudV3Str;
-        private FormattedText _hudV1, _hudV2, _hudV3;
+        private string _hudV1Str, _hudV2Str, _hudV3Str, _hudV4Str;
+        private FormattedText _hudV1, _hudV2, _hudV3, _hudV4;
         private bool _hudLastDark;
 
         private void EnsureHudHeaders(bool dark)
@@ -961,7 +961,8 @@ namespace Editor.Views
             _hudH1 = new FormattedText("Wind Dir", CultureInfo.CurrentCulture, FlowDirection.LeftToRight, _hudTypeface, 10, sec);
             _hudH2 = new FormattedText("Wind Target", CultureInfo.CurrentCulture, FlowDirection.LeftToRight, _hudTypeface, 10, sec);
             _hudH3 = new FormattedText("Next Change", CultureInfo.CurrentCulture, FlowDirection.LeftToRight, _hudTypeface, 10, sec);
-            _hudV1Str = _hudV2Str = _hudV3Str = null;
+            _hudH4 = new FormattedText("Day", CultureInfo.CurrentCulture, FlowDirection.LeftToRight, _hudTypeface, 10, sec);
+            _hudV1Str = _hudV2Str = _hudV3Str = _hudV4Str = null;
         }
 
         private FormattedText HudVal(string s, ref string prev, ref FormattedText ft, bool dark)
@@ -1030,6 +1031,12 @@ namespace Editor.Views
 
             context.DrawText(_hudH3, new Point(textX, cy - _hudH3.Height - 1));
             context.DrawText(v3, new Point(textX, cy + 1));
+            textX += Math.Max(_hudH3.Width, v3.Width) + 16;
+
+            var gameDay = _simulation.GameTime;
+            var v4 = HudVal($"{gameDay:0.0}", ref _hudV4Str, ref _hudV4, dark);
+            context.DrawText(_hudH4, new Point(textX, cy - _hudH4.Height - 1));
+            context.DrawText(v4, new Point(textX, cy + 1));
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)

@@ -38,6 +38,7 @@ namespace WalkerSim
             // Game State, not saved.
             public volatile bool IsBloodmoon = false;
             public volatile bool IsDayTime = true;
+            public double GameTime = 0.0;
 
             public void Reset()
             {
@@ -210,5 +211,7 @@ namespace WalkerSim
         public bool IsBloodmoon => _state.IsBloodmoon;
 
         public bool IsDayTime => _state.IsDayTime;
+
+        public double GameTime => _state.GameTime;
     }
 }

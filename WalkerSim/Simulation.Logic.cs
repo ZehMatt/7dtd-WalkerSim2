@@ -72,6 +72,7 @@ namespace WalkerSim
 
             try
             {
+                UpdatePopulationRamp();
                 UpdateWindDirection();
                 UpdateEvents();
                 UpatePOICounter();
@@ -87,10 +88,95 @@ namespace WalkerSim
 
             _state.Ticks++;
 
+            if (EditorMode)
+            {
+                // Simulate day progression, 4 hours is a day.
+                var dayLengthInTicks = Simulation.MinutesToTicks(60 * 4);
+                _state.GameTime += TimeScale / dayLengthInTicks;
+            }
+
             // Log profiling data every 10 seconds
             if (_state.Ticks % (Constants.TicksPerSecond * 10) == 0)
             {
                 PerformanceCounters.Report();
+            }
+        }
+
+        public float GetPopulationFraction()
+        {
+            var config = _state.Config;
+            if (config.PopulationFullDay <= 1 && config.PopulationStartPercent >= 100f)
+                return 1f;
+
+            var gameDay = (float)_state.GameTime;
+            if (gameDay <= 0f)
+                return config.PopulationStartPercent / 100f;
+
+            var startFraction = MathEx.Clamp(config.PopulationStartPercent / 100f, 0f, 1f);
+            var fullDay = (float)System.Math.Max(config.PopulationFullDay, 1);
+
+            if (gameDay >= fullDay)
+                return 1f;
+
+            // Linear interpolation from startFraction to 1.0 over [day 1, fullDay].
+            var t = MathEx.Clamp((gameDay - 1f) / (fullDay - 1f), 0f, 1f);
+            return startFraction + (1f - startFraction) * t;
+        }
+
+        private void UpdatePopulationRamp()
+        {
+            var config = _state.Config;
+
+            // Feature not configured, skip entirely.
+            if (config.PopulationFullDay <= 1 && config.PopulationStartPercent >= 100f)
+                return;
+
+            // Only check every second, not every tick.
+            if (_state.Ticks % Constants.TicksPerSecond != 0)
+                return;
+
+            var agents = _state.Agents;
+            var totalAgents = agents.Count;
+            if (totalAgents == 0)
+                return;
+
+            var fraction = GetPopulationFraction();
+            var targetTotal = fraction >= 1f ? totalAgents : (int)(totalAgents * fraction);
+
+            // Count how many agents are not inactive (already part of the simulation).
+            int currentActive = 0;
+            for (int i = 0; i < totalAgents; i++)
+            {
+                if (agents[i].CurrentState != Agent.State.Inactive)
+                    currentActive++;
+            }
+
+            int toWake = targetTotal - currentActive;
+            if (toWake <= 0)
+                return;
+
+            // Pick random Inactive agents to activate.
+            var prng = _state.PRNG;
+            var inactive = new System.Collections.Generic.List<int>(toWake);
+            for (int i = 0; i < totalAgents; i++)
+            {
+                if (agents[i].CurrentState == Agent.State.Inactive)
+                    inactive.Add(i);
+            }
+
+            // Fisher-Yates shuffle, then take first toWake.
+            for (int i = inactive.Count - 1; i > 0; i--)
+            {
+                int j = prng.Next(0, i + 1);
+                var tmp = inactive[i];
+                inactive[i] = inactive[j];
+                inactive[j] = tmp;
+            }
+
+            int wakeCount = System.Math.Min(toWake, inactive.Count);
+            for (int i = 0; i < wakeCount; i++)
+            {
+                agents[inactive[i]].CurrentState = Agent.State.Wandering;
             }
         }
 

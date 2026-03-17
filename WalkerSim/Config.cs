@@ -108,6 +108,8 @@ namespace WalkerSim
         public uint SpawnProtectionTime = 300;
         public bool InfiniteZombieLifetime = false;
         public string MaxSpawnedZombies = "75%";
+        public float PopulationStartPercent = 100.0f;
+        public int PopulationFullDay = 1;
         public List<MovementProcessorGroup> Processors;
 
         private static void SanitizeConfig(Config config)
@@ -208,6 +210,8 @@ namespace WalkerSim
                 config.SpawnProtectionTime = ReadUInt(root, "ws:SpawnProtectionTime", nsMgr, 300);
                 config.InfiniteZombieLifetime = ReadBool(root, "ws:InfiniteZombieLifetime", nsMgr, false);
                 config.MaxSpawnedZombies = ReadString(root, "ws:MaxSpawnedZombies", nsMgr, "75%");
+                config.PopulationStartPercent = ReadFloat(root, "ws:PopulationStartPercent", nsMgr, 100.0f);
+                config.PopulationFullDay = ReadInt(root, "ws:PopulationFullDay", nsMgr, 1);
 
                 // Systems
                 var processorsNode = root.SelectSingleNode("ws:Systems", nsMgr);
@@ -276,6 +280,8 @@ namespace WalkerSim
                 SpawnProtectionTime = 300,
                 InfiniteZombieLifetime = false,
                 MaxSpawnedZombies = "75%",
+                PopulationStartPercent = 100.0f,
+                PopulationFullDay = 1,
                 Processors = new List<MovementProcessorGroup>
                 {
                     new MovementProcessorGroup {
@@ -390,6 +396,8 @@ namespace WalkerSim
                 WriteElement(xw, "SpawnProtectionTime", XmlConvert.ToString(SpawnProtectionTime));
                 WriteElement(xw, "InfiniteZombieLifetime", XmlConvert.ToString(InfiniteZombieLifetime));
                 WriteElement(xw, "MaxSpawnedZombies", MaxSpawnedZombies ?? "75%");
+                WriteElement(xw, "PopulationStartPercent", XmlConvert.ToString(PopulationStartPercent));
+                WriteElement(xw, "PopulationFullDay", XmlConvert.ToString(PopulationFullDay));
 
                 // Systems
                 if (Processors != null && Processors.Count > 0)

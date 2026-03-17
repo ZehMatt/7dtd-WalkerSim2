@@ -183,6 +183,18 @@ namespace Editor.ViewModels
             set { Config.InfiniteZombieLifetime = value; OnPropertyChanged(); }
         }
 
+        public float PopulationStartPercent
+        {
+            get => Config.PopulationStartPercent;
+            set { Config.PopulationStartPercent = value; OnPropertyChanged(); if (!_suppressReset) ResetSimulation(); }
+        }
+
+        public int PopulationFullDay
+        {
+            get => Config.PopulationFullDay;
+            set { Config.PopulationFullDay = value; OnPropertyChanged(); if (!_suppressReset) ResetSimulation(); }
+        }
+
         // Wrapper properties for movement processor parameters to support live editing
         private Models.MovementProcessorModel? _selectedMovementProcessor;
 
@@ -576,6 +588,8 @@ namespace Editor.ViewModels
             OnPropertyChanged(nameof(PauseDuringBloodmoon));
             OnPropertyChanged(nameof(SpawnProtectionTime));
             OnPropertyChanged(nameof(InfiniteZombieLifetime));
+            OnPropertyChanged(nameof(PopulationStartPercent));
+            OnPropertyChanged(nameof(PopulationFullDay));
             _suppressReset = false;
         }
 

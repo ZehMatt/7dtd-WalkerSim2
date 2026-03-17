@@ -4,6 +4,25 @@ namespace WalkerSim
 {
     internal partial class Simulation
     {
+        /// <summary>
+        /// Deterministic hash for use in parallel processor code instead of shared PRNG.
+        /// Returns a positive int derived from agent index, tick, and a salt.
+        /// </summary>
+        private static int AgentHash(int agentIndex, uint tick, int salt = 0)
+        {
+            unchecked
+            {
+                uint h = (uint)agentIndex;
+                h = h * 2654435761u ^ tick;
+                h = h * 2654435761u ^ (uint)salt;
+                h ^= h >> 16;
+                h *= 0x85ebca6bu;
+                h ^= h >> 13;
+                h *= 0xc2b2ae35u;
+                h ^= h >> 16;
+                return (int)(h & 0x7FFFFFFFu);
+            }
+        }
         // Processor structs to avoid lambda allocations
         private struct FlockAnyProcessor : INeighborProcessor
         {
@@ -601,7 +620,7 @@ namespace WalkerSim
                     {
                         // Arrived at target, push to history and pick next node.
                         agent.PushRoadNodeHistory(agent.RoadNodeTarget);
-                        agent.RoadNodeTarget = PickNextRoadNode(graph, agent, agent.Velocity, state.PRNG, biasX, biasY);
+                        agent.RoadNodeTarget = PickNextRoadNode(graph, agent, agent.Velocity, state.Ticks, biasX, biasY);
                     }
                 }
             }
@@ -622,7 +641,7 @@ namespace WalkerSim
                 // We're near this node, pick a connected node to walk toward.
                 agent.ClearRoadNodeHistory();
                 agent.PushRoadNodeHistory(nearest);
-                agent.RoadNodeTarget = PickNextRoadNode(graph, agent, agent.Velocity, state.PRNG, biasX, biasY);
+                agent.RoadNodeTarget = PickNextRoadNode(graph, agent, agent.Velocity, state.Ticks, biasX, biasY);
 
                 if (agent.RoadNodeTarget < 0)
                     agent.RoadNodeTarget = nearest; // Isolated node, just attract to it.
@@ -665,7 +684,7 @@ namespace WalkerSim
         /// to the bias target (used for CityVisitor cooperation).
         /// </summary>
         private static int PickNextRoadNode(RoadGraph graph, Agent agent,
-            Vector3 velocity, Random prng, float biasX = float.NaN, float biasY = float.NaN)
+            Vector3 velocity, uint tick, float biasX = float.NaN, float biasY = float.NaN)
         {
             // The most recently pushed history entry is the node we just arrived at.
             int arrivedAt = agent.RoadNodeHistoryCount > 0
@@ -687,7 +706,7 @@ namespace WalkerSim
             bool hasBias = !float.IsNaN(biasX);
 
             // At intersections (3+ connections) without a bias target, 33% chance to pick randomly for variety.
-            bool pickRandom = !hasBias && connections.Length >= 3 && prng.Next(3) == 0;
+            bool pickRandom = !hasBias && connections.Length >= 3 && AgentHash(agent.Index, tick, 0) % 3 == 0;
 
             // Prepare velocity direction for velocity-aligned selection.
             float velX = velocity.X;
@@ -708,7 +727,7 @@ namespace WalkerSim
             {
                 agent.ClearRoadNodeHistory();
                 agent.PushRoadNodeHistory(arrivedAt);
-                return connections[prng.Next(connections.Length)];
+                return connections[AgentHash(agent.Index, tick, 1) % connections.Length];
             }
 
             int bestIdx = -1;
@@ -731,7 +750,7 @@ namespace WalkerSim
 
                 if (pickRandom)
                 {
-                    if (prng.Next(candidateCount) == 0)
+                    if (AgentHash(agent.Index, tick, 100 + i) % candidateCount == 0)
                         bestIdx = connIdx;
                 }
                 else if (hasBias)
@@ -764,7 +783,7 @@ namespace WalkerSim
                 }
                 else
                 {
-                    if (prng.Next(candidateCount) == 0)
+                    if (AgentHash(agent.Index, tick, 200 + i) % candidateCount == 0)
                         bestIdx = connIdx;
                 }
             }
@@ -1153,7 +1172,7 @@ namespace WalkerSim
                 // Stay time from Param1 (min minutes) and Param2 (max minutes)
                 float minStay = param1 > 0 ? param1 : 20f;
                 float maxStay = param2 > param1 ? param2 : minStay;
-                float stayMinutes = minStay + (float)state.PRNG.NextDouble() * (maxStay - minStay);
+                float stayMinutes = minStay + (AgentHash(agent.Index, state.Ticks, 300) / (float)0x7FFFFFFF) * (maxStay - minStay);
                 ulong cityDuration = Simulation.MinutesToTicks((uint)stayMinutes);
                 if ((state.Ticks - agent.CityTime) >= cityDuration)
                 {

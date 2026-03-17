@@ -125,6 +125,10 @@ namespace WalkerSim
                 _state.SoftReset();
                 _state.Config = config;
                 _state.PRNG = new WalkerSim.Random(config.RandomSeed);
+                _state.GameTime = 0.0;
+                _state.WindDir = new Vector3(1, 0, 0);
+                _state.WindDirTarget = new Vector3(1, 0, 0);
+                _state.WindTime = 0;
 
                 if (config.Processors.Count == 0)
                 {
@@ -439,13 +443,57 @@ namespace WalkerSim
                 _groupStarts[i] = GetStartLocation();
             }
 
+            // If population ramp is configured, only a fraction of agents start as Wandering.
+            var popFraction = GetPopulationFraction();
+            var targetTotal = popFraction >= 1f ? maxAgents : (int)(maxAgents * popFraction);
+
+            // Pre-compute active count per group proportional to each group's actual size.
+            var activeForGroup = new int[_state.GroupCount];
+            if (popFraction >= 1f)
+            {
+                for (int g = 0; g < _state.GroupCount; g++)
+                {
+                    int groupStart = g * config.GroupSize;
+                    activeForGroup[g] = System.Math.Min(config.GroupSize, maxAgents - groupStart);
+                }
+            }
+            else
+            {
+                int assigned = 0;
+                for (int g = 0; g < _state.GroupCount; g++)
+                {
+                    int groupStart = g * config.GroupSize;
+                    int groupActualSize = System.Math.Min(config.GroupSize, maxAgents - groupStart);
+                    int groupTarget = (int)(groupActualSize * popFraction);
+                    activeForGroup[g] = groupTarget;
+                    assigned += groupTarget;
+                }
+                // Distribute any rounding remainder across groups.
+                for (int g = 0; assigned < targetTotal && g < _state.GroupCount; g++)
+                {
+                    int groupStart = g * config.GroupSize;
+                    int groupActualSize = System.Math.Min(config.GroupSize, maxAgents - groupStart);
+                    if (activeForGroup[g] < groupActualSize)
+                    {
+                        activeForGroup[g]++;
+                        assigned++;
+                    }
+                }
+            }
+
             for (int index = 0; index < maxAgents; index++)
             {
                 int groupIndex = index / config.GroupSize;
+                int indexInGroup = index % config.GroupSize;
 
                 var agent = new Agent(index, groupIndex);
                 agent.LastUpdateTick = _state.Ticks;
                 agent.Position = GetStartLocation(index, groupIndex);
+
+                if (indexInGroup < activeForGroup[groupIndex])
+                {
+                    agent.CurrentState = Agent.State.Wandering;
+                }
 
                 // Ensure the position is not out of bounds.
                 Warp(agent);
@@ -654,6 +702,11 @@ namespace WalkerSim
         public void SetIsDayTime(bool isDay)
         {
             _state.IsDayTime = isDay;
+        }
+
+        public void SetGameTime(double gameTime)
+        {
+            _state.GameTime = gameTime;
         }
 
         public void SetGamePaused(bool paused)

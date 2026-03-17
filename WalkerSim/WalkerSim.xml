@@ -8,7 +8,7 @@
     <Events>false</Events>
   </Logging>
   <RandomSeed>665992037</RandomSeed>
-  <PopulationDensity>300</PopulationDensity>
+  <PopulationDensity>140</PopulationDensity>
   <SpawnActivationRadius>96</SpawnActivationRadius>
   <StartAgentsGrouped>true</StartAgentsGrouped>
   <EnhancedSoundAwareness>true</EnhancedSoundAwareness>
@@ -21,6 +21,8 @@
   <SpawnProtectionTime>300</SpawnProtectionTime>
   <InfiniteZombieLifetime>false</InfiniteZombieLifetime>
   <MaxSpawnedZombies>75%</MaxSpawnedZombies>
+  <PopulationStartPercent>10</PopulationStartPercent>
+  <PopulationFullDay>8</PopulationFullDay>
   <Systems>
     <System Name="City Visitors" Weight="3" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#00E600">
       <Processor Type="CityVisitor" Distance="50" Power="0.3" Param1="30" Param2="50" />
