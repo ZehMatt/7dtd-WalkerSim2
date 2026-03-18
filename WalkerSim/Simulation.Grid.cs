@@ -29,7 +29,7 @@ namespace WalkerSim
             }
         }
 
-        void RebuildGrid()
+        public void RebuildGrid()
         {
             SetupGrid();
             var agents = _state.Agents;

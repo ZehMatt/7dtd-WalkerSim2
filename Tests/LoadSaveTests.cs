@@ -98,9 +98,20 @@ namespace WalkerSim.Tests
                 var queryB = simB.QueryCells(randomPos, -1, 500.0f);
 
                 Assert.AreEqual(queryA.Count, queryB.Count);
+
+                // Sort by index since intra-cell iteration order may differ after rebuild.
+                var indicesA = new int[queryA.Count];
+                var indicesB = new int[queryB.Count];
                 for (int x = 0; x < queryA.Count; x++)
                 {
-                    Assert.AreEqual(queryA[x].Index, queryB[x].Index);
+                    indicesA[x] = queryA[x].Index;
+                    indicesB[x] = queryB[x].Index;
+                }
+                System.Array.Sort(indicesA);
+                System.Array.Sort(indicesB);
+                for (int x = 0; x < indicesA.Length; x++)
+                {
+                    Assert.AreEqual(indicesA[x], indicesB[x]);
                 }
             }
         }
@@ -127,6 +138,10 @@ namespace WalkerSim.Tests
 
             var simB = new Simulation();
             Assert.IsTrue(simB.Load(ms));
+
+            // Normalize simA's grid so both have canonical ordering.
+            // Load rebuilds the grid from scratch, so simA must match.
+            simA.RebuildGrid();
 
             // Compare current state of both.
             CompareSimulations(simA, simB);
