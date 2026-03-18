@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace WalkerSim
 {
-    internal partial class Simulation
+    public partial class Simulation
     {
         private TimeMeasurement _simTime = new TimeMeasurement();
 
@@ -27,7 +27,7 @@ namespace WalkerSim
 
             if (agentCount > 0)
             {
-                if (EditorMode || _isFastAdvancing)
+                if (EditorMode)
                 {
                     // Update in parallel.
                     Parallel.For(0, maxUpdates, i =>
@@ -95,17 +95,12 @@ namespace WalkerSim
                 _state.GameTime += TimeScale / dayLengthInTicks;
             }
 
-            // Log profiling data every 10 seconds
-            if (_state.Ticks % (Constants.TicksPerSecond * 10) == 0)
-            {
-                PerformanceCounters.Report();
-            }
         }
 
         public float GetPopulationFraction()
         {
             var config = _state.Config;
-            if (config.PopulationFullDay <= 1 && config.PopulationStartPercent >= 100f)
+            if (config.FullPopulationAtDay <= 1 && config.PopulationStartPercent >= 100f)
                 return 1f;
 
             var gameDay = (float)_state.GameTime;
@@ -113,7 +108,7 @@ namespace WalkerSim
                 return config.PopulationStartPercent / 100f;
 
             var startFraction = MathEx.Clamp(config.PopulationStartPercent / 100f, 0f, 1f);
-            var fullDay = (float)System.Math.Max(config.PopulationFullDay, 1);
+            var fullDay = (float)System.Math.Max(config.FullPopulationAtDay, 1);
 
             if (gameDay >= fullDay)
                 return 1f;
@@ -128,7 +123,7 @@ namespace WalkerSim
             var config = _state.Config;
 
             // Feature not configured, skip entirely.
-            if (config.PopulationFullDay <= 1 && config.PopulationStartPercent >= 100f)
+            if (config.FullPopulationAtDay <= 1 && config.PopulationStartPercent >= 100f)
                 return;
 
             // Only check every second, not every tick.
@@ -176,7 +171,30 @@ namespace WalkerSim
             int wakeCount = System.Math.Min(toWake, inactive.Count);
             for (int i = 0; i < wakeCount; i++)
             {
-                agents[inactive[i]].CurrentState = Agent.State.Wandering;
+                var agent = agents[inactive[i]];
+
+                // Reposition the agent based on current config since the
+                // initial population has wandered off by the time these wake up.
+                if (config.StartAgentsGrouped)
+                {
+                    // Compute the current average position of active agents in this group.
+                    var groupCenter = GetGroupCenter(agent.Group);
+                    var maxDistance = MathEx.Clamp((float)config.GroupSize * 6.0f, 16.0f, 500.0f);
+                    float angle = (float)prng.NextDouble() * (float)System.Math.PI * 2.0f;
+                    float radius = (float)prng.NextDouble() * maxDistance;
+                    float offsetX = (float)System.Math.Cos(angle) * radius;
+                    float offsetY = (float)System.Math.Sin(angle) * radius;
+                    agent.Position = groupCenter + new Vector3(offsetX, offsetY);
+                }
+                else
+                {
+                    agent.Position = GetStartLocation();
+                }
+
+                Warp(agent);
+                MoveInGrid(agent);
+
+                agent.CurrentState = Agent.State.Wandering;
             }
         }
 
@@ -218,7 +236,7 @@ namespace WalkerSim
             Debug.Assert(pos.Y <= worldMaxs.Y);
         }
 
-        private void UpdateAgent(Agent agent)
+        internal void UpdateAgent(Agent agent)
         {
             var ticks = _state.Ticks;
             var ticksDelta = ticks - agent.LastUpdateTick;
@@ -337,7 +355,29 @@ namespace WalkerSim
 
         private void RespawnAgent(Agent agent)
         {
-            var startPos = GetRespawnLocation();
+            var config = _state.Config;
+
+            Vector3 startPos;
+            if (config.RespawnPosition != Config.WorldLocation.None)
+            {
+                // Explicit respawn location configured.
+                startPos = GetRespawnLocation();
+            }
+            else if (config.StartAgentsGrouped)
+            {
+                // Respawn near the group start position.
+                var maxDistance = MathEx.Clamp((float)config.GroupSize * 6.0f, 16.0f, 500.0f);
+                float angle = (float)_state.PRNG.NextDouble() * (float)System.Math.PI * 2.0f;
+                float radius = (float)_state.PRNG.NextDouble() * maxDistance;
+                float offsetX = (float)System.Math.Cos(angle) * radius;
+                float offsetY = (float)System.Math.Sin(angle) * radius;
+                startPos = _groupStarts[agent.Group] + new Vector3(offsetX, offsetY);
+            }
+            else
+            {
+                // Use the same start location logic as initial population.
+                startPos = GetStartLocation();
+            }
 
             agent.Position = startPos;
             agent.CurrentState = Agent.State.Wandering;

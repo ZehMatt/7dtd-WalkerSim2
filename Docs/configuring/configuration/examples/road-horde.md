@@ -41,7 +41,6 @@ Wind provides a directional bias so hordes tend to travel in one direction rathe
   <StartAgentsGrouped>true</StartAgentsGrouped>
   <EnhancedSoundAwareness>true</EnhancedSoundAwareness>
   <SoundDistanceScale>1</SoundDistanceScale>
-  <FastForwardAtStart>true</FastForwardAtStart>
   <GroupSize>16</GroupSize>
   <AgentStartPosition>RandomCity</AgentStartPosition>
   <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>

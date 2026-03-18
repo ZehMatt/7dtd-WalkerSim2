@@ -2,9 +2,9 @@ using System.Collections.Generic;
 
 namespace WalkerSim
 {
-    internal partial class Simulation
+    public partial class Simulation
     {
-        internal class Player
+        public class Player
         {
             public Vector3 Position;
             public int EntityId;

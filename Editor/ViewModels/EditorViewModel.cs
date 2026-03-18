@@ -159,12 +159,6 @@ namespace Editor.ViewModels
             set { Config.SoundDistanceScale = value; OnPropertyChanged(); }
         }
 
-        public bool FastForwardAtStart
-        {
-            get => Config.FastForwardAtStart;
-            set { Config.FastForwardAtStart = value; OnPropertyChanged(); }
-        }
-
         public bool PauseDuringBloodmoon
         {
             get => Config.PauseDuringBloodmoon;
@@ -189,10 +183,10 @@ namespace Editor.ViewModels
             set { Config.PopulationStartPercent = value; OnPropertyChanged(); if (!_suppressReset) ResetSimulation(); }
         }
 
-        public int PopulationFullDay
+        public int FullPopulationAtDay
         {
-            get => Config.PopulationFullDay;
-            set { Config.PopulationFullDay = value; OnPropertyChanged(); if (!_suppressReset) ResetSimulation(); }
+            get => Config.FullPopulationAtDay;
+            set { Config.FullPopulationAtDay = value; OnPropertyChanged(); if (!_suppressReset) ResetSimulation(); }
         }
 
         // Wrapper properties for movement processor parameters to support live editing
@@ -584,12 +578,11 @@ namespace Editor.ViewModels
             OnPropertyChanged(nameof(StartAgentsGrouped));
             OnPropertyChanged(nameof(EnhancedSoundAwareness));
             OnPropertyChanged(nameof(SoundDistanceScale));
-            OnPropertyChanged(nameof(FastForwardAtStart));
             OnPropertyChanged(nameof(PauseDuringBloodmoon));
             OnPropertyChanged(nameof(SpawnProtectionTime));
             OnPropertyChanged(nameof(InfiniteZombieLifetime));
             OnPropertyChanged(nameof(PopulationStartPercent));
-            OnPropertyChanged(nameof(PopulationFullDay));
+            OnPropertyChanged(nameof(FullPopulationAtDay));
             _suppressReset = false;
         }
 

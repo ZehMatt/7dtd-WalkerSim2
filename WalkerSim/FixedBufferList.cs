@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace WalkerSim
 {
-    internal sealed class FixedBufferList<T> : IEnumerable<T>
+    public sealed class FixedBufferList<T> : IEnumerable<T>
     {
         private readonly T[] _data;
         private int _count;

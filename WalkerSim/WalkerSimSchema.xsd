@@ -93,12 +93,6 @@
                     </xs:annotation>
                 </xs:element>
 
-                <xs:element name="FastForwardAtStart" type="xs:boolean">
-                    <xs:annotation>
-                        <xs:documentation>Fast forwards the simulation at a new start</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-
                 <xs:element name="GroupSize">
                     <xs:annotation>
                         <xs:documentation>
@@ -163,7 +157,7 @@
                     </xs:annotation>
                 </xs:element>
 
-                <xs:element name="PopulationFullDay" type="xs:integer" minOccurs="0">
+                <xs:element name="FullPopulationAtDay" type="xs:integer" minOccurs="0">
                     <xs:annotation>
                         <xs:documentation>The game day by which the population reaches 100%. Population scales linearly from PopulationStartPercent on day 1 to 100% on this day. Defaults to 1.</xs:documentation>
                     </xs:annotation>

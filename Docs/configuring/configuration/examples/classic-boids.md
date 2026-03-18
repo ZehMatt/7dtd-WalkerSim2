@@ -43,7 +43,6 @@ Wind provides a gentle drift so groups migrate across the map over time, and Wor
   <StartAgentsGrouped>true</StartAgentsGrouped>
   <EnhancedSoundAwareness>true</EnhancedSoundAwareness>
   <SoundDistanceScale>1</SoundDistanceScale>
-  <FastForwardAtStart>true</FastForwardAtStart>
   <GroupSize>16</GroupSize>
   <AgentStartPosition>Mixed</AgentStartPosition>
   <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>

@@ -16,6 +16,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Editor", "Editor\Editor.csproj", "{BFB39FAD-119A-4045-AB4F-17EA962CFB11}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarks", "Benchmarks\WalkerSim.Benchmarks.csproj", "{72A26B66-C710-46DB-905C-04AB6606713C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -34,6 +36,10 @@ Global
 		{BFB39FAD-119A-4045-AB4F-17EA962CFB11}.Debug|x64.Build.0 = Debug|x64
 		{BFB39FAD-119A-4045-AB4F-17EA962CFB11}.Release|x64.ActiveCfg = Release|x64
 		{BFB39FAD-119A-4045-AB4F-17EA962CFB11}.Release|x64.Build.0 = Release|x64
+		{72A26B66-C710-46DB-905C-04AB6606713C}.Debug|x64.ActiveCfg = Debug|x64
+		{72A26B66-C710-46DB-905C-04AB6606713C}.Debug|x64.Build.0 = Debug|x64
+		{72A26B66-C710-46DB-905C-04AB6606713C}.Release|x64.ActiveCfg = Release|x64
+		{72A26B66-C710-46DB-905C-04AB6606713C}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -45,6 +51,7 @@ Global
 		WalkerSim\WalkerSim.projitems*{5e392257-9b08-4e5e-8ed3-9ff143a25ccf}*SharedItemsImports = 4
 		WalkerSim\WalkerSim.projitems*{8bd1723c-67b3-45a9-b177-feb49f2407d8}*SharedItemsImports = 13
 		WalkerSim\WalkerSim.projitems*{9a5c48f2-f53f-45e4-acf4-e70605a0bc21}*SharedItemsImports = 4
+		WalkerSim\WalkerSim.projitems*{72a26b66-c710-46db-905c-04ab6606713c}*SharedItemsImports = 5
 		WalkerSim\WalkerSim.projitems*{bfb39fad-119a-4045-ab4f-17ea962cfb11}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

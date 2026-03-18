@@ -160,7 +160,6 @@ namespace WalkerSim.Console
                     ConsoleOutput.Log("  Random Seed: {0}", config.RandomSeed);
                     ConsoleOutput.Log("  Population Density: {0} agents/km²", config.PopulationDensity);
                     ConsoleOutput.Log("  Group Size: {0}", config.GroupSize);
-                    ConsoleOutput.Log("  Fast Forward At Start: {0}", config.FastForwardAtStart);
                     ConsoleOutput.Log("  Start Agents Grouped: {0}", config.StartAgentsGrouped);
                     ConsoleOutput.Log("  Start Position: {0}", config.StartPosition);
                     ConsoleOutput.Log("  Respawn Position: {0}", config.RespawnPosition);

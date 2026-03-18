@@ -13,7 +13,6 @@
   <StartAgentsGrouped>true</StartAgentsGrouped>
   <EnhancedSoundAwareness>true</EnhancedSoundAwareness>
   <SoundDistanceScale>1</SoundDistanceScale>
-  <FastForwardAtStart>true</FastForwardAtStart>
   <GroupSize>8</GroupSize>
   <AgentStartPosition>RandomCity</AgentStartPosition>
   <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>
@@ -22,15 +21,16 @@
   <InfiniteZombieLifetime>false</InfiniteZombieLifetime>
   <MaxSpawnedZombies>75%</MaxSpawnedZombies>
   <PopulationStartPercent>10</PopulationStartPercent>
-  <PopulationFullDay>8</PopulationFullDay>
+  <FullPopulationAtDay>8</FullPopulationAtDay>
   <Systems>
-    <System Name="City Visitors" Weight="3" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#00E600">
+    <System Name="City Visitors" Weight="6" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#00E600">
       <Processor Type="CityVisitor" Distance="50" Power="0.3" Param1="30" Param2="50" />
       <Processor Type="AvoidSameGroup" Distance="8" Power="0.1" />
       <Processor Type="WorldEvents" Distance="50" Power="0.6" />
       <Processor Type="AlignSameGroup" Distance="50" Power="0.1001" />
+      <Processor Type="FlockSameGroup" Distance="20" Power="0.01" />
     </System>
-    <System Name="Street Hordes" Weight="2" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#E60000">
+    <System Name="Street Hordes" Weight="4" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#E60000">
       <Processor Type="StickToRoads" Distance="50" Power="0.5" />
       <Processor Type="Wind" Distance="50" Power="0.01" />
       <Processor Type="AvoidSameGroup" Distance="5" Power="0.01" />

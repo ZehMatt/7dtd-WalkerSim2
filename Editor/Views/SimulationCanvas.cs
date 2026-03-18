@@ -133,10 +133,10 @@ namespace Editor.Views
         public bool ShowAgents { get; set; } = true;
         public bool ShowActiveAgents { get; set; } = true;
         public bool ShowRoads { get; set; } = true;
-        public bool ShowBiomes { get; set; } = true;
+        public bool ShowBiomes { get; set; } = false;
         public bool ShowEvents { get; set; } = true;
         public bool ShowPrefabs { get; set; } = false;
-        public bool ShowCities { get; set; } = true;
+        public bool ShowCities { get; set; } = false;
         public bool ShowRoadNetwork { get; set; } = false;
 
         public SimulationCanvas()

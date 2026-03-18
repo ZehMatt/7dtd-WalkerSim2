@@ -2,13 +2,13 @@ using System.Collections.Generic;
 
 namespace WalkerSim
 {
-    internal partial class Simulation
+    public partial class Simulation
     {
         /// <summary>
         /// Deterministic hash for use in parallel processor code instead of shared PRNG.
         /// Returns a positive int derived from agent index, tick, and a salt.
         /// </summary>
-        private static int AgentHash(int agentIndex, uint tick, int salt = 0)
+        internal static int AgentHash(int agentIndex, uint tick, int salt = 0)
         {
             unchecked
             {
@@ -165,7 +165,7 @@ namespace WalkerSim
             }
         }
 
-        private delegate Vector3 MovementProcessorDelegate(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2);
+        internal delegate Vector3 MovementProcessorDelegate(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2);
 
         class MovementProcessor
         {
@@ -367,9 +367,21 @@ namespace WalkerSim
                     _state.MaxNeighbourDistance = System.Math.Max(_state.MaxNeighbourDistance, processor.Distance);
                 }
             }
+
+            // Reset travel state on all agents so stale state from a previous
+            // processor configuration (e.g. CityVisitor) doesn't interfere.
+            var agents = _state.Agents;
+            for (int i = 0; i < agents.Count; i++)
+            {
+                var agent = agents[i];
+                agent.CurrentTravelState = Agent.TravelState.Idle;
+                agent.TargetCityIndex = -1;
+                agent.RoadNodeTarget = -1;
+                agent.ClearRoadNodeHistory();
+            }
         }
 
-        private static Vector3 FlockAny(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 FlockAny(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             var processor = new FlockAnyProcessor
             {
@@ -387,7 +399,7 @@ namespace WalkerSim
             return center * power;
         }
 
-        private static Vector3 FlockSame(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 FlockSame(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             var processor = new FlockSameProcessor
             {
@@ -406,7 +418,7 @@ namespace WalkerSim
             return center * power;
         }
 
-        private static Vector3 FlockOther(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 FlockOther(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             var processor = new FlockOtherProcessor
             {
@@ -425,7 +437,7 @@ namespace WalkerSim
             return center * power;
         }
 
-        private static Vector3 AlignAny(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 AlignAny(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             var processor = new AlignAnyProcessor
             {
@@ -444,7 +456,7 @@ namespace WalkerSim
         }
 
 
-        private static Vector3 AlignSame(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 AlignSame(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             var processor = new AlignSameProcessor
             {
@@ -463,7 +475,7 @@ namespace WalkerSim
             return delta * power;
         }
 
-        private static Vector3 AlignOther(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 AlignOther(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             var processor = new AlignOtherProcessor
             {
@@ -482,7 +494,7 @@ namespace WalkerSim
             return delta * power;
         }
 
-        private static Vector3 AvoidAny(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 AvoidAny(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             var processor = new AvoidAnyProcessor
             {
@@ -497,7 +509,7 @@ namespace WalkerSim
         }
 
 
-        private static Vector3 AvoidSame(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 AvoidSame(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             var processor = new AvoidSameProcessor
             {
@@ -512,7 +524,7 @@ namespace WalkerSim
             return processor.SumCloseness * power;
         }
 
-        private static Vector3 AvoidOther(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 AvoidOther(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             var processor = new AvoidOtherProcessor
             {
@@ -527,12 +539,12 @@ namespace WalkerSim
             return processor.SumCloseness * power;
         }
 
-        private static Vector3 Wind(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 Wind(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             return state.WindDir * power;
         }
 
-        private static Vector3 WindInverted(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 WindInverted(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             return (state.WindDir * -1.0f) * power;
         }
@@ -546,7 +558,7 @@ namespace WalkerSim
         // Force magnitude scale to keep force similar to old implementation.
         private const float RoadForceScale = 10f;
 
-        private static Vector3 StickToRoads(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 StickToRoads(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             if (state.MapData == null)
                 return Vector3.Zero;
@@ -683,7 +695,7 @@ namespace WalkerSim
         /// When biasX/biasY are not NaN, intersection choices prefer the node closest
         /// to the bias target (used for CityVisitor cooperation).
         /// </summary>
-        private static int PickNextRoadNode(RoadGraph graph, Agent agent,
+        internal static int PickNextRoadNode(RoadGraph graph, Agent agent,
             Vector3 velocity, uint tick, float biasX = float.NaN, float biasY = float.NaN)
         {
             // The most recently pushed history entry is the node we just arrived at.
@@ -791,7 +803,7 @@ namespace WalkerSim
             return bestIdx >= 0 ? bestIdx : (fallbackIdx >= 0 ? fallbackIdx : connections[0]);
         }
 
-        private static Vector3 AvoidRoads(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 AvoidRoads(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             if (state.MapData == null)
             {
@@ -836,7 +848,7 @@ namespace WalkerSim
             return Vector3.Zero;
         }
 
-        private static Vector3 StickToPOIs(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 StickToPOIs(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             if (state.MapData == null)
             {
@@ -877,7 +889,7 @@ namespace WalkerSim
         }
 
 
-        private static Vector3 AvoidPOIs(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 AvoidPOIs(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             if (state.MapData == null)
             {
@@ -904,7 +916,7 @@ namespace WalkerSim
             return sumCloseness * power;
         }
 
-        private static Vector3 WorldEvents(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 WorldEvents(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             var events = state.EventsTemp;
 
@@ -945,7 +957,7 @@ namespace WalkerSim
             return sum * power;
         }
 
-        private static Vector3 PreferCities(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 PreferCities(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             if (state.MapData == null || state.MapData.Cities == null)
             {
@@ -1038,7 +1050,7 @@ namespace WalkerSim
             }
         }
 
-        private static Vector3 AvoidCities(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 AvoidCities(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             if (state.MapData == null || state.MapData.Cities == null)
             {
@@ -1101,7 +1113,7 @@ namespace WalkerSim
             }
         }
 
-        private static Vector3 CityVisitor(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 CityVisitor(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             if (state.MapData == null || state.MapData.Cities == null || state.MapData.Cities.CityList.Count == 0)
             {
@@ -1222,7 +1234,7 @@ namespace WalkerSim
         // Strength of the inner-band nudge relative to full power.
         private const float BiomeInnerStrength = 0.25f;
 
-        private static Vector3 BiomeForce(Simulation sim, State state, Agent agent, float power, float param1, float sign)
+        internal static Vector3 BiomeForce(Simulation sim, State state, Agent agent, float power, float param1, float sign)
         {
             if (state.MapData == null)
                 return Vector3.Zero;
@@ -1271,12 +1283,12 @@ namespace WalkerSim
             return (grad / len) * (power * sign * strength);
         }
 
-        private static Vector3 StickToBiome(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 StickToBiome(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             return BiomeForce(sim, state, agent, power, param1, 1f);
         }
 
-        private static Vector3 AvoidBiome(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 AvoidBiome(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             return BiomeForce(sim, state, agent, power, param1, -1f);
         }

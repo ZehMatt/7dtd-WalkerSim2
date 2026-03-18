@@ -73,18 +73,6 @@ Here are all the settings you can change:
 
 **Example**: Set to 1.5 to make zombies react to sounds from farther away.
 
-### FastForwardAtStart
-
-**What it does**: Speeds up the simulation when you first start a new game, so zombies spread out across the map quickly instead of all starting in the same spots.
-
-**Value**: True (fast forward enabled) or False (start normally)
-
-**Default**: True
-
-**How it works**: When enabled, the simulation runs 2000 ticks at 128x speed during initial startup. This makes zombies move away from their starting positions before the game begins, creating a more natural distribution across the map.
-
-**Example**: Set to True to have zombies already spread out when you start playing. Set to False if you want all zombies to start at their exact starting positions.
-
 ### GroupSize
 
 **What it does**: How many zombies are in each group.

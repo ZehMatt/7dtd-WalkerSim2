@@ -100,7 +100,6 @@ namespace WalkerSim
         public bool StartAgentsGrouped = true;
         public bool EnhancedSoundAwareness = true;
         public float SoundDistanceScale = 1.0f;
-        public bool FastForwardAtStart = true;
         public int GroupSize = 200;
         public WorldLocation StartPosition = WorldLocation.RandomLocation;
         public WorldLocation RespawnPosition = WorldLocation.None;
@@ -109,7 +108,7 @@ namespace WalkerSim
         public bool InfiniteZombieLifetime = false;
         public string MaxSpawnedZombies = "75%";
         public float PopulationStartPercent = 100.0f;
-        public int PopulationFullDay = 1;
+        public int FullPopulationAtDay = 1;
         public List<MovementProcessorGroup> Processors;
 
         private static void SanitizeConfig(Config config)
@@ -202,7 +201,6 @@ namespace WalkerSim
                 config.StartAgentsGrouped = ReadBool(root, "ws:StartAgentsGrouped", nsMgr, true);
                 config.EnhancedSoundAwareness = ReadBool(root, "ws:EnhancedSoundAwareness", nsMgr, true);
                 config.SoundDistanceScale = ReadFloat(root, "ws:SoundDistanceScale", nsMgr, 1.0f);
-                config.FastForwardAtStart = ReadBool(root, "ws:FastForwardAtStart", nsMgr, true);
                 config.GroupSize = ReadInt(root, "ws:GroupSize", nsMgr, 200);
                 config.StartPosition = ReadEnum(root, "ws:AgentStartPosition", nsMgr, WorldLocation.RandomLocation);
                 config.RespawnPosition = ReadEnum(root, "ws:AgentRespawnPosition", nsMgr, WorldLocation.None);
@@ -211,7 +209,8 @@ namespace WalkerSim
                 config.InfiniteZombieLifetime = ReadBool(root, "ws:InfiniteZombieLifetime", nsMgr, false);
                 config.MaxSpawnedZombies = ReadString(root, "ws:MaxSpawnedZombies", nsMgr, "75%");
                 config.PopulationStartPercent = ReadFloat(root, "ws:PopulationStartPercent", nsMgr, 100.0f);
-                config.PopulationFullDay = ReadInt(root, "ws:PopulationFullDay", nsMgr, 1);
+                config.FullPopulationAtDay = ReadInt(root, "ws:FullPopulationAtDay", nsMgr,
+                    ReadInt(root, "ws:PopulationFullDay", nsMgr, 1));
 
                 // Systems
                 var processorsNode = root.SelectSingleNode("ws:Systems", nsMgr);
@@ -275,13 +274,12 @@ namespace WalkerSim
                 StartAgentsGrouped = true,
                 EnhancedSoundAwareness = true,
                 SoundDistanceScale = 1.0f,
-                FastForwardAtStart = true,
                 PauseDuringBloodmoon = true,
                 SpawnProtectionTime = 300,
                 InfiniteZombieLifetime = false,
                 MaxSpawnedZombies = "75%",
                 PopulationStartPercent = 100.0f,
-                PopulationFullDay = 1,
+                FullPopulationAtDay = 1,
                 Processors = new List<MovementProcessorGroup>
                 {
                     new MovementProcessorGroup {
@@ -388,7 +386,6 @@ namespace WalkerSim
                 WriteElement(xw, "StartAgentsGrouped", XmlConvert.ToString(StartAgentsGrouped));
                 WriteElement(xw, "EnhancedSoundAwareness", XmlConvert.ToString(EnhancedSoundAwareness));
                 WriteElement(xw, "SoundDistanceScale", XmlConvert.ToString(SoundDistanceScale));
-                WriteElement(xw, "FastForwardAtStart", XmlConvert.ToString(FastForwardAtStart));
                 WriteElement(xw, "GroupSize", XmlConvert.ToString(GroupSize));
                 WriteElement(xw, "AgentStartPosition", StartPosition.ToString());
                 WriteElement(xw, "AgentRespawnPosition", RespawnPosition.ToString());
@@ -397,7 +394,7 @@ namespace WalkerSim
                 WriteElement(xw, "InfiniteZombieLifetime", XmlConvert.ToString(InfiniteZombieLifetime));
                 WriteElement(xw, "MaxSpawnedZombies", MaxSpawnedZombies ?? "75%");
                 WriteElement(xw, "PopulationStartPercent", XmlConvert.ToString(PopulationStartPercent));
-                WriteElement(xw, "PopulationFullDay", XmlConvert.ToString(PopulationFullDay));
+                WriteElement(xw, "FullPopulationAtDay", XmlConvert.ToString(FullPopulationAtDay));
 
                 // Systems
                 if (Processors != null && Processors.Count > 0)

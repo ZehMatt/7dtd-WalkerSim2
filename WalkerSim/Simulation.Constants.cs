@@ -1,6 +1,6 @@
 namespace WalkerSim
 {
-    internal partial class Simulation
+    public partial class Simulation
     {
         internal class Constants
         {
@@ -29,7 +29,8 @@ namespace WalkerSim
             // Version 18: Make WalkType an enum.
             // Version 19: Road graph navigation state.
             // Version 20: Road node history circular buffer (10 entries).
-            public const uint SaveVersion = 20;
+            // Version 21: Grid is no longer serialized, rebuilt from agent positions.
+            public const uint SaveVersion = 21;
         }
     }
 }

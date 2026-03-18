@@ -38,13 +38,13 @@
 				<Separator/>
 				<MenuItem Header="Pause Rendering" x:Name="MenuViewPauseRendering" ToggleType="CheckBox" IsChecked="False" Click="OnViewToggleClick"/>
 				<Separator/>
-				<MenuItem Header="Biomes" x:Name="MenuViewBiomes" ToggleType="CheckBox" IsChecked="True" Click="OnViewToggleClick"/>
+				<MenuItem Header="Biomes" x:Name="MenuViewBiomes" ToggleType="CheckBox" IsChecked="False" Click="OnViewToggleClick"/>
 				<MenuItem Header="Roads" x:Name="MenuViewRoads" ToggleType="CheckBox" IsChecked="True" Click="OnViewToggleClick"/>
 				<MenuItem Header="Inactive Agents" x:Name="MenuViewAgents" ToggleType="CheckBox" IsChecked="True" Click="OnViewToggleClick"/>
 				<MenuItem Header="Active Agents" x:Name="MenuViewActiveAgents" ToggleType="CheckBox" IsChecked="True" Click="OnViewToggleClick"/>
 				<MenuItem Header="Events" x:Name="MenuViewEvents" ToggleType="CheckBox" IsChecked="True" Click="OnViewToggleClick"/>
 				<MenuItem Header="Prefabs" x:Name="MenuViewPrefabs" ToggleType="CheckBox" IsChecked="False" Click="OnViewToggleClick"/>
-				<MenuItem Header="Cities" x:Name="MenuViewCities" ToggleType="CheckBox" IsChecked="True" Click="OnViewToggleClick"/>
+				<MenuItem Header="Cities" x:Name="MenuViewCities" ToggleType="CheckBox" IsChecked="False" Click="OnViewToggleClick"/>
 				<MenuItem Header="Road Network" x:Name="MenuViewRoadNetwork" ToggleType="CheckBox" IsChecked="False" Click="OnViewToggleClick"/>
 			</MenuItem>
 
