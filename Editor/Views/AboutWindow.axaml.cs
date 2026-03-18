@@ -46,7 +46,7 @@ namespace Editor.Views
             {
                 Process.Start(new ProcessStartInfo
                 {
-                    FileName = "https://github.com/ZehMatt/WalkerSim2",
+                    FileName = "https://github.com/ZehMatt/7dtd-WalkerSim2",
                     UseShellExecute = true
                 });
             }

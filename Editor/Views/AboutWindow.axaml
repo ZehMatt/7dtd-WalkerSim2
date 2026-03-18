@@ -50,7 +50,7 @@
 		<Border Grid.Row="1" Background="#111111" Padding="16,10">
 			<Grid ColumnDefinitions="*,Auto">
 				<TextBlock Grid.Column="0"
-						   Text="github.com/ZehMatt/WalkerSim2"
+						   Text="github.com/ZehMatt/7dtd-WalkerSim2"
 						   FontSize="11" Foreground="#557755"
 						   VerticalAlignment="Center"
 						   FontFamily="Consolas,Courier New,monospace"
