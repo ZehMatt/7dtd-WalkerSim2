@@ -51,8 +51,7 @@ namespace Editor.Controls
             var url = HelpUrl;
             if (string.IsNullOrEmpty(url)) return;
 
-            var version = WalkerSim.BuildInfo.Version == "0.0.0" ? "nightly" : WalkerSim.BuildInfo.Version;
-            url = url.Replace("<version>", version);
+            url = url.Replace("<version>", WalkerSim.BuildInfo.Branch);
 
             try
             {

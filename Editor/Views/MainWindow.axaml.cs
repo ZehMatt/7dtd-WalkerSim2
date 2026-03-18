@@ -260,8 +260,7 @@ namespace Editor.Views
 
         private void OnDocumentationClick(object? sender, RoutedEventArgs e)
         {
-            var version = WalkerSim.BuildInfo.Version == "0.0.0" ? "nightly" : WalkerSim.BuildInfo.Version;
-            var url = $"https://7dtd-walkersim2.readthedocs.io/{version}/";
+            var url = $"https://7dtd-walkersim2.readthedocs.io/{WalkerSim.BuildInfo.Branch}/";
             try
             {
                 Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });

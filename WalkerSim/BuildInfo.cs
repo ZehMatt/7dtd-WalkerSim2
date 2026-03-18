@@ -2,6 +2,7 @@ using System.Linq;
 using System.Reflection;
 
 [assembly: AssemblyMetadata("Commit", "local")]
+[assembly: AssemblyMetadata("Branch", "nightly")]
 [assembly: AssemblyVersion("0.0.0")]
 [assembly: AssemblyFileVersion("0.0.0.0")]
 
@@ -29,5 +30,9 @@ namespace WalkerSim
         public static string Commit => Assembly.GetExecutingAssembly()
             .GetCustomAttributes<AssemblyMetadataAttribute>()
             .FirstOrDefault(a => a.Key == "Commit")?.Value ?? "unknown";
+
+        public static string Branch => Assembly.GetExecutingAssembly()
+            .GetCustomAttributes<AssemblyMetadataAttribute>()
+            .FirstOrDefault(a => a.Key == "Branch")?.Value ?? "nightly";
     }
 }
