@@ -5,12 +5,17 @@
 - Fix: Sound events are stacked when the simulation is paused during bloodmoon.
 - Fix: Smell being ineffective because of the spawner source being set to `Biome`, make smell work the same for all spawner sources.
 - Improve: Rewritten Editor as a standalone cross-platform application (Windows, macOS, Linux).
-- Improve: Fast advancing the simulation is now more accurate.
 - Improve: StickToRoads processor now builds a road network graph, agents can now traverse roads without an additional influence.
 - Improve: Rebalanced spawning logic, this should now truly reflect vanilla spawning chances.
-- Improve: macOS builds now produce a proper .app bundle with icon.
+- Improve: Editor now prompts about unsaved changes when closing.
 - Feature: Added `InfiniteZombieLifetime` option to prevent zombie lifetime expiration (#40).
 - Feature: Added example configurations with documentation (Classic Boids, City Migrators, Loose Swarm, Road Horde).
+- Feature: Added `PopulationStartPercent` and `FullPopulationAtDay` to ramp up population over game days.
+- Feature: Added biome-aware processors.
+- Feature: Added dark theme as the default Editor theme.
+- Feature: Example configurations are now shipped with the Editor.
+- Change: Configuration schema now uses `Weight` instead of `GroupSize` for systems.
+- Change: Removed `FastForwardAtStart`.
 - Change: Editor is now a separate download from the mod.
 - Change: Removed the legacy editor.
 
