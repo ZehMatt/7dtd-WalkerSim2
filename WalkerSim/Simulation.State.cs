@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace WalkerSim
 {
-    internal partial class Simulation
+    public partial class Simulation
     {
         public class State
         {
@@ -14,7 +14,7 @@ namespace WalkerSim
             public Vector3 WorldMaxs = Vector3.Zero;
             public string WorldName = string.Empty;
             public MapData MapData = null;
-            public List<int>[] Grid = null;
+            public int[] Grid = null;
             public ConcurrentDictionary<int, Player> Players = new ConcurrentDictionary<int, Player>();
             public List<EventData> Events = new List<EventData>();
             public List<EventData> EventsTemp = new List<EventData>();
@@ -38,6 +38,7 @@ namespace WalkerSim
             // Game State, not saved.
             public volatile bool IsBloodmoon = false;
             public volatile bool IsDayTime = true;
+            public double GameTime = 0.0;
 
             public void Reset()
             {
@@ -66,7 +67,7 @@ namespace WalkerSim
             }
         }
 
-        State _state = new State();
+        internal State _state = new State();
 
         public WalkerSim.Random PRNG
         {
@@ -210,5 +211,7 @@ namespace WalkerSim
         public bool IsBloodmoon => _state.IsBloodmoon;
 
         public bool IsDayTime => _state.IsDayTime;
+
+        public double GameTime => _state.GameTime;
     }
 }

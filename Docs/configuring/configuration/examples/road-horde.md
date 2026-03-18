@@ -41,7 +41,6 @@ Wind provides a directional bias so hordes tend to travel in one direction rathe
   <StartAgentsGrouped>true</StartAgentsGrouped>
   <EnhancedSoundAwareness>true</EnhancedSoundAwareness>
   <SoundDistanceScale>1</SoundDistanceScale>
-  <FastForwardAtStart>true</FastForwardAtStart>
   <GroupSize>16</GroupSize>
   <AgentStartPosition>RandomCity</AgentStartPosition>
   <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>
@@ -49,15 +48,15 @@ Wind provides a directional bias so hordes tend to travel in one direction rathe
   <SpawnProtectionTime>300</SpawnProtectionTime>
   <InfiniteZombieLifetime>false</InfiniteZombieLifetime>
   <MaxSpawnedZombies>75%</MaxSpawnedZombies>
-  <MovementProcessors>
-    <ProcessorGroup Name="System 1" Group="-1" SpeedScale="1.2" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#DDDD44">
+  <Systems>
+    <System Name="System 1" Weight="1" SpeedScale="1.2" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#DDDD44">
       <Processor Type="StickToRoads" Distance="0" Power="1" Param1="0" Param2="0" />
       <Processor Type="FlockSameGroup" Distance="20" Power="0.3" Param1="0" Param2="0" />
       <Processor Type="AlignSameGroup" Distance="20" Power="0.8" Param1="0" Param2="0" />
       <Processor Type="AvoidSameGroup" Distance="6" Power="1" Param1="0" Param2="0" />
       <Processor Type="Wind" Distance="0" Power="0.4" Param1="0" Param2="0" />
       <Processor Type="WorldEvents" Distance="0" Power="0.8" Param1="0" Param2="0" />
-    </ProcessorGroup>
-  </MovementProcessors>
+    </System>
+  </Systems>
 </WalkerSim>
 ```

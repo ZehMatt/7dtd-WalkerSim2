@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace WalkerSim
 {
-    internal partial class Simulation
+    public partial class Simulation
     {
         public static Simulation Instance = new Simulation();
 
@@ -14,8 +14,6 @@ namespace WalkerSim
         private bool _shouldStop = false;
         private bool _pauseRequested = false;
         private volatile bool _gamePaused = false;
-        private bool _isFastAdvancing = false;
-
         private Vector3[] _groupStarts = new Vector3[0];
 
         private int _maxAllowedAliveAgents = 64;
@@ -125,6 +123,10 @@ namespace WalkerSim
                 _state.SoftReset();
                 _state.Config = config;
                 _state.PRNG = new WalkerSim.Random(config.RandomSeed);
+                _state.GameTime = 0.0;
+                _state.WindDir = new Vector3(1, 0, 0);
+                _state.WindDirTarget = new Vector3(1, 0, 0);
+                _state.WindTime = 0;
 
                 if (config.Processors.Count == 0)
                 {
@@ -344,6 +346,29 @@ namespace WalkerSim
             return _groupStarts[groupIndex];
         }
 
+        Vector3 GetGroupCenter(int groupIndex)
+        {
+            var agents = _state.Agents;
+            var sum = Vector3.Zero;
+            int count = 0;
+
+            for (int i = 0; i < agents.Count; i++)
+            {
+                var agent = agents[i];
+                if (agent.Group == groupIndex && agent.CurrentState == Agent.State.Wandering)
+                {
+                    sum += agent.Position;
+                    count++;
+                }
+            }
+
+            // Fall back to original group start if no active agents in this group.
+            if (count == 0)
+                return _groupStarts[groupIndex];
+
+            return sum * (1f / count);
+        }
+
         Vector3 GetWorldLocation(Config.WorldLocation worldLoc)
         {
             var config = _state.Config;
@@ -439,13 +464,57 @@ namespace WalkerSim
                 _groupStarts[i] = GetStartLocation();
             }
 
+            // If population ramp is configured, only a fraction of agents start as Wandering.
+            var popFraction = GetPopulationFraction();
+            var targetTotal = popFraction >= 1f ? maxAgents : (int)(maxAgents * popFraction);
+
+            // Pre-compute active count per group proportional to each group's actual size.
+            var activeForGroup = new int[_state.GroupCount];
+            if (popFraction >= 1f)
+            {
+                for (int g = 0; g < _state.GroupCount; g++)
+                {
+                    int groupStart = g * config.GroupSize;
+                    activeForGroup[g] = System.Math.Min(config.GroupSize, maxAgents - groupStart);
+                }
+            }
+            else
+            {
+                int assigned = 0;
+                for (int g = 0; g < _state.GroupCount; g++)
+                {
+                    int groupStart = g * config.GroupSize;
+                    int groupActualSize = System.Math.Min(config.GroupSize, maxAgents - groupStart);
+                    int groupTarget = (int)(groupActualSize * popFraction);
+                    activeForGroup[g] = groupTarget;
+                    assigned += groupTarget;
+                }
+                // Distribute any rounding remainder across groups.
+                for (int g = 0; assigned < targetTotal && g < _state.GroupCount; g++)
+                {
+                    int groupStart = g * config.GroupSize;
+                    int groupActualSize = System.Math.Min(config.GroupSize, maxAgents - groupStart);
+                    if (activeForGroup[g] < groupActualSize)
+                    {
+                        activeForGroup[g]++;
+                        assigned++;
+                    }
+                }
+            }
+
             for (int index = 0; index < maxAgents; index++)
             {
                 int groupIndex = index / config.GroupSize;
+                int indexInGroup = index % config.GroupSize;
 
                 var agent = new Agent(index, groupIndex);
                 agent.LastUpdateTick = _state.Ticks;
                 agent.Position = GetStartLocation(index, groupIndex);
+
+                if (indexInGroup < activeForGroup[groupIndex])
+                {
+                    agent.CurrentState = Agent.State.Wandering;
+                }
 
                 // Ensure the position is not out of bounds.
                 Warp(agent);
@@ -481,29 +550,6 @@ namespace WalkerSim
         private void ThreadUpdate()
         {
             Logging.CondInfo(Config.LoggingOpts.General, () => "Started simulation.");
-
-            if (Config.FastForwardAtStart && _state.Ticks == 0)
-            {
-                Logging.CondInfo(Config.LoggingOpts.General,
-                    () => $"Advancing simulation for {Simulation.Limits.TicksToAdvanceOnStartup} ticks...");
-
-                _isFastAdvancing = true;
-
-                var elapsed = Utils.Measure(() =>
-                {
-                    var oldTimeScale = TimeScale;
-                    TimeScale = 64.0f;
-                    for (uint num = 0u; num < Simulation.Limits.TicksToAdvanceOnStartup && !_shouldStop; num++)
-                    {
-                        Tick();
-                    }
-                    TimeScale = oldTimeScale;
-                });
-
-                _isFastAdvancing = false;
-
-                Logging.CondInfo(Config.LoggingOpts.General, () => $"... done, took {elapsed}.");
-            }
 
             _updateTime.Restart();
 
@@ -606,6 +652,20 @@ namespace WalkerSim
                     Populate();
                 }
 
+                // Reset travel state on all agents so they don't get stuck
+                // with stale state from a previous processor configuration
+                // (e.g. CityVisitor travel data when switching to StickToRoads).
+                var agents = _state.Agents;
+                for (int i = 0; i < agents.Count; i++)
+                {
+                    var agent = agents[i];
+                    agent.CurrentTravelState = Agent.TravelState.Idle;
+                    agent.TargetCityIndex = -1;
+                    agent.CityTime = 0;
+                    agent.RoadNodeTarget = -1;
+                    agent.ClearRoadNodeHistory();
+                }
+
                 SetupProcessors();
             }
         }
@@ -654,6 +714,11 @@ namespace WalkerSim
         public void SetIsDayTime(bool isDay)
         {
             _state.IsDayTime = isDay;
+        }
+
+        public void SetGameTime(double gameTime)
+        {
+            _state.GameTime = gameTime;
         }
 
         public void SetGamePaused(bool paused)

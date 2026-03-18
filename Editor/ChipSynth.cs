@@ -110,7 +110,7 @@ namespace Editor
                     return;
                 }
 
-                _audio.SetVolume(0.8f);
+                _audio.SetVolume(0.3f);
                 _pcmBuffer = new byte[BufferBytes];
 
                 for (int i = 0; i < NumBuffers; i++)

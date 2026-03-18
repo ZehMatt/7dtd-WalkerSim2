@@ -93,12 +93,6 @@
                     </xs:annotation>
                 </xs:element>
 
-                <xs:element name="FastForwardAtStart" type="xs:boolean">
-                    <xs:annotation>
-                        <xs:documentation>Fast forwards the simulation at a new start</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-
                 <xs:element name="GroupSize">
                     <xs:annotation>
                         <xs:documentation>
@@ -157,17 +151,29 @@
                     </xs:simpleType>
                 </xs:element>
 
-                <xs:element name="MovementProcessors">
+                <xs:element name="PopulationStartPercent" type="xs:float" minOccurs="0">
                     <xs:annotation>
-                        <xs:documentation>Processors that determine agent movement behavior</xs:documentation>
+                        <xs:documentation>The percentage of the total population that is active on day 1. Defaults to 100 (all agents active immediately).</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+
+                <xs:element name="FullPopulationAtDay" type="xs:integer" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>The game day by which the population reaches 100%. Population scales linearly from PopulationStartPercent on day 1 to 100% on this day. Defaults to 1.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+
+                <xs:element name="Systems">
+                    <xs:annotation>
+                        <xs:documentation>Systems that determine agent movement behavior</xs:documentation>
                     </xs:annotation>
                     <xs:complexType>
                         <xs:sequence>
 
-                            <xs:element name="ProcessorGroup" maxOccurs="unbounded">
+                            <xs:element name="System" maxOccurs="unbounded">
                                 <xs:annotation>
                                     <xs:documentation>
-                                        A group of processors that will affect the
+                                        A system of processors that will affect the
                                         movement of the agents
                                     </xs:documentation>
                                 </xs:annotation>
@@ -230,11 +236,12 @@
                                         </xs:element>
                                     </xs:sequence>
 
-                                    <xs:attribute name="Group" type="xs:integer" use="required">
+                                    <xs:attribute name="Weight" type="xs:decimal" use="optional" default="1">
                                         <xs:annotation>
                                             <xs:documentation>
-                                                Index of the group it should affect,
-                                                -1 applies to all else
+                                                Relative weight for distributing spawn groups
+                                                among systems. Higher weight means more groups
+                                                are assigned to this system.
                                             </xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
@@ -288,6 +295,11 @@
                 </xs:element>
 
             </xs:sequence>
+            <xs:attribute name="Version" type="xs:integer" use="optional">
+                <xs:annotation>
+                    <xs:documentation>Configuration format version</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 
@@ -533,6 +545,16 @@
             <xs:enumeration value="CityVisitor">
                 <xs:annotation>
                     <xs:documentation>Agents visit cities in sequence, staying for a period before moving to the next city</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="StickToBiome">
+                <xs:annotation>
+                    <xs:documentation>Agents are attracted toward a specific biome type</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="AvoidBiome">
+                <xs:annotation>
+                    <xs:documentation>Agents are repelled from a specific biome type</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
         </xs:restriction>

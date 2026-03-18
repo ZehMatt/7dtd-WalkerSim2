@@ -43,7 +43,6 @@ Wind provides a gentle drift so groups migrate across the map over time, and Wor
   <StartAgentsGrouped>true</StartAgentsGrouped>
   <EnhancedSoundAwareness>true</EnhancedSoundAwareness>
   <SoundDistanceScale>1</SoundDistanceScale>
-  <FastForwardAtStart>true</FastForwardAtStart>
   <GroupSize>16</GroupSize>
   <AgentStartPosition>Mixed</AgentStartPosition>
   <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>
@@ -51,14 +50,14 @@ Wind provides a gentle drift so groups migrate across the map over time, and Wor
   <SpawnProtectionTime>300</SpawnProtectionTime>
   <InfiniteZombieLifetime>false</InfiniteZombieLifetime>
   <MaxSpawnedZombies>75%</MaxSpawnedZombies>
-  <MovementProcessors>
-    <ProcessorGroup Name="System 1" Group="-1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#FF4444">
+  <Systems>
+    <System Name="System 1" Weight="1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#FF4444">
       <Processor Type="FlockSameGroup" Distance="30" Power="0.8" Param1="0" Param2="0" />
       <Processor Type="AlignSameGroup" Distance="25" Power="1" Param1="0" Param2="0" />
       <Processor Type="AvoidSameGroup" Distance="8" Power="1.2" Param1="0" Param2="0" />
       <Processor Type="Wind" Distance="0" Power="0.5" Param1="0" Param2="0" />
       <Processor Type="WorldEvents" Distance="0" Power="0.8" Param1="0" Param2="0" />
-    </ProcessorGroup>
-  </MovementProcessors>
+    </System>
+  </Systems>
 </WalkerSim>
 ```

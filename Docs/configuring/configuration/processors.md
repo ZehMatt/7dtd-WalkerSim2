@@ -131,40 +131,61 @@ The selection is deterministic based on agent group and current time, causing ag
 - Uses Distance: No
 - Example: Zombie groups travel between cities, spending 20 minutes exploring before moving to the next destination
 
+## Behaviors Using Biomes
+
+These processors use a signed distance field (SDF) computed from the map's biome data to attract or repel agents toward specific biome types. A **Biome** parameter selects which biome to target: Snow, Pine Forest, Desert, Wasteland, or Burnt Forest.
+
+The force is proportional to how far the agent is from the biome boundary — stronger when far away, tapering to zero at the edge to prevent overshooting.
+
+### StickToBiome
+Zombies are attracted toward a specific biome. Agents outside the target biome are pulled toward it. Once inside, a gentle nudge near the boundary keeps them from drifting out, while deep inside no force is applied so other processors drive movement freely.
+
+- Uses Distance: No
+- Uses Biome: Yes (select target biome type)
+- Example: Zombies stay in the desert, creating biome-specific population zones
+
+### AvoidBiome
+Zombies are repelled from a specific biome. Agents inside the target biome are pushed out. Once outside, no force is applied.
+
+- Uses Distance: No
+- Uses Biome: Yes (select target biome type)
+- Example: Zombies avoid snowy areas and stay in warmer biomes
+
 ## Example Settings
 
 Here's how to set up zombie behaviors in your config file:
 
 ```xml
-<MovementProcessors>
-  <ProcessorGroup Group="0" SpeedScale="1.0" PostSpawnBehavior="Wander" Color="#FF0000">
+<Systems>
+  <System Weight="2" SpeedScale="1.0" PostSpawnBehavior="Wander" Color="#FF0000">
     <Processor Type="FlockSameGroup" Distance="15.0" Power="0.6" />
     <Processor Type="AvoidRoads" Power="0.4" />
-  </ProcessorGroup>
-  <ProcessorGroup Group="1" SpeedScale="1.5" PostSpawnBehavior="ChaseActivator" Color="#00FF00">
+  </System>
+  <System Weight="1" SpeedScale="1.5" PostSpawnBehavior="ChaseActivator" Color="#00FF00">
     <Processor Type="WorldEvents" Power="0.8" />
     <Processor Type="StickToPOIs" Power="0.5" />
-  </ProcessorGroup>
-  <ProcessorGroup Group="2" SpeedScale="1.0" PostSpawnBehavior="Wander" Color="#FFFF00">
+  </System>
+  <System Weight="1" SpeedScale="1.0" PostSpawnBehavior="Wander" Color="#FFFF00">
     <Processor Type="PreferCities" Power="0.7" />
     <Processor Type="FlockSameGroup" Distance="20.0" Power="0.4" />
-  </ProcessorGroup>
-  <ProcessorGroup Group="3" SpeedScale="1.2" PostSpawnBehavior="Wander" Color="#00FFFF">
+  </System>
+  <System Weight="1" SpeedScale="1.2" PostSpawnBehavior="Wander" Color="#00FFFF">
+    <Processor Type="StickToBiome" Power="0.5" Param1="5" />
     <Processor Type="AvoidCities" Distance="100.0" Power="0.8" />
-  </ProcessorGroup>
-  <ProcessorGroup Group="4" SpeedScale="1.0" PostSpawnBehavior="Wander" Color="#FF00FF">
-    <Processor Type="CityVisitor" Power="0.9" />
-  </ProcessorGroup>
-</MovementProcessors>
+  </System>
+  <System Weight="1" SpeedScale="1.0" PostSpawnBehavior="Wander" Color="#FF00FF">
+    <Processor Type="CityVisitor" Power="0.9" Param1="15" Param2="30" />
+  </System>
+</Systems>
 ```
 
-This creates:
+This creates five systems with groups distributed by weight:
 
-- Group 0: Zombies stick together in groups, avoid roads, and wander randomly
-- Group 1: Zombies go to buildings, chase loud noises, move faster, and chase you when they spawn
-- Group 2: Zombies prefer cities, congregate in towns, and stay in groups
-- Group 3: Zombies avoid cities within 100 meters and stay in the wilderness
-- Group 4: Zombies visit cities in rotation, migrating between different population centers
+- System 1 (weight 2, gets most groups): Zombies stick together in groups, avoid roads, and wander randomly
+- System 2: Zombies go to buildings, chase loud noises, move faster, and chase you when they spawn
+- System 3: Zombies prefer cities, congregate in towns, and stay in groups
+- System 4: Zombies stick to the desert biome and avoid cities
+- System 5: Zombies visit cities in rotation, migrating between different population centers
 
 ## Understanding Power and Distance
 

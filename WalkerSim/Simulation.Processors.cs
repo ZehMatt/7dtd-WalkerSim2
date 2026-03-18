@@ -2,8 +2,27 @@ using System.Collections.Generic;
 
 namespace WalkerSim
 {
-    internal partial class Simulation
+    public partial class Simulation
     {
+        /// <summary>
+        /// Deterministic hash for use in parallel processor code instead of shared PRNG.
+        /// Returns a positive int derived from agent index, tick, and a salt.
+        /// </summary>
+        internal static int AgentHash(int agentIndex, uint tick, int salt = 0)
+        {
+            unchecked
+            {
+                uint h = (uint)agentIndex;
+                h = h * 2654435761u ^ tick;
+                h = h * 2654435761u ^ (uint)salt;
+                h ^= h >> 16;
+                h *= 0x85ebca6bu;
+                h ^= h >> 13;
+                h *= 0xc2b2ae35u;
+                h ^= h >> 16;
+                return (int)(h & 0x7FFFFFFFu);
+            }
+        }
         // Processor structs to avoid lambda allocations
         private struct FlockAnyProcessor : INeighborProcessor
         {
@@ -146,13 +165,12 @@ namespace WalkerSim
             }
         }
 
-        private delegate Vector3 MovementProcessorDelegate(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2);
+        internal delegate Vector3 MovementProcessorDelegate(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2);
 
         class MovementProcessor
         {
             public List<Processor> Entries;
             public float SpeedScale = 1.0f;
-            public int Group = -1;
             public Config.PostSpawnBehavior PostSpawnBehavior = Config.PostSpawnBehavior.Wander;
             public Config.WanderingSpeed PostSpawnWanderingSpeed = Config.WanderingSpeed.NoOverride;
             public Drawing.Color Color;
@@ -188,9 +206,17 @@ namespace WalkerSim
             { Config.MovementProcessorType.PreferCities, PreferCities },
             { Config.MovementProcessorType.AvoidCities, AvoidCities },
             { Config.MovementProcessorType.CityVisitor, CityVisitor },
+            { Config.MovementProcessorType.StickToBiome, StickToBiome },
+            { Config.MovementProcessorType.AvoidBiome, AvoidBiome },
         };
 
         private List<MovementProcessor> _processors = new List<MovementProcessor>();
+        private int[] _groupToSystemIndex = System.Array.Empty<int>();
+
+        /// <summary>
+        /// Returns the system index (0-based, into Config.Processors) for each spawn group.
+        /// </summary>
+        public int[] GroupToSystemIndex => _groupToSystemIndex;
 
         private MovementProcessorDelegate GetProcessorDelegate(Config.MovementProcessorType type)
         {
@@ -212,32 +238,13 @@ namespace WalkerSim
                 return;
             }
 
-            // Zero init the list based on group count.
-            for (int i = 0; i < _state.GroupCount; i++)
-            {
-                _processors.Add(null);
-            }
-
-            // Build a list of groups, some specify the exact group some are generic.
-            List<MovementProcessor> genericGroups = new List<MovementProcessor>();
-            List<MovementProcessor> specificGroups = new List<MovementProcessor>();
+            // Build the list of movement processors from config.
+            var configProcessors = new List<MovementProcessor>();
+            var weights = new List<float>();
 
             foreach (var processorGroup in _state.Config.Processors)
             {
                 var processors = new List<Processor>();
-
-                // Use a local group index to avoid mutating the config object.
-                var groupIndex = processorGroup.Group;
-                if (groupIndex != -1)
-                {
-                    if (groupIndex >= _state.GroupCount)
-                    {
-                        Logging.Err("A processor group specifies an invalid group index, available groups: {0}, specified: {1}, fallback to any.", _state.GroupCount, groupIndex);
-
-                        // Fallback to any group.
-                        groupIndex = -1;
-                    }
-                }
 
                 foreach (var processor in processorGroup.Entries)
                 {
@@ -255,14 +262,12 @@ namespace WalkerSim
                 {
                     Entries = processors,
                     SpeedScale = processorGroup.SpeedScale,
-                    Group = groupIndex,
                     PostSpawnBehavior = processorGroup.PostSpawnBehavior,
                     PostSpawnWanderingSpeed = processorGroup.PostSpawnWanderSpeed,
                 };
 
                 if (processorGroup.Color == "")
                 {
-                    // Assign a default color of purple.
                     group.Color = Drawing.Color.Magenta;
                 }
                 else
@@ -270,52 +275,69 @@ namespace WalkerSim
                     group.Color = Utils.ParseColor(processorGroup.Color);
                 }
 
-                if (group.Group < 0)
-                    genericGroups.Add(group);
-                else
-                    specificGroups.Add(group);
+                configProcessors.Add(group);
+                weights.Add(System.Math.Max(processorGroup.Weight, 0.01f));
             }
 
-            // Fill the generic ones but alternate.
-            if (genericGroups.Count > 0)
+            // Distribute spawn groups among systems proportionally by weight.
+            // Zero init the list based on group count.
+            for (int i = 0; i < _state.GroupCount; i++)
             {
+                _processors.Add(null);
+            }
+
+            _groupToSystemIndex = new int[_state.GroupCount];
+
+            if (configProcessors.Count == 1)
+            {
+                // Single system gets all groups.
                 for (int i = 0; i < _state.GroupCount; i++)
                 {
-                    var group = genericGroups[i % genericGroups.Count];
-                    var newGroup = new MovementProcessor()
-                    {
-                        Entries = group.Entries,
-                        SpeedScale = group.SpeedScale,
-                        Group = group.Group,
-                        Color = group.Color,
-                        PostSpawnBehavior = group.PostSpawnBehavior,
-                        PostSpawnWanderingSpeed = group.PostSpawnWanderingSpeed,
-                    };
-                    _processors[i] = newGroup;
+                    _processors[i] = configProcessors[0];
+                    _groupToSystemIndex[i] = 0;
                 }
             }
-
-            // Fill specific ones.
-            for (int i = 0; i < specificGroups.Count; i++)
+            else
             {
-                var group = specificGroups[i];
+                // Calculate how many groups each system gets based on weight.
+                float totalWeight = 0;
+                for (int i = 0; i < weights.Count; i++)
+                    totalWeight += weights[i];
 
-                if (group.Group >= _processors.Count)
+                // Assign groups proportionally, ensuring each system gets at least 1.
+                var groupCounts = new int[configProcessors.Count];
+                int assigned = 0;
+                for (int i = 0; i < configProcessors.Count; i++)
                 {
-                    Logging.Warn("Group specifies the group index {0} but there are only a total of {1} groups.", group.Group, _processors.Count);
+                    groupCounts[i] = System.Math.Max(1, (int)((_state.GroupCount * weights[i]) / totalWeight));
+                    assigned += groupCounts[i];
                 }
-                else
+
+                // Distribute any remaining (or remove excess) from the largest weight system.
+                int remainder = _state.GroupCount - assigned;
+                if (remainder != 0)
                 {
-                    var newGroup = new MovementProcessor()
+                    int largestIdx = 0;
+                    for (int i = 1; i < weights.Count; i++)
                     {
-                        Entries = group.Entries,
-                        SpeedScale = group.SpeedScale,
-                        Group = group.Group,
-                        Color = group.Color,
-                        PostSpawnBehavior = group.PostSpawnBehavior,
-                        PostSpawnWanderingSpeed = group.PostSpawnWanderingSpeed,
-                    };
-                    _processors[group.Group] = newGroup;
+                        if (weights[i] > weights[largestIdx])
+                            largestIdx = i;
+                    }
+                    groupCounts[largestIdx] += remainder;
+                    if (groupCounts[largestIdx] < 1)
+                        groupCounts[largestIdx] = 1;
+                }
+
+                // Fill the processor list by assigning contiguous ranges.
+                int groupIdx = 0;
+                for (int i = 0; i < configProcessors.Count && groupIdx < _state.GroupCount; i++)
+                {
+                    for (int j = 0; j < groupCounts[i] && groupIdx < _state.GroupCount; j++)
+                    {
+                        _processors[groupIdx] = configProcessors[i];
+                        _groupToSystemIndex[groupIdx] = i;
+                        groupIdx++;
+                    }
                 }
             }
 
@@ -345,9 +367,21 @@ namespace WalkerSim
                     _state.MaxNeighbourDistance = System.Math.Max(_state.MaxNeighbourDistance, processor.Distance);
                 }
             }
+
+            // Reset travel state on all agents so stale state from a previous
+            // processor configuration (e.g. CityVisitor) doesn't interfere.
+            var agents = _state.Agents;
+            for (int i = 0; i < agents.Count; i++)
+            {
+                var agent = agents[i];
+                agent.CurrentTravelState = Agent.TravelState.Idle;
+                agent.TargetCityIndex = -1;
+                agent.RoadNodeTarget = -1;
+                agent.ClearRoadNodeHistory();
+            }
         }
 
-        private static Vector3 FlockAny(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 FlockAny(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             var processor = new FlockAnyProcessor
             {
@@ -365,7 +399,7 @@ namespace WalkerSim
             return center * power;
         }
 
-        private static Vector3 FlockSame(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 FlockSame(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             var processor = new FlockSameProcessor
             {
@@ -384,7 +418,7 @@ namespace WalkerSim
             return center * power;
         }
 
-        private static Vector3 FlockOther(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 FlockOther(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             var processor = new FlockOtherProcessor
             {
@@ -403,7 +437,7 @@ namespace WalkerSim
             return center * power;
         }
 
-        private static Vector3 AlignAny(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 AlignAny(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             var processor = new AlignAnyProcessor
             {
@@ -422,7 +456,7 @@ namespace WalkerSim
         }
 
 
-        private static Vector3 AlignSame(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 AlignSame(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             var processor = new AlignSameProcessor
             {
@@ -441,7 +475,7 @@ namespace WalkerSim
             return delta * power;
         }
 
-        private static Vector3 AlignOther(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 AlignOther(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             var processor = new AlignOtherProcessor
             {
@@ -460,7 +494,7 @@ namespace WalkerSim
             return delta * power;
         }
 
-        private static Vector3 AvoidAny(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 AvoidAny(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             var processor = new AvoidAnyProcessor
             {
@@ -475,7 +509,7 @@ namespace WalkerSim
         }
 
 
-        private static Vector3 AvoidSame(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 AvoidSame(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             var processor = new AvoidSameProcessor
             {
@@ -490,7 +524,7 @@ namespace WalkerSim
             return processor.SumCloseness * power;
         }
 
-        private static Vector3 AvoidOther(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 AvoidOther(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             var processor = new AvoidOtherProcessor
             {
@@ -505,12 +539,12 @@ namespace WalkerSim
             return processor.SumCloseness * power;
         }
 
-        private static Vector3 Wind(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 Wind(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             return state.WindDir * power;
         }
 
-        private static Vector3 WindInverted(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 WindInverted(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             return (state.WindDir * -1.0f) * power;
         }
@@ -524,7 +558,7 @@ namespace WalkerSim
         // Force magnitude scale to keep force similar to old implementation.
         private const float RoadForceScale = 10f;
 
-        private static Vector3 StickToRoads(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 StickToRoads(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             if (state.MapData == null)
                 return Vector3.Zero;
@@ -598,7 +632,7 @@ namespace WalkerSim
                     {
                         // Arrived at target, push to history and pick next node.
                         agent.PushRoadNodeHistory(agent.RoadNodeTarget);
-                        agent.RoadNodeTarget = PickNextRoadNode(graph, agent, agent.Velocity, state.PRNG, biasX, biasY);
+                        agent.RoadNodeTarget = PickNextRoadNode(graph, agent, agent.Velocity, state.Ticks, biasX, biasY);
                     }
                 }
             }
@@ -619,7 +653,7 @@ namespace WalkerSim
                 // We're near this node, pick a connected node to walk toward.
                 agent.ClearRoadNodeHistory();
                 agent.PushRoadNodeHistory(nearest);
-                agent.RoadNodeTarget = PickNextRoadNode(graph, agent, agent.Velocity, state.PRNG, biasX, biasY);
+                agent.RoadNodeTarget = PickNextRoadNode(graph, agent, agent.Velocity, state.Ticks, biasX, biasY);
 
                 if (agent.RoadNodeTarget < 0)
                     agent.RoadNodeTarget = nearest; // Isolated node, just attract to it.
@@ -661,8 +695,8 @@ namespace WalkerSim
         /// When biasX/biasY are not NaN, intersection choices prefer the node closest
         /// to the bias target (used for CityVisitor cooperation).
         /// </summary>
-        private static int PickNextRoadNode(RoadGraph graph, Agent agent,
-            Vector3 velocity, Random prng, float biasX = float.NaN, float biasY = float.NaN)
+        internal static int PickNextRoadNode(RoadGraph graph, Agent agent,
+            Vector3 velocity, uint tick, float biasX = float.NaN, float biasY = float.NaN)
         {
             // The most recently pushed history entry is the node we just arrived at.
             int arrivedAt = agent.RoadNodeHistoryCount > 0
@@ -684,7 +718,7 @@ namespace WalkerSim
             bool hasBias = !float.IsNaN(biasX);
 
             // At intersections (3+ connections) without a bias target, 33% chance to pick randomly for variety.
-            bool pickRandom = !hasBias && connections.Length >= 3 && prng.Next(3) == 0;
+            bool pickRandom = !hasBias && connections.Length >= 3 && AgentHash(agent.Index, tick, 0) % 3 == 0;
 
             // Prepare velocity direction for velocity-aligned selection.
             float velX = velocity.X;
@@ -705,7 +739,7 @@ namespace WalkerSim
             {
                 agent.ClearRoadNodeHistory();
                 agent.PushRoadNodeHistory(arrivedAt);
-                return connections[prng.Next(connections.Length)];
+                return connections[AgentHash(agent.Index, tick, 1) % connections.Length];
             }
 
             int bestIdx = -1;
@@ -728,7 +762,7 @@ namespace WalkerSim
 
                 if (pickRandom)
                 {
-                    if (prng.Next(candidateCount) == 0)
+                    if (AgentHash(agent.Index, tick, 100 + i) % candidateCount == 0)
                         bestIdx = connIdx;
                 }
                 else if (hasBias)
@@ -761,7 +795,7 @@ namespace WalkerSim
                 }
                 else
                 {
-                    if (prng.Next(candidateCount) == 0)
+                    if (AgentHash(agent.Index, tick, 200 + i) % candidateCount == 0)
                         bestIdx = connIdx;
                 }
             }
@@ -769,7 +803,7 @@ namespace WalkerSim
             return bestIdx >= 0 ? bestIdx : (fallbackIdx >= 0 ? fallbackIdx : connections[0]);
         }
 
-        private static Vector3 AvoidRoads(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 AvoidRoads(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             if (state.MapData == null)
             {
@@ -814,7 +848,7 @@ namespace WalkerSim
             return Vector3.Zero;
         }
 
-        private static Vector3 StickToPOIs(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 StickToPOIs(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             if (state.MapData == null)
             {
@@ -855,7 +889,7 @@ namespace WalkerSim
         }
 
 
-        private static Vector3 AvoidPOIs(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 AvoidPOIs(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             if (state.MapData == null)
             {
@@ -882,7 +916,7 @@ namespace WalkerSim
             return sumCloseness * power;
         }
 
-        private static Vector3 WorldEvents(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 WorldEvents(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             var events = state.EventsTemp;
 
@@ -923,7 +957,7 @@ namespace WalkerSim
             return sum * power;
         }
 
-        private static Vector3 PreferCities(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 PreferCities(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             if (state.MapData == null || state.MapData.Cities == null)
             {
@@ -1016,7 +1050,7 @@ namespace WalkerSim
             }
         }
 
-        private static Vector3 AvoidCities(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 AvoidCities(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             if (state.MapData == null || state.MapData.Cities == null)
             {
@@ -1079,7 +1113,7 @@ namespace WalkerSim
             }
         }
 
-        private static Vector3 CityVisitor(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        internal static Vector3 CityVisitor(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             if (state.MapData == null || state.MapData.Cities == null || state.MapData.Cities.CityList.Count == 0)
             {
@@ -1150,7 +1184,7 @@ namespace WalkerSim
                 // Stay time from Param1 (min minutes) and Param2 (max minutes)
                 float minStay = param1 > 0 ? param1 : 20f;
                 float maxStay = param2 > param1 ? param2 : minStay;
-                float stayMinutes = minStay + (float)state.PRNG.NextDouble() * (maxStay - minStay);
+                float stayMinutes = minStay + (AgentHash(agent.Index, state.Ticks, 300) / (float)0x7FFFFFFF) * (maxStay - minStay);
                 ulong cityDuration = Simulation.MinutesToTicks((uint)stayMinutes);
                 if ((state.Ticks - agent.CityTime) >= cityDuration)
                 {
@@ -1191,6 +1225,72 @@ namespace WalkerSim
             }
 
             return Vector3.Zero;
+        }
+
+        // Distance (in SDF pixels) over which the outer biome force ramps from zero to full.
+        private const float BiomeForceFalloff = 20f;
+        // How far inside (SDF pixels) agents still get a gentle inward nudge.
+        private const float BiomeInnerBand = 10f;
+        // Strength of the inner-band nudge relative to full power.
+        private const float BiomeInnerStrength = 0.25f;
+
+        internal static Vector3 BiomeForce(Simulation sim, State state, Agent agent, float power, float param1, float sign)
+        {
+            if (state.MapData == null)
+                return Vector3.Zero;
+
+            var biomes = state.MapData.Biomes;
+            if (biomes == null || biomes.SDFWidth == 0)
+                return Vector3.Zero;
+
+            var biomeType = (Biomes.Type)(byte)param1;
+
+            // Remap agent position to biome-map pixel space.
+            var pos = agent.Position;
+            float bx = MathEx.Remap(pos.X, state.WorldMins.X, state.WorldMaxs.X, 0f, biomes.Width);
+            float by = MathEx.Remap(pos.Y, state.WorldMins.Y, state.WorldMaxs.Y, 0f, biomes.Height);
+
+            float sdf = biomes.SampleSDF(biomeType, bx, by);
+
+            // StickToBiome (sign>0): sdf<0 means outside, sdf>0 means inside.
+            // AvoidBiome  (sign<0): sdf>0 means inside (bad), sdf<0 means outside (good).
+            // 'depth' is positive when the agent is on the wrong side of the boundary.
+            float depth = sign > 0 ? -sdf : sdf;
+
+            float strength;
+            if (depth > 0f)
+            {
+                // Wrong side: ramp force up with distance from boundary.
+                strength = System.Math.Min(depth / BiomeForceFalloff, 1f);
+            }
+            else if (-depth < BiomeInnerBand)
+            {
+                // Right side but near the boundary: gentle nudge to stay inside.
+                // Fades linearly from BiomeInnerStrength at boundary to 0 at BiomeInnerBand.
+                strength = BiomeInnerStrength * (1f - (-depth / BiomeInnerBand));
+            }
+            else
+            {
+                // Deep on the right side: no force needed.
+                return Vector3.Zero;
+            }
+
+            var grad = biomes.SampleSDFGradient(biomeType, bx, by);
+            float len = grad.Magnitude();
+            if (len < 0.001f)
+                return Vector3.Zero;
+
+            return (grad / len) * (power * sign * strength);
+        }
+
+        internal static Vector3 StickToBiome(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        {
+            return BiomeForce(sim, state, agent, power, param1, 1f);
+        }
+
+        internal static Vector3 AvoidBiome(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        {
+            return BiomeForce(sim, state, agent, power, param1, -1f);
         }
 
     }

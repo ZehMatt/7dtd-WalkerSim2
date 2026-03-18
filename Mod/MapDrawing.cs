@@ -43,7 +43,7 @@ namespace WalkerSim
 
             foreach (var agent in simulation.Agents)
             {
-                if (agent.CurrentState == Agent.State.Dead || agent.CurrentState == Agent.State.Respawning)
+                if (agent.CurrentState == Agent.State.Inactive || agent.CurrentState == Agent.State.Dead || agent.CurrentState == Agent.State.Respawning)
                 {
                     continue;
                 }

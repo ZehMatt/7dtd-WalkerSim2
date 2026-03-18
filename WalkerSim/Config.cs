@@ -57,6 +57,8 @@ namespace WalkerSim
             PreferCities,
             AvoidCities,
             CityVisitor,
+            StickToBiome,
+            AvoidBiome,
         }
 
         public class MovementProcessor
@@ -71,7 +73,7 @@ namespace WalkerSim
         public class MovementProcessorGroup
         {
             public string Name = "";
-            public int Group = -1;
+            public float Weight = 1.0f;
             public float SpeedScale = 1.0f;
             public PostSpawnBehavior PostSpawnBehavior = PostSpawnBehavior.Wander;
             public WanderingSpeed PostSpawnWanderSpeed = WanderingSpeed.Walk;
@@ -88,6 +90,9 @@ namespace WalkerSim
             public bool Events = false;
         }
 
+        public const int CurrentVersion = 2;
+
+        public int Version = CurrentVersion;
         public LoggingOptions LoggingOpts;
         public int RandomSeed = 1337;
         public int PopulationDensity = 300;
@@ -95,7 +100,6 @@ namespace WalkerSim
         public bool StartAgentsGrouped = true;
         public bool EnhancedSoundAwareness = true;
         public float SoundDistanceScale = 1.0f;
-        public bool FastForwardAtStart = true;
         public int GroupSize = 200;
         public WorldLocation StartPosition = WorldLocation.RandomLocation;
         public WorldLocation RespawnPosition = WorldLocation.None;
@@ -103,6 +107,8 @@ namespace WalkerSim
         public uint SpawnProtectionTime = 300;
         public bool InfiniteZombieLifetime = false;
         public string MaxSpawnedZombies = "75%";
+        public float PopulationStartPercent = 100.0f;
+        public int FullPopulationAtDay = 1;
         public List<MovementProcessorGroup> Processors;
 
         private static void SanitizeConfig(Config config)
@@ -175,6 +181,8 @@ namespace WalkerSim
                 var root = doc.DocumentElement;
                 var config = new Config();
 
+                config.Version = ReadAttrInt(root, "Version", 0);
+
                 // Logging
                 var loggingNode = root.SelectSingleNode("ws:Logging", nsMgr);
                 if (loggingNode != null)
@@ -193,7 +201,6 @@ namespace WalkerSim
                 config.StartAgentsGrouped = ReadBool(root, "ws:StartAgentsGrouped", nsMgr, true);
                 config.EnhancedSoundAwareness = ReadBool(root, "ws:EnhancedSoundAwareness", nsMgr, true);
                 config.SoundDistanceScale = ReadFloat(root, "ws:SoundDistanceScale", nsMgr, 1.0f);
-                config.FastForwardAtStart = ReadBool(root, "ws:FastForwardAtStart", nsMgr, true);
                 config.GroupSize = ReadInt(root, "ws:GroupSize", nsMgr, 200);
                 config.StartPosition = ReadEnum(root, "ws:AgentStartPosition", nsMgr, WorldLocation.RandomLocation);
                 config.RespawnPosition = ReadEnum(root, "ws:AgentRespawnPosition", nsMgr, WorldLocation.None);
@@ -201,17 +208,20 @@ namespace WalkerSim
                 config.SpawnProtectionTime = ReadUInt(root, "ws:SpawnProtectionTime", nsMgr, 300);
                 config.InfiniteZombieLifetime = ReadBool(root, "ws:InfiniteZombieLifetime", nsMgr, false);
                 config.MaxSpawnedZombies = ReadString(root, "ws:MaxSpawnedZombies", nsMgr, "75%");
+                config.PopulationStartPercent = ReadFloat(root, "ws:PopulationStartPercent", nsMgr, 100.0f);
+                config.FullPopulationAtDay = ReadInt(root, "ws:FullPopulationAtDay", nsMgr,
+                    ReadInt(root, "ws:PopulationFullDay", nsMgr, 1));
 
-                // Movement Processors
-                var processorsNode = root.SelectSingleNode("ws:MovementProcessors", nsMgr);
+                // Systems
+                var processorsNode = root.SelectSingleNode("ws:Systems", nsMgr);
                 if (processorsNode != null)
                 {
                     config.Processors = new List<MovementProcessorGroup>();
-                    foreach (XmlNode groupNode in processorsNode.SelectNodes("ws:ProcessorGroup", nsMgr))
+                    foreach (XmlNode groupNode in processorsNode.SelectNodes("ws:System", nsMgr))
                     {
                         var group = new MovementProcessorGroup();
                         group.Name = ReadAttrString(groupNode, "Name", "");
-                        group.Group = ReadAttrInt(groupNode, "Group", -1);
+                        group.Weight = ReadAttrFloat(groupNode, "Weight", 1.0f);
                         group.SpeedScale = ReadAttrFloat(groupNode, "SpeedScale", 1.0f);
                         group.PostSpawnBehavior = ReadAttrEnum(groupNode, "PostSpawnBehavior", PostSpawnBehavior.Wander);
                         group.PostSpawnWanderSpeed = ReadAttrEnum(groupNode, "PostSpawnWanderSpeed", WanderingSpeed.Walk);
@@ -264,15 +274,16 @@ namespace WalkerSim
                 StartAgentsGrouped = true,
                 EnhancedSoundAwareness = true,
                 SoundDistanceScale = 1.0f,
-                FastForwardAtStart = true,
                 PauseDuringBloodmoon = true,
                 SpawnProtectionTime = 300,
                 InfiniteZombieLifetime = false,
                 MaxSpawnedZombies = "75%",
+                PopulationStartPercent = 100.0f,
+                FullPopulationAtDay = 1,
                 Processors = new List<MovementProcessorGroup>
                 {
                     new MovementProcessorGroup {
-                        Group = -1,
+                        Weight = 1.0f,
                         SpeedScale = 1.0f,
                         Entries = new List<MovementProcessor> {
                             new MovementProcessor()
@@ -355,6 +366,7 @@ namespace WalkerSim
                 xw.WriteAttributeString("xmlns", "xsd", null, "http://www.w3.org/2001/XMLSchema");
                 xw.WriteAttributeString("xsi", "schemaLocation", "http://www.w3.org/2001/XMLSchema-instance",
                     "http://zeh.matt/WalkerSim WalkerSimSchema.xsd");
+                xw.WriteAttributeString("Version", XmlConvert.ToString(CurrentVersion));
 
                 // Logging
                 if (LoggingOpts != null)
@@ -374,7 +386,6 @@ namespace WalkerSim
                 WriteElement(xw, "StartAgentsGrouped", XmlConvert.ToString(StartAgentsGrouped));
                 WriteElement(xw, "EnhancedSoundAwareness", XmlConvert.ToString(EnhancedSoundAwareness));
                 WriteElement(xw, "SoundDistanceScale", XmlConvert.ToString(SoundDistanceScale));
-                WriteElement(xw, "FastForwardAtStart", XmlConvert.ToString(FastForwardAtStart));
                 WriteElement(xw, "GroupSize", XmlConvert.ToString(GroupSize));
                 WriteElement(xw, "AgentStartPosition", StartPosition.ToString());
                 WriteElement(xw, "AgentRespawnPosition", RespawnPosition.ToString());
@@ -382,17 +393,19 @@ namespace WalkerSim
                 WriteElement(xw, "SpawnProtectionTime", XmlConvert.ToString(SpawnProtectionTime));
                 WriteElement(xw, "InfiniteZombieLifetime", XmlConvert.ToString(InfiniteZombieLifetime));
                 WriteElement(xw, "MaxSpawnedZombies", MaxSpawnedZombies ?? "75%");
+                WriteElement(xw, "PopulationStartPercent", XmlConvert.ToString(PopulationStartPercent));
+                WriteElement(xw, "FullPopulationAtDay", XmlConvert.ToString(FullPopulationAtDay));
 
-                // Movement Processors
+                // Systems
                 if (Processors != null && Processors.Count > 0)
                 {
-                    xw.WriteStartElement("MovementProcessors");
+                    xw.WriteStartElement("Systems");
                     foreach (var group in Processors)
                     {
-                        xw.WriteStartElement("ProcessorGroup");
+                        xw.WriteStartElement("System");
                         if (!string.IsNullOrEmpty(group.Name))
                             xw.WriteAttributeString("Name", group.Name);
-                        xw.WriteAttributeString("Group", XmlConvert.ToString(group.Group));
+                        xw.WriteAttributeString("Weight", XmlConvert.ToString(group.Weight));
                         xw.WriteAttributeString("SpeedScale", XmlConvert.ToString(group.SpeedScale));
                         xw.WriteAttributeString("PostSpawnBehavior", group.PostSpawnBehavior.ToString());
                         xw.WriteAttributeString("PostSpawnWanderSpeed", group.PostSpawnWanderSpeed.ToString());

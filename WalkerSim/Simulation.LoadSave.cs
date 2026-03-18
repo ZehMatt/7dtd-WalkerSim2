@@ -5,7 +5,7 @@ using System.IO;
 
 namespace WalkerSim
 {
-    internal partial class Simulation
+    public partial class Simulation
     {
         private DateTime _nextAutoSave = DateTime.MaxValue;
         private string _autoSaveFile;
@@ -22,7 +22,6 @@ namespace WalkerSim
             SerializeConfig(state, ctx);
             SerializePRNG(state, ctx);
             SerializeAgents(state, ctx);
-            SerializeGrid(state, ctx);
             SerializeEvents(state, ctx);
 
             return true;
@@ -195,41 +194,6 @@ namespace WalkerSim
             return true;
         }
 
-        private bool SerializeGrid(State state, SerializationContext ctx)
-        {
-            int cellCount = ctx.IsWriting ? state.Grid.Length : 0;
-            ctx.Serialize(ref cellCount);
-
-            if (ctx.IsReading)
-            {
-                state.Grid = new List<int>[cellCount];
-            }
-
-            for (int cellIdx = 0; cellIdx < cellCount; cellIdx++)
-            {
-                int entryCount = ctx.IsWriting ? state.Grid[cellIdx].Count : 0;
-                ctx.Serialize(ref entryCount);
-
-                if (ctx.IsReading)
-                {
-                    state.Grid[cellIdx] = new List<int>(entryCount);
-                }
-
-                for (int entryIdx = 0; entryIdx < entryCount; entryIdx++)
-                {
-                    int entry = ctx.IsWriting ? state.Grid[cellIdx][entryIdx] : 0;
-                    ctx.Serialize(ref entry);
-
-                    if (ctx.IsReading)
-                    {
-                        state.Grid[cellIdx].Add(entry);
-                    }
-                }
-            }
-
-            return true;
-        }
-
         private bool SerializeEvents(State state, SerializationContext ctx)
         {
             int count = ctx.IsWriting ? state.Events.Count : 0;
@@ -321,8 +285,8 @@ namespace WalkerSim
                 state.MapData = _state.MapData;
                 _state = state;
 
-                // Recalculate cached grid dimensions
-                _cellCountY = (int)System.Math.Ceiling(WorldSize.Y / CellSize);
+                // Rebuild the grid from agent positions.
+                RebuildGrid();
 
                 SetupProcessors();
             }

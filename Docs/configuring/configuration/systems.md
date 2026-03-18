@@ -14,16 +14,30 @@ For example:
 - And GroupSize is 20
 - You get 5 groups (numbered 0, 1, 2, 3, 4)
 
-## Group Settings
+## How Systems Get Assigned to Groups
 
-Each group can have these settings:
+Each movement system has a **Weight** value that determines how many groups it controls. Groups are distributed proportionally based on weight.
 
-### Group Number
+For example, with 5 groups and two systems:
 
-Which group this applies to.
+- System A with `Weight="2"` gets ~67% of groups → groups 0, 1, 2
+- System B with `Weight="1"` gets ~33% of groups → groups 3, 4
 
-- Use a specific number (0, 1, 2, etc.) to set up one group
-- Use -1 to apply to all groups without specific settings
+If you only have one system, it controls all groups regardless of its weight value.
+
+Every system is guaranteed at least one group.
+
+## System Settings
+
+Each system can have these settings:
+
+### Weight
+
+How many groups this system controls, relative to other systems.
+
+- `Weight="1"` is the default
+- Higher values mean more groups are assigned to this system
+- The actual number of groups depends on the total group count and other systems' weights
 
 ### SpeedScale
 
@@ -63,7 +77,7 @@ Use colors like: #FF0000 (red), #00FF00 (green), #0000FF (blue)
 
 ## Processors
 
-You can add different processors to each group. Each processor has two settings:
+You can add different processors to each system. Each processor has two settings:
 
 - **Power**: How strong the behavior is (higher = stronger)
 - **Distance**: How far away the behavior works (only some behaviors use this)
@@ -72,54 +86,55 @@ See the Processors page for all the different types you can use.
 
 ## Simple Example
 
-Here's a basic setup with 2 different groups:
+Here's a basic setup with one system that controls all groups:
 
 ```xml
-<MovementProcessors>
-  <ProcessorGroup Group="0" SpeedScale="1.0" PostSpawnBehavior="Wander" Color="#FF0000">
+<Systems>
+  <System Weight="1" SpeedScale="1.0" PostSpawnBehavior="Wander" Color="#FF0000">
     <Processor Type="FlockSameGroup" Distance="15.0" Power="0.6" />
-  </ProcessorGroup>
-  <ProcessorGroup Group="1" SpeedScale="1.5" PostSpawnBehavior="ChaseActivator" Color="#00FF00">
     <Processor Type="WorldEvents" Power="0.8" />
-  </ProcessorGroup>
-</MovementProcessors>
+  </System>
+</Systems>
 ```
 
-This creates:
+This makes all zombie groups stick together and react to loud noises.
 
-- Group 0: Zombies stick together and wander randomly (red in Editor)
-- Group 1: Zombies move faster, chase loud noises, and chase you when they spawn (green in Editor)
+## Multiple Systems with Weights
 
-## Using -1 for All Groups
-
-You can use Group="-1" to apply the same behavior to all groups:
+You can define multiple systems with different weights to create diverse behavior:
 
 ```xml
-<MovementProcessors>
-  <ProcessorGroup Group="-1" SpeedScale="1.0" PostSpawnBehavior="Wander" Color="#00FF00">
-    <Processor Type="WorldEvents" Power="0.8" />
-  </ProcessorGroup>
-</MovementProcessors>
-```
-
-This makes all zombie groups react to loud noises and wander after spawning.
-
-## Mixing Specific and All Groups
-
-You can set up some specific groups and let the rest use -1:
-
-```xml
-<MovementProcessors>
-  <ProcessorGroup Group="0" SpeedScale="1.0" PostSpawnBehavior="Wander" Color="#FF0000">
+<Systems>
+  <System Weight="2" SpeedScale="1.0" PostSpawnBehavior="Wander" Color="#FF0000">
     <Processor Type="FlockSameGroup" Distance="15.0" Power="0.6" />
-  </ProcessorGroup>
-  <ProcessorGroup Group="-1" SpeedScale="1.5" PostSpawnBehavior="ChaseActivator" Color="#00FF00">
+  </System>
+  <System Weight="1" SpeedScale="1.5" PostSpawnBehavior="ChaseActivator" Color="#00FF00">
     <Processor Type="WorldEvents" Power="0.8" />
-  </ProcessorGroup>
-</MovementProcessors>
+  </System>
+</Systems>
 ```
 
-With 3 groups total:
+With 6 groups total:
 
-- Group 0: Uses the specific settings (stick together, wander)
-- Group 1 and 2: Use the -1 settings (react to noise, chase you)
+- Groups 0–3: Use the first system (weight 2 → gets twice as many groups). Zombies stick together and wander randomly (red in Editor).
+- Groups 4–5: Use the second system (weight 1). Zombies move faster, chase loud noises, and chase you when they spawn (green in Editor).
+
+## Equal Weights
+
+If all systems have the same weight, groups are split evenly:
+
+```xml
+<Systems>
+  <System Weight="1" SpeedScale="0.8" PostSpawnBehavior="Wander" Color="#44AA44">
+    <Processor Type="Wind" Power="0.7" />
+  </System>
+  <System Weight="1" SpeedScale="0.8" PostSpawnBehavior="Wander" Color="#9E4244">
+    <Processor Type="WindInverted" Power="0.7" />
+  </System>
+  <System Weight="1" SpeedScale="0.8" PostSpawnBehavior="Wander" Color="#57A8BF">
+    <Processor Type="StickToRoads" Power="1.0" />
+  </System>
+</Systems>
+```
+
+With 9 groups, each system gets 3 groups.

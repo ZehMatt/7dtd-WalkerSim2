@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 
 namespace WalkerSim
 {
-    internal partial class Simulation
+    public partial class Simulation
     {
         public struct SpawnData
         {
@@ -66,12 +66,6 @@ namespace WalkerSim
             if (_allowAgentSpawn == false)
             {
                 // Game specific setting, do not spawn agents.
-                return;
-            }
-
-            if (_isFastAdvancing)
-            {
-                // Do not spawn at initial startup.
                 return;
             }
 

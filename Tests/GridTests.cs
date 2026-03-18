@@ -49,6 +49,15 @@ namespace WalkerSim.Tests
             sim.Reset(config);
             sim.AddPlayer(0, Vector3.Zero, 0);
 
+            sim.SetGameTime(2.0);
+            sim.Tick();
+
+            // Ensure all agents are wandering.
+            foreach (var agent in sim.Agents)
+            {
+                Assert.AreEqual(Agent.State.Wandering, agent.CurrentState);
+            }
+
             for (int i = 0; i < 10; i++)
             {
                 var centerPos = GetRandomPos(prng);

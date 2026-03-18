@@ -31,7 +31,7 @@ namespace WalkerSim.Tests
                 var processorsA = configA.Processors[i];
                 var processorsB = configB.Processors[i];
                 Assert.AreEqual(processorsA.SpeedScale, processorsB.SpeedScale);
-                Assert.AreEqual(processorsA.Group, processorsB.Group);
+                Assert.AreEqual(processorsA.Weight, processorsB.Weight);
 
                 Assert.AreEqual(processorsA.Entries.Count, processorsB.Entries.Count);
                 for (int y = 0; y < processorsA.Entries.Count; y++)

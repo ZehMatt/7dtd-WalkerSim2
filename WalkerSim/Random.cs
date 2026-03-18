@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace WalkerSim
 {
-    internal class Random
+    public class Random
     {
         public UInt32 State0;
         public UInt32 State1;

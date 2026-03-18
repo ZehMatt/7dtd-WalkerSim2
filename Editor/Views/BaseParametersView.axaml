@@ -37,6 +37,29 @@
 							   IsEnabled="{Binding IsNotRunning}"/>
 			</StackPanel>
 
+			<!-- Population Start Percent -->
+			<StackPanel Spacing="4">
+				<controls:LabelWithHelp LabelText="Population Start Percent:" FontWeight="Medium"
+					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#populationstartpercent"/>
+				<NumericUpDown Value="{Binding PopulationStartPercent, Mode=TwoWay}"
+							   Minimum="0"
+							   Maximum="100"
+							   Increment="5"
+							   FormatString="F0"
+							   IsEnabled="{Binding IsNotRunning}"/>
+			</StackPanel>
+
+			<!-- Full Population At Day -->
+			<StackPanel Spacing="4">
+				<controls:LabelWithHelp LabelText="Full Population At Day:" FontWeight="Medium"
+					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#fullpopulationatday"/>
+				<NumericUpDown Value="{Binding FullPopulationAtDay, Mode=TwoWay}"
+							   Minimum="1"
+							   Maximum="365"
+							   Increment="1"
+							   IsEnabled="{Binding IsNotRunning}"/>
+			</StackPanel>
+
 			<!-- Group Size -->
 			<StackPanel Spacing="4">
 				<controls:LabelWithHelp LabelText="Group Size:" FontWeight="Medium"
@@ -110,12 +133,6 @@
 							   FormatString="F1"/>
 			</StackPanel>
 
-			<!-- Fast Forward At Start -->
-			<CheckBox IsChecked="{Binding FastForwardAtStart, Mode=TwoWay}"
-					  Margin="0,8,0,4">
-				<controls:LabelWithHelp LabelText="Fast Forward At Start"
-					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#fastforwardatstart"/>
-			</CheckBox>
 
 			<!-- Pause During Bloodmoon -->
 			<CheckBox IsChecked="{Binding PauseDuringBloodmoon, Mode=TwoWay}"

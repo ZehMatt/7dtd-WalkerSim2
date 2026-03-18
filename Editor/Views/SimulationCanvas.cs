@@ -6,6 +6,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using WalkerSim;
@@ -135,7 +136,7 @@ namespace Editor.Views
         public bool ShowBiomes { get; set; } = false;
         public bool ShowEvents { get; set; } = true;
         public bool ShowPrefabs { get; set; } = false;
-        public bool ShowCities { get; set; } = true;
+        public bool ShowCities { get; set; } = false;
         public bool ShowRoadNetwork { get; set; } = false;
 
         public SimulationCanvas()
@@ -793,31 +794,40 @@ namespace Editor.Views
                 Avalonia.Platform.PixelFormat.Bgra8888,
                 Avalonia.Platform.AlphaFormat.Premul);
 
+            // Pre-compute premultiplied colors for each biome type.
+            var colorLookup = new Dictionary<Biomes.Type, (byte b, byte g, byte r, byte a)>();
+            foreach (var bt in Biomes.ValidTypes)
+            {
+                var wsc = Biomes.GetColorForType(bt);
+                byte a = 128;
+                colorLookup[bt] = (
+                    (byte)(wsc.B * a / 255),
+                    (byte)(wsc.G * a / 255),
+                    (byte)(wsc.R * a / 255),
+                    a);
+            }
+
             using (var buf = bmp.Lock())
             {
                 int stride = buf.RowBytes;
                 var pixels = new byte[h * stride];
 
-                foreach (var region in biomes.Regions)
+                for (int y = 0; y < h; y++)
                 {
-                    if (region.Type == Biomes.Type.Invalid)
-                        continue;
-
-                    var wsc = Biomes.GetColorForType(region.Type);
-                    byte ra = 128;
-                    byte rr = (byte)(wsc.R * ra / 255);
-                    byte rg = (byte)(wsc.G * ra / 255);
-                    byte rb = (byte)(wsc.B * ra / 255);
-
-                    foreach (var (px, py) in region.Points)
+                    for (int x = 0; x < w; x++)
                     {
-                        if (px < 0 || py < 0 || px >= w || py >= h)
+                        var bt = biomes.BiomeMap[x, y];
+                        if (bt == Biomes.Type.Invalid)
                             continue;
-                        int idx = py * stride + px * 4;
-                        pixels[idx + 0] = rb;
-                        pixels[idx + 1] = rg;
-                        pixels[idx + 2] = rr;
-                        pixels[idx + 3] = ra;
+
+                        if (!colorLookup.TryGetValue(bt, out var c))
+                            continue;
+
+                        int idx = y * stride + x * 4;
+                        pixels[idx + 0] = c.b;
+                        pixels[idx + 1] = c.g;
+                        pixels[idx + 2] = c.r;
+                        pixels[idx + 3] = c.a;
                     }
                 }
 
@@ -936,10 +946,10 @@ namespace Editor.Views
         private static readonly Pen _arrowPenLight = new Pen(_hudArrowLight, 1.5);
 
         // Cached HUD header texts (static labels, created once per theme)
-        private FormattedText _hudH1, _hudH2, _hudH3;
+        private FormattedText _hudH1, _hudH2, _hudH3, _hudH4;
         // Cached HUD value texts (recreated only when string content changes)
-        private string _hudV1Str, _hudV2Str, _hudV3Str;
-        private FormattedText _hudV1, _hudV2, _hudV3;
+        private string _hudV1Str, _hudV2Str, _hudV3Str, _hudV4Str;
+        private FormattedText _hudV1, _hudV2, _hudV3, _hudV4;
         private bool _hudLastDark;
 
         private void EnsureHudHeaders(bool dark)
@@ -951,7 +961,8 @@ namespace Editor.Views
             _hudH1 = new FormattedText("Wind Dir", CultureInfo.CurrentCulture, FlowDirection.LeftToRight, _hudTypeface, 10, sec);
             _hudH2 = new FormattedText("Wind Target", CultureInfo.CurrentCulture, FlowDirection.LeftToRight, _hudTypeface, 10, sec);
             _hudH3 = new FormattedText("Next Change", CultureInfo.CurrentCulture, FlowDirection.LeftToRight, _hudTypeface, 10, sec);
-            _hudV1Str = _hudV2Str = _hudV3Str = null;
+            _hudH4 = new FormattedText("Day", CultureInfo.CurrentCulture, FlowDirection.LeftToRight, _hudTypeface, 10, sec);
+            _hudV1Str = _hudV2Str = _hudV3Str = _hudV4Str = null;
         }
 
         private FormattedText HudVal(string s, ref string prev, ref FormattedText ft, bool dark)
@@ -1020,6 +1031,12 @@ namespace Editor.Views
 
             context.DrawText(_hudH3, new Point(textX, cy - _hudH3.Height - 1));
             context.DrawText(v3, new Point(textX, cy + 1));
+            textX += Math.Max(_hudH3.Width, v3.Width) + 16;
+
+            var gameDay = _simulation.GameTime;
+            var v4 = HudVal($"{gameDay:0.0}", ref _hudV4Str, ref _hudV4, dark);
+            context.DrawText(_hudH4, new Point(textX, cy - _hudH4.Height - 1));
+            context.DrawText(v4, new Point(textX, cy + 1));
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)

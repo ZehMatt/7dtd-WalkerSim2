@@ -20,6 +20,9 @@ namespace Editor.ViewModels
         private bool _agentsDirty = false;
         private readonly System.Random _prng = new System.Random((int)DateTime.Now.Ticks);
 
+        [ObservableProperty]
+        private bool _hasUnsavedChanges = false;
+
         private static readonly float WorldSizeX = 6000;
         private static readonly float WorldSizeY = 6000;
         private static readonly Vector3 WorldMins = new Vector3(-(WorldSizeX * 0.5f), -(WorldSizeY * 0.5f), 0);
@@ -104,83 +107,95 @@ namespace Editor.ViewModels
             }
         }
 
+        private void MarkDirty()
+        {
+            if (!_suppressReset)
+                HasUnsavedChanges = true;
+        }
+
         // Wrapper properties for Config fields (Config uses fields, not properties, so we need wrappers for binding)
         public int PopulationDensity
         {
             get => Config.PopulationDensity;
-            set { Config.PopulationDensity = value; OnPropertyChanged(); RefreshAllGroupIndexOptions(); if (!_suppressReset) ResetSimulation(); }
+            set { Config.PopulationDensity = value; OnPropertyChanged(); MarkDirty(); RefreshAllSystemIndices(); if (!_suppressReset) ResetSimulation(); }
         }
 
         public int GroupSize
         {
             get => Config.GroupSize;
-            set { Config.GroupSize = value; OnPropertyChanged(); RefreshAllGroupIndexOptions(); if (!_suppressReset) ResetSimulation(); }
+            set { Config.GroupSize = value; OnPropertyChanged(); MarkDirty(); RefreshAllSystemIndices(); if (!_suppressReset) ResetSimulation(); }
         }
 
         public int RandomSeed
         {
             get => Config.RandomSeed;
-            set { Config.RandomSeed = value; OnPropertyChanged(); }
+            set { Config.RandomSeed = value; OnPropertyChanged(); MarkDirty(); }
         }
 
         public int SpawnActivationRadius
         {
             get => Config.SpawnActivationRadius;
-            set { Config.SpawnActivationRadius = value; OnPropertyChanged(); }
+            set { Config.SpawnActivationRadius = value; OnPropertyChanged(); MarkDirty(); }
         }
 
         public Config.WorldLocation StartPosition
         {
             get => Config.StartPosition;
-            set { Config.StartPosition = value; OnPropertyChanged(); if (!_suppressReset) ResetSimulation(); }
+            set { Config.StartPosition = value; OnPropertyChanged(); MarkDirty(); if (!_suppressReset) ResetSimulation(); }
         }
 
         public Config.WorldLocation RespawnPosition
         {
             get => Config.RespawnPosition;
-            set { Config.RespawnPosition = value; OnPropertyChanged(); if (!_suppressReset) ResetSimulation(); }
+            set { Config.RespawnPosition = value; OnPropertyChanged(); MarkDirty(); if (!_suppressReset) ResetSimulation(); }
         }
 
         public bool StartAgentsGrouped
         {
             get => Config.StartAgentsGrouped;
-            set { Config.StartAgentsGrouped = value; OnPropertyChanged(); if (!_suppressReset) ResetSimulation(); }
+            set { Config.StartAgentsGrouped = value; OnPropertyChanged(); MarkDirty(); if (!_suppressReset) ResetSimulation(); }
         }
 
         public bool EnhancedSoundAwareness
         {
             get => Config.EnhancedSoundAwareness;
-            set { Config.EnhancedSoundAwareness = value; OnPropertyChanged(); }
+            set { Config.EnhancedSoundAwareness = value; OnPropertyChanged(); MarkDirty(); }
         }
 
         public float SoundDistanceScale
         {
             get => Config.SoundDistanceScale;
-            set { Config.SoundDistanceScale = value; OnPropertyChanged(); }
-        }
-
-        public bool FastForwardAtStart
-        {
-            get => Config.FastForwardAtStart;
-            set { Config.FastForwardAtStart = value; OnPropertyChanged(); }
+            set { Config.SoundDistanceScale = value; OnPropertyChanged(); MarkDirty(); }
         }
 
         public bool PauseDuringBloodmoon
         {
             get => Config.PauseDuringBloodmoon;
-            set { Config.PauseDuringBloodmoon = value; OnPropertyChanged(); }
+            set { Config.PauseDuringBloodmoon = value; OnPropertyChanged(); MarkDirty(); }
         }
 
         public uint SpawnProtectionTime
         {
             get => Config.SpawnProtectionTime;
-            set { Config.SpawnProtectionTime = value; OnPropertyChanged(); if (!_suppressReset) ResetSimulation(); }
+            set { Config.SpawnProtectionTime = value; OnPropertyChanged(); MarkDirty(); if (!_suppressReset) ResetSimulation(); }
         }
 
         public bool InfiniteZombieLifetime
         {
             get => Config.InfiniteZombieLifetime;
-            set { Config.InfiniteZombieLifetime = value; OnPropertyChanged(); }
+            set { Config.InfiniteZombieLifetime = value; OnPropertyChanged(); MarkDirty(); }
+        }
+
+        public float PopulationStartPercent
+        {
+            get => Config.PopulationStartPercent;
+            set { Config.PopulationStartPercent = value; OnPropertyChanged(); MarkDirty(); if (!_suppressReset) ResetSimulation(); }
+        }
+
+        public int FullPopulationAtDay
+        {
+            get => Config.FullPopulationAtDay;
+            set { Config.FullPopulationAtDay = value; OnPropertyChanged(); MarkDirty(); if (!_suppressReset) ResetSimulation(); }
         }
 
         // Wrapper properties for movement processor parameters to support live editing
@@ -502,7 +517,7 @@ namespace Editor.ViewModels
             MovementSystems = new ObservableCollection<Models.MovementProcessorGroupModel>(
                 Config.Processors.Select(p => CreateMovementSystemModel(p))
             );
-            RefreshAllGroupIndexOptions();
+            RefreshAllSystemIndices();
 
             // Setup logging
             Logging.AddSink(this);
@@ -572,10 +587,11 @@ namespace Editor.ViewModels
             OnPropertyChanged(nameof(StartAgentsGrouped));
             OnPropertyChanged(nameof(EnhancedSoundAwareness));
             OnPropertyChanged(nameof(SoundDistanceScale));
-            OnPropertyChanged(nameof(FastForwardAtStart));
             OnPropertyChanged(nameof(PauseDuringBloodmoon));
             OnPropertyChanged(nameof(SpawnProtectionTime));
             OnPropertyChanged(nameof(InfiniteZombieLifetime));
+            OnPropertyChanged(nameof(PopulationStartPercent));
+            OnPropertyChanged(nameof(FullPopulationAtDay));
             _suppressReset = false;
         }
 
@@ -635,7 +651,7 @@ namespace Editor.ViewModels
             var c = WalkerSim.Drawing.ColorTable.GetColorForIndex(idx);
             var newGroup = new Config.MovementProcessorGroup
             {
-                Group = MovementSystems.Count == 0 ? -1 : 0,
+                Weight = 1.0f,
                 SpeedScale = 1.0f,
                 PostSpawnBehavior = Config.PostSpawnBehavior.Wander,
                 Color = $"#{c.R:X2}{c.G:X2}{c.B:X2}"
@@ -645,7 +661,7 @@ namespace Editor.ViewModels
             var model = CreateMovementSystemModel(newGroup);
             model.Name = $"System {MovementSystems.Count + 1}";
             MovementSystems.Add(model);
-            RefreshAllGroupIndexOptions();
+            RefreshAllSystemIndices();
             ReloadConfigLive();
         }
 
@@ -655,6 +671,7 @@ namespace Editor.ViewModels
             if (IsSimulationRunning)
                 return;
 
+            _simulation.Reset(Config);
             _simulation.Start();
             IsSimulationRunning = true;
             IsSimulationPaused = false;
@@ -677,7 +694,7 @@ namespace Editor.ViewModels
             if (!IsSimulationRunning || IsSimulationPaused)
                 return;
 
-            _simulation.SetPaused(true);
+            _simulation.Stop();
             IsSimulationPaused = true;
         }
 
@@ -687,7 +704,7 @@ namespace Editor.ViewModels
             if (!IsSimulationRunning || !IsSimulationPaused)
                 return;
 
-            _simulation.SetPaused(false);
+            _simulation.Start();
             IsSimulationPaused = false;
         }
 
@@ -762,10 +779,20 @@ namespace Editor.ViewModels
                 System.Linq.Enumerable.GroupBy(agents, a => a.Group),
                 g => g.Key);
 
+            // Build group-to-system name mapping.
+            var groupToSystem = _simulation.GroupToSystemIndex;
+
             Models.AgentModel? newSelected = null;
             foreach (var group in grouped)
             {
-                AgentListItems.Add(new Models.AgentGroupHeader(group.Key));
+                var systemName = "";
+                if (groupToSystem != null && group.Key >= 0 && group.Key < groupToSystem.Length)
+                {
+                    var sysIdx = groupToSystem[group.Key];
+                    if (sysIdx >= 0 && sysIdx < MovementSystems.Count)
+                        systemName = MovementSystems[sysIdx].DisplayName;
+                }
+                AgentListItems.Add(new Models.AgentGroupHeader(group.Key, systemName));
                 foreach (var agent in group)
                 {
                     var model = new Models.AgentModel(agent);
@@ -817,7 +844,7 @@ namespace Editor.ViewModels
             var source = system.Underlying;
             var newGroup = new Config.MovementProcessorGroup
             {
-                Group = source.Group,
+                Weight = source.Weight,
                 SpeedScale = source.SpeedScale,
                 PostSpawnBehavior = source.PostSpawnBehavior,
                 PostSpawnWanderSpeed = source.PostSpawnWanderSpeed,
@@ -841,7 +868,7 @@ namespace Editor.ViewModels
             var model = CreateMovementSystemModel(newGroup);
             model.Name = $"{system.DisplayName} (Copy)";
             MovementSystems.Add(model);
-            RefreshAllGroupIndexOptions();
+            RefreshAllSystemIndices();
             ReloadConfigLive();
         }
 
@@ -853,19 +880,15 @@ namespace Editor.ViewModels
 
             Config.Processors.Remove(system.Underlying);
             MovementSystems.Remove(system);
-            RefreshAllGroupIndexOptions();
+            RefreshAllSystemIndices();
             ReloadConfigLive();
         }
 
-        private void RefreshAllGroupIndexOptions()
+        private void RefreshAllSystemIndices()
         {
-            var totalGroups = Config.GroupSize > 0
-                ? (Config.PopulationDensity + Config.GroupSize - 1) / Config.GroupSize
-                : 0;
             for (int i = 0; i < MovementSystems.Count; i++)
             {
                 MovementSystems[i].SystemIndex = i + 1;
-                MovementSystems[i].RefreshGroupOptions(MovementSystems, totalGroups);
             }
         }
 
@@ -887,6 +910,7 @@ namespace Editor.ViewModels
         {
             if (!_suppressReset)
             {
+                HasUnsavedChanges = true;
                 _simulation.ReloadConfig(Config);
                 GroupColorsChanged?.Invoke();
             }
@@ -950,17 +974,18 @@ namespace Editor.ViewModels
                             sysIdx++;
                         MovementSystems.Add(m);
                     }
-                    RefreshAllGroupIndexOptions();
+                    RefreshAllSystemIndices();
                     _suppressReset = false;
 
                     // Reset simulation with new config (OnConfigChanged will refresh all UI bindings)
                     ResetSimulation();
+                    HasUnsavedChanges = false;
                 }
             }
             catch (System.Exception ex)
             {
                 Logging.Exception(ex);
-                Logging.Err($"Failed to import configuration: {ex.Message}");
+                Logging.Err($"Failed to load configuration: {ex.Message}");
             }
         }
 
@@ -977,7 +1002,7 @@ namespace Editor.ViewModels
             {
                 var file = await mainWindow.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
                 {
-                    Title = "Export Configuration",
+                    Title = "Save Configuration",
                     DefaultExtension = "xml",
                     FileTypeChoices = new[] { new FilePickerFileType("XML Files") { Patterns = new[] { "*.xml" } } },
                     SuggestedFileName = "WalkerSim.xml"
@@ -997,13 +1022,14 @@ namespace Editor.ViewModels
                         Config.Export(writer);
                     }
 
-                    Logging.Info($"Configuration exported to {System.IO.Path.GetFileName(path)}");
+                    HasUnsavedChanges = false;
+                    Logging.Info($"Configuration saved to {System.IO.Path.GetFileName(path)}");
                 }
             }
             catch (System.Exception ex)
             {
                 Logging.Exception(ex);
-                Logging.Err($"Failed to export configuration: {ex.Message}");
+                Logging.Err($"Failed to save configuration: {ex.Message}");
             }
         }
 
@@ -1073,7 +1099,7 @@ namespace Editor.ViewModels
                             sysIdx++;
                         MovementSystems.Add(m);
                     }
-                    RefreshAllGroupIndexOptions();
+                    RefreshAllSystemIndices();
                     _suppressReset = false;
 
                     // Update stats

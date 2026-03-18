@@ -73,18 +73,6 @@ Here are all the settings you can change:
 
 **Example**: Set to 1.5 to make zombies react to sounds from farther away.
 
-### FastForwardAtStart
-
-**What it does**: Speeds up the simulation when you first start a new game, so zombies spread out across the map quickly instead of all starting in the same spots.
-
-**Value**: True (fast forward enabled) or False (start normally)
-
-**Default**: True
-
-**How it works**: When enabled, the simulation runs 2000 ticks at 128x speed during initial startup. This makes zombies move away from their starting positions before the game begins, creating a more natural distribution across the map.
-
-**Example**: Set to True to have zombies already spread out when you start playing. Set to False if you want all zombies to start at their exact starting positions.
-
 ### GroupSize
 
 **What it does**: How many zombies are in each group.
@@ -173,5 +161,25 @@ Here are all the settings you can change:
 **Note**: The Editor tool only supports setting this as a percentage. To use an absolute number value, you must edit the XML file directly.
 
 **Example**: Set to "50%" for fewer zombies, "100%" to use the full game limit, or "32" to always spawn a maximum of 32 zombies regardless of game settings.
+
+### PopulationStartPercent
+
+**What it does**: Controls what percentage of the total zombie population is active when the game starts. The remaining zombies are inactive and will gradually wake up over time.
+
+**Value**: A number between 0 and 100. Default is 100 (all zombies active immediately).
+
+**How it works**: On day 1, only this percentage of the total population will be wandering the map. The rest are dormant and will gradually become active as game days pass, reaching full population by the day set in `FullPopulationAtDay`. When zombies wake up, they spawn near the current position of their group (if `StartAgentsGrouped` is enabled) rather than at their original starting location.
+
+**Example**: Set to 10 to start with only 10% of the zombie population on day 1, creating a slower early game that ramps up over time.
+
+### FullPopulationAtDay
+
+**What it does**: The game day by which the zombie population reaches 100%. Population scales linearly from `PopulationStartPercent` on day 1 to full population on this day.
+
+**Value**: Any number 1 or higher. Default is 1 (full population from the start).
+
+**How it works**: The population grows linearly between day 1 and this day. For example, if `PopulationStartPercent` is 10 and `FullPopulationAtDay` is 8, you'll have 10% on day 1, about 25% on day 2, and so on until 100% on day 8. After this day, the population stays at 100%.
+
+**Example**: Set to 14 to have the population gradually fill up over the first two weeks of gameplay. Pair with a low `PopulationStartPercent` for a survival experience that starts quiet and gets increasingly dangerous.
 
 ---

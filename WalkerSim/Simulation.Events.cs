@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace WalkerSim
 {
-    internal partial class Simulation
+    public partial class Simulation
     {
         public enum EventType
         {
@@ -100,21 +100,28 @@ namespace WalkerSim
 
         private void UpdateEvents()
         {
-            var dt = Constants.TickRate;
             var events = _state.Events;
 
             lock (events)
             {
-                foreach (var ev in events)
+                if (events.Count == 0)
                 {
-                    ev.Duration -= dt;
+                    _state.EventsTemp.Clear();
+                    return;
                 }
 
-                // Erase expired events.
-                events.RemoveAll(ev => ev.Duration <= 0.0f);
+                var dt = Constants.TickRate;
+                for (int i = events.Count - 1; i >= 0; i--)
+                {
+                    events[i].Duration -= dt;
+                    if (events[i].Duration <= 0.0f)
+                        events.RemoveAt(i);
+                }
 
-                // Make a copy after the update so the simulation can use this without locking for queries.
-                _state.EventsTemp = new List<EventData>(events);
+                // Copy into the temp list so the simulation can use this without locking for queries.
+                _state.EventsTemp.Clear();
+                for (int i = 0; i < events.Count; i++)
+                    _state.EventsTemp.Add(events[i]);
             }
         }
     }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace WalkerSim
 {
-    internal partial class Simulation
+    public partial class Simulation
     {
         public delegate bool AgentDespawnHandler(Simulation simulation, Agent agent);
 
