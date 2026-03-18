@@ -671,6 +671,7 @@ namespace Editor.ViewModels
             if (IsSimulationRunning)
                 return;
 
+            _simulation.Reset(Config);
             _simulation.Start();
             IsSimulationRunning = true;
             IsSimulationPaused = false;
@@ -693,7 +694,7 @@ namespace Editor.ViewModels
             if (!IsSimulationRunning || IsSimulationPaused)
                 return;
 
-            _simulation.SetPaused(true);
+            _simulation.Stop();
             IsSimulationPaused = true;
         }
 
@@ -703,7 +704,7 @@ namespace Editor.ViewModels
             if (!IsSimulationRunning || !IsSimulationPaused)
                 return;
 
-            _simulation.SetPaused(false);
+            _simulation.Start();
             IsSimulationPaused = false;
         }
 
