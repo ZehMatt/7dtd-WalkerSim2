@@ -1033,8 +1033,8 @@ namespace Editor.Views
             context.DrawText(v3, new Point(textX, cy + 1));
             textX += Math.Max(_hudH3.Width, v3.Width) + 16;
 
-            var gameDay = _simulation.GameTime;
-            var v4 = HudVal($"{gameDay:0.0}", ref _hudV4Str, ref _hudV4, dark);
+            var gameDay = _simulation.GameTime + 1.0;
+            var v4 = HudVal($"{gameDay:0.00}", ref _hudV4Str, ref _hudV4, dark);
             context.DrawText(_hudH4, new Point(textX, cy - _hudH4.Height - 1));
             context.DrawText(v4, new Point(textX, cy + 1));
         }
