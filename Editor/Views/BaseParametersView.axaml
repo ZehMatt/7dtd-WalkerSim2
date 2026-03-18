@@ -8,155 +8,160 @@
 			 x:CompileBindings="True">
 
 	<ScrollViewer>
-		<StackPanel Spacing="12" Margin="16">
+		<StackPanel Spacing="16" Margin="16">
 
 			<!-- Header -->
 			<TextBlock Text="Base Parameters"
 					   Classes="Header"
 					   FontWeight="SemiBold"
 					   FontSize="18"
-					   Margin="0,0,0,8"/>
+					   Margin="0,0,0,4"/>
 
-			<!-- World Selection -->
-			<StackPanel Spacing="4">
-				<controls:LabelWithHelp LabelText="Preview World:" FontWeight="Medium"
-					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html"/>
-				<ComboBox SelectedItem="{Binding SelectedWorldName, Mode=TwoWay}"
-						  ItemsSource="{Binding WorldNames}"
-						  IsEnabled="{Binding IsNotRunning}"
-						  HorizontalAlignment="Stretch"/>
-			</StackPanel>
+			<!-- World -->
+			<Border Background="{DynamicResource EditorPanelBackground}"
+					BorderBrush="{DynamicResource EditorBorder}"
+					BorderThickness="1" Padding="12">
+				<StackPanel Spacing="10">
+					<TextBlock Text="World" FontWeight="SemiBold" FontSize="13"
+							   Foreground="{DynamicResource EditorTextSecondary}"/>
+					<StackPanel Spacing="4">
+						<controls:LabelWithHelp LabelText="Preview World:" FontWeight="Medium"
+							HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html"/>
+						<ComboBox SelectedItem="{Binding SelectedWorldName, Mode=TwoWay}"
+								  ItemsSource="{Binding WorldNames}"
+								  IsEnabled="{Binding IsNotRunning}"
+								  HorizontalAlignment="Stretch"/>
+					</StackPanel>
+					<StackPanel Spacing="4">
+						<controls:LabelWithHelp LabelText="Random Seed:" FontWeight="Medium"
+							HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#randomseed"/>
+						<NumericUpDown Value="{Binding RandomSeed, Mode=TwoWay}"
+									   Minimum="0"
+									   Maximum="2147483647"
+									   Increment="1"
+									   IsEnabled="{Binding IsNotRunning}"/>
+					</StackPanel>
+				</StackPanel>
+			</Border>
 
-			<!-- Population Density -->
-			<StackPanel Spacing="4">
-				<controls:LabelWithHelp LabelText="Population Density:" FontWeight="Medium"
-					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#populationdensity"/>
-				<NumericUpDown Value="{Binding PopulationDensity, Mode=TwoWay}"
-							   Minimum="0"
-							   Increment="10"
-							   IsEnabled="{Binding IsNotRunning}"/>
-			</StackPanel>
+			<!-- Population -->
+			<Border Background="{DynamicResource EditorPanelBackground}"
+					BorderBrush="{DynamicResource EditorBorder}"
+					BorderThickness="1" Padding="12">
+				<StackPanel Spacing="10">
+					<TextBlock Text="Population" FontWeight="SemiBold" FontSize="13"
+							   Foreground="{DynamicResource EditorTextSecondary}"/>
+					<StackPanel Spacing="4">
+						<controls:LabelWithHelp LabelText="Population Density:" FontWeight="Medium"
+							HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#populationdensity"/>
+						<NumericUpDown Value="{Binding PopulationDensity, Mode=TwoWay}"
+									   Minimum="0"
+									   Increment="10"
+									   IsEnabled="{Binding IsNotRunning}"/>
+					</StackPanel>
+					<StackPanel Spacing="4">
+						<controls:LabelWithHelp LabelText="Population Start Percent:" FontWeight="Medium"
+							HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#populationstartpercent"/>
+						<NumericUpDown Value="{Binding PopulationStartPercent, Mode=TwoWay}"
+									   Minimum="0"
+									   Maximum="100"
+									   Increment="5"
+									   FormatString="0'%'"
+									   IsEnabled="{Binding IsNotRunning}"/>
+					</StackPanel>
+					<StackPanel Spacing="4">
+						<controls:LabelWithHelp LabelText="Full Population At Day:" FontWeight="Medium"
+							HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#fullpopulationatday"/>
+						<NumericUpDown Value="{Binding FullPopulationAtDay, Mode=TwoWay}"
+									   Minimum="1"
+									   Maximum="365"
+									   Increment="1"
+									   IsEnabled="{Binding IsNotRunning}"/>
+					</StackPanel>
+					<StackPanel Spacing="4">
+						<controls:LabelWithHelp LabelText="Group Size:" FontWeight="Medium"
+							HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html"/>
+						<NumericUpDown Value="{Binding GroupSize, Mode=TwoWay}"
+									   Minimum="1"
+									   Maximum="1024"
+									   Increment="1"
+									   IsEnabled="{Binding IsNotRunning}"/>
+					</StackPanel>
+					<CheckBox IsChecked="{Binding StartAgentsGrouped, Mode=TwoWay}"
+							  IsEnabled="{Binding IsNotRunning}">
+						<controls:LabelWithHelp LabelText="Start Agents Grouped"
+							HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#startagentsgrouped"/>
+					</CheckBox>
+				</StackPanel>
+			</Border>
 
-			<!-- Population Start Percent -->
-			<StackPanel Spacing="4">
-				<controls:LabelWithHelp LabelText="Population Start Percent:" FontWeight="Medium"
-					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#populationstartpercent"/>
-				<NumericUpDown Value="{Binding PopulationStartPercent, Mode=TwoWay}"
-							   Minimum="0"
-							   Maximum="100"
-							   Increment="5"
-							   FormatString="0'%'"
-							   IsEnabled="{Binding IsNotRunning}"/>
-			</StackPanel>
+			<!-- Spawning -->
+			<Border Background="{DynamicResource EditorPanelBackground}"
+					BorderBrush="{DynamicResource EditorBorder}"
+					BorderThickness="1" Padding="12">
+				<StackPanel Spacing="10">
+					<TextBlock Text="Spawning" FontWeight="SemiBold" FontSize="13"
+							   Foreground="{DynamicResource EditorTextSecondary}"/>
+					<StackPanel Spacing="4">
+						<controls:LabelWithHelp LabelText="Start Position:" FontWeight="Medium"
+							HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#agentstartposition"/>
+						<ComboBox SelectedItem="{Binding StartPosition, Mode=TwoWay}"
+								  ItemsSource="{Binding StartPositionOptions}"/>
+					</StackPanel>
+					<StackPanel Spacing="4">
+						<controls:LabelWithHelp LabelText="Respawn Position:" FontWeight="Medium"
+							HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#agentrespawnposition"/>
+						<ComboBox SelectedItem="{Binding RespawnPosition, Mode=TwoWay}"
+								  ItemsSource="{Binding RespawnPositionOptions}"/>
+					</StackPanel>
+					<StackPanel Spacing="4">
+						<controls:LabelWithHelp LabelText="Spawn Activation Radius:" FontWeight="Medium"
+							HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#spawnactivationradius"/>
+						<NumericUpDown Value="{Binding SpawnActivationRadius, Mode=TwoWay}"
+									   Minimum="0"
+									   Increment="1"/>
+					</StackPanel>
+					<StackPanel Spacing="4">
+						<controls:LabelWithHelp LabelText="Spawn Protection Time (seconds):" FontWeight="Medium"
+							HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#spawnprotectiontime"/>
+						<NumericUpDown Value="{Binding SpawnProtectionTime, Mode=TwoWay}"
+									   Minimum="0"
+									   Maximum="3600"
+									   Increment="1"/>
+					</StackPanel>
+				</StackPanel>
+			</Border>
 
-			<!-- Full Population At Day -->
-			<StackPanel Spacing="4">
-				<controls:LabelWithHelp LabelText="Full Population At Day:" FontWeight="Medium"
-					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#fullpopulationatday"/>
-				<NumericUpDown Value="{Binding FullPopulationAtDay, Mode=TwoWay}"
-							   Minimum="1"
-							   Maximum="365"
-							   Increment="1"
-							   IsEnabled="{Binding IsNotRunning}"/>
-			</StackPanel>
-
-			<!-- Group Size -->
-			<StackPanel Spacing="4">
-				<controls:LabelWithHelp LabelText="Group Size:" FontWeight="Medium"
-					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html"/>
-				<NumericUpDown Value="{Binding GroupSize, Mode=TwoWay}"
-							   Minimum="1"
-							   Maximum="1024"
-							   Increment="1"
-							   IsEnabled="{Binding IsNotRunning}"/>
-			</StackPanel>
-
-			<!-- Random Seed -->
-			<StackPanel Spacing="4">
-				<controls:LabelWithHelp LabelText="Random Seed:" FontWeight="Medium"
-					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#randomseed"/>
-				<NumericUpDown Value="{Binding RandomSeed, Mode=TwoWay}"
-							   Minimum="0"
-							   Maximum="2147483647"
-							   Increment="1"
-							   IsEnabled="{Binding IsNotRunning}"/>
-			</StackPanel>
-
-			<!-- Spawn Activation Radius -->
-			<StackPanel Spacing="4">
-				<controls:LabelWithHelp LabelText="Spawn Activation Radius:" FontWeight="Medium"
-					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#spawnactivationradius"/>
-				<NumericUpDown Value="{Binding SpawnActivationRadius, Mode=TwoWay}"
-							   Minimum="0"
-							   Increment="1"/>
-			</StackPanel>
-
-			<!-- Start Position -->
-			<StackPanel Spacing="4">
-				<controls:LabelWithHelp LabelText="Start Position:" FontWeight="Medium"
-					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#agentstartposition"/>
-				<ComboBox SelectedItem="{Binding StartPosition, Mode=TwoWay}"
-						  ItemsSource="{Binding StartPositionOptions}"/>
-			</StackPanel>
-
-			<!-- Respawn Position -->
-			<StackPanel Spacing="4">
-				<controls:LabelWithHelp LabelText="Respawn Position:" FontWeight="Medium"
-					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#agentrespawnposition"/>
-				<ComboBox SelectedItem="{Binding RespawnPosition, Mode=TwoWay}"
-						  ItemsSource="{Binding RespawnPositionOptions}"/>
-			</StackPanel>
-
-			<!-- Start Agents Grouped -->
-			<CheckBox IsChecked="{Binding StartAgentsGrouped, Mode=TwoWay}"
-					  IsEnabled="{Binding IsNotRunning}"
-					  Margin="0,8,0,4">
-				<controls:LabelWithHelp LabelText="Start Agents Grouped"
-					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#startagentsgrouped"/>
-			</CheckBox>
-
-			<!-- Enhanced Sound Awareness -->
-			<CheckBox IsChecked="{Binding EnhancedSoundAwareness, Mode=TwoWay}"
-					  Margin="0,4,0,8">
-				<controls:LabelWithHelp LabelText="Enhanced Sound Awareness"
-					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#enhancedsoundawareness"/>
-			</CheckBox>
-
-			<!-- Sound Distance Scale -->
-			<StackPanel Spacing="4">
-				<controls:LabelWithHelp LabelText="Sound Distance Scale:" FontWeight="Medium"
-					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#sounddistancescale"/>
-				<NumericUpDown Value="{Binding SoundDistanceScale, Mode=TwoWay}"
-							   Minimum="0"
-							   Maximum="10"
-							   Increment="0.1"
-							   FormatString="F1"/>
-			</StackPanel>
-
-
-			<!-- Pause During Bloodmoon -->
-			<CheckBox IsChecked="{Binding PauseDuringBloodmoon, Mode=TwoWay}"
-					  Margin="0,4,0,8">
-				<controls:LabelWithHelp LabelText="Pause During Bloodmoon"
-					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#pauseduringbloodmoon"/>
-			</CheckBox>
-
-			<!-- Spawn Protection Time -->
-			<StackPanel Spacing="4">
-				<controls:LabelWithHelp LabelText="Spawn Protection Time (seconds):" FontWeight="Medium"
-					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#spawnprotectiontime"/>
-				<NumericUpDown Value="{Binding SpawnProtectionTime, Mode=TwoWay}"
-							   Minimum="0"
-							   Maximum="3600"
-							   Increment="1"/>
-			</StackPanel>
-
-			<!-- Prevent Lifetime Expiration -->
-			<CheckBox IsChecked="{Binding InfiniteZombieLifetime, Mode=TwoWay}"
-					  Margin="0,4,0,8">
-				<controls:LabelWithHelp LabelText="Prevent Lifetime Expiration"
-					HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#infinitezombielifetime"/>
-			</CheckBox>
+			<!-- Behavior -->
+			<Border Background="{DynamicResource EditorPanelBackground}"
+					BorderBrush="{DynamicResource EditorBorder}"
+					BorderThickness="1" Padding="12">
+				<StackPanel Spacing="10">
+					<TextBlock Text="Behavior" FontWeight="SemiBold" FontSize="13"
+							   Foreground="{DynamicResource EditorTextSecondary}"/>
+					<CheckBox IsChecked="{Binding InfiniteZombieLifetime, Mode=TwoWay}">
+						<controls:LabelWithHelp LabelText="Prevent Lifetime Expiration"
+							HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#infinitezombielifetime"/>
+					</CheckBox>
+					<CheckBox IsChecked="{Binding EnhancedSoundAwareness, Mode=TwoWay}">
+						<controls:LabelWithHelp LabelText="Enhanced Sound Awareness"
+							HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#enhancedsoundawareness"/>
+					</CheckBox>
+					<StackPanel Spacing="4">
+						<controls:LabelWithHelp LabelText="Sound Distance Scale:" FontWeight="Medium"
+							HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#sounddistancescale"/>
+						<NumericUpDown Value="{Binding SoundDistanceScale, Mode=TwoWay}"
+									   Minimum="0"
+									   Maximum="10"
+									   Increment="0.1"
+									   FormatString="F1"/>
+					</StackPanel>
+					<CheckBox IsChecked="{Binding PauseDuringBloodmoon, Mode=TwoWay}">
+						<controls:LabelWithHelp LabelText="Pause During Bloodmoon"
+							HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#pauseduringbloodmoon"/>
+					</CheckBox>
+				</StackPanel>
+			</Border>
 
 		</StackPanel>
 	</ScrollViewer>
