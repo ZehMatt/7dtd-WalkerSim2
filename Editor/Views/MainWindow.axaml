@@ -16,6 +16,13 @@
 		<vm:EditorViewModel/>
 	</Design.DataContext>
 
+	<Window.KeyBindings>
+		<KeyBinding Gesture="F5" Command="{Binding StartSimulationCommand}"/>
+		<KeyBinding Gesture="Shift+F5" Command="{Binding StopSimulationCommand}"/>
+		<KeyBinding Gesture="F6" Command="{Binding PauseSimulationCommand}"/>
+		<KeyBinding Gesture="F7" Command="{Binding AdvanceOneTickCommand}"/>
+	</Window.KeyBindings>
+
 	<DockPanel>
 		<!-- Top Menu Bar -->
 		<Menu DockPanel.Dock="Top">
