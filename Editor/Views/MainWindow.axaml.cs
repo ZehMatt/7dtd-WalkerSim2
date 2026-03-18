@@ -1,9 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Editor.ViewModels;
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 
@@ -117,6 +119,91 @@ namespace Editor.Views
 
             if (DataContext is EditorViewModel vm)
                 vm.RefreshAgentModels();
+        }
+
+        // ── Exit / Close ────────────────────────────────────────────────────────
+
+        private void OnExitClick(object? sender, RoutedEventArgs e) => Close();
+
+        private bool _forceClose = false;
+
+        protected override async void OnClosing(WindowClosingEventArgs e)
+        {
+            base.OnClosing(e);
+
+            if (_forceClose)
+                return;
+
+            if (DataContext is EditorViewModel vm && vm.HasUnsavedChanges)
+            {
+                e.Cancel = true;
+
+                var result = await ShowUnsavedChangesDialog();
+                if (result == true)
+                {
+                    _forceClose = true;
+                    Close();
+                }
+            }
+        }
+
+        // Returns: true = discard, false = cancel, null = saved
+        private async System.Threading.Tasks.Task<bool?> ShowUnsavedChangesDialog()
+        {
+            bool? dialogResult = false;
+
+            var dialog = new Window
+            {
+                Title = "Unsaved Changes",
+                SizeToContent = SizeToContent.WidthAndHeight,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                CanResize = false,
+                ShowInTaskbar = false,
+            };
+
+            var saveButton = new Button { Content = "Save", Width = 80 };
+            var discardButton = new Button { Content = "Discard", Width = 80 };
+            var cancelButton = new Button { Content = "Cancel", Width = 80 };
+
+            saveButton.Click += async (_, _) =>
+            {
+                if (DataContext is EditorViewModel vm)
+                {
+                    await vm.ExportConfigurationCommand.ExecuteAsync(null);
+                    if (!vm.HasUnsavedChanges)
+                    {
+                        dialogResult = true;
+                        dialog.Close();
+                    }
+                }
+            };
+            discardButton.Click += (_, _) => { dialogResult = true; dialog.Close(); };
+            cancelButton.Click += (_, _) => { dialogResult = false; dialog.Close(); };
+
+            dialog.Content = new StackPanel
+            {
+                Margin = new Avalonia.Thickness(16, 12),
+                Spacing = 12,
+                Children =
+                {
+                    new TextBlock
+                    {
+                        Text = "You have unsaved changes. Would you like to save your configuration before closing?",
+                        TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                        MaxWidth = 350,
+                    },
+                    new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Spacing = 8,
+                        Children = { saveButton, discardButton, cancelButton }
+                    }
+                }
+            };
+
+            await dialog.ShowDialog(this);
+            return dialogResult;
         }
 
         // ── Zoom ──────────────────────────────────────────────────────────────────

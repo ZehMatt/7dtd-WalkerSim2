@@ -20,6 +20,9 @@ namespace Editor.ViewModels
         private bool _agentsDirty = false;
         private readonly System.Random _prng = new System.Random((int)DateTime.Now.Ticks);
 
+        [ObservableProperty]
+        private bool _hasUnsavedChanges = false;
+
         private static readonly float WorldSizeX = 6000;
         private static readonly float WorldSizeY = 6000;
         private static readonly Vector3 WorldMins = new Vector3(-(WorldSizeX * 0.5f), -(WorldSizeY * 0.5f), 0);
@@ -104,89 +107,95 @@ namespace Editor.ViewModels
             }
         }
 
+        private void MarkDirty()
+        {
+            if (!_suppressReset)
+                HasUnsavedChanges = true;
+        }
+
         // Wrapper properties for Config fields (Config uses fields, not properties, so we need wrappers for binding)
         public int PopulationDensity
         {
             get => Config.PopulationDensity;
-            set { Config.PopulationDensity = value; OnPropertyChanged(); RefreshAllSystemIndices(); if (!_suppressReset) ResetSimulation(); }
+            set { Config.PopulationDensity = value; OnPropertyChanged(); MarkDirty(); RefreshAllSystemIndices(); if (!_suppressReset) ResetSimulation(); }
         }
 
         public int GroupSize
         {
             get => Config.GroupSize;
-            set { Config.GroupSize = value; OnPropertyChanged(); RefreshAllSystemIndices(); if (!_suppressReset) ResetSimulation(); }
+            set { Config.GroupSize = value; OnPropertyChanged(); MarkDirty(); RefreshAllSystemIndices(); if (!_suppressReset) ResetSimulation(); }
         }
 
         public int RandomSeed
         {
             get => Config.RandomSeed;
-            set { Config.RandomSeed = value; OnPropertyChanged(); }
+            set { Config.RandomSeed = value; OnPropertyChanged(); MarkDirty(); }
         }
 
         public int SpawnActivationRadius
         {
             get => Config.SpawnActivationRadius;
-            set { Config.SpawnActivationRadius = value; OnPropertyChanged(); }
+            set { Config.SpawnActivationRadius = value; OnPropertyChanged(); MarkDirty(); }
         }
 
         public Config.WorldLocation StartPosition
         {
             get => Config.StartPosition;
-            set { Config.StartPosition = value; OnPropertyChanged(); if (!_suppressReset) ResetSimulation(); }
+            set { Config.StartPosition = value; OnPropertyChanged(); MarkDirty(); if (!_suppressReset) ResetSimulation(); }
         }
 
         public Config.WorldLocation RespawnPosition
         {
             get => Config.RespawnPosition;
-            set { Config.RespawnPosition = value; OnPropertyChanged(); if (!_suppressReset) ResetSimulation(); }
+            set { Config.RespawnPosition = value; OnPropertyChanged(); MarkDirty(); if (!_suppressReset) ResetSimulation(); }
         }
 
         public bool StartAgentsGrouped
         {
             get => Config.StartAgentsGrouped;
-            set { Config.StartAgentsGrouped = value; OnPropertyChanged(); if (!_suppressReset) ResetSimulation(); }
+            set { Config.StartAgentsGrouped = value; OnPropertyChanged(); MarkDirty(); if (!_suppressReset) ResetSimulation(); }
         }
 
         public bool EnhancedSoundAwareness
         {
             get => Config.EnhancedSoundAwareness;
-            set { Config.EnhancedSoundAwareness = value; OnPropertyChanged(); }
+            set { Config.EnhancedSoundAwareness = value; OnPropertyChanged(); MarkDirty(); }
         }
 
         public float SoundDistanceScale
         {
             get => Config.SoundDistanceScale;
-            set { Config.SoundDistanceScale = value; OnPropertyChanged(); }
+            set { Config.SoundDistanceScale = value; OnPropertyChanged(); MarkDirty(); }
         }
 
         public bool PauseDuringBloodmoon
         {
             get => Config.PauseDuringBloodmoon;
-            set { Config.PauseDuringBloodmoon = value; OnPropertyChanged(); }
+            set { Config.PauseDuringBloodmoon = value; OnPropertyChanged(); MarkDirty(); }
         }
 
         public uint SpawnProtectionTime
         {
             get => Config.SpawnProtectionTime;
-            set { Config.SpawnProtectionTime = value; OnPropertyChanged(); if (!_suppressReset) ResetSimulation(); }
+            set { Config.SpawnProtectionTime = value; OnPropertyChanged(); MarkDirty(); if (!_suppressReset) ResetSimulation(); }
         }
 
         public bool InfiniteZombieLifetime
         {
             get => Config.InfiniteZombieLifetime;
-            set { Config.InfiniteZombieLifetime = value; OnPropertyChanged(); }
+            set { Config.InfiniteZombieLifetime = value; OnPropertyChanged(); MarkDirty(); }
         }
 
         public float PopulationStartPercent
         {
             get => Config.PopulationStartPercent;
-            set { Config.PopulationStartPercent = value; OnPropertyChanged(); if (!_suppressReset) ResetSimulation(); }
+            set { Config.PopulationStartPercent = value; OnPropertyChanged(); MarkDirty(); if (!_suppressReset) ResetSimulation(); }
         }
 
         public int FullPopulationAtDay
         {
             get => Config.FullPopulationAtDay;
-            set { Config.FullPopulationAtDay = value; OnPropertyChanged(); if (!_suppressReset) ResetSimulation(); }
+            set { Config.FullPopulationAtDay = value; OnPropertyChanged(); MarkDirty(); if (!_suppressReset) ResetSimulation(); }
         }
 
         // Wrapper properties for movement processor parameters to support live editing
@@ -900,6 +909,7 @@ namespace Editor.ViewModels
         {
             if (!_suppressReset)
             {
+                HasUnsavedChanges = true;
                 _simulation.ReloadConfig(Config);
                 GroupColorsChanged?.Invoke();
             }
@@ -968,12 +978,13 @@ namespace Editor.ViewModels
 
                     // Reset simulation with new config (OnConfigChanged will refresh all UI bindings)
                     ResetSimulation();
+                    HasUnsavedChanges = false;
                 }
             }
             catch (System.Exception ex)
             {
                 Logging.Exception(ex);
-                Logging.Err($"Failed to import configuration: {ex.Message}");
+                Logging.Err($"Failed to load configuration: {ex.Message}");
             }
         }
 
@@ -990,7 +1001,7 @@ namespace Editor.ViewModels
             {
                 var file = await mainWindow.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
                 {
-                    Title = "Export Configuration",
+                    Title = "Save Configuration",
                     DefaultExtension = "xml",
                     FileTypeChoices = new[] { new FilePickerFileType("XML Files") { Patterns = new[] { "*.xml" } } },
                     SuggestedFileName = "WalkerSim.xml"
@@ -1010,13 +1021,14 @@ namespace Editor.ViewModels
                         Config.Export(writer);
                     }
 
-                    Logging.Info($"Configuration exported to {System.IO.Path.GetFileName(path)}");
+                    HasUnsavedChanges = false;
+                    Logging.Info($"Configuration saved to {System.IO.Path.GetFileName(path)}");
                 }
             }
             catch (System.Exception ex)
             {
                 Logging.Exception(ex);
-                Logging.Err($"Failed to export configuration: {ex.Message}");
+                Logging.Err($"Failed to save configuration: {ex.Message}");
             }
         }
 

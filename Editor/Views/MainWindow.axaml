@@ -20,12 +20,12 @@
 		<!-- Top Menu Bar -->
 		<Menu DockPanel.Dock="Top">
 			<MenuItem Header="File">
-				<MenuItem Header="Import Configuration"
+				<MenuItem Header="Load Configuration"
 						  Command="{Binding ImportConfigurationCommand}"/>
-				<MenuItem Header="Export Configuration"
+				<MenuItem Header="Save Configuration"
 						  Command="{Binding ExportConfigurationCommand}"/>
 				<Separator/>
-				<MenuItem Header="Exit"/>
+				<MenuItem Header="Exit" Click="OnExitClick"/>
 			</MenuItem>
 
 			<MenuItem Header="View">
