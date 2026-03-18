@@ -78,6 +78,19 @@ jobs:
           $content = $content -replace '\[assembly: AssemblyFileVersion\("[^"]*"\)\]', "[assembly: AssemblyFileVersion(`"$version.0`")]"
           Set-Content -Path $buildInfoFile -Value $content
           echo "BuildInfo.cs updated" | Out-Host
+          if ($branch -eq "nightly") {
+            $readmeVersion = (git describe --tags --abbrev=0 2>&1) | Select-String -NotMatch "fatal" | ForEach-Object { $_.Line -replace '^v', '' }
+            if (-not $readmeVersion) { $readmeVersion = "master" }
+          } else {
+            $readmeVersion = $branch
+          }
+          $readmeFile = "$env:GITHUB_WORKSPACE\Mod\Editor\README.txt"
+          if (Test-Path $readmeFile) {
+            $readmeContent = Get-Content -Path $readmeFile -Raw
+            $readmeContent = $readmeContent -replace '\{version\}', $readmeVersion
+            Set-Content -Path $readmeFile -Value $readmeContent
+            echo "README.txt updated with version $readmeVersion" | Out-Host
+          }
       shell: powershell
 
     - name: Cache DepotDownloader
@@ -177,7 +190,7 @@ jobs:
       run: |
         mkdir artifact\WalkerSim2
         echo .pdb > exclude.txt
-        xcopy /I /Y /F ".\Build\Release\Mod\*" ".\artifact\WalkerSim2\" /EXCLUDE:exclude.txt
+        xcopy /S /I /Y /F ".\Build\Release\Mod\*" ".\artifact\WalkerSim2\" /EXCLUDE:exclude.txt
         del exclude.txt
 
     - name: Upload Mod artifact
