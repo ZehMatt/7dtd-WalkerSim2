@@ -32,28 +32,33 @@ jobs:
       run: |
           echo "Working directory: $PWD" | Out-Host
           echo "Branch name: $env:BRANCH_NAME" | Out-Host
-          if ($env:BRANCH_NAME -like 'release/*') {
-            $version = $env:BRANCH_NAME -replace '^release/', ''
-            echo "Release branch version (raw): $version" | Out-Host
+          if ($env:BRANCH_NAME -match '^(release|prerelease)/(.+)$') {
+            $version = $Matches[2]
+            echo "Branch version (raw): $version" | Out-Host
           } else {
             $gitOutput = (git describe --tags --abbrev=0 2>&1)
             echo "git describe output: $gitOutput" | Out-Host
             $latestTag = ($gitOutput | Select-String -NotMatch "fatal").Line
             if ($latestTag) {
-              $version = $latestTag
-              echo "Found tag: $latestTag" | Out-Host
+              $version = $latestTag -replace '^v', ''
+              echo "Found tag: $latestTag -> $version" | Out-Host
             } else {
               $version = "0.0.0"
               echo "No tags found, defaulting to version 0.0.0" | Out-Host
             }
           }
-          if ($version -match '^\d+\.\d+\.\d+$') {
+          # Extract numeric version (e.g. "1.1-beta2" -> "1.1"), pad to 3 parts
+          if ($version -match '^(\d+\.\d+(\.\d+)?)') {
+            $numericVersion = $Matches[1]
+            $parts = $numericVersion.Split('.')
+            while ($parts.Count -lt 3) { $parts += '0' }
+            $version = $parts -join '.'
             echo "BUILD_VERSION=$version" >> $env:GITHUB_ENV
             echo "Valid version: $version" | Out-Host
           } else {
-            $version = "0.9.5"
+            $version = "0.0.0"
             echo "BUILD_VERSION=$version" >> $env:GITHUB_ENV
-            echo "Invalid version format, defaulting to 0.9.5" | Out-Host
+            echo "Invalid version format, defaulting to 0.0.0" | Out-Host
           }
           $sha12 = $env:COMMIT_SHA.Substring(0,12)
           echo "COMMIT_SHA=$sha12" >> $env:GITHUB_ENV
@@ -209,21 +214,26 @@ jobs:
       shell: pwsh
       run: |
           Write-Host "Branch name: $env:BRANCH_NAME"
-          if ($env:BRANCH_NAME -like 'release/*') {
-            $version = $env:BRANCH_NAME -replace '^release/', ''
+          if ($env:BRANCH_NAME -match '^(release|prerelease)/(.+)$') {
+            $version = $Matches[2]
           } else {
             $gitOutput = (git describe --tags --abbrev=0 2>&1)
             $latestTag = ($gitOutput | Select-String -NotMatch "fatal").Line
             if ($latestTag) {
-              $version = $latestTag
+              $version = $latestTag -replace '^v', ''
             } else {
               $version = "0.0.0"
             }
           }
-          if ($version -match '^\d+\.\d+\.\d+$') {
+          # Extract numeric version (e.g. "1.1-beta2" -> "1.1"), pad to 3 parts
+          if ($version -match '^(\d+\.\d+(\.\d+)?)') {
+            $numericVersion = $Matches[1]
+            $parts = $numericVersion.Split('.')
+            while ($parts.Count -lt 3) { $parts += '0' }
+            $version = $parts -join '.'
             echo "BUILD_VERSION=$version" >> $env:GITHUB_ENV
           } else {
-            $version = "0.9.5"
+            $version = "0.0.0"
             echo "BUILD_VERSION=$version" >> $env:GITHUB_ENV
           }
           $sha12 = $env:COMMIT_SHA.Substring(0,12)
