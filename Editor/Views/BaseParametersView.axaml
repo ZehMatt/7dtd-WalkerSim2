@@ -45,7 +45,7 @@
 							   Minimum="0"
 							   Maximum="100"
 							   Increment="5"
-							   FormatString="F0"
+							   FormatString="0'%'"
 							   IsEnabled="{Binding IsNotRunning}"/>
 			</StackPanel>
 

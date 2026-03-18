@@ -12,7 +12,7 @@
 
 	<Application.Styles>
 		<FluentTheme />
-		<!-- Suppress validation error overlay; range is enforced by Minimum/Maximum and the clamp behavior below. -->
+		<!-- Suppress validation error display on NumericUpDown controls. -->
 		<Style Selector="NumericUpDown /template/ DataValidationErrors">
 			<Setter Property="ErrorTemplate" Value="{x:Null}"/>
 		</Style>

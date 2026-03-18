@@ -127,6 +127,7 @@ namespace WalkerSim.Console
                     ConsoleOutput.Log("  Total Despawns: {0}", sim.TotalDespawns);
                     ConsoleOutput.Log("  Bloodmoon: {0}", sim.IsBloodmoon);
                     ConsoleOutput.Log("  DayTime: {0}", sim.IsDayTime);
+                    ConsoleOutput.Log("  Day: {0:0.00}", sim.GameTime);
                     ConsoleOutput.Log("  Time Scale: {0}", sim.TimeScale);
                     ConsoleOutput.Log("  Average Tick Time: {0}ms, {1}/ps", averageSimTime, ticksPerSecond);
                     ConsoleOutput.Log("  Wind Direction: {0}", sim.WindDirection);
