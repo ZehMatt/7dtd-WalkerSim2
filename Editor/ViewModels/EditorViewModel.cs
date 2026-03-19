@@ -513,29 +513,49 @@ namespace Editor.ViewModels
 
         public EditorViewModel()
         {
-            // Initialize movement systems from config
-            MovementSystems = new ObservableCollection<Models.MovementProcessorGroupModel>(
-                Config.Processors.Select(p => CreateMovementSystemModel(p))
-            );
-            RefreshAllSystemIndices();
+            Logging.Info("Creating view model...");
+            using (Logging.Scope())
+            {
+                // Initialize movement systems from config
+                Logging.Info("Initializing movement systems...");
+                MovementSystems = new ObservableCollection<Models.MovementProcessorGroupModel>(
+                    Config.Processors.Select(p => CreateMovementSystemModel(p))
+                );
+                RefreshAllSystemIndices();
 
-            // Setup logging
-            Logging.AddSink(this);
+                // Setup logging
+                Logging.AddSink(this);
 
-            // Initialize simulation in editor mode
-            _simulation.EditorMode = true;
-            _simulation.SetWorldSize(WorldMins, WorldMaxs);
-            ResetSimulation();
+                // Initialize simulation in editor mode
+                Logging.Info("Initializing simulation...");
+                _simulation.EditorMode = true;
+                _simulation.SetWorldSize(WorldMins, WorldMaxs);
+                ResetSimulation();
 
-            // Discover worlds asynchronously so the UI isn't blocked
-            Task.Run(LoadWorldList);
+                // Discover worlds asynchronously so the UI isn't blocked
+                Logging.Info("Starting world discovery...");
+                Task.Run(LoadWorldList);
+            }
         }
 
         private void LoadWorldList()
         {
-            var folders = WorldLocator.FindWorldFolders();
+            Logging.Info("Discovering worlds...");
+            List<string> folders;
+            try
+            {
+                folders = WorldLocator.FindWorldFolders();
+            }
+            catch (Exception ex)
+            {
+                Logging.Err("Failed to discover worlds: {0}", ex.Message);
+                folders = new List<string>();
+            }
+
+            Logging.Info("Found {0} world folder(s), posting to UI thread...", folders.Count);
             Dispatcher.UIThread.Post(() =>
             {
+                Logging.Info("Populating world list...");
                 _worldFolders = folders;
                 WorldNames.Clear();
                 foreach (var f in folders)
@@ -549,7 +569,10 @@ namespace Editor.ViewModels
                     var navezgane = WorldNames.FirstOrDefault(n =>
                         n.Equals("Navezgane", StringComparison.OrdinalIgnoreCase));
                     if (navezgane != null)
+                    {
+                        Logging.Info("Auto-selecting world: {0}", navezgane);
                         SelectedWorldName = navezgane;
+                    }
                 }
             });
         }
@@ -566,10 +589,28 @@ namespace Editor.ViewModels
 
             if (WorldLocator.TryGetWorldPath(_worldFolders, value, out var worldPath))
             {
-                _simulation.LoadMapData(worldPath, value);
-                ResetSimulation();
-                Logging.Info($"Loaded world: {value}");
-                WorldLoaded?.Invoke();
+                var worldName = value;
+                Logging.Info("Loading world '{0}' from: {1}", worldName, worldPath);
+                Task.Run(() =>
+                {
+                    Logging.Info("Loading map data for '{0}'...", worldName);
+                    var result = _simulation.LoadMapData(worldPath, worldName);
+                    Logging.Info("Map data load {0} for '{1}'.", result ? "succeeded" : "failed", worldName);
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        if (result)
+                        {
+                            Logging.Info("Resetting simulation for '{0}'...", worldName);
+                            ResetSimulation();
+                            Logging.Info($"Loaded world: {worldName}");
+                            WorldLoaded?.Invoke();
+                        }
+                        else
+                        {
+                            Logging.Err($"Failed to load world: {worldName}");
+                        }
+                    });
+                });
             }
         }
 

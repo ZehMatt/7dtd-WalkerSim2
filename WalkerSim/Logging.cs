@@ -4,10 +4,32 @@ using System.Diagnostics;
 
 namespace WalkerSim
 {
+    public struct LogScope : IDisposable
+    {
+        private bool _disposed;
+
+        internal LogScope(bool _)
+        {
+            _disposed = false;
+            Logging.BeginScope();
+        }
+
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+                Logging.EndScope();
+            }
+        }
+    }
+
     public static class Logging
     {
         public delegate void LogMessage(string message);
         private static object _lock = new object();
+        private static int _scopeDepth = 0;
+        private static string _indent = "";
 
         public enum Level
         {
@@ -27,13 +49,29 @@ namespace WalkerSim
         {
         }
 
+        public static void BeginScope()
+        {
+            _scopeDepth++;
+            _indent = new string(' ', _scopeDepth * 2);
+        }
+
+        public static void EndScope()
+        {
+            if (_scopeDepth > 0)
+                _scopeDepth--;
+            _indent = _scopeDepth > 0 ? new string(' ', _scopeDepth * 2) : "";
+        }
+
+        public static LogScope Scope() => new LogScope(true);
+
         private static void Message(Level level, string message)
         {
             lock (_lock)
             {
+                var indented = _scopeDepth > 0 ? _indent + message : message;
                 foreach (var sink in _sinks)
                 {
-                    sink.Message(level, message);
+                    sink.Message(level, indented);
                 }
             }
         }

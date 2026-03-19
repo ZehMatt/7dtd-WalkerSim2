@@ -18,13 +18,22 @@ namespace Editor
             // User-generated worlds (location differs per OS)
             foreach (var generatedPath in GetUserGeneratedWorldPaths())
             {
-                if (Directory.Exists(generatedPath))
+                WalkerSim.Logging.Info("Checking generated worlds: {0}", generatedPath);
+                try
                 {
-                    foreach (var w in Directory.EnumerateDirectories(generatedPath))
-                        worldFolders.Add(w);
+                    if (Directory.Exists(generatedPath))
+                    {
+                        foreach (var w in Directory.EnumerateDirectories(generatedPath))
+                            worldFolders.Add(w);
+                    }
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    WalkerSim.Logging.Warn("No permission to enumerate: {0}", generatedPath);
                 }
             }
 
+            WalkerSim.Logging.Info("Finding game install paths...");
             var gamePaths = FindGamePaths();
 
             // Include user-configured game folders from settings
@@ -38,25 +47,46 @@ namespace Editor
             {
                 // Worlds bundled with the game
                 var worldsPath = Path.Combine(installPath, "Data", "Worlds");
-                if (Directory.Exists(worldsPath))
+                try
                 {
-                    foreach (var w in Directory.EnumerateDirectories(worldsPath))
-                        worldFolders.Add(w);
+                    if (Directory.Exists(worldsPath))
+                    {
+                        foreach (var w in Directory.EnumerateDirectories(worldsPath))
+                            worldFolders.Add(w);
+                    }
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    WalkerSim.Logging.Warn("No permission to enumerate: {0}", worldsPath);
                 }
 
                 // Worlds inside Mods subdirectories
                 var modsPath = Path.Combine(installPath, "Mods");
-                if (Directory.Exists(modsPath))
+                try
                 {
-                    foreach (var mod in Directory.EnumerateDirectories(modsPath))
+                    if (Directory.Exists(modsPath))
                     {
-                        var worldPath = Path.Combine(mod, "Worlds");
-                        if (Directory.Exists(worldPath))
+                        foreach (var mod in Directory.EnumerateDirectories(modsPath))
                         {
-                            foreach (var w in Directory.EnumerateDirectories(worldPath))
-                                worldFolders.Add(w);
+                            var worldPath = Path.Combine(mod, "Worlds");
+                            try
+                            {
+                                if (Directory.Exists(worldPath))
+                                {
+                                    foreach (var w in Directory.EnumerateDirectories(worldPath))
+                                        worldFolders.Add(w);
+                                }
+                            }
+                            catch (UnauthorizedAccessException)
+                            {
+                                WalkerSim.Logging.Warn("No permission to enumerate: {0}", worldPath);
+                            }
                         }
                     }
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    WalkerSim.Logging.Warn("No permission to enumerate: {0}", modsPath);
                 }
             }
 
@@ -115,13 +145,20 @@ namespace Editor
             // Registry lookup (Windows only)
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
+                WalkerSim.Logging.Info("Checking registry for game install...");
                 var reg = GetInstallPathFromRegistry();
-                if (reg != null) paths.Add(reg);
+                if (reg != null)
+                {
+                    WalkerSim.Logging.Info("Found game via registry: {0}", reg);
+                    paths.Add(reg);
+                }
             }
 
             // Steam library scan (all platforms)
+            WalkerSim.Logging.Info("Scanning Steam libraries...");
             foreach (var steamRoot in GetSteamRootPaths())
             {
+                WalkerSim.Logging.Info("Checking Steam root: {0}", steamRoot);
                 foreach (var lib in GetSteamLibraryFolders(steamRoot))
                 {
                     var manifest = Path.Combine(lib, "steamapps", $"appmanifest_{AppID}.acf");
@@ -132,7 +169,10 @@ namespace Editor
                         {
                             var gamePath = Path.Combine(lib, "steamapps", "common", dir);
                             if (Directory.Exists(gamePath))
+                            {
+                                WalkerSim.Logging.Info("Found game via Steam: {0}", gamePath);
                                 paths.Add(gamePath);
+                            }
                         }
                     }
                 }

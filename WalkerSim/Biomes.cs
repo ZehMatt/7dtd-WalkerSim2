@@ -95,38 +95,54 @@ namespace WalkerSim
 
         public static Biomes LoadFromBitmap(WalkerSim.Drawing.IBitmap img, string filePath)
         {
-            var scaled = Drawing.Create(img, ScaledWidth, ScaledHeight);
+            Logging.Info("Loading biomes...");
 
-            var height = scaled.Height;
-            var width = scaled.Width;
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            sw.Start();
 
-            var data = new Type[width, height];
+            Biomes biomes;
 
-            scaled.LockPixels();
-            Parallel.For(0, height * width, y =>
+            using (Logging.Scope())
             {
-                var x = y % width;
-                y /= width;
 
-                var pixel = scaled.GetPixel(x, y);
-                var mappedType = Type.Invalid;
-                if (!_colorMapping.TryGetValue(pixel, out mappedType))
+                var scaled = Drawing.Create(img, ScaledWidth, ScaledHeight);
+
+                var height = scaled.Height;
+                var width = scaled.Width;
+
+                var data = new Type[width, height];
+
+                scaled.LockPixels();
+                Parallel.For(0, height * width, y =>
                 {
-                    mappedType = Type.Invalid;
-                }
-                data[x, y] = mappedType;
-            });
-            scaled.UnlockPixels();
+                    var x = y % width;
+                    y /= width;
 
-            var biomes = new Biomes
-            {
-                Width = width,
-                Height = height,
-                BiomeMap = data,
-                Name = filePath,
-            };
+                    var pixel = scaled.GetPixel(x, y);
+                    var mappedType = Type.Invalid;
+                    if (!_colorMapping.TryGetValue(pixel, out mappedType))
+                    {
+                        mappedType = Type.Invalid;
+                    }
+                    data[x, y] = mappedType;
+                });
+                scaled.UnlockPixels();
 
-            biomes.BuildSDFs();
+                biomes = new Biomes
+                {
+                    Width = width,
+                    Height = height,
+                    BiomeMap = data,
+                    Name = filePath,
+                };
+
+                biomes.BuildSDFs();
+            }
+
+            sw.Stop();
+            var elapsed = sw.Elapsed;
+
+            Logging.Info("Loaded biomes in {0}s", elapsed.TotalSeconds);
 
             return biomes;
         }
@@ -160,10 +176,14 @@ namespace WalkerSim
             int x1 = x0 + 1;
             int y1 = y0 + 1;
 
-            if (x0 < 0) x0 = 0;
-            if (y0 < 0) y0 = 0;
-            if (x1 >= SDFWidth) x1 = SDFWidth - 1;
-            if (y1 >= SDFHeight) y1 = SDFHeight - 1;
+            if (x0 < 0)
+                x0 = 0;
+            if (y0 < 0)
+                y0 = 0;
+            if (x1 >= SDFWidth)
+                x1 = SDFWidth - 1;
+            if (y1 >= SDFHeight)
+                y1 = SDFHeight - 1;
 
             float fx = sx - (int)sx;
             float fy = sy - (int)sy;
@@ -196,42 +216,55 @@ namespace WalkerSim
 
         private void BuildSDFs()
         {
-            SDFWidth = SDFSize;
-            SDFHeight = SDFSize;
+            Logging.Info("Building SDFs for biomes...");
 
-            // Downsample BiomeMap to SDF resolution.
-            var downsampled = new Type[SDFWidth * SDFHeight];
-            float scaleX = (float)Width / SDFWidth;
-            float scaleY = (float)Height / SDFHeight;
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            sw.Start();
 
-            for (int y = 0; y < SDFHeight; y++)
+            using (Logging.Scope())
             {
-                for (int x = 0; x < SDFWidth; x++)
+                SDFWidth = SDFSize;
+                SDFHeight = SDFSize;
+
+                // Downsample BiomeMap to SDF resolution.
+                var downsampled = new Type[SDFWidth * SDFHeight];
+                float scaleX = (float)Width / SDFWidth;
+                float scaleY = (float)Height / SDFHeight;
+
+                for (int y = 0; y < SDFHeight; y++)
                 {
-                    // Sample center of corresponding BiomeMap region.
-                    int srcX = Math.Min((int)(x * scaleX + scaleX * 0.5f), Width - 1);
-                    int srcY = Math.Min((int)(y * scaleY + scaleY * 0.5f), Height - 1);
-                    downsampled[y * SDFWidth + x] = BiomeMap[srcX, srcY];
+                    for (int x = 0; x < SDFWidth; x++)
+                    {
+                        // Sample center of corresponding BiomeMap region.
+                        int srcX = Math.Min((int)(x * scaleX + scaleX * 0.5f), Width - 1);
+                        int srcY = Math.Min((int)(y * scaleY + scaleY * 0.5f), Height - 1);
+                        downsampled[y * SDFWidth + x] = BiomeMap[srcX, srcY];
+                    }
                 }
+
+                // Build SDF for each valid biome type in parallel.
+                var results = new Dictionary<Type, float[]>();
+                foreach (var biomeType in ValidTypes)
+                {
+                    results[biomeType] = null;
+                }
+
+                Parallel.ForEach(ValidTypes, biomeType =>
+                {
+                    var sdf = ComputeSDF(downsampled, SDFWidth, SDFHeight, biomeType);
+                    lock (results)
+                    {
+                        results[biomeType] = sdf;
+                    }
+                });
+
+                _sdfFields = new Dictionary<Type, float[]>(results);
             }
 
-            // Build SDF for each valid biome type in parallel.
-            var results = new Dictionary<Type, float[]>();
-            foreach (var biomeType in ValidTypes)
-            {
-                results[biomeType] = null;
-            }
+            sw.Stop();
+            var elapsed = sw.Elapsed;
 
-            Parallel.ForEach(ValidTypes, biomeType =>
-            {
-                var sdf = ComputeSDF(downsampled, SDFWidth, SDFHeight, biomeType);
-                lock (results)
-                {
-                    results[biomeType] = sdf;
-                }
-            });
-
-            _sdfFields = new Dictionary<Type, float[]>(results);
+            Logging.Info("Built SDFs in {0}s", elapsed.TotalSeconds);
         }
 
         private static float[] ComputeSDF(Type[] map, int w, int h, Type biomeType)
@@ -307,7 +340,8 @@ namespace WalkerSim
         /// </summary>
         private static void EDT1D(float[] f, float[] d, int n)
         {
-            if (n == 0) return;
+            if (n == 0)
+                return;
 
             var v = new int[n];     // Locations of parabolas in lower envelope.
             var z = new float[n + 1]; // Boundaries between parabolas.

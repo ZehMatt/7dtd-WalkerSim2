@@ -228,64 +228,6 @@ namespace WalkerSim
             return res;
         }
 
-        private static void MergePrefabs(PrefabsData prefabs)
-        {
-            if (prefabs.Decorations == null)
-            {
-                return;
-            }
-
-            var newList = new List<Decoration>(prefabs.Decorations);
-
-            bool invalidated = true;
-            while (invalidated)
-            {
-                invalidated = false;
-
-                for (int i = 0; i < newList.Count; i++)
-                {
-                    Vector3 pos = newList[i].Position;
-                    // z is unused, this is 2D.
-                    Vector3 bounds = newList[i].Bounds;
-
-                    for (int j = i + 1; j < newList.Count;)
-                    {
-                        // Check for intersecting bounds.
-                        var other = newList[j];
-                        Vector3 otherPos = other.Position;
-                        Vector3 otherBounds = other.Bounds;
-
-                        // Check if bounds intersect in 2D (ignoring z).
-                        bool intersects = System.Math.Abs(pos.X - otherPos.X) < (bounds.X + otherBounds.X) / 2 &&
-                                        System.Math.Abs(pos.Y - otherPos.Y) < (bounds.Y + otherBounds.Y) / 2;
-
-                        if (intersects)
-                        {
-                            // Calculate new merged bounds
-                            float minX = System.Math.Min(pos.X - bounds.X / 2, otherPos.X - otherBounds.X / 2);
-                            float maxX = System.Math.Max(pos.X + bounds.X / 2, otherPos.X + otherBounds.X / 2);
-                            float minY = System.Math.Min(pos.Y - bounds.Y / 2, otherPos.Y - otherBounds.Y / 2);
-                            float maxY = System.Math.Max(pos.Y + bounds.Y / 2, otherPos.Y + otherBounds.Y / 2);
-
-                            // Update current decoration's position and bounds
-                            newList[i].Position = new Vector3((minX + maxX) / 2, (minY + maxY) / 2, pos.Z);
-                            newList[i].Bounds = new Vector3(maxX - minX, maxY - minY, bounds.Z);
-
-                            // Remove the other decoration
-                            newList.RemoveAt(j);
-                            invalidated = true;
-                        }
-                        else
-                        {
-                            j++;
-                        }
-                    }
-                }
-            }
-
-            prefabs.Decorations = newList.ToArray();
-        }
-
         private static Vector3 GetWorldSize(string folderPath)
         {
             // The only way to tell at the moment is to use the file size of dtm.raw.
@@ -322,34 +264,48 @@ namespace WalkerSim
 
         public static MapData LoadFromFolder(string folderPath)
         {
-            // Parse map_info.xml         
-            var mapInfoPath = System.IO.Path.Combine(folderPath, "map_info.xml");
-            var mapInfo = LoadMapInfo(mapInfoPath);
+            Logging.Info("Loading map data from folder '{0}'...", folderPath);
 
-            var roads = LoadRoadSplat(folderPath);
-            var biomes = LoadBiomes(folderPath);
-            var prefabs = LoadPrefabs(folderPath);
-
-            var worldSize = GetWorldSize(folderPath);
-            var sizeX = worldSize.X / 2;
-            var sizeY = worldSize.Y / 2;
-            var sizeZ = worldSize.Z;
-
-            var spawnGroups = LoadSpawnGroups(folderPath, worldSize);
-
-            // Generate city boundaries from POI clusters
-            var cities = Cities.GenerateFromPOIs(prefabs.Decorations);
+            var timeWatch = new System.Diagnostics.Stopwatch();
+            timeWatch.Start();
 
             var res = new MapData();
-            res.Info = mapInfo;
-            res.Roads = roads;
-            res.Prefabs = prefabs;
-            res.Biomes = biomes;
-            res.WorldSize = worldSize;
-            res.WorldMins = new Vector3(-sizeX, -sizeY, 0);
-            res.WorldMaxs = new Vector3(sizeX, sizeY, sizeZ);
-            res.SpawnGroups = spawnGroups;
-            res.Cities = cities;
+
+            using (Logging.Scope())
+            {
+
+                var mapInfoPath = System.IO.Path.Combine(folderPath, "map_info.xml");
+                var mapInfo = LoadMapInfo(mapInfoPath);
+
+                var roads = LoadRoadSplat(folderPath);
+                var biomes = LoadBiomes(folderPath);
+                var prefabs = LoadPrefabs(folderPath);
+
+                var worldSize = GetWorldSize(folderPath);
+                var sizeX = worldSize.X / 2;
+                var sizeY = worldSize.Y / 2;
+                var sizeZ = worldSize.Z;
+
+                var spawnGroups = LoadSpawnGroups(folderPath, worldSize);
+
+                // Generate city boundaries from POI clusters
+                var cities = Cities.GenerateFromPOIs(prefabs.Decorations);
+
+                res.Info = mapInfo;
+                res.Roads = roads;
+                res.Prefabs = prefabs;
+                res.Biomes = biomes;
+                res.WorldSize = worldSize;
+                res.WorldMins = new Vector3(-sizeX, -sizeY, 0);
+                res.WorldMaxs = new Vector3(sizeX, sizeY, sizeZ);
+                res.SpawnGroups = spawnGroups;
+                res.Cities = cities;
+            }
+
+            timeWatch.Stop();
+            var elapsed = timeWatch.Elapsed.TotalSeconds;
+
+            Logging.Info("Finished loading map data in {0}s.", elapsed);
 
             return res;
         }
