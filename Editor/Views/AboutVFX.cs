@@ -38,6 +38,7 @@ namespace Editor.Views
             "Abaddon",
             "ALo",
             "Andrew McWatters",
+            "Beretta_HD",
             "Broxzier",
             "CapsAdmin",
             "Duncanspumpkin",
