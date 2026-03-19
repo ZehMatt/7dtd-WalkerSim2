@@ -20,6 +20,24 @@
 		<Style Selector="NumericUpDown">
 			<Setter Property="(controls:NumericUpDownBehavior.ClampImmediately)" Value="True"/>
 		</Style>
+		<!-- Force scrollbars to always display at full width, no hover expand animation. -->
+		<Style Selector=":is(ScrollViewer)">
+			<Setter Property="AllowAutoHide" Value="False"/>
+		</Style>
+		<!-- Force ScrollBar thumb/track to always appear at full size (override Fluent expand animation). -->
+		<Style Selector="ScrollBar /template/ Thumb">
+			<Setter Property="RenderTransform" Value="none"/>
+			<Setter Property="Opacity" Value="1"/>
+			<Setter Property="Transitions" Value="{x:Null}"/>
+		</Style>
+		<Style Selector="ScrollBar /template/ Rectangle#TrackRect">
+			<Setter Property="Opacity" Value="1"/>
+			<Setter Property="Transitions" Value="{x:Null}"/>
+		</Style>
+		<Style Selector="ScrollBar /template/ RepeatButton">
+			<Setter Property="Opacity" Value="1"/>
+			<Setter Property="Transitions" Value="{x:Null}"/>
+		</Style>
 	</Application.Styles>
 
 	<Application.Resources>
@@ -29,6 +47,10 @@
 			<CornerRadius x:Key="OverlayCornerRadius">0</CornerRadius>
 			<CornerRadius x:Key="TextControlCornerRadius">0</CornerRadius>
 			<CornerRadius x:Key="ComboBoxCornerRadius">0</CornerRadius>
+
+			<!-- Disable the thin-scrollbar scale transforms so thumbs stay full-size. -->
+			<TransformOperations x:Key="VerticalSmallScrollThumbScaleTransform">none</TransformOperations>
+			<TransformOperations x:Key="HorizontalSmallScrollThumbScaleTransform">none</TransformOperations>
 
 			<ResourceDictionary.ThemeDictionaries>
 
