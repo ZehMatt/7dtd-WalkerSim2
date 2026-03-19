@@ -194,7 +194,7 @@ jobs:
         del exclude.txt
 
     - name: Upload Mod artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: WalkerSim2-Mod-${{ env.BUILD_VERSION }}-${{ env.COMMIT_SHA }}
         path: ./artifact/**/*
@@ -267,7 +267,7 @@ jobs:
           Write-Host "BuildInfo.cs updated to version $version, branch $branch ($sha12)"
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: '8.0.x'
 
@@ -322,7 +322,7 @@ jobs:
       run: mv "Publish/Editor/${{ matrix.platform }}" "Publish/Editor/WalkerSim Editor"
 
     - name: Upload Editor artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: WalkerSim2-Editor-${{ matrix.platform }}-${{ env.BUILD_VERSION }}-${{ env.COMMIT_SHA }}
         path: Publish/Editor/

@@ -1,4 +1,6 @@
 # 1.2 (in progress)
+- Fix: Editor could hang on some systems, this should be resolved.
+- Improve: Startup time of the Mod and Editor.
 
 # 1.1
 - Fix: Warning about configuration changes incorrectly shown on non-hosts.
