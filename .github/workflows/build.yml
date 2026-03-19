@@ -18,7 +18,7 @@ jobs:
         shell: cmd
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-depth: 0
 
@@ -95,7 +95,7 @@ jobs:
 
     - name: Cache DepotDownloader
       id: cache-depotdownloader
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: tools
         key: depotdownloader-${{ env.DEPOT_DOWNLOADER_VERSION }}
@@ -117,7 +117,7 @@ jobs:
 
     - name: Cache required binaries
       id: cache-binaries
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: Binaries
         key: binaries-${{ env.APP_ID }}-${{ env.DEPOT_ID }}-${{ env.MANIFEST_ID }}-${{ env.FILE_HASH }}
@@ -155,7 +155,7 @@ jobs:
 
     - name: Cache NuGet packages
       id: cache-nuget
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~\.nuget\packages
         key: nuget-${{ runner.os }}-${{ env.NUGET_HASH }}
@@ -217,7 +217,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-depth: 0
 
