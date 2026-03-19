@@ -1,3 +1,5 @@
+# 1.2 (in progress)
+
 # 1.1
 - Fix: Warning about configuration changes incorrectly shown on non-hosts.
 - Fix: Agents getting stuck on roads with dead ends.
