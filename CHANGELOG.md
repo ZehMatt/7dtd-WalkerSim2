@@ -1,4 +1,4 @@
-# 1.2 (in progress)
+# 1.1.1
 - Fix: Editor could hang on some systems, this should be resolved.
 - Improve: Startup time of the Mod and Editor.
 
