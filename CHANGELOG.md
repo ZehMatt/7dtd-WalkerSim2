@@ -1,4 +1,5 @@
-# 1.2 (in progress)
+# 1.1.2
+- Fix: sleepers not waking up, properly fix the smell not working.
 
 # 1.1.1
 - Fix: Editor could hang on some systems, this should be resolved.

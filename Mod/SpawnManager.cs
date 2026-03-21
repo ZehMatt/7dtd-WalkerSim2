@@ -901,28 +901,20 @@ namespace WalkerSim
 
             // Post spawn behavior.
             var isAlerted = spawnData.SubState == Agent.SubState.Alerted;
-            if (spawnData.PostSpawnBehavior == Config.PostSpawnBehavior.Wander || isAlerted)
+            if (isAlerted)
             {
-                UnityEngine.Vector3 destPos;
-                if (isAlerted)
-                {
-                    destPos = VectorUtils.ToUnity(spawnData.AlertPosition);
+                var destPos = VectorUtils.ToUnity(spawnData.AlertPosition);
 
-                    // Same rule as sound: closer to the alert = more accurate, farther = more spread.
-                    var alertDist = UnityEngine.Vector3.Distance(worldPos, destPos);
-                    var maxDist = (float)config.SpawnActivationRadius;
-                    var distRatio = Mathf.Clamp01(alertDist / maxDist);
-                    var spread = Mathf.Min(maxDist * distRatio * 0.5f, 20f);
-                    var angle = simulation.PRNG.NextSingle() * Mathf.PI * 2f;
-                    var radius = simulation.PRNG.NextSingle() * spread;
-                    var randomOffset = new UnityEngine.Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius);
+                // Same rule as sound: closer to the alert = more accurate, farther = more spread.
+                var alertDist = UnityEngine.Vector3.Distance(worldPos, destPos);
+                var maxDist = (float)config.SpawnActivationRadius;
+                var distRatio = Mathf.Clamp01(alertDist / maxDist);
+                var spread = Mathf.Min(maxDist * distRatio * 0.5f, 20f);
+                var angle = simulation.PRNG.NextSingle() * Mathf.PI * 2f;
+                var radius = simulation.PRNG.NextSingle() * spread;
+                var randomOffset = new UnityEngine.Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius);
 
-                    destPos += randomOffset;
-                }
-                else
-                {
-                    destPos = worldPos + (rot * 80);
-                }
+                destPos += randomOffset;
 
                 // Adjust position by getting terrain height at the destination, they might dig if the destination is
                 // below the terrain.
@@ -931,9 +923,16 @@ namespace WalkerSim
 
                 destPos.y = combinedTargetHeight;
 
-                spawnedAgent.SetInvestigatePosition(destPos, 6000, isAlerted);
+                spawnedAgent.SetInvestigatePosition(destPos, 6000, true);
                 Logging.CondInfo(config.LoggingOpts.Spawns,
-                    () => $"Spawned agent {agent.Index}, entity id: {spawnedAgent.entityId} wandering to {destPos}, alert: {isAlerted}");
+                    () => $"Spawned agent {agent.Index}, entity id: {spawnedAgent.entityId} investigating alert at {destPos}");
+            }
+            else if (spawnData.PostSpawnBehavior == Config.PostSpawnBehavior.Wander)
+            {
+                // Let the vanilla EAIWander task handle movement so that smell and target
+                // detection remain active (SetInvestigatePosition blocks both).
+                Logging.CondInfo(config.LoggingOpts.Spawns,
+                    () => $"Spawned agent {agent.Index}, entity id: {spawnedAgent.entityId} wandering via AI");
             }
             else if (spawnData.PostSpawnBehavior == Config.PostSpawnBehavior.ChaseActivator)
             {
