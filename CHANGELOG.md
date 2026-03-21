@@ -1,3 +1,5 @@
+# 1.2 (in progress)
+
 # 1.1.2
 - Fix: sleepers not waking up, properly fix the smell not working.
 
