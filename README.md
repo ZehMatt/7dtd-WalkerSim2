@@ -39,3 +39,7 @@ Virtual zombies react to the sounds you make in the game world. Gunshots, explos
 Below is a visual example of the simulation in action (sped up by 64x for better demonstration), when one of the agents reaches the players activation zone it will spawn them in, this is how WalkerSim manages to simulate thousands of zombies in the background without a noticeable performance impact.
 
 ![Simulation example](https://i.imgur.com/xyj4Cl6.gif)
+
+#### Donations
+
+Yes I accept them and it will help keep me doing things like this, there are a couple choices where you can support me: [ko-fi](https://ko-fi.com/zehmatt), [Buy-me-a-coffee](https://buymeacoffee.com/zehmatt), [GitHub Sponsors](https://github.com/sponsors/ZehMatt)
