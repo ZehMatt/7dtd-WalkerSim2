@@ -54,6 +54,7 @@ namespace Editor.Views
             "knoxed",
             "Kugi",
             "Left of Zen",
+            "LRFLEW",
             "MrExodia",
             "PotcFdk",
             "Python1320",
