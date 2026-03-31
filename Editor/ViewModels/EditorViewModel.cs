@@ -805,8 +805,10 @@ namespace Editor.ViewModels
 
             if (currentAgentCount == agents.Count && !_agentsDirty)
             {
-                // Structure unchanged: just pull live data into the selected agent
-                SelectedAgent?.Pull();
+                // Structure unchanged: pull live data into all agent models
+                foreach (var item in AgentListItems)
+                    if (item is Models.AgentModel model)
+                        model.Pull();
                 return;
             }
 
@@ -852,7 +854,7 @@ namespace Editor.ViewModels
         public void UpdateSimulationStats()
         {
             TotalAgents = _simulation.AgentCount;
-            ActiveAgents = _simulation.ActiveCount;
+            ActiveAgents = _simulation.SpawnedCount;
             InactiveAgents = TotalAgents - ActiveAgents;
             GroupCount = _simulation.GroupCount;
             SimulationTicks = _simulation.Ticks;

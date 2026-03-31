@@ -53,7 +53,7 @@ namespace WalkerSim
 
             _state.Players.Clear();
             _state.Agents.Clear();
-            _state.Active.Clear();
+            _state.Spawned.Clear();
             _state.Events.Clear();
             _state.IsBloodmoon = false;
             _state.IsDayTime = true;
@@ -157,7 +157,7 @@ namespace WalkerSim
 
         public void EntityKilled(int entityId)
         {
-            if (_state.Active.TryGetValue(entityId, out var agent))
+            if (_state.Spawned.TryGetValue(entityId, out var agent))
             {
                 MarkAgentDead(agent);
             }

@@ -258,7 +258,7 @@ namespace WalkerSim
         static private bool CanSpawnZombie(Simulation simulation)
         {
             // Check for maximum count, this is ordinarily checked before spawning but to be sure.
-            var alive = simulation.ActiveCount;
+            var alive = simulation.SpawnedCount;
             var maxAllowed = simulation.MaxAllowedAliveAgents;
 
             if (alive >= maxAllowed)
@@ -968,7 +968,7 @@ namespace WalkerSim
             // Update the agent data.
             agent.EntityId = spawnedAgent.entityId;
             agent.EntityClassId = entityClassId;
-            agent.CurrentState = Agent.State.Active;
+            agent.CurrentState = Agent.State.Spawned;
             agent.Health = spawnedAgent.Health;
 
             Logging.CondInfo(config.LoggingOpts.Spawns,
@@ -987,7 +987,7 @@ namespace WalkerSim
                 return false;
             }
 
-            if (agent.CurrentState != Agent.State.Active)
+            if (agent.CurrentState != Agent.State.Spawned)
             {
                 Logging.DbgInfo("Trying to despawn agent {0} that is not active, state: {1}.", agent.Index, agent.CurrentState);
                 return false;
@@ -1091,7 +1091,7 @@ namespace WalkerSim
                     continue;
                 }
 
-                if (agent.CurrentState != Agent.State.Active)
+                if (agent.CurrentState != Agent.State.Spawned)
                 {
                     Logging.DbgInfo("Agent {0} is not active, skipping. Agent state: {1}", agent.Index, agent.CurrentState);
                     continue;

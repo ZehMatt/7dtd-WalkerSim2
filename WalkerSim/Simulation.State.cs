@@ -18,7 +18,7 @@ namespace WalkerSim
             public ConcurrentDictionary<int, Player> Players = new ConcurrentDictionary<int, Player>();
             public List<EventData> Events = new List<EventData>();
             public List<EventData> EventsTemp = new List<EventData>();
-            public ConcurrentDictionary<int, Agent> Active = new ConcurrentDictionary<int, Agent>();
+            public ConcurrentDictionary<int, Agent> Spawned = new ConcurrentDictionary<int, Agent>();
             public WalkerSim.Random PRNG;
             public uint SlowIterator = 0;
             public Vector3 WindDir = new Vector3(1, 0, 0);
@@ -54,7 +54,7 @@ namespace WalkerSim
             public void SoftReset()
             {
                 Events = new List<EventData>();
-                Active = new ConcurrentDictionary<int, Agent>();
+                Spawned = new ConcurrentDictionary<int, Agent>();
                 SlowIterator = 0;
                 TickNextWindChange = 0;
                 Ticks = 0;
@@ -84,9 +84,9 @@ namespace WalkerSim
             get => _state.Agents.Count;
         }
 
-        public int ActiveCount
+        public int SpawnedCount
         {
-            get => _state.Active.Count;
+            get => _state.Spawned.Count;
         }
 
         public int SuccessfulSpawns
@@ -136,6 +136,7 @@ namespace WalkerSim
 
         public int NumAgentsDead => CountAgentsInState(Agent.State.Dead);
 
+        public int NumAgentsInactive => CountAgentsInState(Agent.State.Inactive);
 
         public Vector3 WorldSize
         {

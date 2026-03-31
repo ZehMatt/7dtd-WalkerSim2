@@ -62,7 +62,7 @@ namespace WalkerSim
                 // Compute index into texture
                 var pixelIndex = texZ * textureWidth + texX;
 
-                var color = agent.CurrentState == Agent.State.Active ? ColorActive : ColorInactive;
+                var color = agent.CurrentState == Agent.State.Spawned ? ColorActive : ColorInactive;
 
                 // Overdraw pixel with chosen color (bright red marker here)
                 textureData[pixelIndex] = color;
