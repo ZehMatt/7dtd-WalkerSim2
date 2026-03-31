@@ -38,17 +38,17 @@ namespace WalkerSim
 
         private bool HasReachedMaximumSpawnedAgents()
         {
-            return _pendingSpawns.Count + _state.Active.Count >= _maxAllowedAliveAgents;
+            return _pendingSpawns.Count + _state.Spawned.Count >= _maxAllowedAliveAgents;
         }
 
         private int GetCountActiveNearby(Vector3 position, float radius)
         {
             var count = 0;
 
-            foreach (var kv in _state.Active)
+            foreach (var kv in _state.Spawned)
             {
                 var agent = kv.Value;
-                if (agent.CurrentState != Agent.State.Active)
+                if (agent.CurrentState != Agent.State.Spawned)
                     continue;
 
                 var dist = Vector3.Distance2D(position, agent.Position);
@@ -84,8 +84,8 @@ namespace WalkerSim
             var maxActivePerPlayer = _maxAllowedAliveAgents;
             if (_state.Players.Count > 0)
             {
-                // If there are players, we allow more active agents per player.
-                maxActivePerPlayer = _maxAllowedAliveAgents / _state.Players.Count;
+                // Make the spawning fair, divide the max allowed among the players, so no single player can use up all the spawns.
+                maxActivePerPlayer = Math.Max(1, _maxAllowedAliveAgents / _state.Players.Count);
             }
 
             foreach (var kv in _state.Players)
@@ -94,7 +94,7 @@ namespace WalkerSim
                 {
                     // We have reached the maximum amount of agents alive, do not spawn more.
                     Logging.CondInfo(Config.LoggingOpts.Spawns,
-                        () => $"Maximum amount of agents alive reached, max: {_maxAllowedAliveAgents}, pending spawns: {_pendingSpawns.Count}, active agents: {_state.Active.Count}");
+                        () => $"Maximum amount of agents alive reached, max: {_maxAllowedAliveAgents}, pending spawns: {_pendingSpawns.Count}, active agents: {_state.Spawned.Count}");
 
                     // Increase delay, no need to try again so soon when it is not possible to spawn more agents.
                     _nextSpawnCheck = now.AddMilliseconds(2000);
@@ -206,7 +206,7 @@ namespace WalkerSim
 
         public Config.WanderingSpeed GetPostSpawnWanderSpeed(int entityId)
         {
-            if (_state.Active.TryGetValue(entityId, out var agent))
+            if (_state.Spawned.TryGetValue(entityId, out var agent))
             {
                 var processorGroup = _processors[agent.Group];
                 if (processorGroup != null)
@@ -269,7 +269,7 @@ namespace WalkerSim
                 else
                 {
                     agent.EntityId = agentEntityId;
-                    agent.CurrentState = Agent.State.Active;
+                    agent.CurrentState = Agent.State.Spawned;
 
                     AddActiveAgent(agentEntityId, agent);
 

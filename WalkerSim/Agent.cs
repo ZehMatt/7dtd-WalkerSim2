@@ -8,7 +8,7 @@ namespace WalkerSim
             Dead,
             Wandering,
             PendingSpawn,
-            Active,
+            Spawned,
             Respawning,
         }
 

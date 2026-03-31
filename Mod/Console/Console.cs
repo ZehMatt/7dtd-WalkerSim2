@@ -98,41 +98,75 @@ namespace WalkerSim.Console
                 {
                     var sim = Simulation.Instance;
                     var numDead = sim.NumAgentsDead;
-                    var numTotal = sim.Agents.Count;
-                    var numAlive = numTotal - numDead;
+                    var populationSize = sim.Agents.Count;
+                    var numAlive = populationSize - numDead;
+                    var numInactive = sim.NumAgentsInactive;
+                    var numActive = populationSize - numInactive;
                     var secsElapsed = sim.GetSimulationTimeSeconds();
                     var timeSpan = TimeSpan.FromSeconds(secsElapsed);
                     var averageSimTime = sim.AverageSimTime * 1000.0f;
                     var ticksPerSecond = sim.AverageSimTime > 0 ? 1 / sim.AverageSimTime : 0;
 
-                    ConsoleOutput.Log("--- Simulation Statistics ---");
-                    ConsoleOutput.Log("  World Size: {0}", sim.WorldSize);
-                    ConsoleOutput.Log("  Ticks: {0}", sim.Ticks);
-                    ConsoleOutput.Log("  Unscaled Ticks: {0}", sim.UnscaledTicks);
-                    ConsoleOutput.Log("  Simulation Time: {0}", string.Format("{0:D2}:{1:D2}:{2:D2}.{3:D3}",
-                        timeSpan.Hours,
-                        timeSpan.Minutes,
-                        timeSpan.Seconds,
-                        timeSpan.Milliseconds));
-                    ConsoleOutput.Log("  Active: {0}", sim.Running);
-                    ConsoleOutput.Log("  Paused: {0}", sim.Paused);
-                    ConsoleOutput.Log("  Players: {0}", sim.PlayerCount);
-                    ConsoleOutput.Log("  Total Agents: {0}", numTotal);
-                    ConsoleOutput.Log("  Alive Agents: {0} - {1}%", numAlive, (numAlive / (float)numTotal) * 100.0f);
-                    ConsoleOutput.Log("  Dead Agents: {0} - {1}%", numDead, (numDead / (float)numTotal) * 100.0f);
-                    ConsoleOutput.Log("  Active Agents: {0}", sim.ActiveCount);
-                    ConsoleOutput.Log("  Total Groups: {0}", sim.GroupCount);
-                    ConsoleOutput.Log("  Successful Spawns: {0}", sim.SuccessfulSpawns);
-                    ConsoleOutput.Log("  Failed Spawns: {0}", sim.FailedSpawns);
-                    ConsoleOutput.Log("  Total Despawns: {0}", sim.TotalDespawns);
-                    ConsoleOutput.Log("  Bloodmoon: {0}", sim.IsBloodmoon);
-                    ConsoleOutput.Log("  DayTime: {0}", sim.IsDayTime);
-                    ConsoleOutput.Log("  Day: {0:0.00}", sim.GameTime);
-                    ConsoleOutput.Log("  Time Scale: {0}", sim.TimeScale);
-                    ConsoleOutput.Log("  Average Tick Time: {0}ms, {1}/ps", averageSimTime, ticksPerSecond);
-                    ConsoleOutput.Log("  Wind Direction: {0}", sim.WindDirection);
-                    ConsoleOutput.Log("  Wind Target: {0}", sim.WindDirectionTarget);
-                    ConsoleOutput.Log("  Next Wind Change: {0}", sim.TickNextWindChange);
+                    ConsoleOutput.Log("=== WalkerSim Statistics ===");
+                    ConsoleOutput.Log("  Simulation");
+                    ConsoleOutput.Log("  --------------");
+                    ConsoleOutput.Log("    Active: {0}", sim.Running);
+                    ConsoleOutput.Log("    Paused: {0}", sim.Paused);
+                    ConsoleOutput.Log("    Ticks: {0}", sim.Ticks);
+                    ConsoleOutput.Log("    Unscaled Ticks: {0}", sim.UnscaledTicks);
+                    ConsoleOutput.Log("    Simulation Time: {0:D2}:{1:D2}:{2:D2}.{3:D3}",
+                        timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds, timeSpan.Milliseconds);
+                    ConsoleOutput.Log("    Time Scale: {0}", sim.TimeScale);
+                    ConsoleOutput.Log("    Average Tick Time: {0:0.##}ms ({1:0.#} tps)", averageSimTime, ticksPerSecond);
+                    ConsoleOutput.Log(" ");
+                    ConsoleOutput.Log("  World");
+                    ConsoleOutput.Log("  --------------");
+                    ConsoleOutput.Log("    World Size: {0}", sim.WorldSize);
+                    ConsoleOutput.Log("    Day: {0:0.00}", sim.GameTime);
+                    ConsoleOutput.Log("    Daytime: {0}", sim.IsDayTime);
+                    ConsoleOutput.Log("    Bloodmoon: {0}", sim.IsBloodmoon);
+                    ConsoleOutput.Log("    Players: {0}", sim.PlayerCount);
+                    ConsoleOutput.Log("    Wind: {0} (target: {1}, next change: tick {2})",
+                        sim.WindDirection, sim.WindDirectionTarget, sim.TickNextWindChange);
+                    ConsoleOutput.Log(" ");
+                    ConsoleOutput.Log("  Agents");
+                    ConsoleOutput.Log("  --------------");
+                    ConsoleOutput.Log("    Population Total: {0}", populationSize);
+                    ConsoleOutput.Log("    Population Active: {0}/{1} ({2:0.#}%)",
+                        numActive, populationSize, (numActive / (float)populationSize) * 100.0f);
+                    ConsoleOutput.Log("    Alive: {0} ({1:0.#}%)",
+                        numAlive, (numAlive / (float)populationSize) * 100.0f);
+                    ConsoleOutput.Log("    Dead: {0} ({1:0.#}%)",
+                        numDead, (numDead / (float)populationSize) * 100.0f);
+                    ConsoleOutput.Log("    Groups: {0}", sim.GroupCount);
+                    ConsoleOutput.Log("    Spawned: {0}", sim.SpawnedCount);
+                    ConsoleOutput.Log(" ");
+                    ConsoleOutput.Log("  Spawning Stats");
+                    ConsoleOutput.Log("  --------------");
+                    ConsoleOutput.Log("    Successful: {0}", sim.SuccessfulSpawns);
+                    ConsoleOutput.Log("    Failed: {0}", sim.FailedSpawns);
+                    ConsoleOutput.Log("    Despawns: {0}", sim.TotalDespawns);
+                    ConsoleOutput.Log(" ");
+                    ConsoleOutput.Log("  Players");
+                    ConsoleOutput.Log("  --------------");
+                    int playerIndex = 1;
+                    foreach(var playerKv in sim.Players)
+                    {
+                        var player = playerKv.Value;
+                        var entityId = player.EntityId;
+                        var playerEntity = GameManager.Instance.World.GetEntity(entityId) as EntityPlayer;
+                        if (playerEntity == null)
+                        {
+                            continue;
+                        }
+                        var spawnsAllowed = sim.UnscaledTicks >= player.NextPossibleSpawnTime;
+                        var playerName = playerEntity.PlayerDisplayName;
+                        var playerPos = playerEntity.position;
+                        ConsoleOutput.Log("    {0}. {1} (Entity: {2}, Pos: {3}, Spawning Allowed: {4} ({5} >= {6}))",
+                            playerIndex, playerName, entityId, playerPos, spawnsAllowed, sim.UnscaledTicks, player.NextPossibleSpawnTime);
+                        playerIndex++;
+                    }
+                    ConsoleOutput.Log("============================");
                 }),
             },
             new SubCommand

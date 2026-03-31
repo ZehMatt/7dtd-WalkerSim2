@@ -123,7 +123,7 @@ namespace WalkerSim
             if (ctx.IsReading)
             {
                 state.Agents = new List<Agent>(count);
-                state.Active = new ConcurrentDictionary<int, Agent>();
+                state.Spawned = new ConcurrentDictionary<int, Agent>();
             }
 
             for (int i = 0; i < count; i++)
@@ -184,9 +184,9 @@ namespace WalkerSim
                 if (ctx.IsReading)
                 {
                     state.Agents.Add(agent);
-                    if (agent.CurrentState == Agent.State.Active)
+                    if (agent.CurrentState == Agent.State.Spawned)
                     {
-                        state.Active.TryAdd(agent.EntityId, agent);
+                        state.Spawned.TryAdd(agent.EntityId, agent);
                     }
                 }
             }

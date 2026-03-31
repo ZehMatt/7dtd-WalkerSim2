@@ -12,6 +12,7 @@ namespace Editor
         public static void Main(string[] args)
         {
             WalkerSim.Logging.AddSink(LogFileSink.Instance);
+            WalkerSim.Logging.AddSink(DebugOutputSink.Instance);
             WalkerSim.Logging.Info("Editor starting...");
             WalkerSim.Drawing.Loader = new Editor.Drawing.ImageLoader();
             WalkerSim.Logging.Info("Initializing Avalonia...");

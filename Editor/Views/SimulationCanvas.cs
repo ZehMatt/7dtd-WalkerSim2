@@ -686,15 +686,18 @@ namespace Editor.Views
         private void RenderRoadNetwork(DrawingContext context, double width, double height)
         {
             var mapData = _simulation.MapData;
-            if (mapData?.Roads == null) return;
+            if (mapData?.Roads == null)
+                return;
 
             var roads = mapData.Roads;
             var graph = roads.Graph;
-            if (graph == null || graph.Nodes.Length == 0) return;
+            if (graph == null || graph.Nodes.Length == 0)
+                return;
 
             int rw = roads.Width;
             int rh = roads.Height;
-            if (rw == 0 || rh == 0) return;
+            if (rw == 0 || rh == 0)
+                return;
 
             double scaleX = width / rw;
             double scaleY = height / rh;
@@ -725,7 +728,8 @@ namespace Editor.Views
                 {
                     int ci = node.Connections[c];
                     // Only draw each edge once (lower index → higher index).
-                    if (ci <= i) continue;
+                    if (ci <= i)
+                        continue;
                     ref var other = ref nodes[ci];
                     var to = new Point(other.X * scaleX, other.Y * scaleY);
                     context.DrawLine(_roadNetworkEdgePen, from, to);
@@ -866,7 +870,7 @@ namespace Editor.Views
             foreach (var kv in active)
             {
                 var agent = kv.Value;
-                if (agent.CurrentState != Agent.State.Active)
+                if (agent.CurrentState != Agent.State.Spawned)
                     continue;
 
                 var (cx, cy) = SimToCanvas(agent.Position, width, height);

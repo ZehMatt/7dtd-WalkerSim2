@@ -15,7 +15,7 @@ namespace WalkerSim
         {
             get
             {
-                return _state.Active;
+                return _state.Spawned;
             }
         }
 
@@ -26,15 +26,15 @@ namespace WalkerSim
 
         private void AddActiveAgent(int entityId, Agent agent)
         {
-            _state.Active.TryAdd(entityId, agent);
+            _state.Spawned.TryAdd(entityId, agent);
 
             var log = Config.LoggingOpts.Spawns || EditorMode || Utils.IsDebugMode();
-            Logging.CondInfo(log, () => $"Added agent with entity id {entityId} to active list, list size {_state.Active.Count}");
+            Logging.CondInfo(log, () => $"Added agent with entity id {entityId} to active list, list size {_state.Spawned.Count}");
         }
 
         public void MarkAgentDead(Agent agent)
         {
-            _state.Active.TryRemove(agent.EntityId, out _);
+            _state.Spawned.TryRemove(agent.EntityId, out _);
             agent.ResetSpawnData();
 
             if (_state.Config.RespawnPosition == Config.WorldLocation.None)
@@ -96,10 +96,10 @@ namespace WalkerSim
             _nextDespawn = now.AddSeconds(Limits.SpawnDespawnDelay);
 
             var log = Config.LoggingOpts.Despawns || EditorMode || Utils.IsDebugMode();
-            foreach (var kv in _state.Active)
+            foreach (var kv in _state.Spawned)
             {
                 var agent = kv.Value;
-                if (agent.CurrentState != Agent.State.Active)
+                if (agent.CurrentState != Agent.State.Spawned)
                     continue;
 
                 var insidePlayerView = IsInsidePlayerMaxView(agent.Position);
@@ -120,7 +120,7 @@ namespace WalkerSim
                 // Reset spawn timestamp, allow immediate respawning in case the player backtracks.
                 agent.LastSpawnTick = 0;
 
-                _state.Active.TryRemove(kv.Key, out _);
+                _state.Spawned.TryRemove(kv.Key, out _);
                 _state.TotalDespawns++;
 
                 break;
