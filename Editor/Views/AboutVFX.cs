@@ -5,6 +5,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using System;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Editor.Views
@@ -23,12 +24,14 @@ namespace Editor.Views
         private byte[] _bloomBuf;
         private int _pixelBufSize;
 
-        private double _scrollOffset = 0;
-        private double _time = 0;
-        private const double ScrollSpeed = 40.0;
+        private double _scrollOffset;
+        private double _time;
+        private double _musicPhase;
+        private const double ScrollSpeed = 10.0;
         private const double SineAmplitude = 3.0;
         private const double SineFrequency = 0.08;
         private const double SineTimeSpeed = 2.0;
+
         private static readonly string[] Credits = new[]
         {
             "",
@@ -45,11 +48,13 @@ namespace Editor.Views
             "ev0",
             "Fin (FNS)",
             "Frantic_Dan",
+            "Frilioth",
             "General_Nuisance",
             "Guppycur",
             "HellsJanitor",
             "Ixel",
             "jak9527",
+            "JaWoodle",
             "JonahBirch",
             "knoxed",
             "Kugi",
@@ -69,7 +74,16 @@ namespace Editor.Views
             "Love you all <3",
             "",
         };
+
         private static readonly Typeface CreditTypeface = new Typeface("Consolas,Courier New,monospace");
+        private static readonly SolidColorBrush _creditFgBrush = new SolidColorBrush(Color.FromRgb(100, 210, 255));
+        private static readonly SolidColorBrush _creditShBrush = new SolidColorBrush(Color.FromArgb(180, 0, 0, 0));
+        private static readonly RenderOptions _upscaleOptions = new RenderOptions { BitmapInterpolationMode = BitmapInterpolationMode.HighQuality };
+
+        private double _charWidth;
+        private bool _charWidthMeasured;
+        private FormattedText[] _creditTextCache;
+        private FormattedText[] _creditShadowCache;
 
         public AboutVFX()
         {
@@ -123,7 +137,7 @@ namespace Editor.Views
                 return;
 
             EnsureBuffers(w, h);
-            RenderTunnel();
+            RenderCity();
 
             if (_bitmap != null)
             {
@@ -136,23 +150,254 @@ namespace Editor.Views
             RenderCredits(context, w, h);
         }
 
-        private const int MaxIter = 32;
+        // --- Hash / math ---
 
-        private static int JuliaIterate(double zr, double zi, double cr, double ci)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static double Fract(double x) => x - Math.Floor(x);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static double Clamp01(double x) => x < 0 ? 0 : (x > 1 ? 1 : x);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static double Mix(double a, double b, double t) => a + (b - a) * t;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static double Mod(double x, double y) => x - y * Math.Floor(x / y);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int IHash(int n)
         {
-            for (int i = 0; i < MaxIter; i++)
-            {
-                double zr2 = zr * zr;
-                double zi2 = zi * zi;
-                if (zr2 + zi2 > 4.0)
-                    return i;
-                zi = 2.0 * zr * zi + ci;
-                zr = zr2 - zi2 + cr;
-            }
-            return MaxIter;
+            n = (n << 13) ^ n;
+            return (n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff;
         }
 
-        private void RenderTunnel()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static double Hash(int x, int y)
+        {
+            return IHash(x * 73856093 ^ y * 19349663) / (double)0x7fffffff;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static double Hash(int x, int y, int seed)
+        {
+            return Hash(x + seed * 137, y + seed * 251);
+        }
+
+        // --- SDF ---
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static double SdBox(double px, double py, double pz, double bx, double by, double bz)
+        {
+            double dx = Math.Abs(px) - bx;
+            double dy = Math.Abs(py) - by;
+            double dz = Math.Abs(pz) - bz;
+            double mx = Math.Max(dx, Math.Max(dy, dz));
+            double ox = Math.Max(dx, 0);
+            double oy = Math.Max(dy, 0);
+            double oz = Math.Max(dz, 0);
+            return Math.Sqrt(ox * ox + oy * oy + oz * oz) + Math.Min(mx, 0);
+        }
+
+        private const double Cell = 8.0;
+        private const double Street = 2.5;
+        private const double MaxDist = 22.0;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static double BldgHeight(int idX, int idZ)
+        {
+            double h = Hash(idX, idZ);
+            double r = 1.5 + h * 5.5;
+            if (h > 0.72)
+                r += 3.5 + Hash(idX, idZ, 1) * 2.5;
+            if (h < 0.1)
+                r = 0.3;
+            return r;
+        }
+
+        // Cell ID aligned with building centers (buildings sit at x=0, Cell, 2*Cell...)
+        // Cell boundaries fall in the streets, so crossing a street doesn't flip IDs
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int CellId(double v)
+        {
+            return (int)Math.Floor((v + Cell * 0.5) / Cell);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static double Map(double px, double py, double pz)
+        {
+            double d = py; // ground
+            double qx = Mod(px + Cell * 0.5, Cell) - Cell * 0.5;
+            double qz = Mod(pz + Cell * 0.5, Cell) - Cell * 0.5;
+            int idX = CellId(px);
+            int idZ = CellId(pz);
+            double h = BldgHeight(idX, idZ);
+            double bw = (Cell - Street) * 0.5;
+            double bldg = SdBox(qx, py - h * 0.5, qz, bw, h * 0.5, bw);
+            return Math.Min(d, bldg);
+        }
+
+        private static double March(double ox, double oy, double oz, double dx, double dy, double dz, double maxT)
+        {
+            double t = 0;
+            for (int i = 0; i < 36; i++)
+            {
+                double d = Map(ox + dx * t, oy + dy * t, oz + dz * t);
+                if (d < 0.005)
+                    return t;
+                // Clamp step so we never skip a neighboring cell
+                t += Math.Min(d, Cell * 0.45);
+                if (t > maxT)
+                    break;
+            }
+            return maxT + 1;
+        }
+
+        private static void CalcNormal(double px, double py, double pz, out double nx, out double ny, out double nz)
+        {
+            const double e = 0.01;
+            nx = Map(px + e, py, pz) - Map(px - e, py, pz);
+            ny = Map(px, py + e, pz) - Map(px, py - e, pz);
+            nz = Map(px, py, pz + e) - Map(px, py, pz - e);
+            double len = Math.Sqrt(nx * nx + ny * ny + nz * nz);
+            if (len > 0.0001)
+            { nx /= len; ny /= len; nz /= len; }
+        }
+
+        // Blackwall-style building surface shading
+        // World-space dots using surface normal to pick correct UV axes
+        private void ShadeBlackwall(double px, double py, double pz,
+            double nx, double ny, double nz,
+            int cidX, int cidZ, double bldgH,
+            double bassE, double leadE, double energy,
+            double time,
+            out double cr, out double cg, out double cb)
+        {
+            cr = 0;
+            cg = 0;
+            cb = 0;
+
+            // Pick 2 world axes based on which face we hit (avoid the perpendicular axis)
+            double u, v;
+            if (Math.Abs(ny) > Math.Abs(nx) && Math.Abs(ny) > Math.Abs(nz))
+            { u = px; v = pz; } // top face
+            else if (Math.Abs(nx) > Math.Abs(nz))
+            { u = pz; v = py; } // X-facing wall
+            else
+            { u = px; v = py; } // Z-facing wall
+
+            // Dot grid — same frequency on both axes so dots stay circular
+            double freq = 7.0;
+            double gu = u * freq;
+            double gv = v * freq;
+            int dotIx = (int)Math.Floor(gu);
+            int dotIy = (int)Math.Floor(gv);
+            double fracU = gu - dotIx;
+            double fracV = gv - dotIy;
+
+            // Per-dot properties seeded by building + position
+            double dotHash = Hash(dotIx + cidX * 97, dotIy + cidZ * 53);
+            double dotAlive = dotHash > 0.15 ? 1.0 : 0.0;
+            double dotBaseB = 0.4 + dotHash * 0.6;
+            double dotFlicker = 0.5 + 0.5 * Math.Sin(time * (1.0 + dotHash * 7.0) + dotHash * 6.28);
+
+            // Circular dot with jittered center
+            double cx = 0.5 + (Hash(dotIx, dotIy, 3) - 0.5) * 0.25;
+            double cy = 0.5 + (Hash(dotIx, dotIy, 4) - 0.5) * 0.25;
+            double dd = Math.Sqrt((fracU - cx) * (fracU - cx) + (fracV - cy) * (fracV - cy));
+            double dotShape = Clamp01(1.0 - dd / 0.30);
+            dotShape *= dotShape;
+
+            // Height glow
+            double heightRatio = Clamp01(py / Math.Max(bldgH, 0.1));
+            double topGlow = Clamp01(heightRatio - 0.85) * 8.0;
+            // VU meter level — music energy determines how high dots light up
+            double level = energy * 0.6 + bassE * 0.25 + leadE * 0.15;
+            double vuThreshold = Clamp01(level);
+            double aboveLevel = heightRatio - vuThreshold;
+            double vuFade = (aboveLevel > 0) ? Clamp01(1.0 - aboveLevel * 6.0) : 1.0;
+
+            // Pattern determines which dots are ON — rest stay dark
+            int pattern = IHash(cidX * 31 + cidZ * 59) % 4;
+            double p;
+            switch (pattern)
+            {
+                case 0: // Ripple from center
+                    double rdx = dotIx - 3.5;
+                    double rdy = dotIy - 3.5;
+                    p = Math.Sin(Math.Sqrt(rdx * rdx + rdy * rdy) * 1.8 - time * 2.5);
+                    break;
+                case 1: // Horizontal sweep
+                    p = Math.Sin(dotIx * 1.0 - time * 2.0 + cidX);
+                    break;
+                case 2: // Vertical sweep
+                    p = Math.Sin(dotIy * 1.0 + time * 2.2 + cidZ);
+                    break;
+                default: // Diagonal sweep
+                    p = Math.Sin((dotIx + dotIy) * 0.7 - time * 1.8 + cidX * 0.5);
+                    break;
+            }
+            // Sharp threshold — dot is either on or off
+            double onOff = p > 0.3 ? 1.0 : 0.05;
+
+            double dot = dotBaseB * dotShape * dotAlive * vuFade * onOff;
+            dot += topGlow * dotShape * dotAlive * onOff;
+            dot *= 14.0;
+
+            double bright = dot + 0.005;
+
+            // Per-building color: red, green, or blue
+            int colorSlot = IHash(cidX * 71 + cidZ * 37) % 3;
+            switch (colorSlot)
+            {
+                case 0: cr = bright; cg = bright * 0.04; cb = bright * 0.02; break;
+                case 1: cr = bright * 0.02; cg = bright; cb = bright * 0.04; break;
+                default: cr = bright * 0.02; cg = bright * 0.04; cb = bright; break;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void HsvToRgb(double h, double s, double v, out double r, out double g, out double b)
+        {
+            h = (h % 1.0 + 1.0) % 1.0;
+            h *= 6.0;
+            int i = (int)h;
+            double f = h - i;
+            double p = v * (1 - s);
+            double q = v * (1 - s * f);
+            double t = v * (1 - s * (1 - f));
+            switch (i % 6)
+            {
+                case 0:
+                    r = v;
+                    g = t;
+                    b = p;
+                    break;
+                case 1:
+                    r = q;
+                    g = v;
+                    b = p;
+                    break;
+                case 2:
+                    r = p;
+                    g = v;
+                    b = t;
+                    break;
+                case 3:
+                    r = p;
+                    g = q;
+                    b = v;
+                    break;
+                case 4:
+                    r = t;
+                    g = p;
+                    b = v;
+                    break;
+                default:
+                    r = v;
+                    g = p;
+                    b = q;
+                    break;
+            }
+        }
+
+        private void RenderCity()
         {
             if (_bitmap == null)
                 return;
@@ -168,215 +413,250 @@ namespace Editor.Views
                 _bloomBuf = new byte[totalBytes];
                 _pixelBufSize = totalBytes;
             }
-            var pixels = _pixels;
 
             double t = _time;
-
-            double bassE = 0, leadE = 0, percE = 0, leadNote = 0;
-            double choirE = 0, fluteE = 0, bassNote = 0, energy = 0, pizzE = 0;
+            double bassE = 0, percE = 0, energy = 0, leadE = 0, arpE = 0;
+            double bassNote = 0, leadNote = 0;
             int chord = 0;
             var synth = Synth;
             if (synth != null)
             {
                 bassE = synth.VisBass;
-                leadE = synth.VisLead;
                 percE = synth.VisPerc;
-                leadNote = synth.VisLeadNote;
-                chord = synth.VisChord;
-                choirE = synth.VisChoir;
-                fluteE = synth.VisFlute;
-                bassNote = synth.VisBassNote;
                 energy = synth.VisEnergy;
-                pizzE = synth.VisPizz;
+                leadE = synth.VisLead;
+                arpE = synth.VisFlute;
+                chord = synth.VisChord;
+                bassNote = synth.VisBassNote;
+                leadNote = synth.VisLeadNote;
             }
+            // Music energy advances color phase — louder = faster drift
+            _musicPhase += (0.15 + energy * 0.4) * _timer.Interval.TotalSeconds;
 
-            double cr = -0.7 + 0.15 * Math.Cos(t * 0.3);
-            double ci = 0.27015 + 0.15 * Math.Sin(t * 0.25);
-            double shiftU = t * 0.4;
-            double shiftV = t * 0.15;
-            double lookX = Math.Sin(t * 0.15) * w * 0.12 + Math.Sin(t * 0.27) * w * 0.05;
-            double lookY = Math.Cos(t * 0.11) * h * 0.10 + Math.Cos(t * 0.23) * h * 0.04;
-            double percBright = 1.0 + percE * 0.5 + energy * 0.3;
-            double cx = w * 0.5;
-            double cy = h * 0.5;
-            double maxDist = Math.Sqrt(w * w + h * h) * 0.5;
+            // Camera
+            double spd = 1.8;
+            double camX = t * spd + Math.Sin(t * 0.2) * 2.0;
+            double camY = 14.0 + Math.Sin(t * 0.35) * 1.0;
+            double camZ = t * spd * 0.5 + Math.Cos(t * 0.25) * 3.0;
 
-            for (int y = 0; y < h; y++)
-            {
-                for (int x = 0; x < w; x++)
-                {
-                    double dx2 = x - cx - lookX;
-                    double dy2 = y - cy - lookY;
-                    double dist2 = Math.Sqrt(dx2 * dx2 + dy2 * dy2);
+            double la = t * 0.12;
+            double tgtX = camX + Math.Cos(la) * 5.0;
+            double tgtY = camY - 6.0;
+            double tgtZ = camZ + Math.Sin(la) * 2.0 + 4.0;
 
-                    double angle = Math.Atan2(dy2, dx2) / (2.0 * Math.PI);
-                    double depth = 128.0 / (dist2 + 1.0);
+            double fwdX = tgtX - camX, fwdY = tgtY - camY, fwdZ = tgtZ - camZ;
+            double fwdLen = Math.Sqrt(fwdX * fwdX + fwdY * fwdY + fwdZ * fwdZ);
+            fwdX /= fwdLen;
+            fwdY /= fwdLen;
+            fwdZ /= fwdLen;
 
-                    double u = ((int)(32.0 * depth) / 256.0 + shiftU) % 1.0;
-                    double v = ((int)(256.0 * angle) / 256.0 + shiftV) % 1.0;
+            double rtX = fwdZ, rtY = 0, rtZ = -fwdX;
+            double rtLen = Math.Sqrt(rtX * rtX + rtZ * rtZ);
+            rtX /= rtLen;
+            rtZ /= rtLen;
 
-                    double zr = (u - 0.5) * 3.0;
-                    double zi = (v - 0.5) * 3.0;
-                    int iter = JuliaIterate(zr, zi, cr, ci);
-                    double frac = (double)iter / MaxIter;
-
-                    double depthFade = Math.Clamp(dist2 / maxDist, 0, 1);
-                    double brightness = (0.15 + 0.85 * (1.0 - depthFade)) * percBright;
-                    double absAngle = (angle + 0.5) % 1.0;
-
-                    int r, g, b;
-                    if (iter == MaxIter)
-                    {
-                        double voidBase = 0.06 + bassE * 0.12 + energy * 0.05;
-                        double voidHue = chord * 1.571 + bassNote * 1.5 + t * 0.06;
-                        r = (int)(voidBase * 255 * (Math.Sin(voidHue) * 0.3 + 0.4));
-                        g = (int)(voidBase * 255 * (Math.Sin(voidHue + 2.094) * 0.3 + 0.3));
-                        b = (int)(voidBase * 255 * (Math.Sin(voidHue + 4.189) * 0.3 + 0.5));
-                    }
-                    else
-                    {
-                        double hue = frac * 4.0 + chord * 1.571 + t * 0.06;
-
-                        double depthMix = depthFade;
-                        hue += bassNote * 2.0 * (1.0 - depthMix) * bassE;
-                        hue += fluteE * 3.0 * depthMix;
-
-                        double angleSin = Math.Sin(absAngle * 2 * Math.PI);
-                        double angleCos = Math.Cos(absAngle * 2 * Math.PI);
-                        hue += leadNote * 2.5 * leadE * Math.Max(0, angleSin);
-                        hue += choirE * 2.0 * Math.Max(0, -angleSin);
-                        hue += pizzE * 1.5 * Math.Max(0, angleCos);
-
-                        double band = (iter % 6) / 6.0;
-                        hue += band * (bassE * 1.0 + energy * 0.8);
-
-                        double hr = Math.Sin(hue) * 0.5 + 0.5;
-                        double hg = Math.Sin(hue + 2.094) * 0.5 + 0.5;
-                        double hb = Math.Sin(hue + 4.189) * 0.5 + 0.5;
-
-                        double warmZone = Math.Max(0, angleSin) * (1.0 - depthMix);
-                        if (choirE > 0.1)
-                        {
-                            double warm = choirE * warmZone * 0.4;
-                            hr = Math.Min(1, hr + warm);
-                            hb = Math.Max(0, hb - warm * 0.6);
-                        }
-
-                        double coolZone = Math.Max(0, -angleSin) * depthMix;
-                        if (fluteE > 0.1)
-                        {
-                            double cool = fluteE * coolZone * 0.6;
-                            hb = Math.Min(1, hb + cool);
-                            hg = Math.Min(1, hg + cool * 0.3);
-                            hr = Math.Max(0, hr - cool * 0.4);
-                        }
-
-                        double pizzZone = Math.Max(0, angleCos);
-                        if (pizzE > 0.05)
-                            hg = Math.Min(1, hg + pizzE * pizzZone * 0.3);
-
-                        double saturation = 0.4 + choirE * 0.3 * (1.0 - depthMix)
-                                          + fluteE * 0.3 * depthMix
-                                          + bassE * 0.15 + leadE * 0.1;
-
-                        double gray = (hr + hg + hb) / 3.0;
-                        hr = gray + (hr - gray) * saturation;
-                        hg = gray + (hg - gray) * saturation;
-                        hb = gray + (hb - gray) * saturation;
-
-                        double iterBright = Math.Sqrt(frac) * 0.7 + frac * 0.3;
-                        r = (int)(hr * iterBright * 255 * brightness);
-                        g = (int)(hg * iterBright * 255 * brightness);
-                        b = (int)(hb * iterBright * 255 * brightness);
-                    }
-
-                    if (leadE > 0.01 && iter > MaxIter / 3 && iter < MaxIter)
-                    {
-                        double leadZone = Math.Max(0, Math.Sin(absAngle * 2 * Math.PI));
-                        double proximity = (double)(iter - MaxIter / 3) / (MaxIter - MaxIter / 3);
-                        double flash = proximity * proximity * leadE * 300 * (0.3 + 0.7 * leadZone);
-                        double noteTint = Math.Clamp(leadNote, 0, 1);
-                        r = Math.Min(255, r + (int)(flash * (1.0 - noteTint * 0.3)));
-                        g = Math.Min(255, g + (int)(flash * (0.8 + noteTint * 0.2)));
-                        b = Math.Min(255, b + (int)(flash * (0.5 + noteTint * 0.5)));
-                    }
-
-                    if (pizzE > 0.05 && iter > MaxIter / 2 && iter < MaxIter)
-                    {
-                        double pizzZone2 = Math.Max(0, Math.Cos(absAngle * 2 * Math.PI));
-                        double edge = (double)(iter - MaxIter / 2) / (MaxIter - MaxIter / 2);
-                        double spark = edge * pizzE * 150 * (0.3 + 0.7 * pizzZone2);
-                        g = Math.Min(255, g + (int)(spark * 0.8));
-                        b = Math.Min(255, b + (int)(spark * 0.4));
-                    }
-
-                    int px = y * fb.RowBytes + x * 4;
-                    if (px + 3 < totalBytes)
-                    {
-                        pixels[px + 0] = (byte)Math.Clamp(b, 0, 255);
-                        pixels[px + 1] = (byte)Math.Clamp(g, 0, 255);
-                        pixels[px + 2] = (byte)Math.Clamp(r, 0, 255);
-                        pixels[px + 3] = 255;
-                    }
-                }
-            }
+            double upX = rtY * fwdZ - rtZ * fwdY;
+            double upY = rtZ * fwdX - rtX * fwdZ;
+            double upZ = rtX * fwdY - rtY * fwdX;
 
             int stride = fb.RowBytes;
-            Array.Copy(pixels, _bloomBuf, totalBytes);
-            for (int y = 1; y < h - 1; y++)
+            double invH = 1.0 / h;
+            double localTime = _time;
+            double localPhase = _musicPhase;
+
+            System.Threading.Tasks.Parallel.For(0, h, py =>
             {
-                for (int x = 1; x < w - 1; x++)
+                double vy = -(py * 2.0 * invH - 1.0);
+                for (int px = 0; px < w; px++)
                 {
-                    int pi = y * stride + x * 4;
-                    for (int c = 0; c < 3; c++)
+                    double vx = (px * 2.0 / h - (double)w / h);
+
+                    double rdx = vx * rtX + vy * upX + 1.5 * fwdX;
+                    double rdy = vx * rtY + vy * upY + 1.5 * fwdY;
+                    double rdz = vx * rtZ + vy * upZ + 1.5 * fwdZ;
+                    double rdLen = Math.Sqrt(rdx * rdx + rdy * rdy + rdz * rdz);
+                    rdx /= rdLen;
+                    rdy /= rdLen;
+                    rdz /= rdLen;
+
+                    double dist = March(camX, camY, camZ, rdx, rdy, rdz, MaxDist);
+
+                    // Sky — dark with subtle crimson fog
+                    double cr = 0.03, cg = 0.005, cb = 0.01;
+                    double horizGlow = Math.Max(0, 1.0 - Math.Abs(rdy) * 3.0);
+                    cr += 0.08 * horizGlow;
+                    cg += 0.01 * horizGlow;
+                    cb += 0.02 * horizGlow;
+
+                    if (dist < MaxDist)
                     {
-                        int sum = 0;
-                        for (int dy = -1; dy <= 1; dy++)
-                            for (int dx = -1; dx <= 1; dx++)
-                                sum += _bloomBuf[(y + dy) * stride + (x + dx) * 4 + c];
-                        pixels[pi + c] = (byte)(sum / 9);
+                        double hitX = camX + rdx * dist;
+                        double hitY = camY + rdy * dist;
+                        double hitZ = camZ + rdz * dist;
+
+                        if (hitY < 0.02)
+                        {
+                            // Ground — dark with reflected building glow
+                            cr = 0.01;
+                            cg = 0.005;
+                            cb = 0.008;
+
+                            int refIdX = CellId(hitX);
+                            int refIdZ = CellId(hitZ);
+                            double bh = BldgHeight(refIdX, refIdZ);
+                            if (bh > 1.0)
+                            {
+                                double refHue = Hash(refIdX * 7, refIdZ * 13) + localPhase + bassE * 0.03;
+                                HsvToRgb(refHue, 0.85, 4.0, out double nr, out double ng, out double nb);
+                                double distToB = Math.Abs(Mod(hitX + Cell * 0.5, Cell) - Cell * 0.5);
+                                double falloff = Math.Exp(-distToB * 0.6) * (0.5 + 1.5 * bassE + 0.8 * energy);
+                                double fresnel = 0.15 + 0.85 * Math.Pow(Clamp01(1.0 - Math.Abs(rdy)), 4);
+                                cr += nr * falloff * fresnel;
+                                cg += ng * falloff * fresnel;
+                                cb += nb * falloff * fresnel;
+                            }
+
+                            // Subtle scattered bright dots on ground
+                            int dotX = (int)Math.Floor(hitX * 3);
+                            int dotZ = (int)Math.Floor(hitZ * 3);
+                            if (Hash(dotX, dotZ, 20) > 0.94)
+                            {
+                                double dotBright = 0.15 * (0.3 + bassE * 0.7);
+                                cr += dotBright * 0.9;
+                                cg += dotBright * 0.1;
+                                cb += dotBright * 0.15;
+                            }
+                        }
+                        else
+                        {
+                            int cidX = CellId(hitX);
+                            int cidZ = CellId(hitZ);
+                            double bh = BldgHeight(cidX, cidZ);
+
+                            CalcNormal(hitX, hitY, hitZ, out double nx, out double ny, out double nz);
+
+                            // Edge detection via SDF gradient discontinuity
+                            const double edgeE = 0.06;
+                            double dR = Map(hitX + edgeE, hitY, hitZ);
+                            double dU = Map(hitX, hitY + edgeE, hitZ);
+                            double dF = Map(hitX, hitY, hitZ + edgeE);
+                            double dC = Map(hitX, hitY, hitZ);
+                            double edgeGrad = Math.Abs(dR - dC) + Math.Abs(dU - dC) + Math.Abs(dF - dC);
+                            // Sharp threshold — only actual edges, not gradual surfaces
+                            double edgeFactor = Clamp01((edgeGrad - 0.3) * 8.0);
+
+                            ShadeBlackwall(hitX, hitY, hitZ, nx, ny, nz, cidX, cidZ, bh,
+                                bassE, leadE, energy,
+                                localTime,
+                                out cr, out cg, out cb);
+
+                            // Thin dark red edge lines
+                            if (edgeFactor > 0.01)
+                            {
+                                double edgeBright = 2.0 + 1.5 * bassE;
+                                cr = Mix(cr, edgeBright * 0.6, edgeFactor * 0.5);
+                                cg = Mix(cg, edgeBright * 0.01, edgeFactor * 0.5);
+                                cb = Mix(cb, edgeBright * 0.03, edgeFactor * 0.5);
+                            }
+                        }
+
+                        // Distance fog — crimson tinted, fully obscures at MaxDist
+                        double fog = 1.0 - Math.Exp(-dist * 0.12);
+                        double fogR = 0.06 + 0.04 * energy + 0.03 * bassE;
+                        double fogG = 0.01 + 0.01 * energy;
+                        double fogB = 0.02 + 0.02 * energy;
+                        cr = Mix(cr, fogR, fog);
+                        cg = Mix(cg, fogG, fog);
+                        cb = Mix(cb, fogB, fog);
+                    }
+
+                    // Bass pulse on atmosphere
+                    cr += 0.04 * bassE;
+                    cg += 0.005 * bassE;
+                    cb += 0.01 * bassE;
+
+                    // Vignette
+                    double vigX = (double)px / w - 0.5;
+                    double vigY = (double)py / h - 0.5;
+                    double vig = 1.0 - (vigX * vigX + vigY * vigY) * 1.3;
+                    cr *= vig;
+                    cg *= vig;
+                    cb *= vig;
+
+                    // Tonemap — extended Reinhard with whitepoint for HDR glow
+                    const double W = 15.0; // whitepoint — values above this clip to 1
+                    cr = cr * (1.0 + cr / (W * W)) / (1.0 + cr);
+                    cg = cg * (1.0 + cg / (W * W)) / (1.0 + cg);
+                    cb = cb * (1.0 + cb / (W * W)) / (1.0 + cb);
+
+                    // Gamma — slightly bright to keep glow visible
+                    cr = Math.Pow(Math.Max(0, cr), 0.75);
+                    cg = Math.Pow(Math.Max(0, cg), 0.75);
+                    cb = Math.Pow(Math.Max(0, cb), 0.75);
+
+                    // Scanlines
+                    double scan = 0.95 + 0.05 * Math.Sin(py * 6.28);
+                    cr *= scan;
+                    cg *= scan;
+                    cb *= scan;
+
+                    int pidx = py * stride + px * 4;
+                    if (pidx + 3 < totalBytes)
+                    {
+                        _pixels[pidx + 0] = (byte)Math.Clamp((int)(cb * 255), 0, 255);
+                        _pixels[pidx + 1] = (byte)Math.Clamp((int)(cg * 255), 0, 255);
+                        _pixels[pidx + 2] = (byte)Math.Clamp((int)(cr * 255), 0, 255);
+                        _pixels[pidx + 3] = 255;
                     }
                 }
-            }
+            });
 
-            Array.Copy(pixels, _bloomBuf, totalBytes);
-            for (int y = 2; y < h - 2; y++)
+            // Two-pass bloom for emissive glow
+            Array.Copy(_pixels, _bloomBuf, totalBytes);
+
+            // Pass 1: horizontal blur of bright pixels
+            for (int y = 0; y < h; y++)
             {
                 for (int x = 2; x < w - 2; x++)
                 {
                     int pi = y * stride + x * 4;
-                    int pb = _bloomBuf[pi];
-                    int pg = _bloomBuf[pi + 1];
-                    int pr = _bloomBuf[pi + 2];
-                    if (pr + pg + pb < 200)
+                    int sum = _bloomBuf[pi] + _bloomBuf[pi + 1] + _bloomBuf[pi + 2];
+                    if (sum < 120)
                         continue;
 
-                    int sumB = 0, sumG = 0, sumR = 0;
-                    for (int dy = -2; dy <= 2; dy++)
+                    for (int c = 0; c < 3; c++)
+                    {
+                        int s = 0;
                         for (int dx = -2; dx <= 2; dx++)
-                        {
-                            int ni = (y + dy) * stride + (x + dx) * 4;
-                            sumB += _bloomBuf[ni];
-                            sumG += _bloomBuf[ni + 1];
-                            sumR += _bloomBuf[ni + 2];
-                        }
-                    pixels[pi] = (byte)Math.Min(255, pixels[pi] + sumB / 25 / 2);
-                    pixels[pi + 1] = (byte)Math.Min(255, pixels[pi + 1] + sumG / 25 / 2);
-                    pixels[pi + 2] = (byte)Math.Min(255, pixels[pi + 2] + sumR / 25 / 2);
+                            s += _bloomBuf[y * stride + (x + dx) * 4 + c];
+                        _pixels[pi + c] = (byte)Math.Min(255, _pixels[pi + c] + s / 5 / 2);
+                    }
                 }
             }
 
-            Marshal.Copy(pixels, 0, fb.Address, totalBytes);
+            // Pass 2: vertical blur
+            Array.Copy(_pixels, _bloomBuf, totalBytes);
+            for (int y = 2; y < h - 2; y++)
+            {
+                for (int x = 0; x < w; x++)
+                {
+                    int pi = y * stride + x * 4;
+                    int sum = _bloomBuf[pi] + _bloomBuf[pi + 1] + _bloomBuf[pi + 2];
+                    if (sum < 120)
+                        continue;
+
+                    for (int c = 0; c < 3; c++)
+                    {
+                        int s = 0;
+                        for (int dy = -2; dy <= 2; dy++)
+                            s += _bloomBuf[(y + dy) * stride + x * 4 + c];
+                        _pixels[pi + c] = (byte)Math.Min(255, _pixels[pi + c] + s / 5 / 3);
+                    }
+                }
+            }
+
+            Marshal.Copy(_pixels, 0, fb.Address, totalBytes);
         }
-
-        private static readonly SolidColorBrush _creditFgBrush = new SolidColorBrush(Color.FromRgb(150, 255, 150));
-        private static readonly SolidColorBrush _creditShBrush = new SolidColorBrush(Color.FromArgb(180, 0, 0, 0));
-        private static readonly RenderOptions _upscaleOptions = new RenderOptions { BitmapInterpolationMode = BitmapInterpolationMode.HighQuality };
-
-        private double _charWidth;
-        private bool _charWidthMeasured;
-        private FormattedText[] _creditTextCache;
-        private FormattedText[] _creditShadowCache;
 
         private void RenderCredits(DrawingContext context, int w, int h)
         {
