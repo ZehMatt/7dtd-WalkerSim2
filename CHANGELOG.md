@@ -1,3 +1,5 @@
+# 1.3 (in progress)
+
 # 1.2
 - Fix: Agent state in the editor would not update the values displayed.
 - Improve: Better structured console output for `walkersim stats`.
