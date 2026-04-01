@@ -1,6 +1,7 @@
 # 1.2 (in progress)
 - Fix: Agent state in the editor would not update the values displayed.
 - Improve: Better structured console output for `walkersim stats`.
+- Change: About dialog in Editor has new visuals and music.
 
 # 1.1.2
 - Fix: sleepers not waking up, properly fix the smell not working.
