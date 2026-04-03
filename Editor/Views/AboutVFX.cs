@@ -27,7 +27,7 @@ namespace Editor.Views
         private double _scrollOffset;
         private double _time;
         private double _musicPhase;
-        private const double ScrollSpeed = 10.0;
+        private const double ScrollSpeed = 18.0;
         private const double SineAmplitude = 3.0;
         private const double SineFrequency = 0.08;
         private const double SineTimeSpeed = 2.0;
@@ -233,6 +233,7 @@ namespace Editor.Views
             return Math.Min(d, bldg);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static double March(double ox, double oy, double oz, double dx, double dy, double dz, double maxT)
         {
             double t = 0;
@@ -249,6 +250,7 @@ namespace Editor.Views
             return maxT + 1;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void CalcNormal(double px, double py, double pz, out double nx, out double ny, out double nz)
         {
             const double e = 0.01;
@@ -262,6 +264,7 @@ namespace Editor.Views
 
         // Blackwall-style building surface shading
         // World-space dots using surface normal to pick correct UV axes
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ShadeBlackwall(double px, double py, double pz,
             double nx, double ny, double nz,
             int cidX, int cidZ, double bldgH,
@@ -346,9 +349,21 @@ namespace Editor.Views
             int colorSlot = IHash(cidX * 71 + cidZ * 37) % 3;
             switch (colorSlot)
             {
-                case 0: cr = bright; cg = bright * 0.04; cb = bright * 0.02; break;
-                case 1: cr = bright * 0.02; cg = bright; cb = bright * 0.04; break;
-                default: cr = bright * 0.02; cg = bright * 0.04; cb = bright; break;
+                case 0:
+                    cr = bright;
+                    cg = bright * 0.04;
+                    cb = bright * 0.02;
+                    break;
+                case 1:
+                    cr = bright * 0.02;
+                    cg = bright;
+                    cb = bright * 0.04;
+                    break;
+                default:
+                    cr = bright * 0.02;
+                    cg = bright * 0.04;
+                    cb = bright;
+                    break;
             }
         }
 
