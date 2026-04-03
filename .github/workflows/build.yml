@@ -193,6 +193,12 @@ jobs:
         xcopy /S /I /Y /F ".\Build\Release\Mod\*" ".\artifact\WalkerSim2\" /EXCLUDE:exclude.txt
         del exclude.txt
 
+    - name: Stamp ModInfo.xml version
+      shell: powershell
+      run: |
+        $modInfo = "artifact\WalkerSim2\ModInfo.xml"
+        (Get-Content $modInfo -Raw) -replace 'Version value="[^"]*"', "Version value=`"$env:BUILD_VERSION`"" | Set-Content $modInfo
+
     - name: Upload Mod artifact
       uses: actions/upload-artifact@v7
       with:
