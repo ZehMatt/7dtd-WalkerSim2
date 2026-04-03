@@ -135,6 +135,16 @@ namespace WalkerSim
                 }
 
                 SetupGrid();
+
+                var sqrKm = (WorldSize.X / 1000.0f) * (WorldSize.Y / 1000.0f);
+                if (sqrKm > 0)
+                {
+                    var maxAgents = (int)System.Math.Ceiling(sqrKm * config.PopulationDensity);
+                    maxAgents = MathEx.Clamp(maxAgents, 1, Limits.MaxAgents);
+                    _state.GroupCount = (maxAgents + (config.GroupSize - 1)) / config.GroupSize;
+                }
+
+                BuildGroupStarts();
                 Populate();
                 SetupProcessors();
 
@@ -184,9 +194,8 @@ namespace WalkerSim
             }
         }
 
-        Vector3 GetRandomPosition()
+        Vector3 GetRandomPosition(Random prng)
         {
-            var prng = _state.PRNG;
             float borderSize = 250;
             float x0 = (float)prng.NextDouble();
             float y0 = (float)prng.NextDouble();
@@ -195,12 +204,11 @@ namespace WalkerSim
             return new Vector3(x, y);
         }
 
-        Vector3 GetRandomBorderPosition()
+        Vector3 GetRandomBorderPosition(Random prng)
         {
             Vector3 res = new Vector3();
 
             float borderSize = 250;
-            var prng = _state.PRNG;
             var worldMins = _state.WorldMins;
             var worldMaxs = _state.WorldMaxs;
 
@@ -238,13 +246,13 @@ namespace WalkerSim
             return res;
         }
 
-        Vector3 GetRandomPOIPosition()
+        Vector3 GetRandomPOIPosition(Random prng)
         {
             var mapData = _state.MapData;
             if (mapData == null)
             {
                 // Can be null in viewer.
-                return GetRandomBorderPosition();
+                return GetRandomBorderPosition(prng);
             }
 
             var prefabs = mapData.Prefabs;
@@ -252,10 +260,8 @@ namespace WalkerSim
             if (decos.Length == 0)
             {
                 // No decorations, fallback to random border position.
-                return GetRandomBorderPosition();
+                return GetRandomBorderPosition(prng);
             }
-
-            var prng = _state.PRNG;
 
             // Weighted selection, the bigger the decoration, the more likely it is to be selected.
             var totalArea = 0.0f;
@@ -290,20 +296,20 @@ namespace WalkerSim
             return pos + offset;
         }
 
-        Vector3 GetRandomCityPosition()
+        Vector3 GetRandomCityPosition(Random prng)
         {
             var mapData = _state.MapData;
             if (mapData == null)
             {
                 // Can be null in viewer.
-                return GetRandomBorderPosition();
+                return GetRandomBorderPosition(prng);
             }
 
             var cities = mapData.Cities;
             if (cities.CityList.Count == 0)
             {
                 // No cities, fallback to random border position.
-                return GetRandomBorderPosition();
+                return GetRandomBorderPosition(prng);
             }
 
             // Weighted selection, the bigger the city, the more likely it is to be selected.
@@ -312,8 +318,6 @@ namespace WalkerSim
             {
                 totalArea += city.Bounds.X * city.Bounds.Y;
             }
-
-            var prng = _state.PRNG;
             var selectedArea = 0.0f;
             var selectedCity = cities.CityList[0];
             var rand = (float)prng.NextDouble() * totalArea;
@@ -341,11 +345,6 @@ namespace WalkerSim
             return pos + offset;
         }
 
-        Vector3 GetGroupPosition(int groupIndex)
-        {
-            return _groupStarts[groupIndex];
-        }
-
         Vector3 GetGroupCenter(int groupIndex)
         {
             var agents = _state.Agents;
@@ -369,11 +368,8 @@ namespace WalkerSim
             return sum * (1f / count);
         }
 
-        Vector3 GetWorldLocation(Config.WorldLocation worldLoc)
+        Vector3 GetWorldLocation(Config.WorldLocation worldLoc, Random prng)
         {
-            var config = _state.Config;
-            var prng = _state.PRNG;
-
             if (worldLoc == Config.WorldLocation.Mixed)
             {
                 var min = Config.WorldLocation.RandomBorderLocation;
@@ -386,13 +382,13 @@ namespace WalkerSim
                 case Config.WorldLocation.None:
                     break;
                 case Config.WorldLocation.RandomBorderLocation:
-                    return GetRandomBorderPosition();
+                    return GetRandomBorderPosition(prng);
                 case Config.WorldLocation.RandomLocation:
-                    return GetRandomPosition();
+                    return GetRandomPosition(prng);
                 case Config.WorldLocation.RandomPOI:
-                    return GetRandomPOIPosition();
+                    return GetRandomPOIPosition(prng);
                 case Config.WorldLocation.RandomCity:
-                    return GetRandomCityPosition();
+                    return GetRandomCityPosition(prng);
             }
 
             // This should never happen.
@@ -402,13 +398,25 @@ namespace WalkerSim
         Vector3 GetStartLocation()
         {
             var config = _state.Config;
-            return GetWorldLocation(config.StartPosition);
+            return GetWorldLocation(config.StartPosition, _state.PRNG);
         }
 
         Vector3 GetRespawnLocation()
         {
             var config = _state.Config;
-            return GetWorldLocation(config.RespawnPosition);
+            return GetWorldLocation(config.RespawnPosition, _state.PRNG);
+        }
+
+        void BuildGroupStarts()
+        {
+            var config = _state.Config;
+            var prng = new Random(config.RandomSeed);
+
+            _groupStarts = new Vector3[_state.GroupCount];
+            for (int i = 0; i < _groupStarts.Length; i++)
+            {
+                _groupStarts[i] = GetWorldLocation(config.StartPosition, prng);
+            }
         }
 
         Vector3 GetStartLocation(int index, int groupIndex)
@@ -442,27 +450,17 @@ namespace WalkerSim
 
             agents.Clear();
 
-            var sqrKm = (WorldSize.X / 1000.0f) * (WorldSize.Y / 1000.0f);
-            if (sqrKm == 0)
-            {
-                return;
-            }
-
-            var maxAgents = (int)System.Math.Ceiling(sqrKm * config.PopulationDensity);
-            maxAgents = MathEx.Clamp(maxAgents, 1, Limits.MaxAgents);
-
-            _state.GroupCount = (maxAgents + (config.GroupSize - 1)) / config.GroupSize;
-
             if (_state.GroupCount == 0)
             {
                 return;
             }
 
-            _groupStarts = new Vector3[_state.GroupCount];
-            for (int i = 0; i < _groupStarts.Length; i++)
-            {
-                _groupStarts[i] = GetStartLocation();
-            }
+            var sqrKm = (WorldSize.X / 1000.0f) * (WorldSize.Y / 1000.0f);
+            if (sqrKm == 0)
+                return;
+
+            var maxAgents = (int)System.Math.Ceiling(sqrKm * config.PopulationDensity);
+            maxAgents = MathEx.Clamp(maxAgents, 1, Limits.MaxAgents);
 
             // If population ramp is configured, only a fraction of agents start as Wandering.
             var popFraction = GetPopulationFraction();

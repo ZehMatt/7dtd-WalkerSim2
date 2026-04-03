@@ -288,6 +288,7 @@ namespace WalkerSim
                 // Rebuild the grid from agent positions.
                 RebuildGrid();
 
+                BuildGroupStarts();
                 SetupProcessors();
             }
             catch (Exception ex)

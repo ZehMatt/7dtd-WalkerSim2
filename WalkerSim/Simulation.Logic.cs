@@ -365,13 +365,14 @@ namespace WalkerSim
             }
             else if (config.StartAgentsGrouped)
             {
-                // Respawn near the group start position.
+                // Respawn near living group members, or config start if none active.
+                var groupCenter = GetGroupCenter(agent.Group);
                 var maxDistance = MathEx.Clamp((float)config.GroupSize * 6.0f, 16.0f, 500.0f);
                 float angle = (float)_state.PRNG.NextDouble() * (float)System.Math.PI * 2.0f;
                 float radius = (float)_state.PRNG.NextDouble() * maxDistance;
                 float offsetX = (float)System.Math.Cos(angle) * radius;
                 float offsetY = (float)System.Math.Sin(angle) * radius;
-                startPos = _groupStarts[agent.Group] + new Vector3(offsetX, offsetY);
+                startPos = groupCenter + new Vector3(offsetX, offsetY);
             }
             else
             {
