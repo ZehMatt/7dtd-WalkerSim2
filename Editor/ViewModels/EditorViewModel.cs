@@ -1157,6 +1157,10 @@ namespace Editor.ViewModels
                     }
 
                     Logging.Info($"Loaded state save with {_simulation.AgentCount} agents, {numDead} dead.");
+
+                    // Treat loaded state as paused so Resume continues it instead of Start resetting it.
+                    IsSimulationRunning = true;
+                    IsSimulationPaused = true;
                 }
             }
             catch (System.Exception ex)
