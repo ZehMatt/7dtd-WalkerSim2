@@ -247,8 +247,6 @@ namespace Editor.ViewModels
             OnPropertyChanged(nameof(IsNotRunning));
             OnPropertyChanged(nameof(CanStart));
             OnPropertyChanged(nameof(CanStop));
-            OnPropertyChanged(nameof(CanPause));
-            OnPropertyChanged(nameof(CanResume));
             OnPropertyChanged(nameof(CanAdvance));
             OnPropertyChanged(nameof(CanSetSpeed));
         }
@@ -256,20 +254,8 @@ namespace Editor.ViewModels
         public bool IsNotRunning => !IsSimulationRunning;
         public bool CanStart => !IsSimulationRunning;
         public bool CanStop => IsSimulationRunning;
-        public bool CanPause => IsSimulationRunning && !IsSimulationPaused;
-        public bool CanResume => IsSimulationRunning && IsSimulationPaused;
-        public bool CanAdvance => !IsSimulationRunning || IsSimulationPaused;
+        public bool CanAdvance => !IsSimulationRunning;
         public bool CanSetSpeed => IsSimulationRunning;
-
-        [ObservableProperty]
-        private bool _isSimulationPaused = false;
-
-        partial void OnIsSimulationPausedChanged(bool value)
-        {
-            OnPropertyChanged(nameof(CanPause));
-            OnPropertyChanged(nameof(CanResume));
-            OnPropertyChanged(nameof(CanAdvance));
-        }
 
         [ObservableProperty]
         private int _totalAgents = 0;
@@ -712,10 +698,8 @@ namespace Editor.ViewModels
             if (IsSimulationRunning)
                 return;
 
-            _simulation.Reset(Config);
             _simulation.Start();
             IsSimulationRunning = true;
-            IsSimulationPaused = false;
         }
 
         [RelayCommand]
@@ -726,53 +710,23 @@ namespace Editor.ViewModels
 
             _simulation.Stop();
             IsSimulationRunning = false;
-            IsSimulationPaused = false;
-        }
-
-        [RelayCommand]
-        public void PauseSimulation()
-        {
-            if (!IsSimulationRunning || IsSimulationPaused)
-                return;
-
-            _simulation.Stop();
-            IsSimulationPaused = true;
-        }
-
-        [RelayCommand]
-        public void ResumeSimulation()
-        {
-            if (!IsSimulationRunning || !IsSimulationPaused)
-                return;
-
-            _simulation.Start();
-            IsSimulationPaused = false;
         }
 
         [RelayCommand]
         public void ResetSimulation()
         {
-            bool wasRunning = IsSimulationRunning;
-            if (wasRunning)
-            {
-                StopSimulation();
-            }
+            StopSimulation();
 
             _simulation.Reset(Config);
             _agentsDirty = true;
             GroupColorsChanged?.Invoke();
             UpdateSimulationStats();
-
-            if (wasRunning)
-            {
-                StartSimulation();
-            }
         }
 
         [RelayCommand]
         public void AdvanceOneTick()
         {
-            if (IsSimulationRunning && !IsSimulationPaused)
+            if (IsSimulationRunning)
                 return;
 
             _simulation.Advance(1);
@@ -1158,9 +1112,7 @@ namespace Editor.ViewModels
 
                     Logging.Info($"Loaded state save with {_simulation.AgentCount} agents, {numDead} dead.");
 
-                    // Treat loaded state as paused so Resume continues it instead of Start resetting it.
-                    IsSimulationRunning = true;
-                    IsSimulationPaused = true;
+                    IsSimulationRunning = false;
                 }
             }
             catch (System.Exception ex)

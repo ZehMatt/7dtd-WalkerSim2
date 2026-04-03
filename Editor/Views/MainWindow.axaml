@@ -19,7 +19,6 @@
 	<Window.KeyBindings>
 		<KeyBinding Gesture="F5" Command="{Binding StartSimulationCommand}"/>
 		<KeyBinding Gesture="Shift+F5" Command="{Binding StopSimulationCommand}"/>
-		<KeyBinding Gesture="F6" Command="{Binding PauseSimulationCommand}"/>
 		<KeyBinding Gesture="F7" Command="{Binding AdvanceOneTickCommand}"/>
 	</Window.KeyBindings>
 
@@ -67,12 +66,6 @@
 				<MenuItem Header="Reset"
 						  Command="{Binding ResetSimulationCommand}"/>
 				<Separator/>
-				<MenuItem Header="Pause"
-						  IsEnabled="{Binding CanPause}"
-						  Command="{Binding PauseSimulationCommand}"/>
-				<MenuItem Header="Resume"
-						  IsEnabled="{Binding CanResume}"
-						  Command="{Binding ResumeSimulationCommand}"/>
 				<MenuItem Header="Speed"
 						  IsEnabled="{Binding CanSetSpeed}">
 					<MenuItem Header="1x"
