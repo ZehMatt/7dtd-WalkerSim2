@@ -1,6 +1,6 @@
 # 1.2.1 (in progress)
 - Fix: Potential error caused by the population ramp when changing the in-game time.
-- Fix: Loading a saved in state in editor would always reset when trying to start/resume it.
+- Fix: Loading a saved state in the editor would always reset when trying to start/resume it.
 - Change: Simplified behavior of Start/Stop and removed Pause/Resume in the Editor, start will now always resume.
 
 # 1.2
