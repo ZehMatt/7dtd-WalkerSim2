@@ -30,7 +30,8 @@ namespace WalkerSim
             // Version 19: Road graph navigation state.
             // Version 20: Road node history circular buffer (10 entries).
             // Version 21: Grid is no longer serialized, rebuilt from agent positions.
-            public const uint SaveVersion = 21;
+            // Version 22: GameTime is now serialized.
+            public const uint SaveVersion = 22;
         }
     }
 }

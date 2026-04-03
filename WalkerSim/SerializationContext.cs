@@ -76,6 +76,14 @@ namespace WalkerSim
                 Serialization.WriteSingle(_writer, value, compressed);
         }
 
+        public void Serialize(ref double value)
+        {
+            if (_isReading)
+                value = _reader.ReadDouble();
+            else
+                _writer.Write(value);
+        }
+
         public void Serialize(ref string value, bool compressed = true)
         {
             if (_isReading)

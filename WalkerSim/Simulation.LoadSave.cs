@@ -67,6 +67,7 @@ namespace WalkerSim
             ctx.Serialize(ref state.TickNextWindChange);
             ctx.Serialize(ref state.GroupCount);
             ctx.Serialize(ref state.MaxNeighbourDistance);
+            ctx.Serialize(ref state.GameTime);
 
             return true;
         }

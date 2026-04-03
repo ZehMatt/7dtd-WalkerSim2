@@ -29,6 +29,7 @@ namespace WalkerSim
             public uint TickNextWindChange = 0;
             public int GroupCount = 0;
             public float MaxNeighbourDistance = 0;
+            public double GameTime = 0.0;
             public int[] AgentsNearPOICounter;
             public int POIIterator = 0;
             // Statistics
@@ -38,7 +39,6 @@ namespace WalkerSim
             // Game State, not saved.
             public volatile bool IsBloodmoon = false;
             public volatile bool IsDayTime = true;
-            public double GameTime = 0.0;
 
             public void Reset()
             {
