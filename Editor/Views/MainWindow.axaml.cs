@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Threading;
@@ -39,14 +40,10 @@ namespace Editor.Views
                     vm.StopSimulation();
             };
 
-            this.KeyDown += (s, e) =>
-            {
-                if (e.Key == Avalonia.Input.Key.Escape && DataContext is EditorViewModel vmEsc)
-                {
-                    vmEsc.CancelToolCommand.Execute(null);
-                    e.Handled = true;
-                }
-            };
+            // Listen on the tunneling phase so the focused control (TextBox, NumericUpDown,
+            // ComboBox, etc.) can't swallow Escape before we see it. Bubbling KeyDown only
+            // fires if no descendant handled the event, which is why this used to be flaky.
+            this.AddHandler(KeyDownEvent, OnPreviewKeyDown, RoutingStrategies.Tunnel);
 
             this.DataContextChanged += (s, e) =>
             {
@@ -65,6 +62,18 @@ namespace Editor.Views
                     SimCanvas.OnCanvasClick = pos => vm2.HandleCanvasClick(pos);
                 }
             };
+        }
+
+        private void OnPreviewKeyDown(object? sender, KeyEventArgs e)
+        {
+            // Cancel an active tool on Escape, regardless of which descendant has focus.
+            // Gated on IsToolActive so we don't steal Escape from menus / dialogs / popups
+            // when no tool is selected.
+            if (e.Key == Key.Escape && DataContext is EditorViewModel vm && vm.IsToolActive)
+            {
+                vm.CancelToolCommand.Execute(null);
+                e.Handled = true;
+            }
         }
 
         private void UpdateTimer_Tick(object? sender, EventArgs e)
