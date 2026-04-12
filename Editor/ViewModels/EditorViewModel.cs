@@ -527,6 +527,24 @@ namespace Editor.ViewModels
         private void LoadWorldList()
         {
             Logging.Info("Discovering worlds...");
+
+            // Initialize the global prefab database from every game install we know about
+            // (registry, Steam libraries, user-configured extras). This must run before any
+            // world load so that decoration sizes resolve from real PrefabSize values
+            // instead of the fallback default.
+            try
+            {
+                var gamePaths = WorldLocator.FindGamePaths();
+                var prefabSearchPaths = new List<string>();
+                foreach (var install in gamePaths)
+                    prefabSearchPaths.AddRange(WalkerSim.Prefabs.SearchPathsForInstall(install));
+                WalkerSim.Prefabs.Initialize(prefabSearchPaths);
+            }
+            catch (Exception ex)
+            {
+                Logging.Err("Failed to initialize prefab database: {0}", ex.Message);
+            }
+
             List<string> folders;
             try
             {

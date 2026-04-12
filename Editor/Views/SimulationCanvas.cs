@@ -34,6 +34,8 @@ namespace Editor.Views
         private string _cachedRoadsPath;
         private WriteableBitmap _biomesBitmap;
         private string _cachedBiomesPath;
+        private WriteableBitmap _citiesBitmap;
+        private Cities _cachedCitiesRef;
 
         // Cached group brushes
         private IBrush[] _groupBrushes = Array.Empty<IBrush>();
@@ -929,20 +931,106 @@ namespace Editor.Views
         private void RenderCities(DrawingContext context, double width, double height)
         {
             var mapData = _simulation.MapData;
-            if (mapData?.Cities?.CityList == null)
+            var cities = mapData?.Cities;
+            if (cities == null || cities.CityIdMap == null || cities.CityIdMap.Length == 0)
                 return;
 
-            var worldSize = _simulation.WorldSize;
-
-            foreach (var city in mapData.Cities.CityList)
+            // Cache by object reference — Cities is rebuilt from scratch on every world
+            // load, so a new instance always means stale data. Comparing counts/IDs would
+            // miss the case where two worlds happen to produce the same number of cities.
+            if (_citiesBitmap == null || !ReferenceEquals(_cachedCitiesRef, cities))
             {
-                var (cx, cy) = SimToCanvas(city.Position, width, height);
-                var sw = MathEx.Remap(city.Bounds.X, 0, worldSize.X, 0, (float)width);
-                var sh = MathEx.Remap(city.Bounds.Y, 0, worldSize.Y, 0, (float)height);
-                var rect = new Rect(cx - sw / 2, cy - sh / 2, sw, sh);
-                context.FillRectangle(_cityBrush, rect);
-                context.DrawRectangle(null, _cityPen, rect);
+                _citiesBitmap?.Dispose();
+                _citiesBitmap = BuildCitiesBitmap(cities);
+                _cachedCitiesRef = cities;
             }
+
+            if (_citiesBitmap != null)
+                context.DrawImage(_citiesBitmap, new Rect(0, 0, width, height));
+        }
+
+        private WriteableBitmap BuildCitiesBitmap(Cities cities)
+        {
+            int w = cities.Width;
+            int h = cities.Height;
+            if (w == 0 || h == 0)
+                return null;
+
+            var bmp = new WriteableBitmap(
+                new PixelSize(w, h),
+                new Vector(96, 96),
+                Avalonia.Platform.PixelFormat.Bgra8888,
+                Avalonia.Platform.AlphaFormat.Premul);
+
+            // One color per city id. Alpha is premultiplied.
+            int cityCount = cities.CityList.Count;
+            var colorLookup = new (byte b, byte g, byte r, byte a)[cityCount + 1];
+            const byte alpha = 140;
+            for (int i = 0; i < cityCount; i++)
+            {
+                // Hash-based hue gives each city a distinct but stable color.
+                float hue = ((i * 2654435761u) % 360) / 360f;
+                HsvToRgb(hue, 0.85f, 1.0f, out byte r, out byte g, out byte b);
+                colorLookup[i + 1] = (
+                    (byte)(b * alpha / 255),
+                    (byte)(g * alpha / 255),
+                    (byte)(r * alpha / 255),
+                    alpha);
+            }
+
+            using (var buf = bmp.Lock())
+            {
+                int stride = buf.RowBytes;
+                var pixels = new byte[h * stride];
+                var idMap = cities.CityIdMap;
+
+                for (int y = 0; y < h; y++)
+                {
+                    int srcRow = y * w;
+                    int dstRow = y * stride;
+                    for (int x = 0; x < w; x++)
+                    {
+                        ushort id = idMap[srcRow + x];
+                        if (id == 0 || id > cityCount)
+                            continue;
+
+                        var c = colorLookup[id];
+                        int idx = dstRow + x * 4;
+                        pixels[idx + 0] = c.b;
+                        pixels[idx + 1] = c.g;
+                        pixels[idx + 2] = c.r;
+                        pixels[idx + 3] = c.a;
+                    }
+                }
+
+                Marshal.Copy(pixels, 0, buf.Address, pixels.Length);
+            }
+
+            return bmp;
+        }
+
+        private static void HsvToRgb(float h, float s, float v, out byte r, out byte g, out byte b)
+        {
+            float c = v * s;
+            float hp = h * 6f;
+            float x = c * (1f - System.Math.Abs((hp % 2f) - 1f));
+            float r1, g1, b1;
+            if (hp < 1f)
+            { r1 = c; g1 = x; b1 = 0; }
+            else if (hp < 2f)
+            { r1 = x; g1 = c; b1 = 0; }
+            else if (hp < 3f)
+            { r1 = 0; g1 = c; b1 = x; }
+            else if (hp < 4f)
+            { r1 = 0; g1 = x; b1 = c; }
+            else if (hp < 5f)
+            { r1 = x; g1 = 0; b1 = c; }
+            else
+            { r1 = c; g1 = 0; b1 = x; }
+            float m = v - c;
+            r = (byte)System.Math.Round((r1 + m) * 255f);
+            g = (byte)System.Math.Round((g1 + m) * 255f);
+            b = (byte)System.Math.Round((b1 + m) * 255f);
         }
 
         // Cached pen for wind arrow shaft

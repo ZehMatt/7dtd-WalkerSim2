@@ -8,8 +8,11 @@ namespace WalkerSim
     {
         public class City
         {
+            // 1-based id matching the component id used in CityIdMap. 0 is reserved for "no city".
+            public int Id { get; set; }
             public Vector3 Position { get; set; }
             public Vector3 Bounds { get; set; }
+            public int CellCount { get; set; }
             public List<MapData.Decoration> POIs { get; set; }
 
             public City()
@@ -27,611 +30,423 @@ namespace WalkerSim
         public float[] CityAreaWeights { get; private set; }
         public float TotalAreaWeight { get; private set; }
 
+        // City-id raster. 0 = not a city, otherwise 1-based city id.
+        public int Width { get; private set; }
+        public int Height { get; private set; }
+        public ushort[] CityIdMap { get; private set; }
+
+        // World bounds captured at build time so GetCityAt can remap without needing State.
+        public Vector3 WorldMins { get; private set; }
+        public Vector3 WorldMaxs { get; private set; }
+        public float CellSize { get; private set; }
+
+        // Signed distance field for "inside any city": positive inside, negative outside.
+        public int SDFWidth { get; private set; }
+        public int SDFHeight { get; private set; }
+        private float[] _sdf;
+
         public Cities()
         {
             CityList = new List<City>();
             CityAreaWeights = new float[0];
             TotalAreaWeight = 0;
+            CityIdMap = new ushort[0];
+            _sdf = new float[0];
         }
 
+        // Target world meters per grid cell. Smaller cells separate buildings better
+        // but cost more memory; larger cells over-merge. 16m is a reasonable balance
+        // given typical POI footprints of 20-80m.
+        private const float TargetCellSize = 16f;
+        private const int MaxGridDim = 1024;
+        private const int SDFSize = 256;
+
+        // Maximum size (in cells) of an enclosed empty region that gets patched into
+        // its surrounding city. Anything larger is left as a real hole — courtyards,
+        // plazas, the empty middle of the spiral. At 16m cells this is ~8000 m²,
+        // about a 90×90m square.
+        private const int MaxHoleCellsToFill = 32;
+
         /// <summary>
-        /// Generates city boundaries from POI clusters using a density-based clustering algorithm (DBSCAN-inspired).
-        /// Only areas with high POI density are considered cities.
+        /// Generates city regions by rasterizing POIs onto a grid, running connected-component
+        /// labelling, then filtering components by POI count. Each city is an arbitrary shape
+        /// defined by the cells it occupies (no longer a rectangle).
         /// </summary>
-        /// <param name="pois">Array of POI decorations to cluster</param>
-        /// <param name="clusterDistance">Maximum edge-to-edge distance to consider POIs as neighbors</param>
-        /// <param name="minNeighbors">Minimum number of neighbors required for a POI to be considered a core point (density threshold)</param>
-        /// <param name="minPOIsPerCity">Minimum number of POIs required to form a city</param>
-        public static Cities GenerateFromPOIs(MapData.Decoration[] pois, float clusterDistance = 20f, int minNeighbors = 4, int minPOIsPerCity = 12)
+        public static Cities GenerateFromPOIs(
+            MapData.Decoration[] pois,
+            Vector3 worldMins,
+            Vector3 worldMaxs,
+            float clusterDistance = 32f,
+            int minPOIsPerCity = 12,
+            int minCellsPerCity = 16,
+            float minPoiCoverage = 0.45f)
         {
             var cities = new Cities();
+            cities.WorldMins = worldMins;
+            cities.WorldMaxs = worldMaxs;
 
-            if (pois == null || pois.Length == 0)
+            float worldW = worldMaxs.X - worldMins.X;
+            float worldH = worldMaxs.Y - worldMins.Y;
+            if (worldW <= 0 || worldH <= 0 || pois == null || pois.Length == 0)
             {
                 return cities;
             }
 
-            var poiList = new List<MapData.Decoration>(pois);
+            // Pick a cell size that keeps the grid within MaxGridDim on the longest axis.
+            float cellSize = Math.Max(TargetCellSize, Math.Max(worldW, worldH) / MaxGridDim);
+            int width = (int)Math.Ceiling(worldW / cellSize);
+            int height = (int)Math.Ceiling(worldH / cellSize);
 
-            // Build neighbor lists for each POI
-            var neighbors = new Dictionary<int, List<int>>();
-            for (int i = 0; i < poiList.Count; i++)
-            {
-                neighbors[i] = new List<int>();
-            }
+            cities.CellSize = cellSize;
+            cities.Width = width;
+            cities.Height = height;
 
-            // Find neighbors for each POI
-            for (int i = 0; i < poiList.Count; i++)
+            // Two rasterizations: `occupancy` is dilated and used for flood-fill so
+            // nearby POIs merge into one component, while `poiOccupancy` marks only
+            // the actual POI footprints. Comparing the two per-component produces a
+            // "coverage ratio" that cleanly separates packed city blocks (high
+            // coverage) from POIs strung along a road (low coverage — the component
+            // is mostly dilation halo).
+            var occupancy = new byte[width * height];
+            var poiOccupancy = new byte[width * height];
+            int dilation = (int)Math.Ceiling((clusterDistance * 0.5f) / cellSize);
+
+            foreach (var poi in pois)
             {
-                for (int j = i + 1; j < poiList.Count; j++)
+                float minX = poi.Position.X - poi.Bounds.X * 0.5f - worldMins.X;
+                float maxX = poi.Position.X + poi.Bounds.X * 0.5f - worldMins.X;
+                float minY = poi.Position.Y - poi.Bounds.Y * 0.5f - worldMins.Y;
+                float maxY = poi.Position.Y + poi.Bounds.Y * 0.5f - worldMins.Y;
+
+                int px0 = (int)Math.Floor(minX / cellSize);
+                int px1 = (int)Math.Floor(maxX / cellSize);
+                int py0 = (int)Math.Floor(minY / cellSize);
+                int py1 = (int)Math.Floor(maxY / cellSize);
+
+                int gx0 = px0 - dilation;
+                int gx1 = px1 + dilation;
+                int gy0 = py0 - dilation;
+                int gy1 = py1 + dilation;
+
+                if (gx0 < 0)
+                    gx0 = 0;
+                if (gy0 < 0)
+                    gy0 = 0;
+                if (gx1 >= width)
+                    gx1 = width - 1;
+                if (gy1 >= height)
+                    gy1 = height - 1;
+
+                if (px0 < 0)
+                    px0 = 0;
+                if (py0 < 0)
+                    py0 = 0;
+                if (px1 >= width)
+                    px1 = width - 1;
+                if (py1 >= height)
+                    py1 = height - 1;
+
+                for (int y = gy0; y <= gy1; y++)
                 {
-                    float distance = CalculateEdgeDistance(poiList[i], poiList[j]);
-                    if (distance <= clusterDistance)
+                    int row = y * width;
+                    for (int x = gx0; x <= gx1; x++)
                     {
-                        neighbors[i].Add(j);
-                        neighbors[j].Add(i);
+                        occupancy[row + x] = 1;
+                    }
+                }
+
+                for (int y = py0; y <= py1; y++)
+                {
+                    int row = y * width;
+                    for (int x = px0; x <= px1; x++)
+                    {
+                        poiOccupancy[row + x] = 1;
                     }
                 }
             }
 
-            // Identify core points (POIs with enough neighbors = high density areas)
-            var corePoints = new HashSet<int>();
-            for (int i = 0; i < poiList.Count; i++)
+            // Connected-component labelling (4-connected flood fill).
+            var idMap = new ushort[width * height];
+            var componentCells = new List<int>();  // cell count per id
+            var componentPoiCells = new List<int>(); // cells that contain real POI footprint
+            var componentMinX = new List<int>();
+            var componentMaxX = new List<int>();
+            var componentMinY = new List<int>();
+            var componentMaxY = new List<int>();
+            // Placeholders for id 0 (unused).
+            componentCells.Add(0);
+            componentPoiCells.Add(0);
+            componentMinX.Add(0);
+            componentMaxX.Add(0);
+            componentMinY.Add(0);
+            componentMaxY.Add(0);
+
+            var queue = new Queue<int>();
+            ushort nextId = 1;
+            for (int y = 0; y < height; y++)
             {
-                if (neighbors[i].Count >= minNeighbors)
+                for (int x = 0; x < width; x++)
                 {
-                    corePoints.Add(i);
-                }
-            }
+                    int idx = y * width + x;
+                    if (occupancy[idx] == 0 || idMap[idx] != 0)
+                        continue;
 
-            // DBSCAN-like clustering: only expand from core points
-            var visited = new HashSet<int>();
-            var clustered = new HashSet<int>();
-            var clusters = new List<List<MapData.Decoration>>();
+                    ushort id = nextId++;
+                    idMap[idx] = id;
+                    queue.Enqueue(idx);
 
-            foreach (int corePoint in corePoints)
-            {
-                if (visited.Contains(corePoint))
-                    continue;
+                    int count = 0;
+                    int poiCount = 0;
+                    int minCX = x, maxCX = x, minCY = y, maxCY = y;
 
-                // Start new cluster from this core point
-                var cluster = new List<MapData.Decoration>();
-                var queue = new Queue<int>();
-                queue.Enqueue(corePoint);
-                visited.Add(corePoint);
-
-                while (queue.Count > 0)
-                {
-                    int current = queue.Dequeue();
-                    cluster.Add(poiList[current]);
-                    clustered.Add(current);
-
-                    // Only expand through core points to maintain density
-                    if (corePoints.Contains(current))
+                    while (queue.Count > 0)
                     {
-                        foreach (int neighbor in neighbors[current])
+                        int cur = queue.Dequeue();
+                        count++;
+                        if (poiOccupancy[cur] != 0)
+                            poiCount++;
+                        int cx = cur % width;
+                        int cy = cur / width;
+                        if (cx < minCX)
+                            minCX = cx;
+                        if (cx > maxCX)
+                            maxCX = cx;
+                        if (cy < minCY)
+                            minCY = cy;
+                        if (cy > maxCY)
+                            maxCY = cy;
+
+                        // 4-connected neighbors.
+                        if (cx > 0)
                         {
-                            if (!visited.Contains(neighbor))
+                            int n = cur - 1;
+                            if (occupancy[n] != 0 && idMap[n] == 0)
                             {
-                                visited.Add(neighbor);
-                                queue.Enqueue(neighbor);
+                                idMap[n] = id;
+                                queue.Enqueue(n);
+                            }
+                        }
+                        if (cx < width - 1)
+                        {
+                            int n = cur + 1;
+                            if (occupancy[n] != 0 && idMap[n] == 0)
+                            {
+                                idMap[n] = id;
+                                queue.Enqueue(n);
+                            }
+                        }
+                        if (cy > 0)
+                        {
+                            int n = cur - width;
+                            if (occupancy[n] != 0 && idMap[n] == 0)
+                            {
+                                idMap[n] = id;
+                                queue.Enqueue(n);
+                            }
+                        }
+                        if (cy < height - 1)
+                        {
+                            int n = cur + width;
+                            if (occupancy[n] != 0 && idMap[n] == 0)
+                            {
+                                idMap[n] = id;
+                                queue.Enqueue(n);
                             }
                         }
                     }
-                }
 
-                // Only add clusters that meet minimum size
-                if (cluster.Count >= minPOIsPerCity)
-                {
-                    clusters.Add(cluster);
+                    componentCells.Add(count);
+                    componentPoiCells.Add(poiCount);
+                    componentMinX.Add(minCX);
+                    componentMaxX.Add(maxCX);
+                    componentMinY.Add(minCY);
+                    componentMaxY.Add(maxCY);
                 }
             }
 
-            // Convert clusters to cities with bounding boxes, filtering out sparse clusters
-            foreach (var cluster in clusters)
+            int rawComponentCount = nextId - 1;
+
+            // Assign each POI to the component its center lands on.
+            var poisByComponent = new Dictionary<ushort, List<MapData.Decoration>>();
+            foreach (var poi in pois)
             {
-                // Calculate bounding box that encompasses all POIs in the cluster
-                float minX = float.MaxValue;
-                float maxX = float.MinValue;
-                float minY = float.MaxValue;
-                float maxY = float.MinValue;
-
-                foreach (var poi in cluster)
-                {
-                    float poiMinX = poi.Position.X - poi.Bounds.X / 2;
-                    float poiMaxX = poi.Position.X + poi.Bounds.X / 2;
-                    float poiMinY = poi.Position.Y - poi.Bounds.Y / 2;
-                    float poiMaxY = poi.Position.Y + poi.Bounds.Y / 2;
-
-                    minX = Math.Min(minX, poiMinX);
-                    maxX = Math.Max(maxX, poiMaxX);
-                    minY = Math.Min(minY, poiMinY);
-                    maxY = Math.Max(maxY, poiMaxY);
-                }
-
-                // Calculate cluster area and density
-                float width = maxX - minX;
-                float height = maxY - minY;
-                float area = width * height;
-
-                // Calculate total POI area
-                float totalPoiArea = 0;
-                foreach (var poi in cluster)
-                {
-                    totalPoiArea += poi.Bounds.X * poi.Bounds.Y;
-                }
-
-                // Density check: POIs should occupy at least 20% of the bounding box area
-                // This filters out clusters that span large areas with lots of empty space
-                float density = totalPoiArea / area;
-                const float minDensity = 0.20f;
-
-                if (density < minDensity)
-                {
-                    // Skip this cluster - it's too sparse (too much empty space)
+                int gx = (int)Math.Floor((poi.Position.X - worldMins.X) / cellSize);
+                int gy = (int)Math.Floor((poi.Position.Y - worldMins.Y) / cellSize);
+                if (gx < 0 || gx >= width || gy < 0 || gy >= height)
                     continue;
-                }
 
-                // Aspect ratio check: cities should be relatively square, not elongated like roads
-                // A road would have a very high aspect ratio (e.g., 10:1), while a city should be more compact
-                float aspectRatio = Math.Max(width, height) / Math.Min(width, height);
-                const float maxAspectRatio = 3.0f; // Allow up to 3:1 ratio
-
-                if (aspectRatio > maxAspectRatio)
-                {
-                    // Skip this cluster - it's too elongated (likely a road)
+                ushort id = idMap[gy * width + gx];
+                if (id == 0)
                     continue;
-                }
 
-                // Subdivide this cluster recursively to eliminate empty space
-                var subdividedCities = RecursivelySubdivideCluster(cluster, minX, maxX, minY, maxY, minPOIsPerCity);
-                cities.CityList.AddRange(subdividedCities);
+                if (!poisByComponent.TryGetValue(id, out var list))
+                {
+                    list = new List<MapData.Decoration>();
+                    poisByComponent[id] = list;
+                }
+                list.Add(poi);
             }
 
-            // Merge overlapping cities into single cities
-            cities.MergeOverlappingCities();
+            // Build City objects for components that meet thresholds. Renumber surviving
+            // components into a contiguous 1-based range and relabel the id map accordingly.
+            int rejectedByCoverage = 0;
+            var idRemap = new ushort[rawComponentCount + 1];
+            for (int rawId = 1; rawId <= rawComponentCount; rawId++)
+            {
+                int cells = componentCells[rawId];
+                if (cells < minCellsPerCity)
+                    continue;
+
+                if (!poisByComponent.TryGetValue((ushort)rawId, out var componentPois) ||
+                    componentPois.Count < minPOIsPerCity)
+                    continue;
+
+                // Coverage ratio: fraction of the dilated component that is actually
+                // covered by POI footprints. Strings of POIs along a road have big
+                // dilation halos and low coverage; packed city blocks have high
+                // coverage because the POI rectangles tile or overlap.
+                float coverage = (float)componentPoiCells[rawId] / cells;
+                if (coverage < minPoiCoverage)
+                {
+                    rejectedByCoverage++;
+                    continue;
+                }
+
+                int cellMinX = componentMinX[rawId];
+                int cellMaxX = componentMaxX[rawId];
+                int cellMinY = componentMinY[rawId];
+                int cellMaxY = componentMaxY[rawId];
+
+                float cityMinX = worldMins.X + cellMinX * cellSize;
+                float cityMaxX = worldMins.X + (cellMaxX + 1) * cellSize;
+                float cityMinY = worldMins.Y + cellMinY * cellSize;
+                float cityMaxY = worldMins.Y + (cellMaxY + 1) * cellSize;
+
+                var city = new City
+                {
+                    Id = cities.CityList.Count + 1,
+                    Position = new Vector3((cityMinX + cityMaxX) * 0.5f, (cityMinY + cityMaxY) * 0.5f, 0),
+                    Bounds = new Vector3(cityMaxX - cityMinX, cityMaxY - cityMinY, 0),
+                    CellCount = cells,
+                };
+                city.POIs.AddRange(componentPois);
+                cities.CityList.Add(city);
+
+                idRemap[rawId] = (ushort)city.Id;
+            }
+
+            // Apply remap (drops cells belonging to filtered-out components).
+            for (int i = 0; i < idMap.Length; i++)
+            {
+                ushort id = idMap[i];
+                if (id != 0)
+                    idMap[i] = idRemap[id];
+            }
+
+            cities.CityIdMap = idMap;
+
+            // Patch up small enclosed gaps inside city footprints — single-cell holes
+            // and tiny courtyards between buildings should be considered part of the
+            // surrounding city, not exterior space. Larger enclosed regions (real
+            // courtyards, plazas, the empty middle of the spiral) are left alone.
+            int holeCellsFilled = FillEnclosedHoles(cities, MaxHoleCellsToFill);
 
             var poisInCities = cities.CityList.Sum(c => c.POIs.Count);
-            Logging.Info("Generated {0} cities from {1} POIs ({2} POIs in cities, {3} isolated/low-density POIs).",
+            Logging.Info("Generated {0} cities from {1} POIs ({2} POIs in cities, {3} isolated, {4} components rejected by coverage, {5} hole cells filled).",
                 cities.CityList.Count,
                 pois.Length,
                 poisInCities,
-                pois.Length - poisInCities);
+                pois.Length - poisInCities,
+                rejectedByCoverage,
+                holeCellsFilled);
 
-            // Precompute city area weights for efficient weighted selection
+            cities.BuildSDF();
             cities.ComputeAreaWeights();
 
             return cities;
         }
 
         /// <summary>
-        /// Recursively subdivides a cluster of POIs to minimize empty space in bounding boxes.
-        /// Uses a quadtree-like approach to create tight-fitting city boundaries.
-        /// </summary>
-        private static List<City> RecursivelySubdivideCluster(List<MapData.Decoration> pois, float minX, float maxX, float minY, float maxY, int minPOIsPerCity)
-        {
-            var result = new List<City>();
-
-            if (pois.Count < minPOIsPerCity)
-            {
-                return result; // Not enough POIs to form a city
-            }
-
-            // Calculate area coverage
-            float boxWidth = maxX - minX;
-            float boxHeight = maxY - minY;
-            float boxArea = boxWidth * boxHeight;
-
-            float totalPoiArea = 0;
-            foreach (var poi in pois)
-            {
-                totalPoiArea += poi.Bounds.X * poi.Bounds.Y;
-            }
-
-            float density = totalPoiArea / boxArea;
-
-            // If density is good (>40%), create a city from this box
-            const float targetDensity = 0.40f;
-
-            // Also check if box is small enough (don't subdivide tiny boxes)
-            const float minBoxSize = 150f; // Don't subdivide below 150x150
-            bool boxTooSmall = boxWidth < minBoxSize || boxHeight < minBoxSize;
-
-            // Try subdividing first to see if we can split into multiple cities
-            if (!boxTooSmall)
-            {
-                var subdivisionAttempt = TrySubdivide(pois, minX, maxX, minY, maxY, minPOIsPerCity);
-
-                // If subdivision produced multiple valid cities, use them instead
-                if (subdivisionAttempt.Count > 1)
-                {
-                    return subdivisionAttempt;
-                }
-            }
-
-            if (density >= targetDensity || boxTooSmall)
-            {
-                // This box has good density or is too small to subdivide further
-                // Calculate tight bounding box around actual POIs
-                float tightMinX = float.MaxValue;
-                float tightMaxX = float.MinValue;
-                float tightMinY = float.MaxValue;
-                float tightMaxY = float.MinValue;
-
-                foreach (var poi in pois)
-                {
-                    float poiMinX = poi.Position.X - poi.Bounds.X / 2;
-                    float poiMaxX = poi.Position.X + poi.Bounds.X / 2;
-                    float poiMinY = poi.Position.Y - poi.Bounds.Y / 2;
-                    float poiMaxY = poi.Position.Y + poi.Bounds.Y / 2;
-
-                    tightMinX = Math.Min(tightMinX, poiMinX);
-                    tightMaxX = Math.Max(tightMaxX, poiMaxX);
-                    tightMinY = Math.Min(tightMinY, poiMinY);
-                    tightMaxY = Math.Max(tightMaxY, poiMaxY);
-                }
-
-                // Apply small shrinkage to prevent overlaps between adjacent cities
-                const float shrinkage = 1f; // 1 meter shrinkage on each edge
-                tightMinX += shrinkage;
-                tightMaxX -= shrinkage;
-                tightMinY += shrinkage;
-                tightMaxY -= shrinkage;
-
-                var city = new City();
-                city.POIs.AddRange(pois);
-                city.Position = new Vector3((tightMinX + tightMaxX) / 2, (tightMinY + tightMaxY) / 2, 0);
-                city.Bounds = new Vector3(tightMaxX - tightMinX, tightMaxY - tightMinY, 0);
-                result.Add(city);
-                return result;
-            }
-
-            // Density too low - subdivide into 4 quadrants
-            return TrySubdivide(pois, minX, maxX, minY, maxY, minPOIsPerCity);
-        }
-
-        /// <summary>
-        /// Attempts to subdivide a box into 4 quadrants and recursively process each.
-        /// </summary>
-        private static List<City> TrySubdivide(List<MapData.Decoration> pois, float minX, float maxX, float minY, float maxY, int minPOIsPerCity)
-        {
-            var result = new List<City>();
-
-            float centerX = (minX + maxX) / 2;
-            float centerY = (minY + maxY) / 2;
-
-            var quadrants = new[]
-            {
-                new { MinX = centerX, MaxX = maxX, MinY = centerY, MaxY = maxY },     // Top-right
-                new { MinX = minX, MaxX = centerX, MinY = centerY, MaxY = maxY },     // Top-left
-                new { MinX = minX, MaxX = centerX, MinY = minY, MaxY = centerY },     // Bottom-left
-                new { MinX = centerX, MaxX = maxX, MinY = minY, MaxY = centerY }      // Bottom-right
-            };
-
-            foreach (var quad in quadrants)
-            {
-                var poisInQuadrant = new List<MapData.Decoration>();
-                foreach (var poi in pois)
-                {
-                    // Check if POI center is in this quadrant
-                    if (poi.Position.X >= quad.MinX && poi.Position.X < quad.MaxX &&
-                        poi.Position.Y >= quad.MinY && poi.Position.Y < quad.MaxY)
-                    {
-                        poisInQuadrant.Add(poi);
-                    }
-                }
-
-                if (poisInQuadrant.Count >= minPOIsPerCity)
-                {
-                    // Recursively subdivide this quadrant
-                    var subCities = RecursivelySubdivideCluster(poisInQuadrant, quad.MinX, quad.MaxX, quad.MinY, quad.MaxY, minPOIsPerCity);
-                    result.AddRange(subCities);
-                }
-            }
-
-            // Try to merge adjacent cities that should be combined
-            if (result.Count > 1)
-            {
-                result = TryMergeCities(result, minPOIsPerCity);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Attempts to merge adjacent cities that should be combined based on density and shape criteria.
-        /// </summary>
-        private static List<City> TryMergeCities(List<City> cities, int minPOIsPerCity)
-        {
-            bool merged = true;
-            int iterations = 0;
-            const int maxIterations = 5;
-
-            while (merged && iterations < maxIterations)
-            {
-                merged = false;
-                iterations++;
-
-                for (int i = 0; i < cities.Count; i++)
-                {
-                    for (int j = i + 1; j < cities.Count; j++)
-                    {
-                        // Check if cities are adjacent (within 30m)
-                        float distance = CalculateCityDistance(cities[i], cities[j]);
-                        if (distance > 30f)
-                            continue;
-
-                        // Try merging these two cities
-                        var mergedCity = TryMergeTwoCities(cities[i], cities[j]);
-                        if (mergedCity != null)
-                        {
-                            // Remove the two cities and add the merged one
-                            var newCities = new List<City>();
-                            for (int k = 0; k < cities.Count; k++)
-                            {
-                                if (k != i && k != j)
-                                    newCities.Add(cities[k]);
-                            }
-                            newCities.Add(mergedCity);
-                            cities = newCities;
-                            merged = true;
-                            break;
-                        }
-                    }
-
-                    if (merged)
-                        break;
-                }
-            }
-
-            return cities;
-        }
-
-        /// <summary>
-        /// Calculates the minimum distance between two city bounding boxes.
-        /// </summary>
-        private static float CalculateCityDistance(City city1, City city2)
-        {
-            float dx = 0;
-            if (city1.MaxX < city2.MinX)
-                dx = city2.MinX - city1.MaxX;
-            else if (city2.MaxX < city1.MinX)
-                dx = city1.MinX - city2.MaxX;
-
-            float dy = 0;
-            if (city1.MaxY < city2.MinY)
-                dy = city2.MinY - city1.MaxY;
-            else if (city2.MaxY < city1.MinY)
-                dy = city1.MinY - city2.MaxY;
-
-            return (float)Math.Sqrt(dx * dx + dy * dy);
-        }
-
-        /// <summary>
-        /// Attempts to merge two cities. Returns the merged city if valid, null otherwise.
-        /// </summary>
-        private static City TryMergeTwoCities(City city1, City city2)
-        {
-            // Critical check: Only merge if cities are very close (within 5m)
-            // This prevents merging cities with gaps between them
-            float distance = CalculateCityDistance(city1, city2);
-            if (distance > 5f)
-                return null; // Too far apart - would create empty space
-
-            // Combine POIs
-            var combinedPOIs = new List<MapData.Decoration>();
-            combinedPOIs.AddRange(city1.POIs);
-            combinedPOIs.AddRange(city2.POIs);
-
-            // Calculate tight bounding box around actual POIs
-            float minX = float.MaxValue;
-            float maxX = float.MinValue;
-            float minY = float.MaxValue;
-            float maxY = float.MinValue;
-
-            foreach (var poi in combinedPOIs)
-            {
-                float poiMinX = poi.Position.X - poi.Bounds.X / 2;
-                float poiMaxX = poi.Position.X + poi.Bounds.X / 2;
-                float poiMinY = poi.Position.Y - poi.Bounds.Y / 2;
-                float poiMaxY = poi.Position.Y + poi.Bounds.Y / 2;
-
-                minX = Math.Min(minX, poiMinX);
-                maxX = Math.Max(maxX, poiMaxX);
-                minY = Math.Min(minY, poiMinY);
-                maxY = Math.Max(maxY, poiMaxY);
-            }
-
-            float mergedWidth = maxX - minX;
-            float mergedHeight = maxY - minY;
-            float mergedArea = mergedWidth * mergedHeight;
-
-            // Check if merged box is significantly larger than sum of individual boxes
-            // If it is, there's empty space between them
-            float city1Area = city1.Bounds.X * city1.Bounds.Y;
-            float city2Area = city2.Bounds.X * city2.Bounds.Y;
-            float combinedOriginalArea = city1Area + city2Area;
-
-            // If merged area is more than 1.3x the sum of original areas, there's too much gap
-            if (mergedArea > combinedOriginalArea * 1.3f)
-                return null; // Would create too much empty space
-
-            // Calculate density of merged box
-            float totalPoiArea = 0;
-            foreach (var poi in combinedPOIs)
-            {
-                totalPoiArea += poi.Bounds.X * poi.Bounds.Y;
-            }
-            float density = totalPoiArea / mergedArea;
-
-            // Density check
-            const float targetDensity = 0.45f;
-            if (density < targetDensity)
-                return null;
-
-            // Aspect ratio check
-            float aspectRatio = Math.Max(mergedWidth, mergedHeight) / Math.Min(mergedWidth, mergedHeight);
-            const float maxAspectRatio = 2.5f;
-            if (aspectRatio > maxAspectRatio)
-                return null;
-
-            // Apply shrinkage to prevent overlaps
-            const float shrinkage = 1f;
-            minX += shrinkage;
-            maxX -= shrinkage;
-            minY += shrinkage;
-            maxY -= shrinkage;
-
-            // Create merged city
-            var mergedCity = new City();
-            mergedCity.POIs.AddRange(combinedPOIs);
-            mergedCity.Position = new Vector3((minX + maxX) / 2, (minY + maxY) / 2, 0);
-            mergedCity.Bounds = new Vector3(maxX - minX, maxY - minY, 0);
-
-            return mergedCity;
-        }
-
-        /// <summary>
-        /// Checks if two city bounding boxes overlap.
-        /// </summary>
-        private static bool DoBoundingBoxesOverlap(City city1, City city2)
-        {
-            return !(city1.MaxX < city2.MinX || city1.MinX > city2.MaxX ||
-                     city1.MaxY < city2.MinY || city1.MinY > city2.MaxY);
-        }
-
-        /// <summary>
-        /// Calculates the edge-to-edge distance between two POI bounding boxes.
-        /// Returns 0 if they overlap or touch.
-        /// </summary>
-        private static float CalculateEdgeDistance(MapData.Decoration poi1, MapData.Decoration poi2)
-        {
-            // Calculate the extent of each POI
-            float poi1MinX = poi1.Position.X - poi1.Bounds.X / 2;
-            float poi1MaxX = poi1.Position.X + poi1.Bounds.X / 2;
-            float poi1MinY = poi1.Position.Y - poi1.Bounds.Y / 2;
-            float poi1MaxY = poi1.Position.Y + poi1.Bounds.Y / 2;
-
-            float poi2MinX = poi2.Position.X - poi2.Bounds.X / 2;
-            float poi2MaxX = poi2.Position.X + poi2.Bounds.X / 2;
-            float poi2MinY = poi2.Position.Y - poi2.Bounds.Y / 2;
-            float poi2MaxY = poi2.Position.Y + poi2.Bounds.Y / 2;
-
-            // Calculate the horizontal gap
-            float dx = 0;
-            if (poi1MaxX < poi2MinX)
-                dx = poi2MinX - poi1MaxX;
-            else if (poi2MaxX < poi1MinX)
-                dx = poi1MinX - poi2MaxX;
-
-            // Calculate the vertical gap
-            float dy = 0;
-            if (poi1MaxY < poi2MinY)
-                dy = poi2MinY - poi1MaxY;
-            else if (poi2MaxY < poi1MinY)
-                dy = poi1MinY - poi2MaxY;
-
-            // Return the Euclidean distance between the edges
-            return (float)Math.Sqrt(dx * dx + dy * dy);
-        }
-
-        /// <summary>
-        /// Gets the city at the specified world position, or null if not in any city.
+        /// Gets the city containing the given world position, or null if not in any city.
+        /// O(1) grid lookup — correctly handles non-rectangular city shapes.
         /// </summary>
         public City GetCityAt(Vector3 position)
         {
-            foreach (var city in CityList)
-            {
-                if (position.X >= city.MinX && position.X <= city.MaxX &&
-                    position.Y >= city.MinY && position.Y <= city.MaxY)
-                {
-                    return city;
-                }
-            }
-            return null;
+            if (Width == 0 || Height == 0)
+                return null;
+
+            int gx = (int)Math.Floor((position.X - WorldMins.X) / CellSize);
+            int gy = (int)Math.Floor((position.Y - WorldMins.Y) / CellSize);
+            if (gx < 0 || gx >= Width || gy < 0 || gy >= Height)
+                return null;
+
+            ushort id = CityIdMap[gy * Width + gx];
+            if (id == 0 || id > CityList.Count)
+                return null;
+
+            return CityList[id - 1];
         }
 
         /// <summary>
-        /// Resolves overlapping and adjacent cities. Merges cities that are close together or have significant overlap.
-        /// For small overlaps, shrinks the city with fewer POIs in the overlap area.
-        /// Should be called after all cities are generated but before weights are computed.
+        /// Sample the signed distance field. Coordinates are in city-grid cell space [0..Width, 0..Height].
+        /// Returns positive inside any city, negative outside.
         /// </summary>
-        public void MergeOverlappingCities()
+        public float SampleSDF(float bx, float by)
         {
-            bool modified;
-            int iterations = 0;
-            const int maxIterations = 100; // Prevent infinite loops
-            const float significantOverlapThreshold = 0.3f; // Merge if overlap is 30% or more of smaller city
+            if (_sdf.Length == 0)
+                return -1e6f;
 
-            do
-            {
-                modified = false;
-                iterations++;
+            float sx = (bx / Width) * (SDFWidth - 1);
+            float sy = (by / Height) * (SDFHeight - 1);
 
-                for (int i = 0; i < CityList.Count; i++)
-                {
-                    for (int j = i + 1; j < CityList.Count; j++)
-                    {
-                        var cityA = CityList[i];
-                        var cityB = CityList[j];
+            int x0 = (int)sx;
+            int y0 = (int)sy;
+            int x1 = x0 + 1;
+            int y1 = y0 + 1;
 
-                        // Calculate overlap rectangle
-                        float overlapMinX = Math.Max(cityA.MinX, cityB.MinX);
-                        float overlapMaxX = Math.Min(cityA.MaxX, cityB.MaxX);
-                        float overlapMinY = Math.Max(cityA.MinY, cityB.MinY);
-                        float overlapMaxY = Math.Min(cityA.MaxY, cityB.MaxY);
+            if (x0 < 0)
+                x0 = 0;
+            if (y0 < 0)
+                y0 = 0;
+            if (x1 >= SDFWidth)
+                x1 = SDFWidth - 1;
+            if (y1 >= SDFHeight)
+                y1 = SDFHeight - 1;
+            if (x0 >= SDFWidth)
+                x0 = SDFWidth - 1;
+            if (y0 >= SDFHeight)
+                y0 = SDFHeight - 1;
 
-                        // Check if there's any overlap
-                        if (overlapMinX < overlapMaxX && overlapMinY < overlapMaxY)
-                        {
-                            // Calculate overlap size relative to each city
-                            float overlapWidth = overlapMaxX - overlapMinX;
-                            float overlapHeight = overlapMaxY - overlapMinY;
-                            float overlapArea = overlapWidth * overlapHeight;
+            float fx = sx - (int)sx;
+            float fy = sy - (int)sy;
+            if (fx < 0)
+                fx = 0;
+            if (fy < 0)
+                fy = 0;
 
-                            float areaA = cityA.Bounds.X * cityA.Bounds.Y;
-                            float areaB = cityB.Bounds.X * cityB.Bounds.Y;
-                            float smallerArea = Math.Min(areaA, areaB);
-                            float overlapPercentage = overlapArea / smallerArea;
+            float v00 = _sdf[y0 * SDFWidth + x0];
+            float v10 = _sdf[y0 * SDFWidth + x1];
+            float v01 = _sdf[y1 * SDFWidth + x0];
+            float v11 = _sdf[y1 * SDFWidth + x1];
 
-                            // If overlap is significant, merge the cities
-                            if (overlapPercentage >= significantOverlapThreshold)
-                            {
-                                // Merge into one larger city
-                                float mergedMinX = Math.Min(cityA.MinX, cityB.MinX);
-                                float mergedMaxX = Math.Max(cityA.MaxX, cityB.MaxX);
-                                float mergedMinY = Math.Min(cityA.MinY, cityB.MinY);
-                                float mergedMaxY = Math.Max(cityA.MaxY, cityB.MaxY);
+            float top = v00 + (v10 - v00) * fx;
+            float bot = v01 + (v11 - v01) * fx;
+            return top + (bot - top) * fy;
+        }
 
-                                var mergedCity = new City();
-                                mergedCity.Bounds = new Vector3(mergedMaxX - mergedMinX, mergedMaxY - mergedMinY, 0);
-                                mergedCity.Position = new Vector3(
-                                    (mergedMinX + mergedMaxX) / 2,
-                                    (mergedMinY + mergedMaxY) / 2,
-                                    0);
+        /// <summary>
+        /// Sample the SDF gradient using central differences. The returned vector points from
+        /// outside toward the nearest inside cell. Z is always 0.
+        /// </summary>
+        public Vector3 SampleSDFGradient(float bx, float by)
+        {
+            if (_sdf.Length == 0)
+                return Vector3.Zero;
 
-                                // Combine POIs from both cities
-                                mergedCity.POIs.AddRange(cityA.POIs);
-                                mergedCity.POIs.AddRange(cityB.POIs);
-
-                                // Remove the two original cities and add the merged one
-                                CityList.RemoveAt(j);
-                                CityList.RemoveAt(i);
-                                CityList.Add(mergedCity);
-
-                                modified = true;
-                                break;
-                            }
-                            // For smaller overlaps, leave them as is - they'll be handled naturally by agent behavior
-                        }
-                    }
-
-                    if (modified)
-                        break;
-                }
-            } while (modified && iterations < maxIterations);
-
-            Logging.Info("Resolved city overlaps in {0} iterations, final count: {1}", iterations, CityList.Count);
+            float step = (float)Width / SDFWidth;
+            float dx = SampleSDF(bx + step, by) - SampleSDF(bx - step, by);
+            float dy = SampleSDF(bx, by + step) - SampleSDF(bx, by - step);
+            return new Vector3(dx, dy, 0f);
         }
 
         public void ComputeAreaWeights()
@@ -640,12 +455,299 @@ namespace WalkerSim
             CityAreaWeights = new float[count];
             TotalAreaWeight = 0;
 
+            float cellArea = CellSize * CellSize;
             for (int i = 0; i < count; i++)
             {
-                var city = CityList[i];
-                float area = city.Bounds.X * city.Bounds.Y;
+                // Use actual cell count * cell area, not the AABB area, so spiral-shaped
+                // cities don't get inflated weights from their empty bounding box.
+                float area = CityList[i].CellCount * cellArea;
                 CityAreaWeights[i] = area;
                 TotalAreaWeight += area;
+            }
+        }
+
+        /// <summary>
+        /// Builds a single signed distance field from the city-id map. Downsamples to SDFSize
+        /// then runs Felzenszwalb &amp; Huttenlocher's 2D Euclidean distance transform on both
+        /// the inside and outside pixels, combining the two into a signed field.
+        /// </summary>
+        private void BuildSDF()
+        {
+            if (Width == 0 || Height == 0)
+            {
+                SDFWidth = 0;
+                SDFHeight = 0;
+                _sdf = new float[0];
+                return;
+            }
+
+            SDFWidth = Math.Min(SDFSize, Width);
+            SDFHeight = Math.Min(SDFSize, Height);
+
+            var downsampled = new bool[SDFWidth * SDFHeight];
+            float scaleX = (float)Width / SDFWidth;
+            float scaleY = (float)Height / SDFHeight;
+
+            for (int y = 0; y < SDFHeight; y++)
+            {
+                for (int x = 0; x < SDFWidth; x++)
+                {
+                    int srcX = Math.Min((int)(x * scaleX + scaleX * 0.5f), Width - 1);
+                    int srcY = Math.Min((int)(y * scaleY + scaleY * 0.5f), Height - 1);
+                    downsampled[y * SDFWidth + x] = CityIdMap[srcY * Width + srcX] != 0;
+                }
+            }
+
+            _sdf = ComputeSDF(downsampled, SDFWidth, SDFHeight);
+        }
+
+        /// <summary>
+        /// Patches small enclosed empty regions inside city footprints. An "enclosed"
+        /// region is one that empty-cell flood fill from the grid boundary cannot reach.
+        /// Each such region is BFSed to find its surrounding city ids; if the region is
+        /// at most <paramref name="maxHoleCells"/> cells the cells are reassigned to the
+        /// dominant bordering city. Larger enclosed regions (real courtyards, plazas)
+        /// are left as holes.
+        /// </summary>
+        private static int FillEnclosedHoles(Cities cities, int maxHoleCells)
+        {
+            var idMap = cities.CityIdMap;
+            int width = cities.Width;
+            int height = cities.Height;
+            int total = width * height;
+            if (total == 0 || cities.CityList.Count == 0)
+                return 0;
+
+            // Phase 1: mark every empty cell reachable from any grid boundary cell as
+            // "exterior" via BFS. Anything left empty after this is an enclosed hole.
+            var exterior = new bool[total];
+            var queue = new Queue<int>();
+
+            for (int x = 0; x < width; x++)
+            {
+                SeedExterior(idMap, exterior, queue, x);
+                SeedExterior(idMap, exterior, queue, (height - 1) * width + x);
+            }
+            for (int y = 0; y < height; y++)
+            {
+                SeedExterior(idMap, exterior, queue, y * width);
+                SeedExterior(idMap, exterior, queue, y * width + width - 1);
+            }
+
+            while (queue.Count > 0)
+            {
+                int cur = queue.Dequeue();
+                int cx = cur % width;
+                int cy = cur / width;
+                if (cx > 0)
+                    SeedExterior(idMap, exterior, queue, cur - 1);
+                if (cx < width - 1)
+                    SeedExterior(idMap, exterior, queue, cur + 1);
+                if (cy > 0)
+                    SeedExterior(idMap, exterior, queue, cur - width);
+                if (cy < height - 1)
+                    SeedExterior(idMap, exterior, queue, cur + width);
+            }
+
+            // Phase 2: walk hole components, find dominant bordering city, fill if small.
+            var visited = new bool[total];
+            var holeCells = new List<int>();
+            var neighborCounts = new Dictionary<ushort, int>();
+            var hq = new Queue<int>();
+            var addedPerCity = new Dictionary<ushort, int>();
+            int totalFilled = 0;
+
+            for (int seed = 0; seed < total; seed++)
+            {
+                if (idMap[seed] != 0 || exterior[seed] || visited[seed])
+                    continue;
+
+                holeCells.Clear();
+                neighborCounts.Clear();
+                hq.Clear();
+                hq.Enqueue(seed);
+                visited[seed] = true;
+
+                while (hq.Count > 0)
+                {
+                    int cur = hq.Dequeue();
+                    holeCells.Add(cur);
+                    int cx = cur % width;
+                    int cy = cur / width;
+
+                    if (cx > 0)
+                        VisitHoleNeighbor(cur - 1, idMap, visited, hq, neighborCounts);
+                    if (cx < width - 1)
+                        VisitHoleNeighbor(cur + 1, idMap, visited, hq, neighborCounts);
+                    if (cy > 0)
+                        VisitHoleNeighbor(cur - width, idMap, visited, hq, neighborCounts);
+                    if (cy < height - 1)
+                        VisitHoleNeighbor(cur + width, idMap, visited, hq, neighborCounts);
+                }
+
+                if (holeCells.Count > maxHoleCells || neighborCounts.Count == 0)
+                    continue;
+
+                ushort dominantId = 0;
+                int dominantCount = 0;
+                foreach (var kv in neighborCounts)
+                {
+                    if (kv.Value > dominantCount)
+                    {
+                        dominantCount = kv.Value;
+                        dominantId = kv.Key;
+                    }
+                }
+
+                foreach (var c in holeCells)
+                    idMap[c] = dominantId;
+                totalFilled += holeCells.Count;
+
+                if (addedPerCity.TryGetValue(dominantId, out int existing))
+                    addedPerCity[dominantId] = existing + holeCells.Count;
+                else
+                    addedPerCity[dominantId] = holeCells.Count;
+            }
+
+            // Update per-city cell counts so area weights and sdf scaling stay accurate.
+            foreach (var kv in addedPerCity)
+            {
+                int idx = kv.Key - 1;
+                if (idx >= 0 && idx < cities.CityList.Count)
+                    cities.CityList[idx].CellCount += kv.Value;
+            }
+
+            return totalFilled;
+        }
+
+        private static void SeedExterior(ushort[] idMap, bool[] exterior, Queue<int> queue, int idx)
+        {
+            if (idMap[idx] == 0 && !exterior[idx])
+            {
+                exterior[idx] = true;
+                queue.Enqueue(idx);
+            }
+        }
+
+        private static void VisitHoleNeighbor(int idx, ushort[] idMap, bool[] visited, Queue<int> hq, Dictionary<ushort, int> neighborCounts)
+        {
+            ushort id = idMap[idx];
+            if (id == 0)
+            {
+                if (!visited[idx])
+                {
+                    visited[idx] = true;
+                    hq.Enqueue(idx);
+                }
+            }
+            else
+            {
+                if (neighborCounts.TryGetValue(id, out int existing))
+                    neighborCounts[id] = existing + 1;
+                else
+                    neighborCounts[id] = 1;
+            }
+        }
+
+        private static float[] ComputeSDF(bool[] inside, int w, int h)
+        {
+            int n = w * h;
+            var insideDist = new float[n];
+            var outsideDist = new float[n];
+            const float INF = 1e10f;
+
+            for (int i = 0; i < n; i++)
+            {
+                if (inside[i])
+                {
+                    insideDist[i] = INF;
+                    outsideDist[i] = 0f;
+                }
+                else
+                {
+                    insideDist[i] = 0f;
+                    outsideDist[i] = INF;
+                }
+            }
+
+            EDT2D(insideDist, w, h);
+            EDT2D(outsideDist, w, h);
+
+            var sdf = new float[n];
+            for (int i = 0; i < n; i++)
+            {
+                sdf[i] = (float)(Math.Sqrt(insideDist[i]) - Math.Sqrt(outsideDist[i]));
+            }
+            return sdf;
+        }
+
+        private static void EDT2D(float[] grid, int w, int h)
+        {
+            var col = new float[h];
+            var colOut = new float[h];
+            for (int x = 0; x < w; x++)
+            {
+                for (int y = 0; y < h; y++)
+                    col[y] = grid[y * w + x];
+
+                EDT1D(col, colOut, h);
+
+                for (int y = 0; y < h; y++)
+                    grid[y * w + x] = colOut[y];
+            }
+
+            var row = new float[w];
+            var rowOut = new float[w];
+            for (int y = 0; y < h; y++)
+            {
+                for (int x = 0; x < w; x++)
+                    row[x] = grid[y * w + x];
+
+                EDT1D(row, rowOut, w);
+
+                for (int x = 0; x < w; x++)
+                    grid[y * w + x] = rowOut[x];
+            }
+        }
+
+        private static void EDT1D(float[] f, float[] d, int n)
+        {
+            if (n == 0)
+                return;
+
+            var v = new int[n];
+            var z = new float[n + 1];
+            int k = 0;
+            v[0] = 0;
+            z[0] = float.NegativeInfinity;
+            z[1] = float.PositiveInfinity;
+
+            for (int q = 1; q < n; q++)
+            {
+                float fq = f[q] + (float)q * q;
+                float fvk = f[v[k]] + (float)v[k] * v[k];
+                float s = (fq - fvk) / (2f * q - 2f * v[k]);
+
+                while (s <= z[k])
+                {
+                    k--;
+                    fvk = f[v[k]] + (float)v[k] * v[k];
+                    s = (fq - fvk) / (2f * q - 2f * v[k]);
+                }
+
+                k++;
+                v[k] = q;
+                z[k] = s;
+                z[k + 1] = float.PositiveInfinity;
+            }
+
+            k = 0;
+            for (int q = 0; q < n; q++)
+            {
+                while (z[k + 1] < q)
+                    k++;
+                float diff = q - v[k];
+                d[q] = diff * diff + f[v[k]];
             }
         }
     }
