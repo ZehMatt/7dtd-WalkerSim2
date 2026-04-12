@@ -84,6 +84,7 @@ namespace Editor.Views
 
                 // Sync tool preview state to canvas every frame
                 SimCanvas.ToolPreviewRadius = viewModel.ActiveToolPreviewRadius;
+                SimCanvas.ToolPreviewHint = viewModel.ActiveToolHint;
                 SimCanvas.SetToolActive(viewModel.IsToolActive);
             }
 

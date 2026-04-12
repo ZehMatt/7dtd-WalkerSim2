@@ -86,8 +86,13 @@ namespace Editor.Views
         /// </summary>
         public float ToolPreviewRadius { get; set; } = float.NaN;
 
+        /// <summary>One-line label drawn next to the cursor while a tool is active. Null hides it.</summary>
+        public string ToolPreviewHint { get; set; }
+
         // Mouse position for tool preview
         private Vector3 _mouseWorldPosition = Vector3.Zero;
+        private Point _mouseScreenPosition;
+        private bool _mouseInCanvas;
         // Whether the pointer has moved enough to count as a pan rather than a click
         private bool _hasPanned = false;
         private const double PanThreshold = 4.0;
@@ -308,6 +313,8 @@ namespace Editor.Views
 
             var pos = e.GetPosition(this);
             _mouseWorldPosition = CanvasToWorld(pos);
+            _mouseScreenPosition = pos;
+            _mouseInCanvas = true;
 
             if (_isDragging)
             {
@@ -360,6 +367,14 @@ namespace Editor.Views
                 OnCanvasClick(_mouseWorldPosition);
                 e.Handled = true;
             }
+        }
+
+        protected override void OnPointerExited(PointerEventArgs e)
+        {
+            base.OnPointerExited(e);
+            // Hide the tool hint when the cursor leaves the canvas — drawing it where
+            // the cursor isn't is misleading.
+            _mouseInCanvas = false;
         }
 
         // Convert a simulation world position to canvas pixel coordinates (unzoomed)
@@ -455,6 +470,7 @@ namespace Editor.Views
         {
             _cachedGroupCount = -1;
         }
+
 
         private void EnsureGroupBrushes()
         {
@@ -572,13 +588,21 @@ namespace Editor.Views
                 // Draw highlight/blink on top of everything.
                 if (_highlightAgent != null && _blinkPhase < 1.0)
                     RenderHighlightAgent(context, viewSize, viewSize);
-                // Draw active tool preview on top.
-                if (OnCanvasClick != null && !float.IsNaN(ToolPreviewRadius))
+                // Draw active tool preview circle on top (still in zoomed space so the
+                // radius matches the world).
+                if (OnCanvasClick != null && _toolActive && !float.IsNaN(ToolPreviewRadius))
                     RenderToolPreview(context, viewSize, viewSize);
             }
 
             // HUD bar — drawn in screen space, never affected by zoom/pan.
             RenderHUDBar(context, width);
+
+            // Tool hint label — also screen space so the font stays at native size.
+            // Anchored to the world viewport centre when the cursor isn't over the
+            // canvas (the user just clicked a sidebar tool button), and follows the
+            // cursor once they move into the map.
+            if (_toolActive && !string.IsNullOrEmpty(ToolPreviewHint))
+                RenderToolHint(context);
 
             // Keep animating while tracking, smooth-panning, or blinking.
             bool animating = _smoothActive || _trackedAgent != null || _highlightAgent != null;
@@ -617,6 +641,76 @@ namespace Editor.Views
             double r = ToolPreviewRadius / worldSize.X * width;
 
             context.DrawEllipse(null, _toolPreviewPen, new Point(cx, cy), r, r);
+        }
+
+        // Cached FormattedText for the tool hint label so we don't allocate per frame.
+        private string _cachedToolHintText;
+        private FormattedText _cachedToolHintFt;
+        private static readonly IBrush _toolHintBackground = new SolidColorBrush(Color.FromArgb(200, 20, 20, 20));
+        private static readonly IBrush _toolHintForeground = new SolidColorBrush(Color.FromArgb(240, 235, 235, 235));
+        private static readonly Pen _toolHintBorder = new Pen(new SolidColorBrush(Color.FromArgb(120, 255, 255, 255)), 1.0);
+
+        private void RenderToolHint(DrawingContext context)
+        {
+            if (_cachedToolHintFt == null || _cachedToolHintText != ToolPreviewHint)
+            {
+                _cachedToolHintText = ToolPreviewHint;
+                _cachedToolHintFt = new FormattedText(
+                    ToolPreviewHint,
+                    CultureInfo.CurrentCulture,
+                    FlowDirection.LeftToRight,
+                    _hudTypeface,
+                    12,
+                    _toolHintForeground);
+            }
+
+            const double padX = 8.0;
+            const double padY = 4.0;
+            double pillW = _cachedToolHintFt.Width + padX * 2;
+            double pillH = _cachedToolHintFt.Height + padY * 2;
+
+            Point topLeft;
+            if (_mouseInCanvas)
+                topLeft = ComputeFollowCursorHintPosition(pillW, pillH);
+            else
+                topLeft = ComputeCentredHintPosition(pillW, pillH);
+
+            var pill = new Rect(topLeft.X, topLeft.Y, pillW, pillH);
+            context.DrawRectangle(_toolHintBackground, _toolHintBorder, pill, 4, 4);
+            context.DrawText(_cachedToolHintFt, new Point(topLeft.X + padX, topLeft.Y + padY));
+        }
+
+        /// Position the pill just below-right of the cursor, flipping to the other side
+        /// if it would clip the canvas edge.
+        private Point ComputeFollowCursorHintPosition(double pillW, double pillH)
+        {
+            const double cursorOffset = 16.0;
+            var bounds = Bounds;
+            double x = _mouseScreenPosition.X + cursorOffset;
+            double y = _mouseScreenPosition.Y + cursorOffset;
+            if (x + pillW > bounds.Width)
+                x = _mouseScreenPosition.X - cursorOffset - pillW;
+            if (y + pillH > bounds.Height)
+                y = _mouseScreenPosition.Y - cursorOffset - pillH;
+            if (x < 0) x = 0;
+            if (y < BarHeight) y = BarHeight;
+            return new Point(x, y);
+        }
+
+        /// Anchor the pill at the centre of the square world viewport. Used when the
+        /// user has just activated a tool from a sidebar button and the cursor isn't
+        /// yet over the canvas — the pill at the map centre tells them what's armed
+        /// and that Esc cancels.
+        private Point ComputeCentredHintPosition(double pillW, double pillH)
+        {
+            var b = Bounds;
+            var worldHeight = b.Height - BarHeight;
+            var viewSize = Math.Min(b.Width, worldHeight);
+            var offsetX = Math.Floor((b.Width - viewSize) / 2.0);
+            var offsetY = BarHeight + Math.Floor((worldHeight - viewSize) / 2.0);
+            double cx = offsetX + viewSize / 2.0;
+            double cy = offsetY + viewSize / 2.0;
+            return new Point(cx - pillW / 2.0, cy - pillH / 2.0);
         }
 
         private void RenderRoads(DrawingContext context, double width, double height)

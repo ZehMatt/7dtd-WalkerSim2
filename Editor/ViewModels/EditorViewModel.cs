@@ -329,6 +329,7 @@ namespace Editor.ViewModels
         {
             OnPropertyChanged(nameof(IsToolActive));
             OnPropertyChanged(nameof(ActiveToolPreviewRadius));
+            OnPropertyChanged(nameof(ActiveToolHint));
         }
 
         [ObservableProperty]
@@ -345,6 +346,17 @@ namespace Editor.ViewModels
             EditorTool.EmitSound => SoundRadius,
             EditorTool.Kill => KillRadius,
             _ => float.NaN,
+        };
+
+        /// <summary>One-line hint shown next to the cursor while a tool is active.
+        /// Tells the user what clicking will do and that Esc cancels.</summary>
+        public string ActiveToolHint => ActiveTool switch
+        {
+            EditorTool.EmitSound => "Click: emit sound  ·  Esc: cancel",
+            EditorTool.Kill => "Click: kill agents in area  ·  Esc: cancel",
+            EditorTool.AddPlayer => "Click: add player here  ·  Esc: cancel",
+            EditorTool.SetPlayerPosition => "Click: move player here  ·  Esc: cancel",
+            _ => null,
         };
 
         /// <summary>Called by SimulationCanvas when the user clicks the world.</summary>
