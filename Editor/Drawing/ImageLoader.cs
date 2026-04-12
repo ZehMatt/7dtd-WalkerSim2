@@ -81,7 +81,8 @@ namespace Editor.Drawing
         {
             var srcImpl = (SkiaBitmapImpl)src;
             var info = new SKImageInfo(width, height, SKColorType.Rgba8888, SKAlphaType.Unpremul);
-            var resized = srcImpl.Inner.Resize(info, SKFilterQuality.Medium);
+            var sampling = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear);
+            var resized = srcImpl.Inner.Resize(info, sampling);
             return new SkiaBitmapImpl(resized);
         }
     }
