@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <xml>
-  <Name value="WalkerSim" />
-  <DisplayName value="WalkerSim" />
+  <Name value="WalkerSim2" />
+  <DisplayName value="WalkerSim2" />
   <Description value="Roaming zombies simulation mod." />
   <Author value="ZehMatt" />
   <Version value="0.0.0" />
