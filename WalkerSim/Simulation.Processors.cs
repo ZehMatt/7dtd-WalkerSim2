@@ -1070,11 +1070,42 @@ namespace WalkerSim
                 }
                 else
                 {
-                    // Steer toward the city centroid. For irregular shapes the centroid
-                    // may sit outside the city, but the path will still cross one of its
-                    // cells and trigger arrival there.
-                    float dx = targetCity.Position.X - agentPos.X;
-                    float dy = targetCity.Position.Y - agentPos.Y;
+                    // Steer toward the nearest POI of the target city. POIs sit on
+                    // real city cells, so the approach path terminates at a cell
+                    // that will trigger the arrival check — unlike the AABB centroid
+                    // which can fall outside the footprint for irregular shapes.
+                    var pois = targetCity.POIs;
+                    int poiCount = pois.Count;
+                    float targetX, targetY;
+                    if (poiCount > 0)
+                    {
+                        int bestIdx = 0;
+                        float bestDSqr = float.MaxValue;
+                        for (int i = 0; i < poiCount; i++)
+                        {
+                            var p = pois[i].Position;
+                            float ddx = p.X - agentPos.X;
+                            float ddy = p.Y - agentPos.Y;
+                            float dsqr = ddx * ddx + ddy * ddy;
+                            if (dsqr < bestDSqr)
+                            {
+                                bestDSqr = dsqr;
+                                bestIdx = i;
+                            }
+                        }
+                        targetX = pois[bestIdx].Position.X;
+                        targetY = pois[bestIdx].Position.Y;
+                    }
+                    else
+                    {
+                        // Shouldn't happen (cities are required to have POIs) but
+                        // keep the centroid as a safe fallback.
+                        targetX = targetCity.Position.X;
+                        targetY = targetCity.Position.Y;
+                    }
+
+                    float dx = targetX - agentPos.X;
+                    float dy = targetY - agentPos.Y;
 
                     if (dx != 0 || dy != 0)
                     {
