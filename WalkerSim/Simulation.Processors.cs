@@ -622,7 +622,28 @@ namespace WalkerSim
                     float dty = target.Y - by;
                     float distToTargetSqr = dtx * dtx + dty * dty;
 
-                    if (distToTargetSqr > RoadNodeDriftDist * RoadNodeDriftDist)
+                    // Drift threshold scales with the current edge length — the
+                    // distance between the source node (last history entry) and
+                    // the target node. For short cell-adjacent edges this is
+                    // just the base 60-unit tolerance; for long bridge edges
+                    // it's (edge length + 60) so the agent can actually walk
+                    // across without the reset firing mid-flight.
+                    float driftLimit = RoadNodeDriftDist;
+                    if (agent.RoadNodeHistoryCount > 0)
+                    {
+                        int srcIdx = agent.RoadNodeHistory[
+                            (agent.RoadNodeHistoryPos - 1 + Agent.RoadNodeHistorySize) % Agent.RoadNodeHistorySize];
+                        if (srcIdx >= 0 && srcIdx < graph.Nodes.Length)
+                        {
+                            var src = graph.Nodes[srcIdx];
+                            float edx = target.X - src.X;
+                            float edy = target.Y - src.Y;
+                            float edgeLen = (float)System.Math.Sqrt(edx * edx + edy * edy);
+                            driftLimit = edgeLen + RoadNodeDriftDist;
+                        }
+                    }
+
+                    if (distToTargetSqr > driftLimit * driftLimit)
                     {
                         // Too far from target, reset navigation.
                         agent.RoadNodeTarget = -1;
@@ -717,8 +738,21 @@ namespace WalkerSim
 
             bool hasBias = !float.IsNaN(biasX);
 
+            // At bridge-endpoint nodes (any graph-theoretic bridge edge — found
+            // via Tarjan's algorithm in RoadGraph.Build), both velocity-alignment
+            // and bias-driven picks will happily skip the bridge edge forever
+            // (velocity is usually off-axis, and bias targets are typically on
+            // the same side of the bridge as the agent). Force random pick
+            // here so the bridge actually gets crossed.
+            bool isBridgeNode = graph.IsBridgeEndpoint != null
+                && arrivedAt < graph.IsBridgeEndpoint.Length
+                && graph.IsBridgeEndpoint[arrivedAt];
+
             // At intersections (3+ connections) without a bias target, 33% chance to pick randomly for variety.
-            bool pickRandom = !hasBias && connections.Length >= 3 && AgentHash(agent.Index, tick, 0) % 3 == 0;
+            bool pickRandom = isBridgeNode
+                || (!hasBias && connections.Length >= 3 && AgentHash(agent.Index, tick, 0) % 3 == 0);
+            if (pickRandom)
+                hasBias = false;
 
             // Prepare velocity direction for velocity-aligned selection.
             float velX = velocity.X;
@@ -1034,7 +1068,7 @@ namespace WalkerSim
             if (agent.CurrentTravelState == Agent.TravelState.Idle)
             {
                 // Select a new target city
-                uint hash = (uint)((agent.Group * 2654435761) ^ ((uint)state.Ticks * 1597334677));
+                uint hash = (uint)((agent.Group * 2654435761) ^ ((uint)state.Ticks / Constants.MaxUpdateCountPerTick * 1597334677));
                 float randomValue = (hash % 10000) / 10000.0f;
                 float targetWeight = randomValue * cities.TotalAreaWeight;
 
@@ -1121,7 +1155,7 @@ namespace WalkerSim
                 // Stay time from Param1 (min minutes) and Param2 (max minutes)
                 float minStay = param1 > 0 ? param1 : 20f;
                 float maxStay = param2 > param1 ? param2 : minStay;
-                float stayMinutes = minStay + (AgentHash(agent.Index, state.Ticks, 300) / (float)0x7FFFFFFF) * (maxStay - minStay);
+                float stayMinutes = minStay + (AgentHash(agent.Group, state.Ticks, 300) / (float)0x7FFFFFFF) * (maxStay - minStay);
                 ulong cityDuration = Simulation.MinutesToTicks((uint)stayMinutes);
                 if ((state.Ticks - agent.CityTime) >= cityDuration)
                 {

@@ -24,6 +24,10 @@ namespace WalkerSim
         }
 
         public RoadNode[] Nodes = System.Array.Empty<RoadNode>();
+        // Nodes tagged as endpoints of inter-component bridge edges (Pass 4).
+        // Traversal forces random pick at these nodes to ensure the bridge
+        // actually gets crossed instead of being skipped by velocity-alignment.
+        public bool[] IsBridgeEndpoint = System.Array.Empty<bool>();
         int[] _nodeGrid = System.Array.Empty<int>(); // grid cell → node index (-1 if none)
         int _gridColumns;
         int _gridRows;
@@ -74,6 +78,93 @@ namespace WalkerSim
         /// <param name="gyA">Grid Y of cell A.</param>
         /// <param name="gxB">Grid X of cell B (must be adjacent).</param>
         /// <param name="gyB">Grid Y of cell B (must be adjacent).</param>
+        // Tarjan's bridge-finding algorithm (iterative to avoid stack overflow on
+        // large road networks). Returns a bool[] where entry i is true iff node i
+        // is an endpoint of at least one graph-theoretic bridge edge — any edge
+        // whose removal would disconnect the graph. Dead-end edges qualify too
+        // but the traversal code naturally ignores those (the dead-end node has
+        // only 1 connection, which is special-cased).
+        private static bool[] FindBridgeEndpoints(RoadNode[] nodes)
+        {
+            int n = nodes.Length;
+            if (n == 0)
+                return System.Array.Empty<bool>();
+
+            var disc = new int[n];
+            var low = new int[n];
+            var parent = new int[n];
+            var iterIdx = new int[n];
+            var visited = new bool[n];
+            var result = new bool[n];
+            for (int i = 0; i < n; i++)
+            {
+                disc[i] = -1;
+                parent[i] = -1;
+            }
+
+            var stack = new Stack<int>();
+            int timer = 0;
+
+            for (int root = 0; root < n; root++)
+            {
+                if (visited[root])
+                    continue;
+                visited[root] = true;
+                disc[root] = timer;
+                low[root] = timer;
+                timer++;
+                iterIdx[root] = 0;
+                stack.Push(root);
+
+                while (stack.Count > 0)
+                {
+                    int u = stack.Peek();
+                    var conns = nodes[u].Connections;
+                    int idx = iterIdx[u];
+
+                    if (idx < conns.Length)
+                    {
+                        int v = conns[idx];
+                        iterIdx[u] = idx + 1;
+
+                        if (!visited[v])
+                        {
+                            visited[v] = true;
+                            disc[v] = timer;
+                            low[v] = timer;
+                            timer++;
+                            parent[v] = u;
+                            iterIdx[v] = 0;
+                            stack.Push(v);
+                        }
+                        else if (v != parent[u])
+                        {
+                            if (disc[v] < low[u])
+                                low[u] = disc[v];
+                        }
+                    }
+                    else
+                    {
+                        stack.Pop();
+                        int par = parent[u];
+                        if (par >= 0)
+                        {
+                            if (low[u] < low[par])
+                                low[par] = low[u];
+                            if (low[u] > disc[par])
+                            {
+                                // Edge (par, u) is a bridge — tag both endpoints.
+                                result[par] = true;
+                                result[u] = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
         private static bool HasSharedBorderRoad(RoadType[,] data, int width, int height,
             int gxA, int gyA, int gxB, int gyB)
         {
@@ -557,6 +648,18 @@ namespace WalkerSim
 
                 // Finalize.
                 graph.Nodes = nodes.ToArray();
+
+                // Tag every node that sits on a graph-theoretic bridge edge (any
+                // edge whose removal would disconnect the graph). This covers both
+                // Pass 4's inter-component bridges AND any narrow single-edge
+                // corridors built in Pass 2, which is what actually looks like the
+                // "connection to another road network" visually.
+                graph.IsBridgeEndpoint = FindBridgeEndpoints(graph.Nodes);
+                int tagCount = 0;
+                for (int i = 0; i < graph.IsBridgeEndpoint.Length; i++)
+                    if (graph.IsBridgeEndpoint[i])
+                        tagCount++;
+                Logging.Info("Road graph: {0} bridge-endpoint nodes tagged", tagCount);
                 for (int i = 0; i < graph.Nodes.Length; i++)
                 {
                     if (graph.Nodes[i].Connections.Length == 1)

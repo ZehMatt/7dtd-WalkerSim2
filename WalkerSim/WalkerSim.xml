@@ -13,7 +13,7 @@
   <StartAgentsGrouped>true</StartAgentsGrouped>
   <EnhancedSoundAwareness>true</EnhancedSoundAwareness>
   <SoundDistanceScale>1</SoundDistanceScale>
-  <GroupSize>16</GroupSize>
+  <GroupSize>32</GroupSize>
   <AgentStartPosition>RandomCity</AgentStartPosition>
   <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>
   <PauseDuringBloodmoon>true</PauseDuringBloodmoon>
@@ -64,7 +64,7 @@
       <Processor Type="AvoidSameGroup" Distance="8" Power="0.3" />
       <Processor Type="WorldEvents" Distance="50" Power="0.6" />
       <Processor Type="AlignSameGroup" Distance="50" Power="0.1001" />
-      <Processor Type="StickToRoads" Distance="50" Power="0.5001" />
+      <Processor Type="StickToRoads" Distance="50" Power="0.15" />
     </System>
     <System Name="Loners" Weight="1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#FF6B00">
       <Processor Type="AvoidAnyGroup" Distance="250" Power="0.5" />
