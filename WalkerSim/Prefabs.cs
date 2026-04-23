@@ -292,14 +292,21 @@ namespace WalkerSim
                     decorations.Add(dec);
                 }
 
+                // Drop POIs that are fully contained within a larger POI.
+                // 7DTD worlds place large city-block prefabs AND the individual
+                // buildings inside them; both show up as decorations, producing
+                // POIs-inside-POIs in the simulation. Keep only the outermost.
+                int droppedNested = FilterContainedDecorations(decorations);
+
                 res.Decorations = decorations.ToArray();
 
-                Logging.Info("Resolved {0} decorations from '{1}' ({2} unresolved, {3} dropped as non-building, {4} dropped as too small).",
+                Logging.Info("Resolved {0} decorations from '{1}' ({2} unresolved, {3} dropped as non-building, {4} dropped as too small, {5} dropped as nested).",
                     res.Decorations.Length,
                     prefabsXmlPath,
                     missingSize,
                     droppedNonBuilding,
-                    droppedSmall);
+                    droppedSmall,
+                    droppedNested);
             }
             catch (Exception ex)
             {
@@ -318,6 +325,72 @@ namespace WalkerSim
         /// coordinate system has Y as vertical height, so WalkerSim's ground bounds come
         /// from components 0 and 2.
         /// </summary>
+        // Removes decorations whose AABB footprint is fully contained within
+        // the AABB of a larger decoration. Sorts by descending area so each
+        // POI is only tested against ones that could potentially contain it.
+        // Position is treated as the prefab's center and Bounds as full extent
+        // (matching Cities.cs rasterization).
+        private static int FilterContainedDecorations(List<MapData.Decoration> decorations)
+        {
+            int n = decorations.Count;
+            if (n < 2)
+                return 0;
+
+            // Sort by area descending — largest first.
+            decorations.Sort((a, b) =>
+            {
+                float aa = a.Bounds.X * a.Bounds.Y;
+                float ba = b.Bounds.X * b.Bounds.Y;
+                return ba.CompareTo(aa);
+            });
+
+            // Precompute AABBs.
+            var minX = new float[n];
+            var maxX = new float[n];
+            var minY = new float[n];
+            var maxY = new float[n];
+            for (int i = 0; i < n; i++)
+            {
+                var d = decorations[i];
+                float hx = d.Bounds.X * 0.5f;
+                float hy = d.Bounds.Y * 0.5f;
+                minX[i] = d.Position.X - hx;
+                maxX[i] = d.Position.X + hx;
+                minY[i] = d.Position.Y - hy;
+                maxY[i] = d.Position.Y + hy;
+            }
+
+            // Mark contained decorations. Compare each POI only against strictly
+            // larger ones that have been kept (earlier in the sorted list).
+            var drop = new bool[n];
+            for (int i = 1; i < n; i++)
+            {
+                float ix0 = minX[i], ix1 = maxX[i], iy0 = minY[i], iy1 = maxY[i];
+                for (int j = 0; j < i; j++)
+                {
+                    if (drop[j])
+                        continue;
+                    if (ix0 >= minX[j] && ix1 <= maxX[j] &&
+                        iy0 >= minY[j] && iy1 <= maxY[j])
+                    {
+                        drop[i] = true;
+                        break;
+                    }
+                }
+            }
+
+            int dropped = 0;
+            for (int i = n - 1; i >= 0; i--)
+            {
+                if (drop[i])
+                {
+                    decorations.RemoveAt(i);
+                    dropped++;
+                }
+            }
+            return dropped;
+        }
+
         private static bool TryReadPrefabInfo(string xmlPath, out PrefabInfo info)
         {
             info = default;
