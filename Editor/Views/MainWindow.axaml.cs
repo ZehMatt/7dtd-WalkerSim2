@@ -259,11 +259,13 @@ namespace Editor.Views
             await window.ShowDialog(this);
 
             if (window.SettingsSaved)
+            {
                 SimCanvas.ApplySettings();
-
-            // Always repopulate worlds — folders may have changed
-            if (DataContext is EditorViewModel vm)
-                vm.ReloadWorldList();
+                
+                // Folders may have changed — repopulate worlds.
+                if (DataContext is EditorViewModel vm)
+                    vm.ReloadWorldList();
+            }
         }
 
         // ── Help ──────────────────────────────────────────────────────────────────
