@@ -38,7 +38,11 @@ namespace WalkerSim.Unity.Drawing
                 return WalkerSim.Drawing.Color.Transparent;
             }
 
-            var pixel = Inner.GetPixel(x, y);
+            // Unity's Texture2D uses a bottom-origin convention (y=0 is the
+            // bottom row), while the rest of WalkerSim (editor/Skia, road and
+            // biome map logic) uses top-origin (y=0 is the top row). Flip here
+            // so the IBitmap abstraction is top-origin on both backends.
+            var pixel = Inner.GetPixel(x, Inner.height - 1 - y);
             return new WalkerSim.Drawing.Color(
                 (byte)(pixel.r * 255),
                 (byte)(pixel.g * 255),

@@ -65,6 +65,42 @@ namespace WalkerSim.Console
             },
             new SubCommand
             {
+                Name = "biomes",
+                Description = "Enables or disables drawing biomes on the map overlay, the argument is `enable` or `disable` or a boolean.",
+                Handler = new Action<CommandSenderInfo, string>((sender, option) =>
+                {
+                    if(option.ToLowerInvariant() == "enable" || option == "1" || option.ToLowerInvariant() == "true")
+                    {
+                        MapDrawing.IsBiomesEnabled = true;
+                        ConsoleOutput.Log("Biomes overlay enabled.");
+                    }
+                    else
+                    {
+                        MapDrawing.IsBiomesEnabled = false;
+                        ConsoleOutput.Log("Biomes overlay disabled.");
+                    }
+                }),
+            },
+            new SubCommand
+            {
+                Name = "roadgraph",
+                Description = "Enables or disables drawing the road graph on the map overlay, the argument is `enable` or `disable` or a boolean.",
+                Handler = new Action<CommandSenderInfo, string>((sender, option) =>
+                {
+                    if(option.ToLowerInvariant() == "enable" || option == "1" || option.ToLowerInvariant() == "true")
+                    {
+                        MapDrawing.IsGraphEnabled = true;
+                        ConsoleOutput.Log("Road graph overlay enabled.");
+                    }
+                    else
+                    {
+                        MapDrawing.IsGraphEnabled = false;
+                        ConsoleOutput.Log("Road graph overlay disabled.");
+                    }
+                }),
+            },
+            new SubCommand
+            {
                 Name = "pause",
                 Description = "Pauses the simulation which also stops spawning and despawning.",
                 Handler = new Action<CommandSenderInfo>((sender) =>
@@ -252,7 +288,7 @@ namespace WalkerSim.Console
                     var worldMaxs = mapData.WorldMaxs;
                     var worldSize = mapData.WorldSize;
                     var x = (int)MathEx.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, worldSize.X);
-                    var y = (int)worldSize.Y - (int)MathEx.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, worldSize.Y);
+                    var y = (int)MathEx.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, worldSize.Y);
 
                     // Get the spawn group mask for this position.
                     var spawnGroup = spawnGroups.GetSpawnGroup(x, y);
