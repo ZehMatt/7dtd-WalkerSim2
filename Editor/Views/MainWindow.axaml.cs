@@ -420,5 +420,6 @@ namespace Editor.Views
             if (forceScroll || nearBottom)
                 sv.ScrollToEnd();
         }
+
     }
 }

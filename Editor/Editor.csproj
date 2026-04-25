@@ -17,6 +17,7 @@
     <PublishAot>True</PublishAot>
     <Platforms>AnyCPU;x64</Platforms>
     <BaseOutputPath>..\Build\Editor</BaseOutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
