@@ -266,6 +266,107 @@ namespace WalkerSim
             public int AsphaltCount;
         }
 
+        private static void Skeletonize(RoadType[,] data, int width, int height)
+        {
+            var marks = new bool[width, height];
+            bool changed = true;
+            while (changed)
+            {
+                changed = false;
+                SkeletonizePass(data, marks, width, height, true);
+                if (RemoveMarked(data, marks, width, height))
+                    changed = true;
+                SkeletonizePass(data, marks, width, height, false);
+                if (RemoveMarked(data, marks, width, height))
+                    changed = true;
+            }
+        }
+
+        private static void SkeletonizePass(RoadType[,] data, bool[,] marks, int width, int height, bool firstSub)
+        {
+            Parallel.For(1, height - 1, y =>
+            {
+                for (int x = 1; x < width - 1; x++)
+                {
+                    if (data[x, y] == RoadType.None)
+                        continue;
+
+                    int p2 = data[x, y - 1] != RoadType.None ? 1 : 0;
+                    int p3 = data[x + 1, y - 1] != RoadType.None ? 1 : 0;
+                    int p4 = data[x + 1, y] != RoadType.None ? 1 : 0;
+                    int p5 = data[x + 1, y + 1] != RoadType.None ? 1 : 0;
+                    int p6 = data[x, y + 1] != RoadType.None ? 1 : 0;
+                    int p7 = data[x - 1, y + 1] != RoadType.None ? 1 : 0;
+                    int p8 = data[x - 1, y] != RoadType.None ? 1 : 0;
+                    int p9 = data[x - 1, y - 1] != RoadType.None ? 1 : 0;
+
+                    int c = ((1 - p2) & (p3 | p4)) +
+                            ((1 - p4) & (p5 | p6)) +
+                            ((1 - p6) & (p7 | p8)) +
+                            ((1 - p8) & (p9 | p2));
+                    if (c != 1)
+                        continue;
+
+                    int n1 = (p9 | p2) + (p3 | p4) + (p5 | p6) + (p7 | p8);
+                    int n2 = (p2 | p3) + (p4 | p5) + (p6 | p7) + (p8 | p9);
+                    int n = n1 < n2 ? n1 : n2;
+                    if (n < 2 || n > 3)
+                        continue;
+
+                    int m = firstSub
+                        ? ((p2 | p3 | (1 - p5)) & p4)
+                        : ((p6 | p7 | (1 - p9)) & p8);
+                    if (m != 0)
+                        continue;
+
+                    marks[x, y] = true;
+                }
+            });
+        }
+
+        private static bool RemoveMarked(RoadType[,] data, bool[,] marks, int width, int height)
+        {
+            bool any = false;
+            for (int y = 1; y < height - 1; y++)
+            {
+                for (int x = 1; x < width - 1; x++)
+                {
+                    if (marks[x, y])
+                    {
+                        data[x, y] = RoadType.None;
+                        marks[x, y] = false;
+                        any = true;
+                    }
+                }
+            }
+            return any;
+        }
+
+        private static bool SegmentClear(RoadGraph graph, int a, int b, RoadNode na, RoadNode nb)
+        {
+            float dx = nb.X - na.X;
+            float dy = nb.Y - na.Y;
+            float len = (float)System.Math.Sqrt(dx * dx + dy * dy);
+            if (len < 1f)
+                return true;
+            int steps = (int)len;
+            float stepX = dx / steps;
+            float stepY = dy / steps;
+            for (int i = 1; i < steps; i++)
+            {
+                float fx = na.X + stepX * i;
+                float fy = na.Y + stepY * i;
+                int cx = (int)(fx / NodeSpacing);
+                int cy = (int)(fy / NodeSpacing);
+                if (cx < 0 || cx >= graph._gridColumns || cy < 0 || cy >= graph._gridRows)
+                    continue;
+                int nodeIdx = graph._nodeGrid[cy * graph._gridColumns + cx];
+                if (nodeIdx >= 0 && nodeIdx != a && nodeIdx != b)
+                    return false;
+            }
+            return true;
+        }
+
         public static RoadGraph Build(RoadType[,] data, int width, int height)
         {
             Logging.Info("Building road graph...");
@@ -278,6 +379,14 @@ namespace WalkerSim
 
             using (Logging.Scope())
             {
+                var thinned = new RoadType[width, height];
+                Parallel.For(0, height, y =>
+                {
+                    for (int x = 0; x < width; x++)
+                        thinned[x, y] = data[x, y];
+                });
+                Skeletonize(thinned, width, height);
+                data = thinned;
 
                 graph._gridColumns = (width + NodeSpacing - 1) / NodeSpacing;
                 graph._gridRows = (height + NodeSpacing - 1) / NodeSpacing;
@@ -646,6 +755,79 @@ namespace WalkerSim
                     }
                 }
 
+                // Pass 5: bridge close dead-end pairs across small splat gaps.
+                {
+                    const int BridgeRadius = NodeSpacing * 3;
+                    int searchCells = (BridgeRadius + NodeSpacing - 1) / NodeSpacing;
+                    int bridgedDeadEnds = 0;
+
+                    var connLists = new List<int>[nodes.Count];
+                    for (int i = 0; i < nodes.Count; i++)
+                        connLists[i] = new List<int>(nodes[i].Connections);
+
+                    for (int a = 0; a < nodes.Count; a++)
+                    {
+                        if (connLists[a].Count != 1)
+                            continue;
+
+                        var na = nodes[a];
+                        int gxA = (int)(na.X / NodeSpacing);
+                        int gyA = (int)(na.Y / NodeSpacing);
+
+                        int best = -1;
+                        float bestDistSqr = BridgeRadius * BridgeRadius + 1;
+
+                        for (int dy = -searchCells; dy <= searchCells; dy++)
+                        {
+                            for (int dx = -searchCells; dx <= searchCells; dx++)
+                            {
+                                int cx = gxA + dx;
+                                int cy = gyA + dy;
+                                if (cx < 0 || cx >= graph._gridColumns || cy < 0 || cy >= graph._gridRows)
+                                    continue;
+                                int b = graph._nodeGrid[cy * graph._gridColumns + cx];
+                                if (b < 0 || b == a)
+                                    continue;
+                                if (connLists[b].Count != 1)
+                                    continue;
+
+                                float ddx = nodes[b].X - na.X;
+                                float ddy = nodes[b].Y - na.Y;
+                                float distSqr = ddx * ddx + ddy * ddy;
+                                if (distSqr > BridgeRadius * BridgeRadius)
+                                    continue;
+                                if (distSqr >= bestDistSqr)
+                                    continue;
+                                if (connLists[a].Contains(b))
+                                    continue;
+                                if (!SegmentClear(graph, a, b, na, nodes[b]))
+                                    continue;
+
+                                best = b;
+                                bestDistSqr = distSqr;
+                            }
+                        }
+
+                        if (best >= 0)
+                        {
+                            connLists[a].Add(best);
+                            connLists[best].Add(a);
+                            bridgedDeadEnds++;
+                        }
+                    }
+
+                    if (bridgedDeadEnds > 0)
+                    {
+                        for (int i = 0; i < nodes.Count; i++)
+                        {
+                            var node = nodes[i];
+                            node.Connections = connLists[i].ToArray();
+                            nodes[i] = node;
+                        }
+                        Logging.Info("Bridged {0} dead-end pairs", bridgedDeadEnds);
+                    }
+                }
+
                 // Finalize.
                 graph.Nodes = nodes.ToArray();
 
@@ -683,9 +865,7 @@ namespace WalkerSim
 
     public class Roads
     {
-        // Downscaled to 768x768
-        const int ScaledWidth = 768;
-        const int ScaledHeight = 768;
+        const int MaxScaledSize = 2048;
 
         public const int CellSize = 32;
 
@@ -750,16 +930,15 @@ namespace WalkerSim
 
             using (var img = WalkerSim.Drawing.LoadFromFile(splatPath))
             {
-                img.RemoveTransparency();
-
                 return Roads.LoadFromBitmap(img, splatPath);
             }
         }
 
         private static Roads LoadFromBitmap(Drawing.IBitmap img, string name)
         {
-            // Resize the image to 712x712
-            var scaled = Drawing.Create(img, ScaledWidth, ScaledHeight);
+            var scaled = (img.Width <= MaxScaledSize && img.Height <= MaxScaledSize)
+                ? img
+                : Drawing.Create(img, MaxScaledSize, MaxScaledSize);
 
             var height = scaled.Height;
             var width = scaled.Width;

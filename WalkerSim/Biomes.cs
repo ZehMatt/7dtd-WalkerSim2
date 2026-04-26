@@ -50,17 +50,13 @@ namespace WalkerSim
         public int SDFWidth { get; private set; }
         public int SDFHeight { get; private set; }
 
-        // For reasons the biome.png size is inconsistent, stick to one.
-        const int ScaledWidth = 1024;
-        const int ScaledHeight = 1024;
+        const int MaxScaledSize = 2048;
         const int SDFSize = 256;
 
         public static Biomes LoadFromFile(string filePath)
         {
             using (var img = WalkerSim.Drawing.LoadFromFile(filePath))
             {
-                img.RemoveTransparency();
-
                 return Biomes.LoadFromBitmap(img, filePath);
             }
         }
@@ -105,7 +101,9 @@ namespace WalkerSim
             using (Logging.Scope())
             {
 
-                var scaled = Drawing.Create(img, ScaledWidth, ScaledHeight);
+                var scaled = (img.Width <= MaxScaledSize && img.Height <= MaxScaledSize)
+                    ? img
+                    : Drawing.Create(img, MaxScaledSize, MaxScaledSize);
 
                 var height = scaled.Height;
                 var width = scaled.Width;
@@ -119,8 +117,8 @@ namespace WalkerSim
                     y /= width;
 
                     var pixel = scaled.GetPixel(x, y);
-                    var mappedType = Type.Invalid;
-                    if (!_colorMapping.TryGetValue(pixel, out mappedType))
+                    var key = new Drawing.Color(pixel.R, pixel.G, pixel.B);
+                    if (!_colorMapping.TryGetValue(key, out var mappedType))
                     {
                         mappedType = Type.Invalid;
                     }
