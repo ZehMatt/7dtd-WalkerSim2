@@ -32,7 +32,7 @@ namespace WalkerSim.Console
             new SubCommand
             {
                 Name = "show",
-                Description = "Opens the map window and temporarily enables the overlay. To keep the overlay enabled use `walkersim map enable`.",
+                Description = "Map overlay (singleplayer): opens the map window and temporarily enables the simulation overlay. To keep it enabled use `walkersim map enable`.",
                 Handler = new Action<CommandSenderInfo>((sender) =>
                 {
                     MapDrawing.IsTemporarilyEnabled = true;
@@ -48,7 +48,7 @@ namespace WalkerSim.Console
             new SubCommand
             {
                 Name = "map",
-                Description = "Enables or disables the overlay in the map window, the argument is `enable` or `disable` or a boolean.",
+                Description = "Map overlay (singleplayer): enables or disables the simulation overlay in the map window. Argument: `enable`/`disable` or a boolean.",
                 Handler = new Action<CommandSenderInfo, string>((sender, option) =>
                 {
                     if(option.ToLowerInvariant() == "enable" || option == "1" || option.ToLowerInvariant() == "true")
@@ -66,7 +66,7 @@ namespace WalkerSim.Console
             new SubCommand
             {
                 Name = "biomes",
-                Description = "Enables or disables drawing biomes on the map overlay, the argument is `enable` or `disable` or a boolean.",
+                Description = "Map overlay (singleplayer): enables or disables drawing biomes on top of the map overlay. Argument: `enable`/`disable` or a boolean.",
                 Handler = new Action<CommandSenderInfo, string>((sender, option) =>
                 {
                     if(option.ToLowerInvariant() == "enable" || option == "1" || option.ToLowerInvariant() == "true")
@@ -84,7 +84,7 @@ namespace WalkerSim.Console
             new SubCommand
             {
                 Name = "roadgraph",
-                Description = "Enables or disables drawing the road graph on the map overlay, the argument is `enable` or `disable` or a boolean.",
+                Description = "Map overlay (singleplayer): enables or disables drawing the road graph (used by road-following processors) on the map overlay. Argument: `enable`/`disable` or a boolean.",
                 Handler = new Action<CommandSenderInfo, string>((sender, option) =>
                 {
                     if(option.ToLowerInvariant() == "enable" || option == "1" || option.ToLowerInvariant() == "true")
@@ -260,7 +260,7 @@ namespace WalkerSim.Console
             new SubCommand
             {
                 Name = "maskinfo",
-                Description = "",
+                Description = "Spawn group mask feature: prints the spawn group resolved at the player's current position (entity groups, color). Requires `ws_spawngroups.xml` and `ws_spawngroupsmask.png` in the world folder.",
                 Handler = new Action<CommandSenderInfo>((sender) =>
                 {
                     EntityPlayer player = null;
