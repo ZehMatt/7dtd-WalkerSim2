@@ -179,7 +179,7 @@ namespace Editor.Views
             {
                 if (DataContext is EditorViewModel vm)
                 {
-                    await vm.ExportConfigurationCommand.ExecuteAsync(null);
+                    await vm.ExportConfigurationCommand.ExecuteAsync(dialog);
                     if (!vm.HasUnsavedChanges)
                     {
                         dialogResult = true;

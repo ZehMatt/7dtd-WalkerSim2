@@ -27,9 +27,11 @@
 		<Menu DockPanel.Dock="Top">
 			<MenuItem Header="File">
 				<MenuItem Header="Load Configuration"
-						  Command="{Binding ImportConfigurationCommand}"/>
+						  Command="{Binding ImportConfigurationCommand}"
+						  CommandParameter="{Binding $parent[Window]}"/>
 				<MenuItem Header="Save Configuration"
-						  Command="{Binding ExportConfigurationCommand}"/>
+						  Command="{Binding ExportConfigurationCommand}"
+						  CommandParameter="{Binding $parent[Window]}"/>
 				<Separator/>
 				<MenuItem Header="Exit" Click="OnExitClick"/>
 			</MenuItem>
@@ -111,9 +113,11 @@
 				<Separator/>
 				<MenuItem Header="State">
 					<MenuItem Header="Load State..."
-							  Command="{Binding LoadStateCommand}"/>
+							  Command="{Binding LoadStateCommand}"
+							  CommandParameter="{Binding $parent[Window]}"/>
 					<MenuItem Header="Save State..."
-							  Command="{Binding SaveStateCommand}"/>
+							  Command="{Binding SaveStateCommand}"
+							  CommandParameter="{Binding $parent[Window]}"/>
 				</MenuItem>
 			</MenuItem>
 
