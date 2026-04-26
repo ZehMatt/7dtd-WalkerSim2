@@ -1,4 +1,5 @@
 using System.IO;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace WalkerSim.Unity.Drawing
@@ -51,26 +52,6 @@ namespace WalkerSim.Unity.Drawing
             );
         }
 
-        public void RemoveTransparency()
-        {
-            if (Inner == null)
-            {
-                return;
-            }
-
-            // Get all pixels
-            Color[] pixels = Inner.GetPixels();
-
-            // Set alpha to 255 for all pixels
-            for (int i = 0; i < pixels.Length; i++)
-            {
-                pixels[i].a = 1.0f;
-            }
-
-            // Apply changes
-            Inner.SetPixels(pixels);
-            Inner.Apply();
-        }
     }
 
     internal class UnityImageLoader : WalkerSim.Drawing.IImageLoader
@@ -112,42 +93,35 @@ namespace WalkerSim.Unity.Drawing
 
         private static Texture2D ResizeTexture(Texture2D source, int newWidth, int newHeight)
         {
-            Texture2D result = new Texture2D(newWidth, newHeight, TextureFormat.RGBA32, false);
-            Color[] sourcePixels = source.GetPixels();
-            Color[] resultPixels = new Color[newWidth * newHeight];
+            var result = new Texture2D(newWidth, newHeight, TextureFormat.RGBA32, false);
+            var srcData = source.GetRawTextureData<byte>();
+            var dstData = result.GetRawTextureData<byte>();
 
-            float xRatio = (float)source.width / newWidth;
-            float yRatio = (float)source.height / newHeight;
+            int srcW = source.width;
+            int srcH = source.height;
+            float xRatio = (float)srcW / newWidth;
+            float yRatio = (float)srcH / newHeight;
 
-            for (int y = 0; y < newHeight; y++)
+            Parallel.For(0, newHeight, y =>
             {
+                int sy = (int)(y * yRatio);
+                if (sy >= srcH) sy = srcH - 1;
+                int srcRow = sy * srcW * 4;
+                int dstRow = y * newWidth * 4;
                 for (int x = 0; x < newWidth; x++)
                 {
-                    float srcX = x * xRatio;
-                    float srcY = y * yRatio;
-                    int xFloor = Mathf.FloorToInt(srcX);
-                    int yFloor = Mathf.FloorToInt(srcY);
-                    int xCeil = Mathf.Min(xFloor + 1, source.width - 1);
-                    int yCeil = Mathf.Min(yFloor + 1, source.height - 1);
-
-                    Color c00 = sourcePixels[yFloor * source.width + xFloor];
-                    Color c10 = sourcePixels[yFloor * source.width + xCeil];
-                    Color c01 = sourcePixels[yCeil * source.width + xFloor];
-                    Color c11 = sourcePixels[yCeil * source.width + xCeil];
-
-                    float xLerp = srcX - xFloor;
-                    float yLerp = srcY - yFloor;
-
-                    Color c0 = Color.Lerp(c00, c10, xLerp);
-                    Color c1 = Color.Lerp(c01, c11, xLerp);
-                    Color finalColor = Color.Lerp(c0, c1, yLerp);
-
-                    resultPixels[y * newWidth + x] = finalColor;
+                    int sx = (int)(x * xRatio);
+                    if (sx >= srcW) sx = srcW - 1;
+                    int s = srcRow + sx * 4;
+                    int d = dstRow + x * 4;
+                    dstData[d] = srcData[s];
+                    dstData[d + 1] = srcData[s + 1];
+                    dstData[d + 2] = srcData[s + 2];
+                    dstData[d + 3] = srcData[s + 3];
                 }
-            }
+            });
 
-            result.SetPixels(resultPixels);
-            result.Apply();
+            result.Apply(false);
             return result;
         }
     }
