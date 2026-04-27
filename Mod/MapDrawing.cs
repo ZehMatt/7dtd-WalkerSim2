@@ -10,6 +10,7 @@ namespace WalkerSim
         public static bool IsTemporarilyEnabled { get; set; } = false;
         public static bool IsGraphEnabled { get; set; } = false;
         public static bool IsBiomesEnabled { get; set; } = false;
+        public static bool IsCitiesEnabled { get; set; } = false;
 
         private static readonly Color32 ColorActive = new Color32(0, 255, 0, 255);
         private static readonly Color32 ColorInactive = new Color32(255, 0, 0, 255);
@@ -36,7 +37,7 @@ namespace WalkerSim
             int textureEndX,
             int textureEndZ)
         {
-            if (!IsEnabled && !IsTemporarilyEnabled && !IsGraphEnabled && !IsBiomesEnabled)
+            if (!IsEnabled && !IsTemporarilyEnabled && !IsGraphEnabled && !IsBiomesEnabled && !IsCitiesEnabled)
             {
                 return;
             }
@@ -50,6 +51,13 @@ namespace WalkerSim
             if (IsBiomesEnabled)
             {
                 DrawBiomes(textureData, simulation,
+                    mapStartX, mapStartZ, mapEndX, mapEndZ,
+                    textureStartX, textureStartZ, textureWidth);
+            }
+
+            if (IsCitiesEnabled)
+            {
+                DrawCities(textureData, simulation,
                     mapStartX, mapStartZ, mapEndX, mapEndZ,
                     textureStartX, textureStartZ, textureWidth);
             }
@@ -237,6 +245,97 @@ namespace WalkerSim
 
                     int tx = global::Utils.WrapIndex(textureStartX + (wx - mapStartX), textureWidth);
                     DrawPixel(textureData, rowBase + tx, color);
+                }
+            }
+        }
+
+        private static Cities _cachedCitiesRef;
+        private static Color32[] _cityColorLookup;
+
+        private static Color32[] GetCityColorLookup(Cities cities)
+        {
+            if (ReferenceEquals(_cachedCitiesRef, cities) && _cityColorLookup != null)
+                return _cityColorLookup;
+
+            int cityCount = cities.CityList.Count;
+            var table = new Color32[cityCount + 1];
+            const byte alpha = 140;
+            for (int i = 0; i < cityCount; i++)
+            {
+                float hue = ((i * 2654435761u) % 360u) / 360f;
+                HsvToRgb(hue, 0.85f, 1.0f, out byte r, out byte g, out byte b);
+                table[i + 1] = new Color32(r, g, b, alpha);
+            }
+            _cityColorLookup = table;
+            _cachedCitiesRef = cities;
+            return table;
+        }
+
+        private static void HsvToRgb(float h, float s, float v, out byte r, out byte g, out byte b)
+        {
+            float c = v * s;
+            float hp = h * 6f;
+            float x = c * (1f - System.Math.Abs((hp % 2f) - 1f));
+            float r1, g1, b1;
+            if (hp < 1f) { r1 = c; g1 = x; b1 = 0; }
+            else if (hp < 2f) { r1 = x; g1 = c; b1 = 0; }
+            else if (hp < 3f) { r1 = 0; g1 = c; b1 = x; }
+            else if (hp < 4f) { r1 = 0; g1 = x; b1 = c; }
+            else if (hp < 5f) { r1 = x; g1 = 0; b1 = c; }
+            else { r1 = c; g1 = 0; b1 = x; }
+            float m = v - c;
+            r = (byte)System.Math.Round((r1 + m) * 255f);
+            g = (byte)System.Math.Round((g1 + m) * 255f);
+            b = (byte)System.Math.Round((b1 + m) * 255f);
+        }
+
+        private static void DrawCities(
+            NativeArray<Color32> textureData,
+            Simulation simulation,
+            int mapStartX, int mapStartZ, int mapEndX, int mapEndZ,
+            int textureStartX, int textureStartZ,
+            int textureWidth)
+        {
+            var mapData = simulation.MapData;
+            if (mapData == null)
+                return;
+
+            var cities = mapData.Cities;
+            if (cities == null || cities.Width == 0 || cities.Height == 0 || cities.CityIdMap == null)
+                return;
+
+            var idMap = cities.CityIdMap;
+            int cWidth = cities.Width;
+            int cHeight = cities.Height;
+            float cellSize = cities.CellSize;
+            var cWorldMins = cities.WorldMins;
+            int cityCount = cities.CityList.Count;
+            var colorLookup = GetCityColorLookup(cities);
+
+            for (int wz = mapStartZ; wz < mapEndZ; wz++)
+            {
+                float simY = -wz;
+                int gy = (int)((simY - cWorldMins.Y) / cellSize);
+                if (gy < 0 || gy >= cHeight)
+                    continue;
+
+                int tzOffset = wz - mapStartZ;
+                int tz = global::Utils.WrapIndex(textureStartZ + tzOffset, textureWidth);
+                int rowBase = tz * textureWidth;
+                int srcRowBase = gy * cWidth;
+
+                for (int wx = mapStartX; wx < mapEndX; wx++)
+                {
+                    int gx = (int)((wx - cWorldMins.X) / cellSize);
+                    if (gx < 0 || gx >= cWidth)
+                        continue;
+
+                    ushort id = idMap[srcRowBase + gx];
+                    if (id == 0 || id > cityCount)
+                        continue;
+
+                    int tx = global::Utils.WrapIndex(textureStartX + (wx - mapStartX), textureWidth);
+                    DrawPixel(textureData, rowBase + tx, colorLookup[id]);
                 }
             }
         }

@@ -101,6 +101,24 @@ namespace WalkerSim.Console
             },
             new SubCommand
             {
+                Name = "cities",
+                Description = "Map overlay (singleplayer): enables or disables drawing detected city regions on the map overlay. Argument: `enable`/`disable` or a boolean.",
+                Handler = new Action<CommandSenderInfo, string>((sender, option) =>
+                {
+                    if(option.ToLowerInvariant() == "enable" || option == "1" || option.ToLowerInvariant() == "true")
+                    {
+                        MapDrawing.IsCitiesEnabled = true;
+                        ConsoleOutput.Log("Cities overlay enabled.");
+                    }
+                    else
+                    {
+                        MapDrawing.IsCitiesEnabled = false;
+                        ConsoleOutput.Log("Cities overlay disabled.");
+                    }
+                }),
+            },
+            new SubCommand
+            {
                 Name = "pause",
                 Description = "Pauses the simulation which also stops spawning and despawning.",
                 Handler = new Action<CommandSenderInfo>((sender) =>

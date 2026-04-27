@@ -100,6 +100,26 @@ walkersim map 0
 
 ---
 
+### cities
+
+**Usage**: `walkersim cities <enable|disable>`
+
+**Feature**: Map overlay (debug visualization).
+
+**What it does**: Toggles drawing the detected city regions on the map overlay. Each city is shown in a distinct hash-based color so adjacent or overlapping clusters can be told apart.
+
+**Arguments**:
+
+- `enable` (or `true` or `1`) - Draws city regions
+- `disable` (or `false` or `0`) - Hides city regions
+
+**Details**: This is a sub-toggle of the map overlay and only takes visible effect while the overlay itself is enabled (see `walkersim map`/`walkersim show`). Useful for verifying which areas the city-detection heuristic identified as cities and what the `PreferCities`, `AvoidCities`, and `CityVisitor` processors actually see. Cities draw underneath the road graph and agent markers.
+
+!!! note "Singleplayer Only"
+    This command only works when playing offline or in singleplayer mode.
+
+---
+
 ### pause
 
 **Usage**: `walkersim pause`

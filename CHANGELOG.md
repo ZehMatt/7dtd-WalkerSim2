@@ -13,6 +13,7 @@
 - Feature: Movement systems can now specify the behavior when agents run into the map edge, options are `Warp`, `Clamp`, `Bounce`, see the documentation for details.
 - Feature: New console command `walkersim roadgraph enable/disable/bool` to draw the road graph when the map overlay is enabled (Debug Feature).
 - Feature: New console command `walkersim biomes enable/disable/bool` to draw the biomes when the map overlay is enabled (Debug Feature).
+- Feature: New console command `walkersim cities enable/disable/bool` to draw the cities when the map overlay is enabled (Debug Feature).
 - Change: New VFX in the Editor About Dialog and also a unique custom theme song, go check it out!
 
 # 1.2.1
