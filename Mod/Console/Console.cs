@@ -245,6 +245,7 @@ namespace WalkerSim.Console
                         ConsoleOutput.Log("    Speed Scale: {0}", group.SpeedScale);
                         ConsoleOutput.Log("    Post Spawn Behavior: {0}", group.PostSpawnBehavior);
                         ConsoleOutput.Log("    Post Spawn Wander Speed: {0}", group.PostSpawnWanderSpeed);
+                        ConsoleOutput.Log("    Map Edge Behavior: {0}", group.MapEdgeBehavior);
                         ConsoleOutput.Log("    Color: {0}", group.Color);
                         ConsoleOutput.Log("    Processors ({0}):", group.Entries.Count);
                         foreach (var processor in group.Entries)

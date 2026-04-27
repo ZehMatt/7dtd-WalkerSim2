@@ -28,9 +28,29 @@ namespace WalkerSim
         // Traversal forces random pick at these nodes to ensure the bridge
         // actually gets crossed instead of being skipped by velocity-alignment.
         public bool[] IsBridgeEndpoint = System.Array.Empty<bool>();
+        public Biomes.Type[] NodeBiomes = System.Array.Empty<Biomes.Type>();
         int[] _nodeGrid = System.Array.Empty<int>(); // grid cell → node index (-1 if none)
         int _gridColumns;
         int _gridRows;
+
+        public void AssignBiomes(Biomes biomes, int roadsWidth, int roadsHeight)
+        {
+            if (biomes == null || biomes.Width == 0 || biomes.Height == 0 || Nodes.Length == 0)
+            {
+                NodeBiomes = System.Array.Empty<Biomes.Type>();
+                return;
+            }
+
+            NodeBiomes = new Biomes.Type[Nodes.Length];
+            float scaleX = (float)biomes.Width / roadsWidth;
+            float scaleY = (float)biomes.Height / roadsHeight;
+            for (int i = 0; i < Nodes.Length; i++)
+            {
+                int bx = (int)(Nodes[i].X * scaleX);
+                int by = (int)(Nodes[i].Y * scaleY);
+                NodeBiomes[i] = biomes.GetBiomeType(bx, by);
+            }
+        }
 
         public int FindNearestNode(float bitmapX, float bitmapY, int searchRadius = 4)
         {

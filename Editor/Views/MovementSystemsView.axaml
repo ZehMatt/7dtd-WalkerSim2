@@ -159,6 +159,16 @@
 											  HorizontalAlignment="Stretch" FontSize="12"/>
 								</Grid>
 
+								<!-- Map Edge Behavior -->
+								<Grid ColumnDefinitions="140,*">
+									<controls:LabelWithHelp Grid.Column="0" LabelText="Map Edge:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"
+										HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/systems.html#mapedgebehavior"/>
+									<ComboBox Grid.Column="1"
+											  SelectedItem="{Binding MapEdgeBehavior, Mode=TwoWay}"
+											  ItemsSource="{Binding DataContext.MapEdgeBehaviorOptions, ElementName=RootControl}"
+											  HorizontalAlignment="Stretch" FontSize="12"/>
+								</Grid>
+
 							</StackPanel>
 						</DataTemplate>
 

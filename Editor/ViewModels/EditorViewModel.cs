@@ -454,6 +454,8 @@ namespace Editor.ViewModels
 
         public Config.WanderingSpeed[] WanderingSpeedOptions { get; } = Enum.GetValues<Config.WanderingSpeed>();
 
+        public Config.MapEdgeBehavior[] MapEdgeBehaviorOptions { get; } = Enum.GetValues<Config.MapEdgeBehavior>();
+
         private static readonly Config.MovementProcessorType[] AllProcessorTypes =
             Enum.GetValues<Config.MovementProcessorType>()
             .Where(t => t != Config.MovementProcessorType.Invalid).ToArray();
@@ -876,6 +878,7 @@ namespace Editor.ViewModels
                 SpeedScale = source.SpeedScale,
                 PostSpawnBehavior = source.PostSpawnBehavior,
                 PostSpawnWanderSpeed = source.PostSpawnWanderSpeed,
+                MapEdgeBehavior = source.MapEdgeBehavior,
                 Color = source.Color
             };
 

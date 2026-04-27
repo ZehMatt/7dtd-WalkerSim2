@@ -255,6 +255,10 @@ namespace WalkerSim
                 res.WorldMaxs = worldMaxs;
                 res.SpawnGroups = spawnGroups;
                 res.Cities = cities;
+
+                cities.AssignBiomes(biomes, worldMins, worldMaxs);
+                if (roads.Graph != null)
+                    roads.Graph.AssignBiomes(biomes, roads.Width, roads.Height);
             }
 
             timeWatch.Stop();

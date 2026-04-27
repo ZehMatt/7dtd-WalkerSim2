@@ -14,6 +14,7 @@ namespace WalkerSim
             public Vector3 Bounds { get; set; }
             public int CellCount { get; set; }
             public List<MapData.Decoration> POIs { get; set; }
+            public Biomes.Type Biome { get; set; } = Biomes.Type.Invalid;
 
             public City()
             {
@@ -385,6 +386,25 @@ namespace WalkerSim
                 return null;
 
             return CityList[id - 1];
+        }
+
+        public void AssignBiomes(Biomes biomes, Vector3 worldMins, Vector3 worldMaxs)
+        {
+            if (biomes == null || biomes.Width == 0 || biomes.Height == 0)
+                return;
+
+            float worldRangeX = worldMaxs.X - worldMins.X;
+            float worldRangeY = worldMaxs.Y - worldMins.Y;
+            if (worldRangeX <= 0 || worldRangeY <= 0)
+                return;
+
+            for (int i = 0; i < CityList.Count; i++)
+            {
+                var c = CityList[i];
+                int bx = (int)((c.Position.X - worldMins.X) / worldRangeX * biomes.Width);
+                int by = (int)((c.Position.Y - worldMins.Y) / worldRangeY * biomes.Height);
+                c.Biome = biomes.GetBiomeType(bx, by);
+            }
         }
 
         /// <summary>

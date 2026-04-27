@@ -271,6 +271,14 @@
                                         </xs:annotation>
                                     </xs:attribute>
 
+                                    <xs:attribute name="MapEdgeBehavior" type="MapEdgeBehavior" use="optional" default="Warp">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                Determines what happens when an agent of this system reaches the edge of the map. Warp wraps the agent to the opposite side, Bounce nudges its velocity back inward and clamps the position, Clamp simply clamps the position without altering velocity.
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+
                                     <xs:attribute name="Name" type="xs:string" use="optional">
                                         <xs:annotation>
                                             <xs:documentation>
@@ -359,6 +367,29 @@
             <xs:enumeration value="Nightmare">
                 <xs:annotation>
                     <xs:documentation>Sets the spawned agent movement speed to 'Nightmare' while wandering</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="MapEdgeBehavior">
+        <xs:annotation>
+            <xs:documentation>Behavior when an agent reaches the edge of the map</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Warp">
+                <xs:annotation>
+                    <xs:documentation>Wraps the agent to the opposite side of the map</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Bounce">
+                <xs:annotation>
+                    <xs:documentation>Nudges the agent's velocity back inward and clamps the position to the map bounds</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Clamp">
+                <xs:annotation>
+                    <xs:documentation>Clamps the agent's position to the map bounds without altering velocity</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
         </xs:restriction>

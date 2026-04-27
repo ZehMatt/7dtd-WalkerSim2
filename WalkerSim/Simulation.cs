@@ -448,6 +448,7 @@ namespace WalkerSim
             var prng = _state.PRNG;
 
             agents.Clear();
+            SetupGrid();
 
             if (_state.GroupCount == 0)
             {
