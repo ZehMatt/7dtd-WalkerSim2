@@ -81,6 +81,8 @@ Zombies move against the wind direction.
 ### StickToRoads
 Zombies navigate along roads using a waypoint graph built from the map's road data. When near a road, agents follow it node-to-node. At intersections they pick a direction (usually continuing forward, sometimes turning). At dead ends they turn around and walk back to the last intersection. Agents that drift too far from their target road node will re-acquire the nearest road.
 
+If the same system also includes **StickToBiome** or **AvoidBiome**, road-node target selection is restricted accordingly: candidate nodes outside the preferred biome (or inside the avoided biome) are skipped. If no eligible neighbour exists at the current node, StickToRoads disengages for that step and other processors take over until the agent moves back into a valid biome.
+
 - Uses Distance: No
 - Example: Zombies walk along roads and highways, properly traversing intersections and turning around at dead ends
 
@@ -128,6 +130,8 @@ Zombies travel to cities using a stateful behavior with three phases: selecting 
 
 The selection is deterministic based on agent group and current time, causing agents to pick new destinations at different times. Unlike PreferCities (which keeps agents in one general area), CityVisitor makes agents migrate between cities, creating dynamic population shifts across the map.
 
+If the same system also includes **StickToBiome** or **AvoidBiome**, target city selection is restricted accordingly: only cities centred in the preferred biome (and not in the avoided biome) are eligible. If no city qualifies, the agent stays Idle for that tick and other processors drive its movement.
+
 - Uses Distance: No
 - Example: Zombie groups travel between cities, spending 20 minutes exploring before moving to the next destination
 
@@ -140,12 +144,16 @@ The force is proportional to how far the agent is from the biome boundary — st
 ### StickToBiome
 Zombies are attracted toward a specific biome. Agents outside the target biome are pulled toward it. Once inside, a gentle nudge near the boundary keeps them from drifting out, while deep inside no force is applied so other processors drive movement freely.
 
+When combined with **StickToRoads** or **CityVisitor** in the same system, those processors are restricted to targets within this biome: road-graph neighbours and candidate cities outside the biome are filtered out. This keeps biome-stuck agents from being pulled across the boundary by their target-seeking behaviours.
+
 - Uses Distance: No
 - Uses Biome: Yes (select target biome type)
 - Example: Zombies stay in the desert, creating biome-specific population zones
 
 ### AvoidBiome
 Zombies are repelled from a specific biome. Agents inside the target biome are pushed out. Once outside, no force is applied.
+
+When combined with **StickToRoads** or **CityVisitor** in the same system, those processors are restricted to targets outside this biome: road-graph neighbours and candidate cities inside the biome are filtered out.
 
 - Uses Distance: No
 - Uses Biome: Yes (select target biome type)
