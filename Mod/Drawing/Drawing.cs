@@ -1,5 +1,6 @@
 using System.IO;
 using System.Threading.Tasks;
+using Unity.Collections;
 using UnityEngine;
 
 namespace WalkerSim.Unity.Drawing
@@ -10,6 +11,9 @@ namespace WalkerSim.Unity.Drawing
         public int Height => Inner?.height ?? 0;
 
         public readonly Texture2D Inner;
+
+        private NativeArray<byte> _cachedRaw;
+        private bool _hasCached;
 
         public UnityDrawingImpl(Texture2D texture)
         {
@@ -26,10 +30,16 @@ namespace WalkerSim.Unity.Drawing
 
         public void LockPixels()
         {
+            if (Inner != null && !_hasCached)
+            {
+                _cachedRaw = Inner.GetRawTextureData<byte>();
+                _hasCached = true;
+            }
         }
 
         public void UnlockPixels()
         {
+            _hasCached = false;
         }
 
         public WalkerSim.Drawing.Color GetPixel(int x, int y)
@@ -39,17 +49,26 @@ namespace WalkerSim.Unity.Drawing
                 return WalkerSim.Drawing.Color.Transparent;
             }
 
-            // Unity's Texture2D uses a bottom-origin convention (y=0 is the
-            // bottom row), while the rest of WalkerSim (editor/Skia, road and
-            // biome map logic) uses top-origin (y=0 is the top row). Flip here
-            // so the IBitmap abstraction is top-origin on both backends.
-            var pixel = Inner.GetPixel(x, Inner.height - 1 - y);
-            return new WalkerSim.Drawing.Color(
-                (byte)(pixel.r * 255),
-                (byte)(pixel.g * 255),
-                (byte)(pixel.b * 255),
-                (byte)(pixel.a * 255)
-            );
+            var raw = _hasCached ? _cachedRaw : Inner.GetRawTextureData<byte>();
+            int yflip = Inner.height - 1 - y;
+            switch (Inner.format)
+            {
+                case TextureFormat.RGB24:
+                {
+                    int idx = (yflip * Inner.width + x) * 3;
+                    return new WalkerSim.Drawing.Color(raw[idx], raw[idx + 1], raw[idx + 2]);
+                }
+                case TextureFormat.BGRA32:
+                {
+                    int idx = (yflip * Inner.width + x) * 4;
+                    return new WalkerSim.Drawing.Color(raw[idx + 2], raw[idx + 1], raw[idx], raw[idx + 3]);
+                }
+                default:
+                {
+                    int idx = (yflip * Inner.width + x) * 4;
+                    return new WalkerSim.Drawing.Color(raw[idx + 1], raw[idx + 2], raw[idx + 3], raw[idx]);
+                }
+            }
         }
 
     }
@@ -68,7 +87,7 @@ namespace WalkerSim.Unity.Drawing
             byte[] fileData = File.ReadAllBytes(filePath);
 
             // Create a new Texture2D
-            Texture2D texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+            Texture2D texture = new Texture2D(2, 2, TextureFormat.RGBA32, false, true);
             if (texture.LoadImage(fileData))
             {
                 return new UnityDrawingImpl(texture);
@@ -93,12 +112,13 @@ namespace WalkerSim.Unity.Drawing
 
         private static Texture2D ResizeTexture(Texture2D source, int newWidth, int newHeight)
         {
-            var result = new Texture2D(newWidth, newHeight, TextureFormat.RGBA32, false);
+            var result = new Texture2D(newWidth, newHeight, source.format, false, true);
             var srcData = source.GetRawTextureData<byte>();
             var dstData = result.GetRawTextureData<byte>();
 
             int srcW = source.width;
             int srcH = source.height;
+            int bpp = source.format == TextureFormat.RGB24 ? 3 : 4;
             float xRatio = (float)srcW / newWidth;
             float yRatio = (float)srcH / newHeight;
 
@@ -106,18 +126,16 @@ namespace WalkerSim.Unity.Drawing
             {
                 int sy = (int)(y * yRatio);
                 if (sy >= srcH) sy = srcH - 1;
-                int srcRow = sy * srcW * 4;
-                int dstRow = y * newWidth * 4;
+                int srcRow = sy * srcW * bpp;
+                int dstRow = y * newWidth * bpp;
                 for (int x = 0; x < newWidth; x++)
                 {
                     int sx = (int)(x * xRatio);
                     if (sx >= srcW) sx = srcW - 1;
-                    int s = srcRow + sx * 4;
-                    int d = dstRow + x * 4;
-                    dstData[d] = srcData[s];
-                    dstData[d + 1] = srcData[s + 1];
-                    dstData[d + 2] = srcData[s + 2];
-                    dstData[d + 3] = srcData[s + 3];
+                    int s = srcRow + sx * bpp;
+                    int d = dstRow + x * bpp;
+                    for (int b = 0; b < bpp; b++)
+                        dstData[d + b] = srcData[s + b];
                 }
             });
 
