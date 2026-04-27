@@ -21,9 +21,11 @@ WalkerSim 2 provides several console commands to control and monitor the simulat
 
 **Usage**: `walkersim show`
 
-**What it does**: Opens the map window and temporarily enables the overlay showing virtual zombie positions.
+**Feature**: Map overlay (debug visualization).
 
-**Details**: The overlay will only remain visible while the map is open. If you close and reopen the map, the overlay will be gone. To keep the overlay enabled permanently, use `walkersim map enable`.
+**What it does**: Opens the map window and temporarily enables the WalkerSim overlay showing virtual zombie positions.
+
+**Details**: The overlay only remains visible while the map is open. If you close and reopen the map, the overlay will be gone. To keep the overlay enabled permanently, use `walkersim map enable`.
 
 !!! note "Singleplayer Only"
     This command only works when playing offline or in singleplayer mode. The map overlay feature is not available on multiplayer servers.
@@ -34,7 +36,9 @@ WalkerSim 2 provides several console commands to control and monitor the simulat
 
 **Usage**: `walkersim map <enable|disable>`
 
-**What it does**: Enables or disables the simulation overlay in the map window.
+**Feature**: Map overlay (debug visualization).
+
+**What it does**: Enables or disables the WalkerSim simulation overlay in the in-game map window.
 
 **Arguments**:
 
@@ -49,10 +53,50 @@ walkersim map true
 walkersim map 0
 ```
 
-**Details**: When enabled, the map overlay shows the positions and movements of virtual zombies in the simulation. This is useful for understanding how zombies are distributed across the map.
+**Details**: When enabled, the map overlay shows the positions and movements of virtual zombies in the simulation. This is useful for understanding how zombies are distributed across the map. See also `walkersim biomes` and `walkersim roadgraph` for additional overlay layers.
 
 !!! note "Singleplayer Only"
     This command only works when playing offline or in singleplayer mode. The map overlay feature is not available on multiplayer servers.
+
+---
+
+### biomes
+
+**Usage**: `walkersim biomes <enable|disable>`
+
+**Feature**: Map overlay (debug visualization).
+
+**What it does**: Toggles drawing the world's biome layer on top of the WalkerSim map overlay.
+
+**Arguments**:
+
+- `enable` (or `true` or `1`) - Draws biomes on the overlay
+- `disable` (or `false` or `0`) - Hides the biome layer
+
+**Details**: This is a sub-toggle of the map overlay and only takes visible effect while the overlay itself is enabled (see `walkersim map`/`walkersim show`). It is useful for correlating zombie distribution with biome boundaries.
+
+!!! note "Singleplayer Only"
+    This command only works when playing offline or in singleplayer mode.
+
+---
+
+### roadgraph
+
+**Usage**: `walkersim roadgraph <enable|disable>`
+
+**Feature**: Map overlay (debug visualization).
+
+**What it does**: Toggles drawing the road graph (the navigation graph used by road-following processors) on the map overlay.
+
+**Arguments**:
+
+- `enable` (or `true` or `1`) - Draws the road graph
+- `disable` (or `false` or `0`) - Hides the road graph
+
+**Details**: This is a sub-toggle of the map overlay and only takes visible effect while the overlay itself is enabled (see `walkersim map`/`walkersim show`). Useful for verifying the road graph processors such as `StickToRoads` and `CityVisitor` are seeing.
+
+!!! note "Singleplayer Only"
+    This command only works when playing offline or in singleplayer mode.
 
 ---
 
@@ -170,16 +214,17 @@ walkersim timescale 10.0   # 10x speed
 
 **Usage**: `walkersim maskinfo`
 
-**What it does**: Shows information about the spawn group at your current location.
+**Feature**: Spawn group masks (advanced — see [Spawn Group Masks](configuring/spawn-groups.md)).
+
+**What it does**: Resolves and prints the spawn group at the player's current world position by sampling the configured spawn group mask image (`ws_spawngroupsmask.png`).
 
 **Output includes**:
 
-- Your position coordinates (both game world and simulation coordinates)
-- The spawn group assigned to your location
-- Day and night entity groups for that spawn area
-- Color coding used in the map overlay
+- The player's position in both game-world and simulation coordinates
+- The matched spawn group's day and night entity group names
+- The hex color used by that spawn group (the color sampled from the mask image)
 
-**Details**: This command helps you understand what types of zombies can spawn in your current location. Different biomes and areas have different spawn groups, which determine what zombie types appear during day and night.
+**Details**: This command is **only meaningful if you have set up the spawn group mask feature** by placing `ws_spawngroups.xml` and `ws_spawngroupsmask.png` in your world folder. Without those files, no custom spawn groups are defined and the command will report that none was found at your position. It is the primary debugging tool for verifying that the colors in your mask image align with the regions you intended.
 
 ---
 

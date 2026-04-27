@@ -41,6 +41,30 @@ namespace WalkerSim
             Simulation.Instance.SetAgentSpawnHandler(SpawnManager.SpawnAgent);
             Simulation.Instance.SetAgentDespawnHandler(SpawnManager.DespawnAgent);
 
+            // Build the global prefab database from the running 7DTD install. The mod
+            // assembly lives somewhere under <install>/Mods/<modname>/... so walking up
+            // from its location to the first ancestor that has both Data/ and Mods/
+            // subdirectories yields the install root.
+            try
+            {
+                var modFolder = GetModFolder();
+                var installRoot = Prefabs.GuessInstallRoot(modFolder);
+                if (installRoot != null)
+                {
+                    Logging.Out("7DTD install root: {0}", installRoot);
+                    Prefabs.Initialize(Prefabs.SearchPathsForInstall(installRoot));
+                }
+                else
+                {
+                    Logging.Warn("Could not determine 7DTD install root from mod folder '{0}'. " +
+                                 "Decorations will use a default footprint.", modFolder);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logging.Err("Failed to initialize prefab database: {0}", ex.Message);
+            }
+
             Logging.Out($"WalkerSim v{BuildInfo.Version} initialized.");
         }
 

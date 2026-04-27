@@ -8,46 +8,46 @@
 		WindowStartupLocation="CenterOwner"
 		Background="#12121a">
 
-	<Grid RowDefinitions="*,Auto">
-		<!-- VFX background with overlay text -->
-		<Grid Grid.Row="0">
-			<views:AboutVFX x:Name="VFX"/>
+	<Grid RowDefinitions="*,Auto,Auto">
+		<!-- VFX background with overlay text. The VFX host itself is added
+		     programmatically after the window has rendered once. -->
+		<Grid Grid.Row="0" x:Name="VfxGrid">
+			<views:CreditsOverlay x:Name="Credits"/>
 
-			<!-- Info card pinned to top -->
-			<StackPanel VerticalAlignment="Top" HorizontalAlignment="Center"
+			<!-- Header info card overlays the canvas. -->
+			<StackPanel x:Name="InfoCard" VerticalAlignment="Top" HorizontalAlignment="Center"
 						Margin="20,20,20,0">
-				<Border Background="#CC080810" CornerRadius="6" Padding="24,16">
-					<StackPanel HorizontalAlignment="Center" Spacing="6">
+				<Border Background="#CC080810" CornerRadius="6" Padding="24,12">
+					<StackPanel HorizontalAlignment="Center" Spacing="4">
 						<TextBlock Text="WalkerSim2"
 								   FontSize="28" FontWeight="Bold"
 								   Foreground="#00ddff"
 								   HorizontalAlignment="Center"
 								   FontFamily="Consolas,Courier New,monospace"/>
-						<TextBlock x:Name="VersionText"
-								   FontSize="13"
-								   Foreground="#8899bb"
-								   HorizontalAlignment="Center"
-								   FontFamily="Consolas,Courier New,monospace"/>
-						<TextBlock x:Name="CommitText"
-								   FontSize="11"
-								   Foreground="#556688"
-								   HorizontalAlignment="Center"
-								   FontFamily="Consolas,Courier New,monospace"/>
-						<Separator Margin="0,8" Background="#2a2a4a"/>
-						<TextBlock Text="Zombie horde simulation for 7 Days to Die"
-								   FontSize="11"
-								   Foreground="#8899bb"
-								   HorizontalAlignment="Center"
-								   TextWrapping="Wrap"
-								   TextAlignment="Center"
-								   FontFamily="Consolas,Courier New,monospace"/>
+						<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
+							<TextBlock x:Name="VersionText"
+									   FontSize="12"
+									   Foreground="#8899bb"
+									   FontFamily="Consolas,Courier New,monospace"/>
+							<TextBlock x:Name="CommitText"
+									   FontSize="12"
+									   Foreground="#556688"
+									   FontFamily="Consolas,Courier New,monospace"/>
+						</StackPanel>
 					</StackPanel>
 				</Border>
 			</StackPanel>
 		</Grid>
 
+		<!-- Loading bar between the canvas and the footer. Hidden by
+		     code-behind once the VFX reports Ready. -->
+		<ProgressBar Grid.Row="1" x:Name="LoadingSpinner"
+					 IsIndeterminate="True"
+					 Height="3"
+					 ToolTip.Tip="Compiling shader..."/>
+
 		<!-- Bottom bar -->
-		<Border Grid.Row="1" Background="#0e0e15" Padding="16,10">
+		<Border Grid.Row="2" Background="#0e0e15" Padding="16,10">
 			<Grid ColumnDefinitions="*,Auto">
 				<TextBlock Grid.Column="0"
 						   Text="github.com/ZehMatt/7dtd-WalkerSim2"

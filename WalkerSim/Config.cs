@@ -25,6 +25,13 @@ namespace WalkerSim
             Nothing,
         }
 
+        public enum MapEdgeBehavior
+        {
+            Warp = 0,
+            Bounce,
+            Clamp,
+        }
+
         public enum WorldLocation
         {
             None = 0,
@@ -77,6 +84,7 @@ namespace WalkerSim
             public float SpeedScale = 1.0f;
             public PostSpawnBehavior PostSpawnBehavior = PostSpawnBehavior.Wander;
             public WanderingSpeed PostSpawnWanderSpeed = WanderingSpeed.Walk;
+            public MapEdgeBehavior MapEdgeBehavior = MapEdgeBehavior.Warp;
             public string Color = "";
             public List<MovementProcessor> Entries = new List<MovementProcessor>();
         }
@@ -225,6 +233,7 @@ namespace WalkerSim
                         group.SpeedScale = ReadAttrFloat(groupNode, "SpeedScale", 1.0f);
                         group.PostSpawnBehavior = ReadAttrEnum(groupNode, "PostSpawnBehavior", PostSpawnBehavior.Wander);
                         group.PostSpawnWanderSpeed = ReadAttrEnum(groupNode, "PostSpawnWanderSpeed", WanderingSpeed.Walk);
+                        group.MapEdgeBehavior = ReadAttrEnum(groupNode, "MapEdgeBehavior", MapEdgeBehavior.Warp);
                         group.Color = ReadAttrString(groupNode, "Color", "");
 
                         group.Entries = new List<MovementProcessor>();
@@ -409,6 +418,7 @@ namespace WalkerSim
                         xw.WriteAttributeString("SpeedScale", XmlConvert.ToString(group.SpeedScale));
                         xw.WriteAttributeString("PostSpawnBehavior", group.PostSpawnBehavior.ToString());
                         xw.WriteAttributeString("PostSpawnWanderSpeed", group.PostSpawnWanderSpeed.ToString());
+                        xw.WriteAttributeString("MapEdgeBehavior", group.MapEdgeBehavior.ToString());
                         if (!string.IsNullOrEmpty(group.Color))
                             xw.WriteAttributeString("Color", group.Color);
 

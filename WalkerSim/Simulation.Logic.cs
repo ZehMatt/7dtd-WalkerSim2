@@ -287,7 +287,7 @@ namespace WalkerSim
 
             UpdateAwareness(agent);
             ApplyMovement(agent, deltaTime, processorGroup?.SpeedScale ?? 1.0f);
-            Warp(agent);
+            ApplyMapEdgeBehavior(agent, processorGroup?.MapEdgeBehavior ?? Config.MapEdgeBehavior.Warp);
         }
 
         public void UpdateAwareness(Agent agent)
@@ -420,7 +420,7 @@ namespace WalkerSim
             _state.WindDir.Y = currentDir.Y;
         }
 
-        private void BounceOffWalls(Agent agent)
+        private void Bounce(Agent agent)
         {
             var worldMins = _state.WorldMins;
             var worldMaxs = _state.WorldMaxs;
@@ -439,6 +439,11 @@ namespace WalkerSim
                 agent.Velocity.Y -= turn;
 
             agent.Position = Vector3.Clamp(agent.Position, worldMins, worldMaxs);
+        }
+
+        private void Clamp(Agent agent)
+        {
+            agent.Position = Vector3.Clamp(agent.Position, _state.WorldMins, _state.WorldMaxs);
         }
 
         private void Warp(Agent agent)
@@ -460,6 +465,22 @@ namespace WalkerSim
 
             if (agent.Position.Y > worldMaxs.Y - BorderSize)
                 agent.Position.Y = worldMins.Y + BorderSize + EdgeDistance;
+        }
+
+        private void ApplyMapEdgeBehavior(Agent agent, Config.MapEdgeBehavior behavior)
+        {
+            switch (behavior)
+            {
+                case Config.MapEdgeBehavior.Bounce:
+                    Bounce(agent);
+                    break;
+                case Config.MapEdgeBehavior.Clamp:
+                    Clamp(agent);
+                    break;
+                default:
+                    Warp(agent);
+                    break;
+            }
         }
 
     }

@@ -173,6 +173,9 @@ namespace WalkerSim
             public float SpeedScale = 1.0f;
             public Config.PostSpawnBehavior PostSpawnBehavior = Config.PostSpawnBehavior.Wander;
             public Config.WanderingSpeed PostSpawnWanderingSpeed = Config.WanderingSpeed.NoOverride;
+            public Config.MapEdgeBehavior MapEdgeBehavior = Config.MapEdgeBehavior.Warp;
+            public Biomes.Type PreferredBiome = Biomes.Type.Invalid;
+            public Biomes.Type AvoidedBiome = Biomes.Type.Invalid;
             public Drawing.Color Color;
         }
 
@@ -264,7 +267,16 @@ namespace WalkerSim
                     SpeedScale = processorGroup.SpeedScale,
                     PostSpawnBehavior = processorGroup.PostSpawnBehavior,
                     PostSpawnWanderingSpeed = processorGroup.PostSpawnWanderSpeed,
+                    MapEdgeBehavior = processorGroup.MapEdgeBehavior,
                 };
+
+                foreach (var p in processorGroup.Entries)
+                {
+                    if (p.Type == Config.MovementProcessorType.StickToBiome)
+                        group.PreferredBiome = (Biomes.Type)(byte)p.Param1;
+                    else if (p.Type == Config.MovementProcessorType.AvoidBiome)
+                        group.AvoidedBiome = (Biomes.Type)(byte)p.Param1;
+                }
 
                 if (processorGroup.Color == "")
                 {
@@ -396,7 +408,7 @@ namespace WalkerSim
 
             processor.Mean /= processor.Count;
             var center = processor.Mean - agent.Position;
-            return center * power;
+            return Vector3.Normalize(center) * power;
         }
 
         internal static Vector3 FlockSame(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
@@ -415,7 +427,7 @@ namespace WalkerSim
 
             processor.Mean /= processor.Count;
             var center = processor.Mean - agent.Position;
-            return center * power;
+            return Vector3.Normalize(center) * power;
         }
 
         internal static Vector3 FlockOther(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
@@ -434,7 +446,7 @@ namespace WalkerSim
 
             processor.Mean /= processor.Count;
             var center = processor.Mean - agent.Position;
-            return center * power;
+            return Vector3.Normalize(center) * power;
         }
 
         internal static Vector3 AlignAny(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
@@ -452,7 +464,7 @@ namespace WalkerSim
 
             processor.MeanVel /= processor.Count;
             var delta = processor.MeanVel - agent.Velocity;
-            return delta * power;
+            return Vector3.Normalize(delta) * power;
         }
 
 
@@ -472,7 +484,7 @@ namespace WalkerSim
 
             processor.MeanVel /= processor.Count;
             var delta = processor.MeanVel - agent.Velocity;
-            return delta * power;
+            return Vector3.Normalize(delta) * power;
         }
 
         internal static Vector3 AlignOther(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
@@ -491,7 +503,7 @@ namespace WalkerSim
 
             processor.MeanVel /= processor.Count;
             var delta = processor.MeanVel - agent.Velocity;
-            return delta * power;
+            return Vector3.Normalize(delta) * power;
         }
 
         internal static Vector3 AvoidAny(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
@@ -505,7 +517,7 @@ namespace WalkerSim
 
             sim.ForEachNearby(agent.Position, agent.Index, distance, ref processor);
 
-            return processor.SumCloseness * power;
+            return Vector3.Normalize(processor.SumCloseness) * power;
         }
 
 
@@ -521,7 +533,7 @@ namespace WalkerSim
 
             sim.ForEachNearby(agent.Position, agent.Index, distance, ref processor);
 
-            return processor.SumCloseness * power;
+            return Vector3.Normalize(processor.SumCloseness) * power;
         }
 
         internal static Vector3 AvoidOther(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
@@ -536,17 +548,17 @@ namespace WalkerSim
 
             sim.ForEachNearby(agent.Position, agent.Index, distance, ref processor);
 
-            return processor.SumCloseness * power;
+            return Vector3.Normalize(processor.SumCloseness) * power;
         }
 
         internal static Vector3 Wind(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
-            return state.WindDir * power;
+            return Vector3.Normalize(state.WindDir) * power;
         }
 
         internal static Vector3 WindInverted(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
-            return (state.WindDir * -1.0f) * power;
+            return Vector3.Normalize(state.WindDir * -1.0f) * power;
         }
 
         // How close (bitmap pixels) to a node before advancing to the next.
@@ -555,8 +567,6 @@ namespace WalkerSim
         private const float RoadNodeSearchDist = 40f;
         // Reset road navigation if the agent drifts this far from its target node.
         private const float RoadNodeDriftDist = 60f;
-        // Force magnitude scale to keep force similar to old implementation.
-        private const float RoadForceScale = 10f;
 
         internal static Vector3 StickToRoads(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
@@ -586,6 +596,18 @@ namespace WalkerSim
                 agent.RoadNodeTarget = -1;
                 agent.ClearRoadNodeHistory();
                 return Vector3.Zero;
+            }
+
+            Biomes.Type preferredBiome = Biomes.Type.Invalid;
+            Biomes.Type avoidedBiome = Biomes.Type.Invalid;
+            if (agent.Group >= 0 && agent.Group < sim._processors.Count)
+            {
+                var groupProc = sim._processors[agent.Group];
+                if (groupProc != null)
+                {
+                    preferredBiome = groupProc.PreferredBiome;
+                    avoidedBiome = groupProc.AvoidedBiome;
+                }
             }
 
             // Check if the agent has a city target from CityVisitor; if so, bias
@@ -622,7 +644,28 @@ namespace WalkerSim
                     float dty = target.Y - by;
                     float distToTargetSqr = dtx * dtx + dty * dty;
 
-                    if (distToTargetSqr > RoadNodeDriftDist * RoadNodeDriftDist)
+                    // Drift threshold scales with the current edge length — the
+                    // distance between the source node (last history entry) and
+                    // the target node. For short cell-adjacent edges this is
+                    // just the base 60-unit tolerance; for long bridge edges
+                    // it's (edge length + 60) so the agent can actually walk
+                    // across without the reset firing mid-flight.
+                    float driftLimit = RoadNodeDriftDist;
+                    if (agent.RoadNodeHistoryCount > 0)
+                    {
+                        int srcIdx = agent.RoadNodeHistory[
+                            (agent.RoadNodeHistoryPos - 1 + Agent.RoadNodeHistorySize) % Agent.RoadNodeHistorySize];
+                        if (srcIdx >= 0 && srcIdx < graph.Nodes.Length)
+                        {
+                            var src = graph.Nodes[srcIdx];
+                            float edx = target.X - src.X;
+                            float edy = target.Y - src.Y;
+                            float edgeLen = (float)System.Math.Sqrt(edx * edx + edy * edy);
+                            driftLimit = edgeLen + RoadNodeDriftDist;
+                        }
+                    }
+
+                    if (distToTargetSqr > driftLimit * driftLimit)
                     {
                         // Too far from target, reset navigation.
                         agent.RoadNodeTarget = -1;
@@ -632,7 +675,7 @@ namespace WalkerSim
                     {
                         // Arrived at target, push to history and pick next node.
                         agent.PushRoadNodeHistory(agent.RoadNodeTarget);
-                        agent.RoadNodeTarget = PickNextRoadNode(graph, agent, agent.Velocity, state.Ticks, biasX, biasY);
+                        agent.RoadNodeTarget = PickNextRoadNode(graph, agent, agent.Velocity, state.Ticks, biasX, biasY, preferredBiome, avoidedBiome);
                     }
                 }
             }
@@ -651,9 +694,16 @@ namespace WalkerSim
                     return Vector3.Zero; // Too far from any road.
 
                 // We're near this node, pick a connected node to walk toward.
+                if (preferredBiome != Biomes.Type.Invalid && graph.NodeBiomes.Length == graph.Nodes.Length
+                    && graph.NodeBiomes[nearest] != preferredBiome)
+                    return Vector3.Zero;
+                if (avoidedBiome != Biomes.Type.Invalid && graph.NodeBiomes.Length == graph.Nodes.Length
+                    && graph.NodeBiomes[nearest] == avoidedBiome)
+                    return Vector3.Zero;
+
                 agent.ClearRoadNodeHistory();
                 agent.PushRoadNodeHistory(nearest);
-                agent.RoadNodeTarget = PickNextRoadNode(graph, agent, agent.Velocity, state.Ticks, biasX, biasY);
+                agent.RoadNodeTarget = PickNextRoadNode(graph, agent, agent.Velocity, state.Ticks, biasX, biasY, preferredBiome, avoidedBiome);
 
                 if (agent.RoadNodeTarget < 0)
                     agent.RoadNodeTarget = nearest; // Isolated node, just attract to it.
@@ -685,7 +735,7 @@ namespace WalkerSim
                         return Vector3.Zero; // Road node is farther from city; let CityVisitor take over.
                 }
 
-                return new Vector3(dx * typeScale * RoadForceScale, dy * typeScale * RoadForceScale) * power;
+                return new Vector3(dx, dy) * (power * typeScale);
             }
         }
 
@@ -696,7 +746,8 @@ namespace WalkerSim
         /// to the bias target (used for CityVisitor cooperation).
         /// </summary>
         internal static int PickNextRoadNode(RoadGraph graph, Agent agent,
-            Vector3 velocity, uint tick, float biasX = float.NaN, float biasY = float.NaN)
+            Vector3 velocity, uint tick, float biasX = float.NaN, float biasY = float.NaN,
+            Biomes.Type preferredBiome = Biomes.Type.Invalid, Biomes.Type avoidedBiome = Biomes.Type.Invalid)
         {
             // The most recently pushed history entry is the node we just arrived at.
             int arrivedAt = agent.RoadNodeHistoryCount > 0
@@ -709,6 +760,25 @@ namespace WalkerSim
             var node = graph.Nodes[arrivedAt];
             var connections = node.Connections;
 
+            bool hasBiomeFilter = (preferredBiome != Biomes.Type.Invalid || avoidedBiome != Biomes.Type.Invalid)
+                && graph.NodeBiomes.Length == graph.Nodes.Length;
+            if (hasBiomeFilter)
+            {
+                var filtered = new List<int>(connections.Length);
+                for (int i = 0; i < connections.Length; i++)
+                {
+                    var b = graph.NodeBiomes[connections[i]];
+                    if (preferredBiome != Biomes.Type.Invalid && b != preferredBiome)
+                        continue;
+                    if (avoidedBiome != Biomes.Type.Invalid && b == avoidedBiome)
+                        continue;
+                    filtered.Add(connections[i]);
+                }
+                if (filtered.Count == 0)
+                    return -1;
+                connections = filtered.ToArray();
+            }
+
             if (connections.Length == 0)
                 return -1; // Isolated node.
 
@@ -717,14 +787,28 @@ namespace WalkerSim
 
             bool hasBias = !float.IsNaN(biasX);
 
+            // At bridge-endpoint nodes (any graph-theoretic bridge edge — found
+            // via Tarjan's algorithm in RoadGraph.Build), both velocity-alignment
+            // and bias-driven picks will happily skip the bridge edge forever
+            // (velocity is usually off-axis, and bias targets are typically on
+            // the same side of the bridge as the agent). Force random pick
+            // here so the bridge actually gets crossed.
+            bool isBridgeNode = graph.IsBridgeEndpoint != null
+                && arrivedAt < graph.IsBridgeEndpoint.Length
+                && graph.IsBridgeEndpoint[arrivedAt];
+
             // At intersections (3+ connections) without a bias target, 33% chance to pick randomly for variety.
-            bool pickRandom = !hasBias && connections.Length >= 3 && AgentHash(agent.Index, tick, 0) % 3 == 0;
+            bool pickRandom = isBridgeNode
+                || (!hasBias && connections.Length >= 3 && AgentHash(agent.Index, tick, 0) % 3 == 0);
+            if (pickRandom)
+                hasBias = false;
 
             // Prepare velocity direction for velocity-aligned selection.
             float velX = velocity.X;
             float velY = velocity.Y;
             float velLen = (float)System.Math.Sqrt(velX * velX + velY * velY);
-            if (velLen > 0.01f) { velX /= velLen; velY /= velLen; }
+            if (velLen > 0.01f)
+            { velX /= velLen; velY /= velLen; }
 
             // Count how many non-history candidates we have.
             int availableCount = 0;
@@ -754,7 +838,8 @@ namespace WalkerSim
 
                 if (agent.IsInRoadNodeHistory(connIdx))
                 {
-                    if (fallbackIdx < 0) fallbackIdx = connIdx;
+                    if (fallbackIdx < 0)
+                        fallbackIdx = connIdx;
                     continue;
                 }
 
@@ -784,7 +869,8 @@ namespace WalkerSim
                     float dx = nextNode.X - currentNode.X;
                     float dy = nextNode.Y - currentNode.Y;
                     float len = (float)System.Math.Sqrt(dx * dx + dy * dy);
-                    if (len > 0) { dx /= len; dy /= len; }
+                    if (len > 0)
+                    { dx /= len; dy /= len; }
 
                     float dot = velX * dx + velY * dy;
                     if (dot > bestDot)
@@ -835,14 +921,15 @@ namespace WalkerSim
 
             float dx = (float)(ix - closest.X);
             float dy = (float)(iy - closest.Y);
+            var dir = Vector3.Normalize(new Vector3(dx, dy));
 
             if (closest.Type == RoadType.Asphalt)
             {
-                return new Vector3(dx * 0.75f, dy * 0.75f) * power;
+                return dir * (power * 0.75f);
             }
             else if (closest.Type == RoadType.Offroad)
             {
-                return new Vector3(dx * 0.5f, dy * 0.5f) * power;
+                return dir * (power * 0.5f);
             }
 
             return Vector3.Zero;
@@ -913,7 +1000,7 @@ namespace WalkerSim
                 sumCloseness += (agent.Position - deco.Position) * closeness;
             }
 
-            return sumCloseness * power;
+            return Vector3.Normalize(sumCloseness) * power;
         }
 
         internal static Vector3 WorldEvents(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
@@ -954,163 +1041,66 @@ namespace WalkerSim
                 agent.AlertPosition = eventCenter;
             }
 
-            return sum * power;
+            return Vector3.Normalize(sum) * power;
+        }
+
+        // Force ramp distance (SDF pixels) for the inner-band nudge that keeps agents from
+        // drifting across a city boundary when they are just barely inside.
+        private const float CityInnerBand = 6f;
+        private const float CityInnerStrength = 0.25f;
+
+        private static Vector3 CityForce(State state, Agent agent, float distanceMeters, float power, float sign)
+        {
+            var cities = state.MapData?.Cities;
+            if (cities == null || cities.SDFWidth == 0)
+                return Vector3.Zero;
+
+            var pos = agent.Position;
+            float bx = MathEx.Remap(pos.X, state.WorldMins.X, state.WorldMaxs.X, 0f, cities.Width);
+            float by = MathEx.Remap(pos.Y, state.WorldMins.Y, state.WorldMaxs.Y, 0f, cities.Height);
+
+            float sdf = cities.SampleSDF(bx, by);
+
+            // sign > 0 (Prefer): wrong side is "outside" (sdf<0). depth = -sdf.
+            // sign < 0 (Avoid):  wrong side is "inside"  (sdf>0). depth =  sdf.
+            float depth = sign > 0 ? -sdf : sdf;
+
+            // Convert the world-meter ramp distance into SDF pixels so a falloff of
+            // e.g. 200m lines up with the actual SDF value range.
+            float worldW = state.WorldMaxs.X - state.WorldMins.X;
+            float worldToSdf = worldW > 0f ? cities.SDFWidth / worldW : 0f;
+            float falloffSdf = System.Math.Max(1f, distanceMeters * worldToSdf);
+
+            float strength;
+            if (depth > 0f)
+            {
+                strength = System.Math.Min(depth / falloffSdf, 1f);
+            }
+            else if (-depth < CityInnerBand)
+            {
+                strength = CityInnerStrength * (1f - (-depth / CityInnerBand));
+            }
+            else
+            {
+                return Vector3.Zero;
+            }
+
+            var grad = cities.SampleSDFGradient(bx, by);
+            float len = grad.Magnitude();
+            if (len < 0.001f)
+                return Vector3.Zero;
+
+            return (grad / len) * (power * sign * strength);
         }
 
         internal static Vector3 PreferCities(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
-            if (state.MapData == null || state.MapData.Cities == null)
-            {
-                return Vector3.Zero;
-            }
-
-            var cities = state.MapData.Cities;
-            var city = cities.GetCityAt(agent.Position);
-
-            if (city != null)
-            {
-                // Agent is inside a city - create smooth wandering motion using sine/cosine
-                // Each agent gets unique movement pattern based on their ID
-
-                // Create agent-specific frequencies and phases
-                // Using prime number mixing to avoid pattern synchronization between agents
-                float phaseX = (agent.Index * 2654435761u) % 10000 / 10000.0f * 6.28318530718f; // 0 to 2*PI
-                float phaseY = (agent.Index * 1597334677u) % 10000 / 10000.0f * 6.28318530718f;
-
-                // Different frequencies for more organic movement (avoid circular patterns)
-                float freqX = 0.002f + ((agent.Index * 2246822519u) % 1000 / 10000.0f) * 0.001f; // 0.002-0.003
-                float freqY = 0.0015f + ((agent.Index * 3266489917u) % 1000 / 10000.0f) * 0.001f; // 0.0015-0.0025
-
-                // Calculate smooth offset based on time
-                float timeScale = state.Ticks;
-                float offsetX = (float)System.Math.Sin(timeScale * freqX + phaseX);
-                float offsetY = (float)System.Math.Cos(timeScale * freqY + phaseY);
-
-                // Scale offsets to wander within city bounds with margin
-                const float edgeMargin = 20f;
-                float wanderRadiusX = (city.Bounds.X - 2 * edgeMargin) * 0.3f; // Use 30% of available space
-                float wanderRadiusY = (city.Bounds.Y - 2 * edgeMargin) * 0.3f;
-
-                // Calculate target position: city center + smooth wandering offset
-                float targetX = city.Position.X + offsetX * wanderRadiusX;
-                float targetY = city.Position.Y + offsetY * wanderRadiusY;
-                var targetPos = new Vector3(targetX, targetY, 0);
-
-                // Move toward the smoothly changing target position
-                var direction = targetPos - agent.Position;
-                direction.Z = 0;
-
-                float distToTarget = Vector3.Magnitude(direction);
-                if (distToTarget > 1f)
-                {
-                    direction = Vector3.Normalize(direction);
-                    // Gentle force proportional to distance
-                    float forceMult = System.Math.Min(distToTarget / 30f, 1f);
-                    return direction * power * forceMult * 0.5f;
-                }
-
-                return Vector3.Zero;
-            }
-            else
-            {
-                // Agent is outside city - find nearest city and move toward its edge
-                Cities.City nearestCity = null;
-                float nearestDist = float.MaxValue;
-
-                foreach (var c in cities.CityList)
-                {
-                    // Calculate distance to nearest point on city boundary
-                    float closestX = System.Math.Max(c.MinX, System.Math.Min(agent.Position.X, c.MaxX));
-                    float closestY = System.Math.Max(c.MinY, System.Math.Min(agent.Position.Y, c.MaxY));
-                    float dist = Vector3.Distance2D(agent.Position, new Vector3(closestX, closestY, 0));
-
-                    if (dist < nearestDist)
-                    {
-                        nearestDist = dist;
-                        nearestCity = c;
-                    }
-                }
-
-                if (nearestCity != null)
-                {
-                    // Move toward nearest edge of city
-                    float closestX = System.Math.Max(nearestCity.MinX, System.Math.Min(agent.Position.X, nearestCity.MaxX));
-                    float closestY = System.Math.Max(nearestCity.MinY, System.Math.Min(agent.Position.Y, nearestCity.MaxY));
-                    var direction = new Vector3(closestX, closestY, 0) - agent.Position;
-                    direction.Z = 0;
-
-                    if (direction.X != 0 || direction.Y != 0)
-                    {
-                        direction = Vector3.Normalize(direction);
-                        return direction * power;
-                    }
-                }
-
-                return Vector3.Zero;
-            }
+            return CityForce(state, agent, distance > 0f ? distance : 200f, power, 1f);
         }
 
         internal static Vector3 AvoidCities(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
-            if (state.MapData == null || state.MapData.Cities == null)
-            {
-                return Vector3.Zero;
-            }
-
-            var cities = state.MapData.Cities;
-            var city = cities.GetCityAt(agent.Position);
-
-            if (city != null)
-            {
-                // Agent is inside a city - push toward nearest exit
-                float distToLeft = agent.Position.X - city.MinX;
-                float distToRight = city.MaxX - agent.Position.X;
-                float distToBottom = agent.Position.Y - city.MinY;
-                float distToTop = city.MaxY - agent.Position.Y;
-
-                float minDist = System.Math.Min(System.Math.Min(distToLeft, distToRight), System.Math.Min(distToBottom, distToTop));
-
-                Vector3 exitDirection = Vector3.Zero;
-                if (minDist == distToLeft)
-                    exitDirection = new Vector3(-1, 0, 0);
-                else if (minDist == distToRight)
-                    exitDirection = new Vector3(1, 0, 0);
-                else if (minDist == distToBottom)
-                    exitDirection = new Vector3(0, -1, 0);
-                else if (minDist == distToTop)
-                    exitDirection = new Vector3(0, 1, 0);
-
-                return exitDirection * power;
-            }
-            else
-            {
-                // Agent is outside city - apply repulsion if near (within distance)
-                Vector3 repulsion = Vector3.Zero;
-
-                foreach (var c in cities.CityList)
-                {
-                    // Calculate distance to nearest point on city boundary
-                    float closestX = System.Math.Max(c.MinX, System.Math.Min(agent.Position.X, c.MaxX));
-                    float closestY = System.Math.Max(c.MinY, System.Math.Min(agent.Position.Y, c.MaxY));
-                    float dist = Vector3.Distance2D(agent.Position, new Vector3(closestX, closestY, 0));
-
-                    if (dist < distance)
-                    {
-                        // Push away from city edge
-                        var direction = agent.Position - new Vector3(closestX, closestY, 0);
-                        direction.Z = 0;
-
-                        if (direction.X != 0 || direction.Y != 0)
-                        {
-                            direction = Vector3.Normalize(direction);
-                            var closeness = distance - dist;
-                            repulsion += direction * closeness;
-                        }
-                    }
-                }
-
-                return repulsion * power;
-            }
+            return CityForce(state, agent, distance > 0f ? distance : 100f, power, -1f);
         }
 
         internal static Vector3 CityVisitor(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
@@ -1127,15 +1117,45 @@ namespace WalkerSim
             // State machine: Idle -> Approaching -> Arrived -> Idle
             if (agent.CurrentTravelState == Agent.TravelState.Idle)
             {
-                // Select a new target city
-                uint hash = (uint)((agent.Group * 2654435761) ^ ((uint)state.Ticks * 1597334677));
-                float randomValue = (hash % 10000) / 10000.0f;
-                float targetWeight = randomValue * cities.TotalAreaWeight;
+                Biomes.Type preferredBiome = Biomes.Type.Invalid;
+                Biomes.Type avoidedBiome = Biomes.Type.Invalid;
+                if (agent.Group >= 0 && agent.Group < sim._processors.Count)
+                {
+                    var groupProc = sim._processors[agent.Group];
+                    if (groupProc != null)
+                    {
+                        preferredBiome = groupProc.PreferredBiome;
+                        avoidedBiome = groupProc.AvoidedBiome;
+                    }
+                }
 
-                int targetCityIndex = 0;
+                float totalEligibleWeight = 0;
+                for (int i = 0; i < cityCount; i++)
+                {
+                    var c = cityList[i];
+                    if (preferredBiome != Biomes.Type.Invalid && c.Biome != preferredBiome)
+                        continue;
+                    if (avoidedBiome != Biomes.Type.Invalid && c.Biome == avoidedBiome)
+                        continue;
+                    totalEligibleWeight += cities.CityAreaWeights[i];
+                }
+
+                if (totalEligibleWeight <= 0f)
+                    return Vector3.Zero;
+
+                uint hash = (uint)((agent.Group * 2654435761) ^ ((uint)state.Ticks / Constants.MaxUpdateCountPerTick * 1597334677));
+                float randomValue = (hash % 10000) / 10000.0f;
+                float targetWeight = randomValue * totalEligibleWeight;
+
+                int targetCityIndex = -1;
                 float accumulatedWeight = 0;
                 for (int i = 0; i < cityCount; i++)
                 {
+                    var c = cityList[i];
+                    if (preferredBiome != Biomes.Type.Invalid && c.Biome != preferredBiome)
+                        continue;
+                    if (avoidedBiome != Biomes.Type.Invalid && c.Biome == avoidedBiome)
+                        continue;
                     accumulatedWeight += cities.CityAreaWeights[i];
                     if (accumulatedWeight >= targetWeight)
                     {
@@ -1143,6 +1163,9 @@ namespace WalkerSim
                         break;
                     }
                 }
+
+                if (targetCityIndex < 0)
+                    return Vector3.Zero;
 
                 agent.TargetCityIndex = targetCityIndex;
                 agent.CurrentTravelState = Agent.TravelState.Approaching;
@@ -1153,9 +1176,10 @@ namespace WalkerSim
                 var targetCity = cityList[agent.TargetCityIndex];
                 var agentPos = agent.Position;
 
-                // Check if we've arrived at the target city
-                if (agentPos.X >= targetCity.MinX && agentPos.X <= targetCity.MaxX &&
-                    agentPos.Y >= targetCity.MinY && agentPos.Y <= targetCity.MaxY)
+                // Arrival check uses the grid so non-rectangular cities work — any cell
+                // of the target city counts as "inside."
+                var currentCity = cities.GetCityAt(agentPos);
+                if (currentCity != null && currentCity.Id == targetCity.Id)
                 {
                     agent.CurrentTravelState = Agent.TravelState.Arrived;
                     agent.CityTime = state.Ticks;
@@ -1163,12 +1187,42 @@ namespace WalkerSim
                 }
                 else
                 {
-                    // Approach the city
-                    float closestX = System.Math.Max(targetCity.MinX, System.Math.Min(agentPos.X, targetCity.MaxX));
-                    float closestY = System.Math.Max(targetCity.MinY, System.Math.Min(agentPos.Y, targetCity.MaxY));
-                    
-                    float dx = closestX - agentPos.X;
-                    float dy = closestY - agentPos.Y;
+                    // Steer toward the nearest POI of the target city. POIs sit on
+                    // real city cells, so the approach path terminates at a cell
+                    // that will trigger the arrival check — unlike the AABB centroid
+                    // which can fall outside the footprint for irregular shapes.
+                    var pois = targetCity.POIs;
+                    int poiCount = pois.Count;
+                    float targetX, targetY;
+                    if (poiCount > 0)
+                    {
+                        int bestIdx = 0;
+                        float bestDSqr = float.MaxValue;
+                        for (int i = 0; i < poiCount; i++)
+                        {
+                            var p = pois[i].Position;
+                            float ddx = p.X - agentPos.X;
+                            float ddy = p.Y - agentPos.Y;
+                            float dsqr = ddx * ddx + ddy * ddy;
+                            if (dsqr < bestDSqr)
+                            {
+                                bestDSqr = dsqr;
+                                bestIdx = i;
+                            }
+                        }
+                        targetX = pois[bestIdx].Position.X;
+                        targetY = pois[bestIdx].Position.Y;
+                    }
+                    else
+                    {
+                        // Shouldn't happen (cities are required to have POIs) but
+                        // keep the centroid as a safe fallback.
+                        targetX = targetCity.Position.X;
+                        targetY = targetCity.Position.Y;
+                    }
+
+                    float dx = targetX - agentPos.X;
+                    float dy = targetY - agentPos.Y;
 
                     if (dx != 0 || dy != 0)
                     {
@@ -1178,13 +1232,13 @@ namespace WalkerSim
                     return Vector3.Zero;
                 }
             }
-            
+
             if (agent.CurrentTravelState == Agent.TravelState.Arrived)
             {
                 // Stay time from Param1 (min minutes) and Param2 (max minutes)
                 float minStay = param1 > 0 ? param1 : 20f;
                 float maxStay = param2 > param1 ? param2 : minStay;
-                float stayMinutes = minStay + (AgentHash(agent.Index, state.Ticks, 300) / (float)0x7FFFFFFF) * (maxStay - minStay);
+                float stayMinutes = minStay + (AgentHash(agent.Group, state.Ticks, 300) / (float)0x7FFFFFFF) * (maxStay - minStay);
                 ulong cityDuration = Simulation.MinutesToTicks((uint)stayMinutes);
                 if ((state.Ticks - agent.CityTime) >= cityDuration)
                 {
@@ -1192,26 +1246,21 @@ namespace WalkerSim
                     return Vector3.Zero;
                 }
 
-                // Wander within the city
+                // Wander between POIs of the target city. Picking real POIs keeps the
+                // wander target on an actual city cell even for irregular shapes, so
+                // agents don't drift into empty courtyards.
                 var targetCity = cityList[agent.TargetCityIndex];
-                const float edgeMargin = 20f;
-                float cityWidth = targetCity.Bounds.X - (edgeMargin * 2);
-                float cityHeight = targetCity.Bounds.Y - (edgeMargin * 2);
+                int poiCount = targetCity.POIs.Count;
+                if (poiCount == 0)
+                    return Vector3.Zero;
 
-                // Change target position every ~60 seconds for more exploration
                 uint timeSegment = state.Ticks / 3600;
+                uint seed = (uint)(agent.Group * 2654435761 + timeSegment * 1640531527);
+                var poi = targetCity.POIs[(int)(seed % (uint)poiCount)];
 
-                // Generate unique target for this time segment using agent group
-                uint seedX = (uint)(agent.Group * 2654435761 + timeSegment * 1640531527);
-                uint seedY = (uint)(agent.Group * 1597334677 + timeSegment * 3266489917);
+                float targetX = poi.Position.X;
+                float targetY = poi.Position.Y;
 
-                // Map to full city area uniformly
-                float targetOffsetX = ((seedX % 10000) / 10000.0f * 2.0f - 1.0f) * (cityWidth / 2);
-                float targetOffsetY = ((seedY % 10000) / 10000.0f * 2.0f - 1.0f) * (cityHeight / 2);
-
-                float targetX = targetCity.Position.X + targetOffsetX;
-                float targetY = targetCity.Position.Y + targetOffsetY;
-                
                 float dx = targetX - agent.Position.X;
                 float dy = targetY - agent.Position.Y;
                 float distSqr = dx * dx + dy * dy;

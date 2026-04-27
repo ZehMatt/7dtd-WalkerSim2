@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Xml;
 
 namespace WalkerSim
 {
@@ -181,53 +179,6 @@ namespace WalkerSim
             return res;
         }
 
-        private static PrefabsData LoadPrefabs(string folderPath)
-        {
-            PrefabsData res;
-
-            var filePath = System.IO.Path.Combine(folderPath, "prefabs.xml");
-
-            if (!System.IO.File.Exists(filePath))
-            {
-                res = new PrefabsData();
-                res.Decorations = new Decoration[0];
-                return res;
-            }
-
-            try
-            {
-                var doc = new XmlDocument();
-                doc.Load(filePath);
-                var decorations = new List<Decoration>();
-                foreach (XmlNode el in doc.DocumentElement.GetElementsByTagName("decoration"))
-                {
-                    var dec = new Decoration();
-                    dec.Type = el.Attributes["type"]?.Value;
-                    dec.Name = el.Attributes["name"]?.Value;
-                    var posAttr = el.Attributes["position"]?.Value;
-                    if (posAttr != null)
-                        dec.PositionString = posAttr;
-                    var rotAttr = el.Attributes["rotation"]?.Value;
-                    if (rotAttr != null && int.TryParse(rotAttr, out int rot))
-                        dec.Rotation = rot;
-                    var yAttr = el.Attributes["y_is_groundlevel"]?.Value;
-                    dec.YIsGroundlevel = yAttr != null && bool.TryParse(yAttr, out bool yVal) && yVal;
-                    decorations.Add(dec);
-                }
-                res = new PrefabsData();
-                res.Decorations = decorations.ToArray();
-            }
-            catch (System.Exception)
-            {
-                res = new PrefabsData();
-                res.Decorations = new Decoration[0];
-            }
-
-            GC.Collect();
-
-            return res;
-        }
-
         private static Vector3 GetWorldSize(string folderPath)
         {
             // The only way to tell at the moment is to use the file size of dtm.raw.
@@ -279,7 +230,7 @@ namespace WalkerSim
 
                 var roads = LoadRoadSplat(folderPath);
                 var biomes = LoadBiomes(folderPath);
-                var prefabs = LoadPrefabs(folderPath);
+                var prefabs = WalkerSim.Prefabs.LoadDecorationsFromWorld(folderPath);
 
                 var worldSize = GetWorldSize(folderPath);
                 var sizeX = worldSize.X / 2;
@@ -288,18 +239,26 @@ namespace WalkerSim
 
                 var spawnGroups = LoadSpawnGroups(folderPath, worldSize);
 
-                // Generate city boundaries from POI clusters
-                var cities = Cities.GenerateFromPOIs(prefabs.Decorations);
+                var worldMins = new Vector3(-sizeX, -sizeY, 0);
+                var worldMaxs = new Vector3(sizeX, sizeY, sizeZ);
+
+                // Generate city regions by rasterizing POIs onto a grid and running
+                // connected-component labelling. Produces non-rectangular shapes.
+                var cities = Cities.GenerateFromPOIs(prefabs.Decorations, worldMins, worldMaxs);
 
                 res.Info = mapInfo;
                 res.Roads = roads;
                 res.Prefabs = prefabs;
                 res.Biomes = biomes;
                 res.WorldSize = worldSize;
-                res.WorldMins = new Vector3(-sizeX, -sizeY, 0);
-                res.WorldMaxs = new Vector3(sizeX, sizeY, sizeZ);
+                res.WorldMins = worldMins;
+                res.WorldMaxs = worldMaxs;
                 res.SpawnGroups = spawnGroups;
                 res.Cities = cities;
+
+                cities.AssignBiomes(biomes, worldMins, worldMaxs);
+                if (roads.Graph != null)
+                    roads.Graph.AssignBiomes(biomes, roads.Width, roads.Height);
             }
 
             timeWatch.Stop();

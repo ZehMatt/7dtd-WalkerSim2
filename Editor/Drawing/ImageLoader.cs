@@ -31,24 +31,6 @@ namespace Editor.Drawing
             return new WalkerSim.Drawing.Color(c.Red, c.Green, c.Blue, c.Alpha);
         }
 
-        public void RemoveTransparency()
-        {
-            int bytesPerPixel = Inner.BytesPerPixel;
-            if (bytesPerPixel < 4)
-                return; // No alpha channel present, nothing to do.
-
-            int byteCount = Inner.ByteCount;
-            IntPtr ptr = Inner.GetPixels();
-            byte[] pixels = new byte[byteCount];
-            System.Runtime.InteropServices.Marshal.Copy(ptr, pixels, 0, byteCount);
-
-            // Alpha is at offset 3 (BGRA8888 / RGBA8888).
-            for (int i = 3; i < byteCount; i += 4)
-                pixels[i] = 255;
-
-            System.Runtime.InteropServices.Marshal.Copy(pixels, 0, ptr, byteCount);
-        }
-
         public void Dispose()
         {
             Inner?.Dispose();
@@ -81,7 +63,8 @@ namespace Editor.Drawing
         {
             var srcImpl = (SkiaBitmapImpl)src;
             var info = new SKImageInfo(width, height, SKColorType.Rgba8888, SKAlphaType.Unpremul);
-            var resized = srcImpl.Inner.Resize(info, SKFilterQuality.Medium);
+            var sampling = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear);
+            var resized = srcImpl.Inner.Resize(info, sampling);
             return new SkiaBitmapImpl(resized);
         }
     }

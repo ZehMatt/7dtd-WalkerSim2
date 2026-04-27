@@ -1,4 +1,19 @@
 # 1.2.2 (in progress)
+- Fix: Errors when trying to use 16k worlds, this is a non-standard setup and might still have issues.
+- Fix: Roads were vertically mirrored.
+- Fix: StickToBiomes did not correctly work because of a bad assumption about the final loaded image format.
+- Fix: Agents could get stuck on certain roads despite having an outgoing connection.
+- Fix: The editor could freeze after opening the file picker on Windows, applied a work-around. (This is a bug in the Avalonia library)
+- Fix: The version info in ModInfo.xml is now automatically updated on the CI.
+- Fix: The name in ModInfo.xml is now identical to the folder name, this broke certain mod managers.
+- Improve: Groups affected by CityVisitor will now try to maintain group cohesion instead of individual behavior.
+- Improve: The city detection heuristic has now better accuracy allowing custom handcrafted worlds to work.
+- Improve: Agents using CityVisitor now better spread out to wander the city once arrived.
+- Improve: When combining the processors `StickToBiome` or `AvoidBiome` other processors like `CityVisitor` will respect this.
+- Feature: Movement systems can now specify the behavior when agents run into the map edge, options are `Warp`, `Clamp`, `Bounce`, see the documentation for details.
+- Feature: New console command `walkersim roadgraph enable/disable/bool` to draw the road graph when the map overlay is enabled (Debug Feature).
+- Feature: New console command `walkersim biomes enable/disable/bool` to draw the biomes when the map overlay is enabled (Debug Feature).
+- Change: New VFX in the Editor About Dialog and also a unique custom theme song, go check it out!
 
 # 1.2.1
 - Fix: Potential error caused by the population ramp when changing the in-game time.
@@ -73,7 +88,7 @@
 - Change: `walkersim stats` now shows the simulation time which is converted from ticks.
 
 # 0.9.19
-- Improve: Better distribution for CitiyVisitor, agents will now spread out further in the area.
+- Improve: Better distribution for CityVisitor, agents will now spread out further in the area.
 - Improve: The heuristic for city detection.
 
 # 0.9.18
@@ -114,10 +129,10 @@
 - Fix: Editor crash when supplying bad inputs.
 - Fix: Sound events that have no instigator were ignored, ex.: falling trees now emit an event.
 - Improve: Resizing the editor will now resize most elements accordingly.
-- Improve: Agents that intersect with world/sound events will be no in an alert state for 30 seconds, when they spawn they will continue to be alert and chase to the location.
+- Improve: Agents that intersect with world/sound events will now be in an alert state for 30 seconds, when they spawn they will continue to be alert and chase to the location.
 - Feature: Each movement system can now specify the walk speed after they are spawned, when agitated they use the specified setting from the game.
 - Feature: The command `walkersim show` now opens the in-game map and draws them there, when closed it will be disabled, use `walkersim map enable` to permanently enable the drawing. This feature still only works offline.
-- Feature: Added the xml setting `MaxSpawnedZombies` which controls how many WalkerSim can spawn, when using a percentage it will be the percentage of games server setting `MaxSpawnedZombies`, absolute values will override it entirely.
+- Feature: Added the xml setting `MaxSpawnedZombies` which controls how many WalkerSim can spawn, when using a percentage it will be the percentage of the game's server setting `MaxSpawnedZombies`, absolute values will override it entirely.
 - Change: Renamed `Movement Processors` to `Movement Systems` in the Editor, configuration remains unchanged with `MovementProcessors`.
 
 # 0.9.11
@@ -128,7 +143,7 @@
 - Improve: The editor will now consider the path it is started from as a game path, should help find worlds with odd installation paths.
 - Improve: Change the calculation to how far sounds travel, the distance was too big for some simple things such as opening a gate.
 - Improve: `walkersim show` will now render into the existing map window, the overlay will be disabled once the window is closed. To enable it permanently a new console command `walkersim map` was added.
-- Improve: The editor will now reset the state when switching between worlds, selecting affected groups is now a dropdown making it more clear to is valid and some other QoL changes. 
+- Improve: The editor will now reset the state when switching between worlds, selecting affected groups is now a dropdown making it clearer which are valid, and some other QoL changes.
 - Feature: Ability to override biome spawn groups per world with `ws_spawngroupsmask.png` combined with `ws_spawngroups.xml`.
 
 # 0.9.10
@@ -171,7 +186,7 @@
 - Improve: Simulation is now fully deterministic.
 - Improve: Using faster speeds in the Editor will now remain accurate, uses multi-threading.
 - Improve: Default configuration has been updated for a more immersive experience.
-- Improve: Change random distribution of POI's, bigger POI's will be prefered now.
+- Improve: Change random distribution of POIs, bigger POIs will be preferred now.
 - Feature: Added `SpawnProtectionTime`, this disables zombie spawning when entering a new game for the first time.
 - Feature: Added `PostSpawnBehavior` which controls what agents will do once spawned in-game, right now limited to `Wander` and `ChaseActivator`.
 - Feature: The Editor can now zoom in and out on the simulation preview.

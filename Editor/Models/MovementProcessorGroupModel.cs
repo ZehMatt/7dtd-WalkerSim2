@@ -20,6 +20,7 @@ namespace Editor.Models
             _speedScale = group.SpeedScale;
             _postSpawnBehavior = group.PostSpawnBehavior;
             _postSpawnWanderSpeed = group.PostSpawnWanderSpeed;
+            _mapEdgeBehavior = group.MapEdgeBehavior;
             _color = group.Color ?? string.Empty;
             _name = group.Name ?? string.Empty;
 
@@ -71,6 +72,15 @@ namespace Editor.Models
         partial void OnPostSpawnWanderSpeedChanged(Config.WanderingSpeed value)
         {
             _group.PostSpawnWanderSpeed = value;
+            ConfigChanged?.Invoke();
+        }
+
+        [ObservableProperty]
+        private Config.MapEdgeBehavior _mapEdgeBehavior = Config.MapEdgeBehavior.Warp;
+
+        partial void OnMapEdgeBehaviorChanged(Config.MapEdgeBehavior value)
+        {
+            _group.MapEdgeBehavior = value;
             ConfigChanged?.Invoke();
         }
 

@@ -312,37 +312,36 @@ namespace WalkerSim
                 return GetRandomBorderPosition(prng);
             }
 
-            // Weighted selection, the bigger the city, the more likely it is to be selected.
-            var totalArea = 0.0f;
-            foreach (var city in cities.CityList)
-            {
-                totalArea += city.Bounds.X * city.Bounds.Y;
-            }
-            var selectedArea = 0.0f;
+            // Weighted selection by actual cell-count area (precomputed), so
+            // irregular shapes don't get inflated by their bounding box.
             var selectedCity = cities.CityList[0];
-            var rand = (float)prng.NextDouble() * totalArea;
-
-            for (int i = 0; i < cities.CityList.Count; i++)
+            if (cities.TotalAreaWeight > 0f)
             {
-                var city = cities.CityList[i];
-                var area = city.Bounds.X * city.Bounds.Y;
-                selectedArea += area;
-                if (selectedArea >= rand)
+                float rand = (float)prng.NextDouble() * cities.TotalAreaWeight;
+                float acc = 0f;
+                for (int i = 0; i < cities.CityList.Count; i++)
                 {
-                    selectedCity = city;
-                    break;
+                    acc += cities.CityAreaWeights[i];
+                    if (acc >= rand)
+                    {
+                        selectedCity = cities.CityList[i];
+                        break;
+                    }
                 }
             }
 
-            var bounds = selectedCity.Bounds;
-            var pos = selectedCity.Position;
+            // Pick a random POI from the city and jitter within its footprint.
+            // This keeps spawns on actual occupied cells for non-rectangular cities.
+            if (selectedCity.POIs.Count == 0)
+                return selectedCity.Position;
 
+            var poi = selectedCity.POIs[prng.Next(selectedCity.POIs.Count)];
             var offset = new Vector3(
-                -(bounds.X / 2) + ((float)prng.NextDouble() * bounds.X),
-                -(bounds.Y / 2) + ((float)prng.NextDouble() * bounds.Y)
+                -(poi.Bounds.X / 2) + ((float)prng.NextDouble() * poi.Bounds.X),
+                -(poi.Bounds.Y / 2) + ((float)prng.NextDouble() * poi.Bounds.Y)
                 );
 
-            return pos + offset;
+            return poi.Position + offset;
         }
 
         Vector3 GetGroupCenter(int groupIndex)
@@ -449,6 +448,7 @@ namespace WalkerSim
             var prng = _state.PRNG;
 
             agents.Clear();
+            SetupGrid();
 
             if (_state.GroupCount == 0)
             {

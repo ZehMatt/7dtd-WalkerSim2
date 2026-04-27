@@ -32,7 +32,7 @@ namespace WalkerSim.Console
             new SubCommand
             {
                 Name = "show",
-                Description = "Opens the map window and temporarily enables the overlay. To keep the overlay enabled use `walkersim map enable`.",
+                Description = "Map overlay (singleplayer): opens the map window and temporarily enables the simulation overlay. To keep it enabled use `walkersim map enable`.",
                 Handler = new Action<CommandSenderInfo>((sender) =>
                 {
                     MapDrawing.IsTemporarilyEnabled = true;
@@ -48,7 +48,7 @@ namespace WalkerSim.Console
             new SubCommand
             {
                 Name = "map",
-                Description = "Enables or disables the overlay in the map window, the argument is `enable` or `disable` or a boolean.",
+                Description = "Map overlay (singleplayer): enables or disables the simulation overlay in the map window. Argument: `enable`/`disable` or a boolean.",
                 Handler = new Action<CommandSenderInfo, string>((sender, option) =>
                 {
                     if(option.ToLowerInvariant() == "enable" || option == "1" || option.ToLowerInvariant() == "true")
@@ -60,6 +60,42 @@ namespace WalkerSim.Console
                     {
                         MapDrawing.IsEnabled = false;
                         ConsoleOutput.Log("Overlay for map window disabled.");
+                    }
+                }),
+            },
+            new SubCommand
+            {
+                Name = "biomes",
+                Description = "Map overlay (singleplayer): enables or disables drawing biomes on top of the map overlay. Argument: `enable`/`disable` or a boolean.",
+                Handler = new Action<CommandSenderInfo, string>((sender, option) =>
+                {
+                    if(option.ToLowerInvariant() == "enable" || option == "1" || option.ToLowerInvariant() == "true")
+                    {
+                        MapDrawing.IsBiomesEnabled = true;
+                        ConsoleOutput.Log("Biomes overlay enabled.");
+                    }
+                    else
+                    {
+                        MapDrawing.IsBiomesEnabled = false;
+                        ConsoleOutput.Log("Biomes overlay disabled.");
+                    }
+                }),
+            },
+            new SubCommand
+            {
+                Name = "roadgraph",
+                Description = "Map overlay (singleplayer): enables or disables drawing the road graph (used by road-following processors) on the map overlay. Argument: `enable`/`disable` or a boolean.",
+                Handler = new Action<CommandSenderInfo, string>((sender, option) =>
+                {
+                    if(option.ToLowerInvariant() == "enable" || option == "1" || option.ToLowerInvariant() == "true")
+                    {
+                        MapDrawing.IsGraphEnabled = true;
+                        ConsoleOutput.Log("Road graph overlay enabled.");
+                    }
+                    else
+                    {
+                        MapDrawing.IsGraphEnabled = false;
+                        ConsoleOutput.Log("Road graph overlay disabled.");
                     }
                 }),
             },
@@ -209,6 +245,7 @@ namespace WalkerSim.Console
                         ConsoleOutput.Log("    Speed Scale: {0}", group.SpeedScale);
                         ConsoleOutput.Log("    Post Spawn Behavior: {0}", group.PostSpawnBehavior);
                         ConsoleOutput.Log("    Post Spawn Wander Speed: {0}", group.PostSpawnWanderSpeed);
+                        ConsoleOutput.Log("    Map Edge Behavior: {0}", group.MapEdgeBehavior);
                         ConsoleOutput.Log("    Color: {0}", group.Color);
                         ConsoleOutput.Log("    Processors ({0}):", group.Entries.Count);
                         foreach (var processor in group.Entries)
@@ -224,7 +261,7 @@ namespace WalkerSim.Console
             new SubCommand
             {
                 Name = "maskinfo",
-                Description = "",
+                Description = "Spawn group mask feature: prints the spawn group resolved at the player's current position (entity groups, color). Requires `ws_spawngroups.xml` and `ws_spawngroupsmask.png` in the world folder.",
                 Handler = new Action<CommandSenderInfo>((sender) =>
                 {
                     EntityPlayer player = null;
@@ -252,7 +289,7 @@ namespace WalkerSim.Console
                     var worldMaxs = mapData.WorldMaxs;
                     var worldSize = mapData.WorldSize;
                     var x = (int)MathEx.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, worldSize.X);
-                    var y = (int)worldSize.Y - (int)MathEx.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, worldSize.Y);
+                    var y = (int)MathEx.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, worldSize.Y);
 
                     // Get the spawn group mask for this position.
                     var spawnGroup = spawnGroups.GetSpawnGroup(x, y);

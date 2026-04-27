@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
@@ -329,6 +330,7 @@ namespace Editor.ViewModels
         {
             OnPropertyChanged(nameof(IsToolActive));
             OnPropertyChanged(nameof(ActiveToolPreviewRadius));
+            OnPropertyChanged(nameof(ActiveToolHint));
         }
 
         [ObservableProperty]
@@ -345,6 +347,17 @@ namespace Editor.ViewModels
             EditorTool.EmitSound => SoundRadius,
             EditorTool.Kill => KillRadius,
             _ => float.NaN,
+        };
+
+        /// <summary>One-line hint shown next to the cursor while a tool is active.
+        /// Tells the user what clicking will do and that Esc cancels.</summary>
+        public string ActiveToolHint => ActiveTool switch
+        {
+            EditorTool.EmitSound => "Click: emit sound  ·  Esc: cancel",
+            EditorTool.Kill => "Click: kill agents in area  ·  Esc: cancel",
+            EditorTool.AddPlayer => "Click: add player here  ·  Esc: cancel",
+            EditorTool.SetPlayerPosition => "Click: move player here  ·  Esc: cancel",
+            _ => null,
         };
 
         /// <summary>Called by SimulationCanvas when the user clicks the world.</summary>
@@ -441,6 +454,8 @@ namespace Editor.ViewModels
 
         public Config.WanderingSpeed[] WanderingSpeedOptions { get; } = Enum.GetValues<Config.WanderingSpeed>();
 
+        public Config.MapEdgeBehavior[] MapEdgeBehaviorOptions { get; } = Enum.GetValues<Config.MapEdgeBehavior>();
+
         private static readonly Config.MovementProcessorType[] AllProcessorTypes =
             Enum.GetValues<Config.MovementProcessorType>()
             .Where(t => t != Config.MovementProcessorType.Invalid).ToArray();
@@ -489,13 +504,13 @@ namespace Editor.ViewModels
         [ObservableProperty]
         private string _selectedWorldName = null;
 
-        public IAsyncRelayCommand ImportConfigurationCommand => new AsyncRelayCommand(ImportConfiguration);
+        public IAsyncRelayCommand<Window> ImportConfigurationCommand => new AsyncRelayCommand<Window>(ImportConfiguration);
 
-        public IAsyncRelayCommand ExportConfigurationCommand => new AsyncRelayCommand(ExportConfiguration);
+        public IAsyncRelayCommand<Window> ExportConfigurationCommand => new AsyncRelayCommand<Window>(ExportConfiguration);
 
-        public IAsyncRelayCommand LoadStateCommand => new AsyncRelayCommand(LoadState);
+        public IAsyncRelayCommand<Window> LoadStateCommand => new AsyncRelayCommand<Window>(LoadState);
 
-        public IAsyncRelayCommand SaveStateCommand => new AsyncRelayCommand(SaveState);
+        public IAsyncRelayCommand<Window> SaveStateCommand => new AsyncRelayCommand<Window>(SaveState);
 
         public EditorViewModel()
         {
@@ -527,6 +542,24 @@ namespace Editor.ViewModels
         private void LoadWorldList()
         {
             Logging.Info("Discovering worlds...");
+
+            // Initialize the global prefab database from every game install we know about
+            // (registry, Steam libraries, user-configured extras). This must run before any
+            // world load so that decoration sizes resolve from real PrefabSize values
+            // instead of the fallback default.
+            try
+            {
+                var gamePaths = WorldLocator.FindGamePaths();
+                var prefabSearchPaths = new List<string>();
+                foreach (var install in gamePaths)
+                    prefabSearchPaths.AddRange(WalkerSim.Prefabs.SearchPathsForInstall(install));
+                WalkerSim.Prefabs.Initialize(prefabSearchPaths);
+            }
+            catch (Exception ex)
+            {
+                Logging.Err("Failed to initialize prefab database: {0}", ex.Message);
+            }
+
             List<string> folders;
             try
             {
@@ -845,6 +878,7 @@ namespace Editor.ViewModels
                 SpeedScale = source.SpeedScale,
                 PostSpawnBehavior = source.PostSpawnBehavior,
                 PostSpawnWanderSpeed = source.PostSpawnWanderSpeed,
+                MapEdgeBehavior = source.MapEdgeBehavior,
                 Color = source.Color
             };
 
@@ -919,18 +953,18 @@ namespace Editor.ViewModels
             LogEntries.Clear();
         }
 
-        private async Task ImportConfiguration()
+        private async Task ImportConfiguration(Window owner)
         {
-            var mainWindow = Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
-                ? desktop.MainWindow
-                : null;
-
-            if (mainWindow == null)
+            if (owner == null)
                 return;
 
             try
             {
-                var files = await mainWindow.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                // Workaround for Avalonia file-picker race that can deadlock the
+                // app when opened immediately after a ShowDialog. Drop once the
+                // upstream fix lands.
+                await Task.Delay(250);
+                var files = await owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
                 {
                     Title = "Load Configuration",
                     FileTypeFilter = new[] { new FilePickerFileType("XML Files") { Patterns = new[] { "*.xml" } } },
@@ -986,18 +1020,16 @@ namespace Editor.ViewModels
             }
         }
 
-        private async Task ExportConfiguration()
+        private async Task ExportConfiguration(Window owner)
         {
-            var mainWindow = Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
-                ? desktop.MainWindow
-                : null;
-
-            if (mainWindow == null)
+            if (owner == null)
                 return;
 
             try
             {
-                var file = await mainWindow.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+                // See ImportConfiguration — Avalonia picker race workaround.
+                await Task.Delay(250);
+                var file = await owner.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
                 {
                     Title = "Save Configuration",
                     DefaultExtension = "xml",
@@ -1030,18 +1062,16 @@ namespace Editor.ViewModels
             }
         }
 
-        private async Task LoadState()
+        private async Task LoadState(Window owner)
         {
-            var mainWindow = Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
-                ? desktop.MainWindow
-                : null;
-
-            if (mainWindow == null)
+            if (owner == null)
                 return;
 
             try
             {
-                var files = await mainWindow.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                // See ImportConfiguration — Avalonia picker race workaround.
+                await Task.Delay(250);
+                var files = await owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
                 {
                     Title = "Load State Save",
                     FileTypeFilter = new[] { new FilePickerFileType("State Files") { Patterns = new[] { "*.bin" } } },
@@ -1122,18 +1152,16 @@ namespace Editor.ViewModels
             }
         }
 
-        private async Task SaveState()
+        private async Task SaveState(Window owner)
         {
-            var mainWindow = Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
-                ? desktop.MainWindow
-                : null;
-
-            if (mainWindow == null)
+            if (owner == null)
                 return;
 
             try
             {
-                var file = await mainWindow.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+                // See ImportConfiguration — Avalonia picker race workaround.
+                await Task.Delay(250);
+                var file = await owner.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
                 {
                     Title = "Save State",
                     DefaultExtension = "bin",

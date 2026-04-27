@@ -163,6 +163,7 @@ namespace WalkerSim.Tests
                 SpeedScale = 2.0f,
                 PostSpawnBehavior = Config.PostSpawnBehavior.ChaseActivator,
                 PostSpawnWanderSpeed = Config.WanderingSpeed.Run,
+                MapEdgeBehavior = Config.MapEdgeBehavior.Bounce,
                 Color = "#FF0000",
                 Entries = new System.Collections.Generic.List<Config.MovementProcessor>
                 {
@@ -200,6 +201,7 @@ namespace WalkerSim.Tests
             Assert.AreEqual(2.0f, group.SpeedScale);
             Assert.AreEqual(Config.PostSpawnBehavior.ChaseActivator, group.PostSpawnBehavior);
             Assert.AreEqual(Config.WanderingSpeed.Run, group.PostSpawnWanderSpeed);
+            Assert.AreEqual(Config.MapEdgeBehavior.Bounce, group.MapEdgeBehavior);
             Assert.AreEqual("#FF0000", group.Color);
             Assert.AreEqual(2, group.Entries.Count);
 

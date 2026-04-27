@@ -41,7 +41,7 @@ namespace WalkerSim
 
             public override int GetHashCode()
             {
-                return A.GetHashCode() ^ B.GetHashCode() ^ G.GetHashCode() ^ B.GetHashCode();
+                return A.GetHashCode() ^ B.GetHashCode() ^ G.GetHashCode() ^ R.GetHashCode();
             }
 
             public byte R;

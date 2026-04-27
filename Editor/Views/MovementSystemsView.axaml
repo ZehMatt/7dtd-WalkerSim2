@@ -107,7 +107,7 @@
 								<!-- Name -->
 								<Grid ColumnDefinitions="140,*">
 									<TextBlock Grid.Column="0" Text="Name:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"/>
-									<TextBox Grid.Column="1" Text="{Binding Name, Mode=TwoWay}" Watermark="{Binding DisplayName}" FontSize="12"/>
+									<TextBox Grid.Column="1" Text="{Binding Name, Mode=TwoWay}" PlaceholderText="{Binding DisplayName}" FontSize="12"/>
 								</Grid>
 
 								<!-- Distribution Weight -->
@@ -156,6 +156,16 @@
 									<ComboBox Grid.Column="1"
 											  SelectedItem="{Binding PostSpawnWanderSpeed, Mode=TwoWay}"
 											  ItemsSource="{Binding DataContext.WanderingSpeedOptions, ElementName=RootControl}"
+											  HorizontalAlignment="Stretch" FontSize="12"/>
+								</Grid>
+
+								<!-- Map Edge Behavior -->
+								<Grid ColumnDefinitions="140,*">
+									<controls:LabelWithHelp Grid.Column="0" LabelText="Map Edge:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"
+										HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/systems.html#mapedgebehavior"/>
+									<ComboBox Grid.Column="1"
+											  SelectedItem="{Binding MapEdgeBehavior, Mode=TwoWay}"
+											  ItemsSource="{Binding DataContext.MapEdgeBehaviorOptions, ElementName=RootControl}"
 											  HorizontalAlignment="Stretch" FontSize="12"/>
 								</Grid>
 

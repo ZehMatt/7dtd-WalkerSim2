@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Threading;
@@ -39,14 +40,10 @@ namespace Editor.Views
                     vm.StopSimulation();
             };
 
-            this.KeyDown += (s, e) =>
-            {
-                if (e.Key == Avalonia.Input.Key.Escape && DataContext is EditorViewModel vmEsc)
-                {
-                    vmEsc.CancelToolCommand.Execute(null);
-                    e.Handled = true;
-                }
-            };
+            // Listen on the tunneling phase so the focused control (TextBox, NumericUpDown,
+            // ComboBox, etc.) can't swallow Escape before we see it. Bubbling KeyDown only
+            // fires if no descendant handled the event, which is why this used to be flaky.
+            this.AddHandler(KeyDownEvent, OnPreviewKeyDown, RoutingStrategies.Tunnel);
 
             this.DataContextChanged += (s, e) =>
             {
@@ -67,6 +64,18 @@ namespace Editor.Views
             };
         }
 
+        private void OnPreviewKeyDown(object? sender, KeyEventArgs e)
+        {
+            // Cancel an active tool on Escape, regardless of which descendant has focus.
+            // Gated on IsToolActive so we don't steal Escape from menus / dialogs / popups
+            // when no tool is selected.
+            if (e.Key == Key.Escape && DataContext is EditorViewModel vm && vm.IsToolActive)
+            {
+                vm.CancelToolCommand.Execute(null);
+                e.Handled = true;
+            }
+        }
+
         private void UpdateTimer_Tick(object? sender, EventArgs e)
         {
             if (DataContext is EditorViewModel viewModel)
@@ -75,6 +84,7 @@ namespace Editor.Views
 
                 // Sync tool preview state to canvas every frame
                 SimCanvas.ToolPreviewRadius = viewModel.ActiveToolPreviewRadius;
+                SimCanvas.ToolPreviewHint = viewModel.ActiveToolHint;
                 SimCanvas.SetToolActive(viewModel.IsToolActive);
             }
 
@@ -169,7 +179,7 @@ namespace Editor.Views
             {
                 if (DataContext is EditorViewModel vm)
                 {
-                    await vm.ExportConfigurationCommand.ExecuteAsync(null);
+                    await vm.ExportConfigurationCommand.ExecuteAsync(dialog);
                     if (!vm.HasUnsavedChanges)
                     {
                         dialogResult = true;
@@ -249,11 +259,13 @@ namespace Editor.Views
             await window.ShowDialog(this);
 
             if (window.SettingsSaved)
+            {
                 SimCanvas.ApplySettings();
-
-            // Always repopulate worlds — folders may have changed
-            if (DataContext is EditorViewModel vm)
-                vm.ReloadWorldList();
+                
+                // Folders may have changed — repopulate worlds.
+                if (DataContext is EditorViewModel vm)
+                    vm.ReloadWorldList();
+            }
         }
 
         // ── Help ──────────────────────────────────────────────────────────────────
@@ -408,5 +420,6 @@ namespace Editor.Views
             if (forceScroll || nearBottom)
                 sv.ScrollToEnd();
         }
+
     }
 }

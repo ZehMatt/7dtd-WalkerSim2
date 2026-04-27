@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace Editor
+namespace Editor.Audio
 {
     public sealed class Audio : IDisposable
     {

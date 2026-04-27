@@ -61,7 +61,7 @@
 		<!-- Hex text input -->
 		<TextBox x:Name="HexInput" Grid.Column="2"
 				 Text="{Binding ColorString, Mode=TwoWay}"
-				 Watermark="#RRGGBB"
+				 PlaceholderText="#RRGGBB"
 				 VerticalAlignment="Center"/>
 
 	</Grid>

@@ -5,6 +5,7 @@ using Avalonia.Platform.Storage;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Editor.Views
 {
@@ -92,6 +93,10 @@ namespace Editor.Views
 
         private async void OnAddFolderClick(object sender, RoutedEventArgs e)
         {
+            // Workaround for Avalonia file-picker race that can deadlock the
+            // app when opened immediately after a ShowDialog. Drop once the
+            // upstream fix lands.
+            await Task.Delay(250);
             var result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
                 Title = "Select Game Folder",

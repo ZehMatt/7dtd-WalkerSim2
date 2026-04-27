@@ -15,8 +15,6 @@ namespace WalkerSim
             void UnlockPixels();
 
             Color GetPixel(int x, int y);
-
-            void RemoveTransparency();
         }
     }
 }

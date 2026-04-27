@@ -34,6 +34,8 @@ namespace Editor.Views
         private string _cachedRoadsPath;
         private WriteableBitmap _biomesBitmap;
         private string _cachedBiomesPath;
+        private WriteableBitmap _citiesBitmap;
+        private Cities _cachedCitiesRef;
 
         // Cached group brushes
         private IBrush[] _groupBrushes = Array.Empty<IBrush>();
@@ -84,8 +86,13 @@ namespace Editor.Views
         /// </summary>
         public float ToolPreviewRadius { get; set; } = float.NaN;
 
+        /// <summary>One-line label drawn next to the cursor while a tool is active. Null hides it.</summary>
+        public string ToolPreviewHint { get; set; }
+
         // Mouse position for tool preview
         private Vector3 _mouseWorldPosition = Vector3.Zero;
+        private Point _mouseScreenPosition;
+        private bool _mouseInCanvas;
         // Whether the pointer has moved enough to count as a pan rather than a click
         private bool _hasPanned = false;
         private const double PanThreshold = 4.0;
@@ -306,6 +313,8 @@ namespace Editor.Views
 
             var pos = e.GetPosition(this);
             _mouseWorldPosition = CanvasToWorld(pos);
+            _mouseScreenPosition = pos;
+            _mouseInCanvas = true;
 
             if (_isDragging)
             {
@@ -358,6 +367,14 @@ namespace Editor.Views
                 OnCanvasClick(_mouseWorldPosition);
                 e.Handled = true;
             }
+        }
+
+        protected override void OnPointerExited(PointerEventArgs e)
+        {
+            base.OnPointerExited(e);
+            // Hide the tool hint when the cursor leaves the canvas — drawing it where
+            // the cursor isn't is misleading.
+            _mouseInCanvas = false;
         }
 
         // Convert a simulation world position to canvas pixel coordinates (unzoomed)
@@ -453,6 +470,7 @@ namespace Editor.Views
         {
             _cachedGroupCount = -1;
         }
+
 
         private void EnsureGroupBrushes()
         {
@@ -570,13 +588,21 @@ namespace Editor.Views
                 // Draw highlight/blink on top of everything.
                 if (_highlightAgent != null && _blinkPhase < 1.0)
                     RenderHighlightAgent(context, viewSize, viewSize);
-                // Draw active tool preview on top.
-                if (OnCanvasClick != null && !float.IsNaN(ToolPreviewRadius))
+                // Draw active tool preview circle on top (still in zoomed space so the
+                // radius matches the world).
+                if (OnCanvasClick != null && _toolActive && !float.IsNaN(ToolPreviewRadius))
                     RenderToolPreview(context, viewSize, viewSize);
             }
 
             // HUD bar — drawn in screen space, never affected by zoom/pan.
             RenderHUDBar(context, width);
+
+            // Tool hint label — also screen space so the font stays at native size.
+            // Anchored to the world viewport centre when the cursor isn't over the
+            // canvas (the user just clicked a sidebar tool button), and follows the
+            // cursor once they move into the map.
+            if (_toolActive && !string.IsNullOrEmpty(ToolPreviewHint))
+                RenderToolHint(context);
 
             // Keep animating while tracking, smooth-panning, or blinking.
             bool animating = _smoothActive || _trackedAgent != null || _highlightAgent != null;
@@ -615,6 +641,76 @@ namespace Editor.Views
             double r = ToolPreviewRadius / worldSize.X * width;
 
             context.DrawEllipse(null, _toolPreviewPen, new Point(cx, cy), r, r);
+        }
+
+        // Cached FormattedText for the tool hint label so we don't allocate per frame.
+        private string _cachedToolHintText;
+        private FormattedText _cachedToolHintFt;
+        private static readonly IBrush _toolHintBackground = new SolidColorBrush(Color.FromArgb(200, 20, 20, 20));
+        private static readonly IBrush _toolHintForeground = new SolidColorBrush(Color.FromArgb(240, 235, 235, 235));
+        private static readonly Pen _toolHintBorder = new Pen(new SolidColorBrush(Color.FromArgb(120, 255, 255, 255)), 1.0);
+
+        private void RenderToolHint(DrawingContext context)
+        {
+            if (_cachedToolHintFt == null || _cachedToolHintText != ToolPreviewHint)
+            {
+                _cachedToolHintText = ToolPreviewHint;
+                _cachedToolHintFt = new FormattedText(
+                    ToolPreviewHint,
+                    CultureInfo.CurrentCulture,
+                    FlowDirection.LeftToRight,
+                    _hudTypeface,
+                    12,
+                    _toolHintForeground);
+            }
+
+            const double padX = 8.0;
+            const double padY = 4.0;
+            double pillW = _cachedToolHintFt.Width + padX * 2;
+            double pillH = _cachedToolHintFt.Height + padY * 2;
+
+            Point topLeft;
+            if (_mouseInCanvas)
+                topLeft = ComputeFollowCursorHintPosition(pillW, pillH);
+            else
+                topLeft = ComputeCentredHintPosition(pillW, pillH);
+
+            var pill = new Rect(topLeft.X, topLeft.Y, pillW, pillH);
+            context.DrawRectangle(_toolHintBackground, _toolHintBorder, pill, 4, 4);
+            context.DrawText(_cachedToolHintFt, new Point(topLeft.X + padX, topLeft.Y + padY));
+        }
+
+        /// Position the pill just below-right of the cursor, flipping to the other side
+        /// if it would clip the canvas edge.
+        private Point ComputeFollowCursorHintPosition(double pillW, double pillH)
+        {
+            const double cursorOffset = 16.0;
+            var bounds = Bounds;
+            double x = _mouseScreenPosition.X + cursorOffset;
+            double y = _mouseScreenPosition.Y + cursorOffset;
+            if (x + pillW > bounds.Width)
+                x = _mouseScreenPosition.X - cursorOffset - pillW;
+            if (y + pillH > bounds.Height)
+                y = _mouseScreenPosition.Y - cursorOffset - pillH;
+            if (x < 0) x = 0;
+            if (y < BarHeight) y = BarHeight;
+            return new Point(x, y);
+        }
+
+        /// Anchor the pill at the centre of the square world viewport. Used when the
+        /// user has just activated a tool from a sidebar button and the cursor isn't
+        /// yet over the canvas — the pill at the map centre tells them what's armed
+        /// and that Esc cancels.
+        private Point ComputeCentredHintPosition(double pillW, double pillH)
+        {
+            var b = Bounds;
+            var worldHeight = b.Height - BarHeight;
+            var viewSize = Math.Min(b.Width, worldHeight);
+            var offsetX = Math.Floor((b.Width - viewSize) / 2.0);
+            var offsetY = BarHeight + Math.Floor((worldHeight - viewSize) / 2.0);
+            double cx = offsetX + viewSize / 2.0;
+            double cy = offsetY + viewSize / 2.0;
+            return new Point(cx - pillW / 2.0, cy - pillH / 2.0);
         }
 
         private void RenderRoads(DrawingContext context, double width, double height)
@@ -929,20 +1025,106 @@ namespace Editor.Views
         private void RenderCities(DrawingContext context, double width, double height)
         {
             var mapData = _simulation.MapData;
-            if (mapData?.Cities?.CityList == null)
+            var cities = mapData?.Cities;
+            if (cities == null || cities.CityIdMap == null || cities.CityIdMap.Length == 0)
                 return;
 
-            var worldSize = _simulation.WorldSize;
-
-            foreach (var city in mapData.Cities.CityList)
+            // Cache by object reference — Cities is rebuilt from scratch on every world
+            // load, so a new instance always means stale data. Comparing counts/IDs would
+            // miss the case where two worlds happen to produce the same number of cities.
+            if (_citiesBitmap == null || !ReferenceEquals(_cachedCitiesRef, cities))
             {
-                var (cx, cy) = SimToCanvas(city.Position, width, height);
-                var sw = MathEx.Remap(city.Bounds.X, 0, worldSize.X, 0, (float)width);
-                var sh = MathEx.Remap(city.Bounds.Y, 0, worldSize.Y, 0, (float)height);
-                var rect = new Rect(cx - sw / 2, cy - sh / 2, sw, sh);
-                context.FillRectangle(_cityBrush, rect);
-                context.DrawRectangle(null, _cityPen, rect);
+                _citiesBitmap?.Dispose();
+                _citiesBitmap = BuildCitiesBitmap(cities);
+                _cachedCitiesRef = cities;
             }
+
+            if (_citiesBitmap != null)
+                context.DrawImage(_citiesBitmap, new Rect(0, 0, width, height));
+        }
+
+        private WriteableBitmap BuildCitiesBitmap(Cities cities)
+        {
+            int w = cities.Width;
+            int h = cities.Height;
+            if (w == 0 || h == 0)
+                return null;
+
+            var bmp = new WriteableBitmap(
+                new PixelSize(w, h),
+                new Vector(96, 96),
+                Avalonia.Platform.PixelFormat.Bgra8888,
+                Avalonia.Platform.AlphaFormat.Premul);
+
+            // One color per city id. Alpha is premultiplied.
+            int cityCount = cities.CityList.Count;
+            var colorLookup = new (byte b, byte g, byte r, byte a)[cityCount + 1];
+            const byte alpha = 140;
+            for (int i = 0; i < cityCount; i++)
+            {
+                // Hash-based hue gives each city a distinct but stable color.
+                float hue = ((i * 2654435761u) % 360) / 360f;
+                HsvToRgb(hue, 0.85f, 1.0f, out byte r, out byte g, out byte b);
+                colorLookup[i + 1] = (
+                    (byte)(b * alpha / 255),
+                    (byte)(g * alpha / 255),
+                    (byte)(r * alpha / 255),
+                    alpha);
+            }
+
+            using (var buf = bmp.Lock())
+            {
+                int stride = buf.RowBytes;
+                var pixels = new byte[h * stride];
+                var idMap = cities.CityIdMap;
+
+                for (int y = 0; y < h; y++)
+                {
+                    int srcRow = y * w;
+                    int dstRow = y * stride;
+                    for (int x = 0; x < w; x++)
+                    {
+                        ushort id = idMap[srcRow + x];
+                        if (id == 0 || id > cityCount)
+                            continue;
+
+                        var c = colorLookup[id];
+                        int idx = dstRow + x * 4;
+                        pixels[idx + 0] = c.b;
+                        pixels[idx + 1] = c.g;
+                        pixels[idx + 2] = c.r;
+                        pixels[idx + 3] = c.a;
+                    }
+                }
+
+                Marshal.Copy(pixels, 0, buf.Address, pixels.Length);
+            }
+
+            return bmp;
+        }
+
+        private static void HsvToRgb(float h, float s, float v, out byte r, out byte g, out byte b)
+        {
+            float c = v * s;
+            float hp = h * 6f;
+            float x = c * (1f - System.Math.Abs((hp % 2f) - 1f));
+            float r1, g1, b1;
+            if (hp < 1f)
+            { r1 = c; g1 = x; b1 = 0; }
+            else if (hp < 2f)
+            { r1 = x; g1 = c; b1 = 0; }
+            else if (hp < 3f)
+            { r1 = 0; g1 = c; b1 = x; }
+            else if (hp < 4f)
+            { r1 = 0; g1 = x; b1 = c; }
+            else if (hp < 5f)
+            { r1 = x; g1 = 0; b1 = c; }
+            else
+            { r1 = c; g1 = 0; b1 = x; }
+            float m = v - c;
+            r = (byte)System.Math.Round((r1 + m) * 255f);
+            g = (byte)System.Math.Round((g1 + m) * 255f);
+            b = (byte)System.Math.Round((b1 + m) * 255f);
         }
 
         // Cached pen for wind arrow shaft

@@ -69,6 +69,16 @@ How fast zombies walk when they're just wandering (not chasing you):
 
 This only matters when zombies are wandering. When they see you or attack, they use the game's normal speed.
 
+### MapEdgeBehavior
+
+What happens when an agent of this system reaches the edge of the simulated map:
+
+- **Warp**: The agent wraps around to the opposite side of the map (default, original behavior)
+- **Bounce**: The agent's velocity is nudged back toward the center and its position is clamped to the map bounds. Useful for keeping agents inside the playable area without them disappearing
+- **Clamp**: The agent's position is simply clamped to the map bounds without changing velocity. The agent will pile up against the edge until other forces push it away
+
+This is set per-system, so different groups can use different edge behaviors.
+
 ### Color
 
 What color to show this group in the Editor tool. This is just for viewing and doesn't affect the game.
