@@ -23,33 +23,33 @@
   <PopulationStartPercent>10</PopulationStartPercent>
   <FullPopulationAtDay>8</FullPopulationAtDay>
   <Systems>
-    <System Name="City Visitors" Weight="6" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#00E600">
+    <System Name="City Visitors" Weight="6" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" MapEdgeBehavior="Warp" Color="#00E600">
       <Processor Type="CityVisitor" Distance="50" Power="0.3" Param1="30" Param2="50" />
       <Processor Type="AvoidSameGroup" Distance="8" Power="0.1" />
       <Processor Type="WorldEvents" Distance="50" Power="0.6" />
       <Processor Type="AlignSameGroup" Distance="50" Power="0.1001" />
       <Processor Type="FlockSameGroup" Distance="20" Power="0.01" />
     </System>
-    <System Name="Street Hordes" Weight="4" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#E60000">
+    <System Name="Street Hordes" Weight="4" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" MapEdgeBehavior="Warp" Color="#E60000">
       <Processor Type="StickToRoads" Distance="50" Power="0.5" />
       <Processor Type="Wind" Distance="50" Power="0.01" />
       <Processor Type="AvoidSameGroup" Distance="5" Power="0.01" />
       <Processor Type="WorldEvents" Distance="50" Power="0.6" />
     </System>
-    <System Name="General Horde" Weight="3" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#FFADFF">
+    <System Name="General Horde" Weight="3" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" MapEdgeBehavior="Warp" Color="#FFADFF">
       <Processor Type="FlockSameGroup" Distance="50" Power="0.01" />
       <Processor Type="AvoidSameGroup" Distance="6" Power="0.3" />
       <Processor Type="Wind" Distance="50" Power="0.2" />
       <Processor Type="WorldEvents" Distance="50" Power="0.6" />
     </System>
-    <System Name="POI Protectors" Weight="1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#00A8FF">
+    <System Name="POI Protectors" Weight="1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" MapEdgeBehavior="Warp" Color="#00A8FF">
       <Processor Type="StickToPOIs" Distance="50" Power="0.1" />
       <Processor Type="AvoidSameGroup" Distance="20" Power="0.1" />
       <Processor Type="AlignAnyGroup" Distance="50" Power="0.1" />
       <Processor Type="FlockSameGroup" Distance="10" Power="0.1" />
       <Processor Type="WorldEvents" Distance="50" Power="0.6" />
     </System>
-    <System Name="Hillbillies" Weight="1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#FFFFFF">
+    <System Name="Hillbillies" Weight="1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" MapEdgeBehavior="Warp" Color="#FFFFFF">
       <Processor Type="FlockSameGroup" Distance="50" Power="0.01" />
       <Processor Type="AvoidRoads" Distance="50" Power="0.01" />
       <Processor Type="AvoidSameGroup" Distance="7" Power="0.2" />
@@ -59,14 +59,14 @@
       <Processor Type="WorldEvents" Distance="50" Power="0.6" />
       <Processor Type="AvoidCities" Distance="50" Power="0.0501" />
     </System>
-    <System Name="City/Road Visitors" Weight="1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#FFE600">
+    <System Name="City/Road Visitors" Weight="1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" MapEdgeBehavior="Warp" Color="#FFE600">
       <Processor Type="CityVisitor" Distance="50" Power="0.3" Param1="30" Param2="50" />
       <Processor Type="AvoidSameGroup" Distance="8" Power="0.3" />
       <Processor Type="WorldEvents" Distance="50" Power="0.6" />
       <Processor Type="AlignSameGroup" Distance="50" Power="0.1001" />
       <Processor Type="StickToRoads" Distance="50" Power="0.15" />
     </System>
-    <System Name="Loners" Weight="1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#FF6B00">
+    <System Name="Loners" Weight="1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" MapEdgeBehavior="Warp" Color="#FF6B00">
       <Processor Type="AvoidAnyGroup" Distance="250" Power="0.5" />
       <Processor Type="WindInverted" Distance="50" Power="0.5" />
     </System>
