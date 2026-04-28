@@ -174,6 +174,7 @@ jobs:
     - name: Build Mod and Tests
       run: |
         msbuild Mod\Mod.csproj -t:rebuild -property:Configuration=Release -property:Platform=x64
+        msbuild Mod.Web\Mod.Web.csproj -t:rebuild -property:Configuration=Release -property:Platform=x64
         msbuild Tests\Tests.csproj -t:rebuild -property:Configuration=Release -property:Platform=x64
 
     - name: Run tests
