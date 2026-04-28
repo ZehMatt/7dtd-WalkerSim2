@@ -474,7 +474,7 @@ jobs:
     - name: Determine versions
       run: |
         VERSION="${GITHUB_REF_NAME#release/}"
-        NEXT_VERSION=$(echo "$VERSION" | awk -F. '{$NF=$NF+1; OFS="."; print}')
+        NEXT_VERSION=$(echo "$VERSION" | awk -F. 'BEGIN{OFS="."} {$NF=$NF+1; print}')
         echo "BUILD_VERSION=$VERSION" >> $GITHUB_ENV
         echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
         echo "Current: $VERSION, next: $NEXT_VERSION"
