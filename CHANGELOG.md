@@ -14,6 +14,7 @@
 - Feature: New console command `walkersim roadgraph enable/disable/bool` to draw the road graph when the map overlay is enabled (Debug Feature).
 - Feature: New console command `walkersim biomes enable/disable/bool` to draw the biomes when the map overlay is enabled (Debug Feature).
 - Feature: New console command `walkersim cities enable/disable/bool` to draw the cities when the map overlay is enabled (Debug Feature).
+- Feature: Added integration with the `TFP_WebServer` mod. With `WebDashboardEnabled` set in `serverconfig.xml`, the simulation can be inspected from a web browser, rendering agents, sound events and other state on a map view similar to `walkersim map`.
 - Change: New VFX in the Editor About Dialog and also a unique custom theme song, go check it out!
 
 # 1.2.1
