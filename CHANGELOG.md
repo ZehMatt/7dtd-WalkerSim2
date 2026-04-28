@@ -1,4 +1,4 @@
-# 1.2.2 (in progress)
+# 1.2.2
 - Fix: Errors when trying to use 16k worlds, this is a non-standard setup and might still have issues.
 - Fix: Roads were vertically mirrored.
 - Fix: StickToBiomes did not correctly work because of a bad assumption about the final loaded image format.
