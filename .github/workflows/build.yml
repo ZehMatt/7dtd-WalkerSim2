@@ -345,6 +345,25 @@ jobs:
         VERSION="${GITHUB_REF_NAME#release/}"
         echo "BUILD_VERSION=$VERSION" >> $GITHUB_ENV
 
+    - name: Checkout
+      uses: actions/checkout@v6
+
+    - name: Extract release notes from CHANGELOG.md
+      run: |
+        awk -v ver="$BUILD_VERSION" '
+          /^# / {
+            if (capturing) exit
+            if ($0 == "# " ver) { capturing = 1; next }
+          }
+          capturing { print }
+        ' CHANGELOG.md > release_notes.md
+        if [ ! -s release_notes.md ]; then
+          echo "::error::No CHANGELOG.md section found for version $BUILD_VERSION"
+          exit 1
+        fi
+        echo "--- Release notes ---"
+        cat release_notes.md
+
     - name: Download Mod artifact
       uses: actions/download-artifact@v4
       with:
@@ -391,11 +410,96 @@ jobs:
         tag_name: ${{ env.BUILD_VERSION }}
         make_latest: true
         generate_release_notes: false
+        body_path: release_notes.md
         files: |
           WalkerSim2-${{ env.BUILD_VERSION }}.zip
           WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}.zip
           WalkerSim2-Editor-Linux-x64-${{ env.BUILD_VERSION }}.zip
           WalkerSim2-Editor-Mac-arm64-${{ env.BUILD_VERSION }}.zip
+
+    - name: Upload Mod to Nexus Mods
+      uses: Nexus-Mods/upload-action@v1.0.0-beta.5
+      with:
+        api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+        file_group_id: 2574163
+        filename: WalkerSim2-${{ env.BUILD_VERSION }}.zip
+        version: ${{ env.BUILD_VERSION }}
+        file_category: main
+        archive_existing_file: true
+
+    - name: Upload Editor (Windows) to Nexus Mods
+      uses: Nexus-Mods/upload-action@v1.0.0-beta.5
+      with:
+        api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+        file_group_id: 7211470
+        filename: WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}.zip
+        version: ${{ env.BUILD_VERSION }}
+        file_category: optional
+        archive_existing_file: true
+
+    - name: Upload Editor (Linux) to Nexus Mods
+      uses: Nexus-Mods/upload-action@v1.0.0-beta.5
+      with:
+        api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+        file_group_id: 7211479
+        filename: WalkerSim2-Editor-Linux-x64-${{ env.BUILD_VERSION }}.zip
+        version: ${{ env.BUILD_VERSION }}
+        file_category: optional
+        archive_existing_file: true
+
+    - name: Upload Editor (Mac) to Nexus Mods
+      uses: Nexus-Mods/upload-action@v1.0.0-beta.5
+      with:
+        api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+        file_group_id: 7211476
+        filename: WalkerSim2-Editor-Mac-arm64-${{ env.BUILD_VERSION }}.zip
+        version: ${{ env.BUILD_VERSION }}
+        file_category: optional
+        archive_existing_file: true
+
+  post-release-merge:
+    name: Merge Release into Master
+    if: startsWith(github.ref, 'refs/heads/release/')
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Checkout master
+      uses: actions/checkout@v6
+      with:
+        ref: master
+        fetch-depth: 0
+
+    - name: Determine versions
+      run: |
+        VERSION="${GITHUB_REF_NAME#release/}"
+        NEXT_VERSION=$(echo "$VERSION" | awk -F. '{$NF=$NF+1; OFS="."; print}')
+        echo "BUILD_VERSION=$VERSION" >> $GITHUB_ENV
+        echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
+        echo "Current: $VERSION, next: $NEXT_VERSION"
+
+    - name: Configure git
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+    - name: Merge release branch into master
+      run: git merge --ff "${{ github.sha }}" -m "Merge release/${BUILD_VERSION} into master"
+
+    - name: Start next version in CHANGELOG.md
+      run: |
+        {
+          echo "# $NEXT_VERSION (in progress)"
+          echo
+          cat CHANGELOG.md
+        } > CHANGELOG.md.new
+        mv CHANGELOG.md.new CHANGELOG.md
+        git add CHANGELOG.md
+        git commit -m "Start of $NEXT_VERSION"
+
+    - name: Push master
+      run: git push origin master
 
   prerelease:
     name: Pre-Release
@@ -407,6 +511,25 @@ jobs:
       run: |
         VERSION="${GITHUB_REF_NAME#prerelease/}"
         echo "BUILD_VERSION=${VERSION}" >> $GITHUB_ENV
+
+    - name: Checkout
+      uses: actions/checkout@v6
+
+    - name: Extract release notes from CHANGELOG.md
+      run: |
+        awk -v ver="$BUILD_VERSION" '
+          /^# / {
+            if (capturing) exit
+            if ($0 == "# " ver || $0 == "# " ver " (in progress)") { capturing = 1; next }
+          }
+          capturing { print }
+        ' CHANGELOG.md > release_notes.md
+        if [ ! -s release_notes.md ]; then
+          echo "::error::No CHANGELOG.md section found for version $BUILD_VERSION"
+          exit 1
+        fi
+        echo "--- Release notes ---"
+        cat release_notes.md
 
     - name: Download Mod artifact
       uses: actions/download-artifact@v4
@@ -455,6 +578,7 @@ jobs:
         prerelease: true
         make_latest: false
         generate_release_notes: false
+        body_path: release_notes.md
         files: |
           WalkerSim2-${{ env.BUILD_VERSION }}.zip
           WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}.zip
