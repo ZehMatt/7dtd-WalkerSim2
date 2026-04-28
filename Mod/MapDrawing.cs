@@ -277,12 +277,18 @@ namespace WalkerSim
             float hp = h * 6f;
             float x = c * (1f - System.Math.Abs((hp % 2f) - 1f));
             float r1, g1, b1;
-            if (hp < 1f) { r1 = c; g1 = x; b1 = 0; }
-            else if (hp < 2f) { r1 = x; g1 = c; b1 = 0; }
-            else if (hp < 3f) { r1 = 0; g1 = c; b1 = x; }
-            else if (hp < 4f) { r1 = 0; g1 = x; b1 = c; }
-            else if (hp < 5f) { r1 = x; g1 = 0; b1 = c; }
-            else { r1 = c; g1 = 0; b1 = x; }
+            if (hp < 1f)
+            { r1 = c; g1 = x; b1 = 0; }
+            else if (hp < 2f)
+            { r1 = x; g1 = c; b1 = 0; }
+            else if (hp < 3f)
+            { r1 = 0; g1 = c; b1 = x; }
+            else if (hp < 4f)
+            { r1 = 0; g1 = x; b1 = c; }
+            else if (hp < 5f)
+            { r1 = x; g1 = 0; b1 = c; }
+            else
+            { r1 = c; g1 = 0; b1 = x; }
             float m = v - c;
             r = (byte)System.Math.Round((r1 + m) * 255f);
             g = (byte)System.Math.Round((g1 + m) * 255f);

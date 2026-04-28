@@ -5,6 +5,8 @@
 7DaysToDieServer_Data/Managed/UnityEngine.CoreModule.dll
 7DaysToDieServer_Data/Managed/UnityEngine.ImageConversionModule.dll
 7DaysToDieServer_Data/Managed/UnityEngine.dll
+7DaysToDieServer_Data/Managed/Utf8Json.dll
 7DaysToDieServer_Data/Managed/mscorlib.dll
 7DaysToDieServer_Data/Managed/netstandard.dll
 Mods/0_TFP_Harmony/0Harmony.dll
+Mods/TFP_WebServer/WebServer.dll

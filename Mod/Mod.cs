@@ -68,9 +68,43 @@ namespace WalkerSim
             Logging.Out($"WalkerSim v{BuildInfo.Version} initialized.");
         }
 
+        static void TryLoadWebMod()
+        {
+            if (Type.GetType("Webserver.WebAPI.AbsRestApi, WebServer") == null)
+            {
+                Logging.Out("WebServer not loaded, skipping web integration.");
+                return;
+            }
+
+            try
+            {
+                var modFolder = GetModFolder();
+                if (string.IsNullOrEmpty(modFolder))
+                    return;
+
+                var webDllPath = System.IO.Path.Combine(modFolder, "WebMod", "WalkerSimMod.Web.dll");
+                if (!System.IO.File.Exists(webDllPath))
+                {
+                    Logging.Warn("WebServer present but web DLL not found at '{0}'.", webDllPath);
+                    return;
+                }
+
+                var webAsm = System.Reflection.Assembly.LoadFrom(webDllPath);
+                var ourMod = ModManager.GetModForAssembly(System.Reflection.Assembly.GetExecutingAssembly());
+                if (ourMod != null)
+                    ourMod.allAssemblies.Add(webAsm);
+                Logging.Out("Loaded web integration from '{0}'.", webDllPath);
+            }
+            catch (Exception ex)
+            {
+                Logging.Err("Failed to load web integration: {0}", ex.Message);
+            }
+        }
+
         static void GameAwake(ref ModEvents.SGameAwakeData data)
         {
             _firstUpdateDone = false;
+            TryLoadWebMod();
         }
 
         internal static string GetModFolder()
