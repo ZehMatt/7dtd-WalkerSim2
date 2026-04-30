@@ -423,6 +423,7 @@ jobs:
         api_key: ${{ secrets.NEXUSMODS_API_KEY }}
         file_group_id: 2574163
         filename: WalkerSim2-${{ env.BUILD_VERSION }}.zip
+        display_name: WalkerSim2-${{ env.BUILD_VERSION }}
         version: ${{ env.BUILD_VERSION }}
         file_category: main
         archive_existing_file: true
@@ -433,6 +434,7 @@ jobs:
         api_key: ${{ secrets.NEXUSMODS_API_KEY }}
         file_group_id: 7211470
         filename: WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}.zip
+        display_name: WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}
         version: ${{ env.BUILD_VERSION }}
         file_category: optional
         archive_existing_file: true
@@ -443,6 +445,7 @@ jobs:
         api_key: ${{ secrets.NEXUSMODS_API_KEY }}
         file_group_id: 7211479
         filename: WalkerSim2-Editor-Linux-x64-${{ env.BUILD_VERSION }}.zip
+        display_name: WalkerSim2-Editor-Linux-x64-${{ env.BUILD_VERSION }}
         version: ${{ env.BUILD_VERSION }}
         file_category: optional
         archive_existing_file: true
@@ -453,6 +456,7 @@ jobs:
         api_key: ${{ secrets.NEXUSMODS_API_KEY }}
         file_group_id: 7211476
         filename: WalkerSim2-Editor-Mac-arm64-${{ env.BUILD_VERSION }}.zip
+        display_name: WalkerSim2-Editor-Mac-arm64-${{ env.BUILD_VERSION }}
         version: ${{ env.BUILD_VERSION }}
         file_category: optional
         archive_existing_file: true
