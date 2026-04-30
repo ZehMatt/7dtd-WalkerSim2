@@ -200,11 +200,17 @@ jobs:
         $modInfo = "artifact\WalkerSim2\ModInfo.xml"
         (Get-Content $modInfo -Raw) -replace 'Version value="[^"]*"', "Version value=`"$env:BUILD_VERSION`"" | Set-Content $modInfo
 
+    - name: Zip Mod artifact
+      shell: pwsh
+      run: |
+        cd artifact
+        7z a -tzip "../WalkerSim2-Mod-${env:BUILD_VERSION}.zip" "WalkerSim2"
+
     - name: Upload Mod artifact
       uses: actions/upload-artifact@v7
       with:
-        name: WalkerSim2-Mod-${{ env.BUILD_VERSION }}-${{ env.COMMIT_SHA }}
-        path: ./artifact/**/*
+        path: WalkerSim2-Mod-${{ env.BUILD_VERSION }}.zip
+        archive: false
 
   build-editor:
     name: Build Editor (${{ matrix.platform }})
@@ -328,11 +334,32 @@ jobs:
       shell: bash
       run: mv "Publish/Editor/${{ matrix.platform }}" "Publish/Editor/WalkerSim Editor"
 
+    - name: Zip Editor bundle (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        cd Publish/Editor
+        7z a -tzip "WalkerSim2-Editor-${{ matrix.platform }}-${env:BUILD_VERSION}.zip" "WalkerSim Editor"
+
+    - name: Zip Editor bundle (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        cd Publish/Editor
+        zip -ry "WalkerSim2-Editor-${{ matrix.platform }}-${BUILD_VERSION}.zip" "WalkerSim Editor"
+
+    - name: Zip Editor bundle (macOS)
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        cd Publish/Editor
+        ditto -c -k --sequesterRsrc --keepParent "WalkerSim Editor" "WalkerSim2-Editor-${{ matrix.platform }}-${BUILD_VERSION}.zip"
+
     - name: Upload Editor artifact
       uses: actions/upload-artifact@v7
       with:
-        name: WalkerSim2-Editor-${{ matrix.platform }}-${{ env.BUILD_VERSION }}-${{ env.COMMIT_SHA }}
-        path: Publish/Editor/
+        path: Publish/Editor/WalkerSim2-Editor-${{ matrix.platform }}-${{ env.BUILD_VERSION }}.zip
+        archive: false
 
   release:
     name: Release
@@ -394,14 +421,10 @@ jobs:
 
     - name: Package release artifacts
       run: |
-        cd release/Mod
-        zip -r ../../WalkerSim2-${{ env.BUILD_VERSION }}.zip WalkerSim2/
-        cd ../Editor-Windows-x64
-        zip -r ../../WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}.zip "WalkerSim Editor"/
-        cd ../Editor-Linux-x64
-        zip -r ../../WalkerSim2-Editor-Linux-x64-${{ env.BUILD_VERSION }}.zip "WalkerSim Editor"/
-        cd ../Editor-Mac-arm64
-        zip -r ../../WalkerSim2-Editor-Mac-arm64-${{ env.BUILD_VERSION }}.zip "WalkerSim Editor"/
+        mv release/Mod/WalkerSim2-Mod-${{ env.BUILD_VERSION }}.zip ./WalkerSim2-${{ env.BUILD_VERSION }}.zip
+        mv release/Editor-Windows-x64/WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}.zip ./
+        mv release/Editor-Linux-x64/WalkerSim2-Editor-Linux-x64-${{ env.BUILD_VERSION }}.zip ./
+        mv release/Editor-Mac-arm64/WalkerSim2-Editor-Mac-arm64-${{ env.BUILD_VERSION }}.zip ./
 
     - name: Release
       uses: softprops/action-gh-release@v2
@@ -565,14 +588,10 @@ jobs:
 
     - name: Package release artifacts
       run: |
-        cd release/Mod
-        zip -r ../../WalkerSim2-${{ env.BUILD_VERSION }}.zip WalkerSim2/
-        cd ../Editor-Windows-x64
-        zip -r ../../WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}.zip "WalkerSim Editor"/
-        cd ../Editor-Linux-x64
-        zip -r ../../WalkerSim2-Editor-Linux-x64-${{ env.BUILD_VERSION }}.zip "WalkerSim Editor"/
-        cd ../Editor-Mac-arm64
-        zip -r ../../WalkerSim2-Editor-Mac-arm64-${{ env.BUILD_VERSION }}.zip "WalkerSim Editor"/
+        mv release/Mod/WalkerSim2-Mod-${{ env.BUILD_VERSION }}.zip ./WalkerSim2-${{ env.BUILD_VERSION }}.zip
+        mv release/Editor-Windows-x64/WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}.zip ./
+        mv release/Editor-Linux-x64/WalkerSim2-Editor-Linux-x64-${{ env.BUILD_VERSION }}.zip ./
+        mv release/Editor-Mac-arm64/WalkerSim2-Editor-Mac-arm64-${{ env.BUILD_VERSION }}.zip ./
 
     - name: Pre-Release
       uses: softprops/action-gh-release@v2
