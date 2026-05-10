@@ -64,6 +64,12 @@ jobs:
           }
           $sha12 = $env:COMMIT_SHA.Substring(0,12)
           echo "COMMIT_SHA=$sha12" >> $env:GITHUB_ENV
+          if ($env:BRANCH_NAME -match '^(release|prerelease)/') {
+            echo "ARTIFACT_SUFFIX=" >> $env:GITHUB_ENV
+          } else {
+            $sha7 = $env:COMMIT_SHA.Substring(0,7)
+            echo "ARTIFACT_SUFFIX=-$sha7" >> $env:GITHUB_ENV
+          }
           echo "Branch: $branch" | Out-Host
           echo "Commit SHA: $sha12" | Out-Host
           $buildInfoFile = "$env:GITHUB_WORKSPACE\WalkerSim\BuildInfo.cs"
@@ -204,12 +210,12 @@ jobs:
       shell: pwsh
       run: |
         cd artifact
-        7z a -tzip "../WalkerSim2-Mod-${env:BUILD_VERSION}.zip" "WalkerSim2"
+        7z a -tzip "../WalkerSim2-Mod-${env:BUILD_VERSION}${env:ARTIFACT_SUFFIX}.zip" "WalkerSim2"
 
     - name: Upload Mod artifact
       uses: actions/upload-artifact@v7
       with:
-        path: WalkerSim2-Mod-${{ env.BUILD_VERSION }}.zip
+        path: WalkerSim2-Mod-${{ env.BUILD_VERSION }}${{ env.ARTIFACT_SUFFIX }}.zip
         archive: false
 
   build-editor:
@@ -270,6 +276,12 @@ jobs:
           }
           $sha12 = $env:COMMIT_SHA.Substring(0,12)
           echo "COMMIT_SHA=$sha12" >> $env:GITHUB_ENV
+          if ($env:BRANCH_NAME -match '^(release|prerelease)/') {
+            echo "ARTIFACT_SUFFIX=" >> $env:GITHUB_ENV
+          } else {
+            $sha7 = $env:COMMIT_SHA.Substring(0,7)
+            echo "ARTIFACT_SUFFIX=-$sha7" >> $env:GITHUB_ENV
+          }
           $buildInfoFile = Join-Path $env:GITHUB_WORKSPACE "WalkerSim/BuildInfo.cs"
           $content = Get-Content -Path $buildInfoFile -Raw
           $content = $content -replace '\[assembly: AssemblyMetadata\("Commit", "[^"]*"\)\]', "[assembly: AssemblyMetadata(`"Commit`", `"$sha12`")]"
@@ -339,26 +351,26 @@ jobs:
       shell: pwsh
       run: |
         cd Publish/Editor
-        7z a -tzip "WalkerSim2-Editor-${{ matrix.platform }}-${env:BUILD_VERSION}.zip" "WalkerSim Editor"
+        7z a -tzip "WalkerSim2-Editor-${{ matrix.platform }}-${env:BUILD_VERSION}${env:ARTIFACT_SUFFIX}.zip" "WalkerSim Editor"
 
     - name: Zip Editor bundle (Linux)
       if: runner.os == 'Linux'
       shell: bash
       run: |
         cd Publish/Editor
-        zip -ry "WalkerSim2-Editor-${{ matrix.platform }}-${BUILD_VERSION}.zip" "WalkerSim Editor"
+        zip -ry "WalkerSim2-Editor-${{ matrix.platform }}-${BUILD_VERSION}${ARTIFACT_SUFFIX}.zip" "WalkerSim Editor"
 
     - name: Zip Editor bundle (macOS)
       if: runner.os == 'macOS'
       shell: bash
       run: |
         cd Publish/Editor
-        ditto -c -k --sequesterRsrc --keepParent "WalkerSim Editor" "WalkerSim2-Editor-${{ matrix.platform }}-${BUILD_VERSION}.zip"
+        ditto -c -k --sequesterRsrc --keepParent "WalkerSim Editor" "WalkerSim2-Editor-${{ matrix.platform }}-${BUILD_VERSION}${ARTIFACT_SUFFIX}.zip"
 
     - name: Upload Editor artifact
       uses: actions/upload-artifact@v7
       with:
-        path: Publish/Editor/WalkerSim2-Editor-${{ matrix.platform }}-${{ env.BUILD_VERSION }}.zip
+        path: Publish/Editor/WalkerSim2-Editor-${{ matrix.platform }}-${{ env.BUILD_VERSION }}${{ env.ARTIFACT_SUFFIX }}.zip
         archive: false
 
   release:
