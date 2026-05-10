@@ -151,41 +151,6 @@ namespace WalkerSim
         }
 
         /// <summary>
-        /// Given a 7DTD install root, returns the prefab search folders 7DTD would use
-        /// at runtime, in priority order (mod prefabs first, vanilla last). Used by
-        /// editor and mod to construct the global database.
-        /// </summary>
-        public static List<string> SearchPathsForInstall(string installRoot)
-        {
-            var result = new List<string>();
-            if (string.IsNullOrEmpty(installRoot) || !Directory.Exists(installRoot))
-                return result;
-
-            // Mod prefabs first (priority over vanilla on collision).
-            var modsRoot = Path.Combine(installRoot, "Mods");
-            if (Directory.Exists(modsRoot))
-            {
-                try
-                {
-                    foreach (var modDir in Directory.EnumerateDirectories(modsRoot))
-                    {
-                        var modPrefabs = Path.Combine(modDir, "Prefabs");
-                        if (Directory.Exists(modPrefabs))
-                            result.Add(modPrefabs);
-                    }
-                }
-                catch { }
-            }
-
-            // Vanilla prefabs.
-            var dataPrefabs = Path.Combine(installRoot, "Data", "Prefabs");
-            if (Directory.Exists(dataPrefabs))
-                result.Add(dataPrefabs);
-
-            return result;
-        }
-
-        /// <summary>
         /// Given an arbitrary path inside a 7DTD install (e.g. the running mod's assembly
         /// location), walks up to locate the install root — the first ancestor that
         /// contains both a "Data" and a "Mods" subdirectory. Returns null on failure.

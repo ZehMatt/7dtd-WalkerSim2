@@ -27,7 +27,7 @@ namespace Editor.Views
             FoldersList.ItemsSource = _folders;
 
             // Show auto-detected game paths
-            var detected = WorldLocator.FindGamePaths();
+            var detected = GameLocator.FindInstallRoots();
             DetectedFoldersList.ItemsSource = detected.Count > 0
                 ? detected
                 : new[] { "(none detected)" };
@@ -41,6 +41,7 @@ namespace Editor.Views
             ThemeCombo.SelectedItem = settings.Theme;
             PanButtonCombo.SelectedItem = settings.PanButton;
             ZoomModifierCombo.SelectedItem = settings.ZoomModifier;
+            UserDataFolderBox.Text = settings.UserDataFolder ?? string.Empty;
 
             _folders.Clear();
             foreach (var folder in settings.GameFolders)
@@ -57,6 +58,7 @@ namespace Editor.Views
             if (ZoomModifierCombo.SelectedItem is ZoomModifier zoom)
                 settings.ZoomModifier = zoom;
 
+            settings.UserDataFolder = (UserDataFolderBox.Text ?? string.Empty).Trim();
             settings.GameFolders.Clear();
             settings.GameFolders.AddRange(_folders);
         }
@@ -79,6 +81,7 @@ namespace Editor.Views
             ThemeCombo.SelectedItem = AppTheme.Dark;
             PanButtonCombo.SelectedItem = MouseButton.Right;
             ZoomModifierCombo.SelectedItem = ZoomModifier.Ctrl;
+            UserDataFolderBox.Text = string.Empty;
             _folders.Clear();
         }
 
@@ -115,6 +118,28 @@ namespace Editor.Views
         {
             if (FoldersList.SelectedItem is string selected)
                 _folders.Remove(selected);
+        }
+
+        private async void OnBrowseUserDataFolderClick(object sender, RoutedEventArgs e)
+        {
+            await Task.Delay(250);
+            var result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            {
+                Title = "Select User Data Folder",
+                AllowMultiple = false
+            });
+
+            if (result.Count > 0)
+            {
+                var path = result[0].TryGetLocalPath();
+                if (!string.IsNullOrEmpty(path))
+                    UserDataFolderBox.Text = path;
+            }
+        }
+
+        private void OnClearUserDataFolderClick(object sender, RoutedEventArgs e)
+        {
+            UserDataFolderBox.Text = string.Empty;
         }
     }
 }

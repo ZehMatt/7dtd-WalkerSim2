@@ -51,15 +51,14 @@ namespace Editor
             }
         }
 
-        // Appearance
         public AppTheme Theme { get; set; } = AppTheme.Dark;
 
-        // Canvas controls
         public MouseButton PanButton { get; set; } = MouseButton.Right;
         public ZoomModifier ZoomModifier { get; set; } = ZoomModifier.Ctrl;
 
-        // Game folders
         public List<string> GameFolders { get; set; } = new List<string>();
+
+        public string UserDataFolder { get; set; } = string.Empty;
 
         public void Save()
         {
@@ -100,6 +99,7 @@ namespace Editor
             PanButton = MouseButton.Right;
             ZoomModifier = ZoomModifier.Ctrl;
             GameFolders.Clear();
+            UserDataFolder = string.Empty;
         }
     }
 }
