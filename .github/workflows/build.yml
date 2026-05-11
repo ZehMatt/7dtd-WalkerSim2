@@ -403,40 +403,16 @@ jobs:
         echo "--- Release notes ---"
         cat release_notes.md
 
-    - name: Download Mod artifact
-      uses: actions/download-artifact@v4
+    - name: Download artifacts
+      uses: actions/download-artifact@v8
       with:
-        pattern: WalkerSim2-Mod-*
-        path: release/Mod
+        pattern: WalkerSim2-*
+        path: .
         merge-multiple: true
+        skip-decompress: true
 
-    - name: Download Editor Windows artifact
-      uses: actions/download-artifact@v4
-      with:
-        pattern: WalkerSim2-Editor-Windows-x64-*
-        path: release/Editor-Windows-x64
-        merge-multiple: true
-
-    - name: Download Editor Linux artifact
-      uses: actions/download-artifact@v4
-      with:
-        pattern: WalkerSim2-Editor-Linux-x64-*
-        path: release/Editor-Linux-x64
-        merge-multiple: true
-
-    - name: Download Editor Mac artifact
-      uses: actions/download-artifact@v4
-      with:
-        pattern: WalkerSim2-Editor-Mac-arm64-*
-        path: release/Editor-Mac-arm64
-        merge-multiple: true
-
-    - name: Package release artifacts
-      run: |
-        mv release/Mod/WalkerSim2-Mod-${{ env.BUILD_VERSION }}.zip ./WalkerSim2-${{ env.BUILD_VERSION }}.zip
-        mv release/Editor-Windows-x64/WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}.zip ./
-        mv release/Editor-Linux-x64/WalkerSim2-Editor-Linux-x64-${{ env.BUILD_VERSION }}.zip ./
-        mv release/Editor-Mac-arm64/WalkerSim2-Editor-Mac-arm64-${{ env.BUILD_VERSION }}.zip ./
+    - name: Rename Mod artifact
+      run: mv WalkerSim2-Mod-${{ env.BUILD_VERSION }}.zip WalkerSim2-${{ env.BUILD_VERSION }}.zip
 
     - name: Release
       uses: softprops/action-gh-release@v2
@@ -570,40 +546,16 @@ jobs:
         echo "--- Release notes ---"
         cat release_notes.md
 
-    - name: Download Mod artifact
-      uses: actions/download-artifact@v4
+    - name: Download artifacts
+      uses: actions/download-artifact@v8
       with:
-        pattern: WalkerSim2-Mod-*
-        path: release/Mod
+        pattern: WalkerSim2-*
+        path: .
         merge-multiple: true
+        skip-decompress: true
 
-    - name: Download Editor Windows artifact
-      uses: actions/download-artifact@v4
-      with:
-        pattern: WalkerSim2-Editor-Windows-x64-*
-        path: release/Editor-Windows-x64
-        merge-multiple: true
-
-    - name: Download Editor Linux artifact
-      uses: actions/download-artifact@v4
-      with:
-        pattern: WalkerSim2-Editor-Linux-x64-*
-        path: release/Editor-Linux-x64
-        merge-multiple: true
-
-    - name: Download Editor Mac artifact
-      uses: actions/download-artifact@v4
-      with:
-        pattern: WalkerSim2-Editor-Mac-arm64-*
-        path: release/Editor-Mac-arm64
-        merge-multiple: true
-
-    - name: Package release artifacts
-      run: |
-        mv release/Mod/WalkerSim2-Mod-${{ env.BUILD_VERSION }}.zip ./WalkerSim2-${{ env.BUILD_VERSION }}.zip
-        mv release/Editor-Windows-x64/WalkerSim2-Editor-Windows-x64-${{ env.BUILD_VERSION }}.zip ./
-        mv release/Editor-Linux-x64/WalkerSim2-Editor-Linux-x64-${{ env.BUILD_VERSION }}.zip ./
-        mv release/Editor-Mac-arm64/WalkerSim2-Editor-Mac-arm64-${{ env.BUILD_VERSION }}.zip ./
+    - name: Rename Mod artifact
+      run: mv WalkerSim2-Mod-${{ env.BUILD_VERSION }}.zip WalkerSim2-${{ env.BUILD_VERSION }}.zip
 
     - name: Pre-Release
       uses: softprops/action-gh-release@v2

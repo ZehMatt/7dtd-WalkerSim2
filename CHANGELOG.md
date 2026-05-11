@@ -1,4 +1,4 @@
-# 1.2.3 (in progress)
+# 1.2.3
 - Fix: Properly load the prefab data from all the supported paths.
 - Feature: NPC mods that have NPCs fire guns will now have the same effect as a player firing a gun.
 - Feature: The Editor has now a setting to mimic `-userdatafolder` of the game, can be set under the Settings window.
