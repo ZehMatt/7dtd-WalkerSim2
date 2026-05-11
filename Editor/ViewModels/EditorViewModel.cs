@@ -543,17 +543,13 @@ namespace Editor.ViewModels
         {
             Logging.Info("Discovering worlds...");
 
-            // Initialize the global prefab database from every game install we know about
-            // (registry, Steam libraries, user-configured extras). This must run before any
-            // world load so that decoration sizes resolve from real PrefabSize values
-            // instead of the fallback default.
+            var ctx = GameLocator.BuildContext();
+
+            // Initialize the global prefab database before any world load so decoration
+            // sizes resolve from real PrefabSize values instead of the fallback default.
             try
             {
-                var gamePaths = WorldLocator.FindGamePaths();
-                var prefabSearchPaths = new List<string>();
-                foreach (var install in gamePaths)
-                    prefabSearchPaths.AddRange(WalkerSim.Prefabs.SearchPathsForInstall(install));
-                WalkerSim.Prefabs.Initialize(prefabSearchPaths);
+                WalkerSim.Prefabs.Initialize(WalkerSim.Paths.GetPrefabSearchPaths(ctx));
             }
             catch (Exception ex)
             {
@@ -563,7 +559,7 @@ namespace Editor.ViewModels
             List<string> folders;
             try
             {
-                folders = WorldLocator.FindWorldFolders();
+                folders = WalkerSim.Paths.GetWorldFolders(ctx);
             }
             catch (Exception ex)
             {
@@ -606,7 +602,7 @@ namespace Editor.ViewModels
             if (string.IsNullOrEmpty(value))
                 return;
 
-            if (WorldLocator.TryGetWorldPath(_worldFolders, value, out var worldPath))
+            if (WalkerSim.Paths.TryGetWorldPath(_worldFolders, value, out var worldPath))
             {
                 var worldName = value;
                 Logging.Info("Loading world '{0}' from: {1}", worldName, worldPath);

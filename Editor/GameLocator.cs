@@ -7,142 +7,52 @@ using System.Text.RegularExpressions;
 
 namespace Editor
 {
-    internal static class WorldLocator
+    internal static class GameLocator
     {
         private const int AppID = 251570;
 
-        public static List<string> FindWorldFolders()
+        public static WalkerSim.Paths.Context BuildContext()
         {
-            var worldFolders = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            // User-generated worlds (location differs per OS)
-            foreach (var generatedPath in GetUserGeneratedWorldPaths())
+            return new WalkerSim.Paths.Context
             {
-                WalkerSim.Logging.Info("Checking generated worlds: {0}", generatedPath);
-                try
-                {
-                    if (Directory.Exists(generatedPath))
-                    {
-                        foreach (var w in Directory.EnumerateDirectories(generatedPath))
-                            worldFolders.Add(w);
-                    }
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    WalkerSim.Logging.Warn("No permission to enumerate: {0}", generatedPath);
-                }
-            }
-
-            WalkerSim.Logging.Info("Finding game install paths...");
-            var gamePaths = FindGamePaths();
-
-            // Include user-configured game folders from settings
-            foreach (var extra in EditorSettings.Instance.GameFolders)
-            {
-                if (Directory.Exists(extra))
-                    gamePaths.Add(extra);
-            }
-
-            foreach (var installPath in gamePaths)
-            {
-                // Worlds bundled with the game
-                var worldsPath = Path.Combine(installPath, "Data", "Worlds");
-                try
-                {
-                    if (Directory.Exists(worldsPath))
-                    {
-                        foreach (var w in Directory.EnumerateDirectories(worldsPath))
-                            worldFolders.Add(w);
-                    }
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    WalkerSim.Logging.Warn("No permission to enumerate: {0}", worldsPath);
-                }
-
-                // Worlds inside Mods subdirectories
-                var modsPath = Path.Combine(installPath, "Mods");
-                try
-                {
-                    if (Directory.Exists(modsPath))
-                    {
-                        foreach (var mod in Directory.EnumerateDirectories(modsPath))
-                        {
-                            var worldPath = Path.Combine(mod, "Worlds");
-                            try
-                            {
-                                if (Directory.Exists(worldPath))
-                                {
-                                    foreach (var w in Directory.EnumerateDirectories(worldPath))
-                                        worldFolders.Add(w);
-                                }
-                            }
-                            catch (UnauthorizedAccessException)
-                            {
-                                WalkerSim.Logging.Warn("No permission to enumerate: {0}", worldPath);
-                            }
-                        }
-                    }
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    WalkerSim.Logging.Warn("No permission to enumerate: {0}", modsPath);
-                }
-            }
-
-            var list = new List<string>(worldFolders);
-            list.Sort((a, b) => string.Compare(Path.GetFileName(a), Path.GetFileName(b), StringComparison.OrdinalIgnoreCase));
-            return list;
+                UserDataFolder = ResolveUserDataFolder(),
+                InstallRoots = FindInstallRoots(),
+            };
         }
 
-        public static bool TryGetWorldPath(IEnumerable<string> worldFolders, string worldName, out string worldPath)
+        public static string ResolveUserDataFolder()
         {
-            foreach (var folder in worldFolders)
-            {
-                if (Path.GetFileName(folder).Equals(worldName, StringComparison.OrdinalIgnoreCase))
-                {
-                    worldPath = folder;
-                    return true;
-                }
-            }
-            worldPath = null;
-            return false;
+            var overrideValue = EditorSettings.Instance.UserDataFolder;
+            if (!string.IsNullOrWhiteSpace(overrideValue) && Directory.Exists(overrideValue))
+                return overrideValue;
+
+            return GetDefaultUserDataFolder();
         }
 
-        // User-generated world paths
-
-        private static IEnumerable<string> GetUserGeneratedWorldPaths()
+        public static string GetDefaultUserDataFolder()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                yield return Path.Combine(appData, "7DaysToDie", "GeneratedWorlds");
+                return Path.Combine(appData, "7DaysToDie");
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                // Native Linux: ~/.local/share/7DaysToDie/GeneratedWorlds
                 var localShare = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                yield return Path.Combine(localShare, "7DaysToDie", "GeneratedWorlds");
-
-                // Proton/Wine prefix fallback
-                var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-                yield return Path.Combine(home, ".wine", "drive_c", "users",
-                    Environment.UserName, "AppData", "Roaming", "7DaysToDie", "GeneratedWorlds");
+                return Path.Combine(localShare, "7DaysToDie");
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-                yield return Path.Combine(home, "Library", "Application Support", "7DaysToDie", "GeneratedWorlds");
+                return Path.Combine(home, "Library", "Application Support", "7DaysToDie");
             }
+            return null;
         }
 
-        // Game install discovery
-
-        public static List<string> FindGamePaths()
+        public static List<string> FindInstallRoots()
         {
             var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            // Registry lookup (Windows only)
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 WalkerSim.Logging.Info("Checking registry for game install...");
@@ -154,7 +64,6 @@ namespace Editor
                 }
             }
 
-            // Steam library scan (all platforms)
             WalkerSim.Logging.Info("Scanning Steam libraries...");
             foreach (var steamRoot in GetSteamRootPaths())
             {
@@ -178,7 +87,6 @@ namespace Editor
                 }
             }
 
-            // Handle case where editor is running from inside Mods/WalkerSim
             var exe = Path.GetDirectoryName(AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar));
             if (exe != null)
             {
@@ -187,17 +95,22 @@ namespace Editor
                     paths.Add(candidate);
             }
 
+            foreach (var extra in EditorSettings.Instance.GameFolders)
+            {
+                if (Directory.Exists(extra))
+                    paths.Add(extra);
+            }
+
             return paths.Where(p => !string.IsNullOrEmpty(p) && Directory.Exists(p)).ToList();
         }
-
-        // Steam root paths (per OS)
 
         private static IEnumerable<string> GetSteamRootPaths()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 var reg = GetSteamPathFromRegistry();
-                if (!string.IsNullOrEmpty(reg)) yield return reg;
+                if (!string.IsNullOrEmpty(reg))
+                    yield return reg;
 
                 var pf = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
                 yield return Path.Combine(pf, "Steam");
@@ -216,8 +129,6 @@ namespace Editor
                 yield return Path.Combine(home, "Library", "Application Support", "Steam");
             }
         }
-
-        // Registry helpers (Windows only)
 
         private static string GetInstallPathFromRegistry()
         {
@@ -249,14 +160,13 @@ namespace Editor
 #pragma warning restore CA1416
         }
 
-        // Cross-platform Steam helpers
-
         private static List<string> GetSteamLibraryFolders(string steamRoot)
         {
             var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { steamRoot };
 
             var vdf = Path.Combine(steamRoot, "steamapps", "libraryfolders.vdf");
-            if (!File.Exists(vdf)) return result.ToList();
+            if (!File.Exists(vdf))
+                return result.ToList();
 
             try
             {

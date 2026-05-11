@@ -49,6 +49,7 @@ namespace WalkerSim
 
             if (!AIDirectorData.FindNoise(clipName, out AIDirectorData.Noise noise))
             {
+                Logging.CondInfo(logEvents, () => $"Failed to find noise data for clip: {clipName}, skipping sound event.");
                 return;
             }
 
@@ -76,7 +77,10 @@ namespace WalkerSim
             if (instigator != null)
             {
                 if (instigator.IsIgnoredByAI())
+                {
+                    Logging.CondInfo(logEvents, () => $"Instigator {instigator.entityId} is ignored by AI, skipping sound event.");
                     return;
+                }
             }
 
             // Any values higher than 0 is considered indoors, returns [0.0, 1.0]

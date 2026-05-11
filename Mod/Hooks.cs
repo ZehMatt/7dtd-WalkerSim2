@@ -46,6 +46,33 @@ namespace WalkerSim
         }
     }
 
+    // Vanilla Audio.Manager.SignalAI gates AI sound propagation on `_entity is EntityPlayer`,
+    // so non-player audio (NPCs, zombies, vehicles, ...) never reaches AIDirector.NotifyNoise.
+    // We additively forward the cases vanilla drops, so NotifyNoiseHook above sees them.
+    [HarmonyPatch(typeof(Audio.Manager), nameof(Audio.Manager.SignalAI),
+        new[] { typeof(Entity), typeof(UnityEngine.Vector3), typeof(string), typeof(float) })]
+    class SignalAIHook
+    {
+        static void Prefix(Entity _entity, UnityEngine.Vector3 _position, string _soundName, float volumeScale)
+        {
+            if (_entity == null || _entity is EntityPlayer)
+                return;
+
+            var ai = GameManager.Instance?.World?.aiDirector;
+            if (ai == null)
+                return;
+
+            try
+            {
+                ai.OnSoundPlayedAtPosition(_entity.entityId, _position, _soundName, volumeScale);
+            }
+            catch (System.Exception e)
+            {
+                Logging.Warn("SignalAI forward failed: {0}", e.Message);
+            }
+        }
+    }
+
     [HarmonyPatch(typeof(XUiC_MapArea), nameof(XUiC_MapArea.updateMapSection))]
     class MapAreaDrawHook
     {

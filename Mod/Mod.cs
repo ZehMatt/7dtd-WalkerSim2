@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace WalkerSim
 {
@@ -15,19 +16,17 @@ namespace WalkerSim
     {
         static DateTime _lastUpdate = DateTime.Now;
         static bool _firstUpdateDone = false;
+        static bool _prefabsInitialized = false;
 
         void IModApi.InitMod(Mod _modInstance)
         {
-            // Set the image loader to Unity.
             Drawing.Loader = new Unity.Drawing.UnityImageLoader();
 
-            // Set up logging.
             Logging.AddSink(LogFileSink.Instance);
             Logging.AddSink(LogGameConsoleSink.Instance);
 
             Hooks.Init();
 
-            // Register for events.
             ModEvents.GameAwake.RegisterHandler(GameAwake);
             ModEvents.GameStartDone.RegisterHandler(GameStartDone);
             ModEvents.GameUpdate.RegisterHandler(GameUpdate);
@@ -41,31 +40,26 @@ namespace WalkerSim
             Simulation.Instance.SetAgentSpawnHandler(SpawnManager.SpawnAgent);
             Simulation.Instance.SetAgentDespawnHandler(SpawnManager.DespawnAgent);
 
-            // Build the global prefab database from the running 7DTD install. The mod
-            // assembly lives somewhere under <install>/Mods/<modname>/... so walking up
-            // from its location to the first ancestor that has both Data/ and Mods/
-            // subdirectories yields the install root.
+            Logging.Out($"WalkerSim v{BuildInfo.Version} initialized.");
+        }
+
+        // Deferred out of InitMod: ModManager.GetLoadedMods() touched from inside
+        // IModApi.InitMod can trip "Collection was modified" on the game's outer
+        // iteration of loadedMods.list.
+        static void EnsurePrefabsInitialized()
+        {
+            if (_prefabsInitialized)
+                return;
+            _prefabsInitialized = true;
+
             try
             {
-                var modFolder = GetModFolder();
-                var installRoot = Prefabs.GuessInstallRoot(modFolder);
-                if (installRoot != null)
-                {
-                    Logging.Out("7DTD install root: {0}", installRoot);
-                    Prefabs.Initialize(Prefabs.SearchPathsForInstall(installRoot));
-                }
-                else
-                {
-                    Logging.Warn("Could not determine 7DTD install root from mod folder '{0}'. " +
-                                 "Decorations will use a default footprint.", modFolder);
-                }
+                Prefabs.Initialize(Paths.GetPrefabSearchPaths(BuildPathsContext()));
             }
             catch (Exception ex)
             {
                 Logging.Err("Failed to initialize prefab database: {0}", ex.Message);
             }
-
-            Logging.Out($"WalkerSim v{BuildInfo.Version} initialized.");
         }
 
         static void TryLoadWebMod()
@@ -104,7 +98,34 @@ namespace WalkerSim
         static void GameAwake(ref ModEvents.SGameAwakeData data)
         {
             _firstUpdateDone = false;
+            EnsurePrefabsInitialized();
             TryLoadWebMod();
+        }
+
+        // Build a Paths.Context from the live game APIs. Picks up the actual
+        // -userdatafolder override and uses ModManager's load order so the
+        // prefab database matches what the game would resolve.
+        static Paths.Context BuildPathsContext()
+        {
+            var ctx = new Paths.Context
+            {
+                UserDataFolder = GameIO.GetUserGameDataDir(),
+                InstallRoots = new System.Collections.Generic.List<string>(),
+                LoadedModPaths = new System.Collections.Generic.List<string>(),
+            };
+
+            var installRoot = Prefabs.GuessInstallRoot(GetModFolder());
+            if (!string.IsNullOrEmpty(installRoot))
+                ctx.InstallRoots.Add(installRoot);
+
+            var loadedMods = ModManager.GetLoadedMods().ToArray();
+            foreach (var mod in loadedMods)
+            {
+                if (!string.IsNullOrEmpty(mod?.Path))
+                    ctx.LoadedModPaths.Add(mod.Path);
+            }
+
+            return ctx;
         }
 
         internal static string GetModFolder()

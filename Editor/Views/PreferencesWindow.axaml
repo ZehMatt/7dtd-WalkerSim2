@@ -49,6 +49,24 @@
 					</StackPanel>
 				</Border>
 
+				<!-- User Data Folder -->
+				<TextBlock Text="User Data Folder" FontWeight="Bold" FontSize="14"/>
+				<Border BorderBrush="{DynamicResource EditorBorder}" BorderThickness="1"
+						CornerRadius="4" Padding="12">
+					<StackPanel>
+						<DockPanel>
+							<Button DockPanel.Dock="Right" Content="Browse..." Margin="8,0,0,0"
+									Click="OnBrowseUserDataFolderClick"/>
+							<Button DockPanel.Dock="Right" Content="Clear" Margin="8,0,0,0"
+									Click="OnClearUserDataFolderClick"/>
+							<TextBox x:Name="UserDataFolderBox" PlaceholderText="(default: %APPDATA%/7DaysToDie)"/>
+						</DockPanel>
+						<TextBlock Text="Override only if you launch the game with -userdatafolder=&lt;path&gt;."
+								   FontSize="11" Foreground="{DynamicResource EditorTextMuted}"
+								   Margin="0,6,0,0" TextWrapping="Wrap"/>
+					</StackPanel>
+				</Border>
+
 				<!-- Detected Game Folders -->
 				<TextBlock Text="Detected Game Folders" FontWeight="Bold" FontSize="14"/>
 				<Border BorderBrush="{DynamicResource EditorBorder}" BorderThickness="1"
