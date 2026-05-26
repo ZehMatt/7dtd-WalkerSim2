@@ -1,5 +1,6 @@
-# 1.2.4 (in progress)
+# 1.2.4
 - Change: Sound distance is no longer scaled by the heat map value, all sounds apply now equally.
+- Change: Improved the About dialog in the Editor, I'm trying to keep changing it for new each release.
 
 # 1.2.3
 - Fix: Properly load the prefab data from all the supported paths.

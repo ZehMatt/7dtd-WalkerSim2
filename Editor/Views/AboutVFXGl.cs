@@ -30,6 +30,12 @@ namespace Editor.Views
         private float _camZ;
         private float _stepPhase;
 
+        private float _flash;
+        private float _strikeCharge;
+        private int _lastChord;
+        private double _nextStrikeAllowedAt;
+        private readonly Random _rng = new Random(0x57534832);
+
         // Shader sources live as files under Assets/Shaders, included by the
         // csproj's <AvaloniaResource Include="Assets\**"/>. Loaded on first
         // use and cached statically so multiple instances share the work.
@@ -132,18 +138,52 @@ namespace Editor.Views
             const float WalkSpeed = 1.1f;
             _camZ += WalkSpeed * dt;
 
-            // Step phase tied to distance travelled — one leg cycle per 1.5m.
+            // Step phase tied to distance travelled - one leg cycle per 1.5m.
             _stepPhase += WalkSpeed * dt * (6.2832f / 1.5f);
             if (_stepPhase > 1e6f) _stepPhase -= 1e6f;
 
+            UpdateLightning(time, dt, bass, perc, chord);
+
             _pipeline.Render(fb, w, h, time, bass, energy, perc, lead, chord,
-                _camZ, _stepPhase);
+                _camZ, _stepPhase, _flash);
             if (!_readyFired)
             {
                 _readyFired = true;
                 Ready?.Invoke();
             }
             RequestNextFrameRendering();
+        }
+
+        private void UpdateLightning(float time, float dt, float bass, float perc, int chord)
+        {
+            _strikeCharge += bass * dt * 0.8f + perc * dt * 0.3f;
+            _strikeCharge -= dt * 0.15f;
+            if (_strikeCharge < 0f) _strikeCharge = 0f;
+            if (_strikeCharge > 1.6f) _strikeCharge = 1.6f;
+
+            bool chordChanged = chord != _lastChord;
+            _lastChord = chord;
+
+            bool canStrike = time >= _nextStrikeAllowedAt;
+            float trigger = perc + bass * 0.6f;
+            bool fireClose = canStrike && _strikeCharge > 0.9f && (chordChanged || trigger > 1.1f);
+            bool fireFlicker = canStrike && perc > 0.55f && _rng.NextDouble() < 0.18;
+
+            if (fireClose)
+            {
+                float strength = 0.85f + (float)_rng.NextDouble() * 0.15f;
+                _flash = MathF.Max(_flash, strength);
+                _strikeCharge = 0f;
+                _nextStrikeAllowedAt = time + 1.8 + _rng.NextDouble() * 2.4;
+            }
+            else if (fireFlicker)
+            {
+                _flash = MathF.Max(_flash, 0.18f + (float)_rng.NextDouble() * 0.20f);
+                _nextStrikeAllowedAt = time + 0.35 + _rng.NextDouble() * 0.6;
+            }
+
+            _flash *= MathF.Exp(-dt * 6.0f);
+            if (_flash < 1e-4f) _flash = 0f;
         }
 
         private static unsafe void GlClearMagenta(GlInterface gl, int fb)

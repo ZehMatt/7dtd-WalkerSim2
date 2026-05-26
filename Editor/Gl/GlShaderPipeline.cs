@@ -86,6 +86,7 @@ namespace Editor.Gl
         private int _uChord;
         private int _uCamZ;
         private int _uPhase;
+        private int _uFlash;
 
         private bool _parallelSupported;
         private bool _shadersCompiled;
@@ -334,6 +335,7 @@ namespace Editor.Gl
             _uChord = _gl.GetUniformLocationString(_program, "u_chord");
             _uCamZ = _gl.GetUniformLocationString(_program, "u_camZ");
             _uPhase = _gl.GetUniformLocationString(_program, "u_phase");
+            _uFlash = _gl.GetUniformLocationString(_program, "u_flash");
 
             _vbo = _gl.GenBuffer();
             _glBindBuffer(GL_ARRAY_BUFFER, (uint)_vbo);
@@ -397,7 +399,7 @@ namespace Editor.Gl
 
         public void Render(int fb, int width, int height,
             float time, float bass, float energy, float perc, float lead, int chord,
-            float camZ, float phase)
+            float camZ, float phase, float flash)
         {
             _glBindFramebuffer(GL_FRAMEBUFFER, (uint)fb);
 
@@ -419,6 +421,7 @@ namespace Editor.Gl
             if (_uChord >= 0) _glUniform1i(_uChord, chord);
             if (_uCamZ >= 0) _glUniform1f(_uCamZ, camZ);
             if (_uPhase >= 0) _glUniform1f(_uPhase, phase);
+            if (_uFlash >= 0) _glUniform1f(_uFlash, flash);
 
             _glBindBuffer(GL_ARRAY_BUFFER, (uint)_vbo);
             _glVertexAttribPointer(0, 2, GL_FLOAT, 0, 0, null);
