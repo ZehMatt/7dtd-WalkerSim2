@@ -53,26 +53,16 @@ namespace WalkerSim
                 return;
             }
 
-            var distance = (noise.volume * volumeScale * 3.0f) * config.SoundDistanceScale;
-            var normalizedHeatmapStrength = Math.Min(noise.heatMapStrength, 1.0f);
-            var distanceScaled = distance * normalizedHeatmapStrength;
+            var distance = (float)Math.Pow(noise.volume * volumeScale * 2.35f, 1.09f) * 0.4f * config.SoundDistanceScale;
             var eventDuration = noise.heatMapWorldTimeToLive / 60;
 
-            // Log all variables from noise.
             Logging.CondInfo(logEvents, () => $"Noise: {clipName}, " +
                 $" Volume: {noise.volume}, " +
                 $"Duration: {noise.duration}, " +
                 $"MuffledWhenCrouched: {noise.muffledWhenCrouched}, " +
-                $"HeatMapStrength: {noise.heatMapStrength}, " +
                 $"HeatMapWorldTimeToLive: {noise.heatMapWorldTimeToLive}, " +
                 $"volumeScale: {volumeScale}, " +
-                $"Travel Distance: {distance}, " +
-                $"Scaled Travel Distance: {distanceScaled}");
-
-            if (noise.heatMapStrength == 0.0f)
-            {
-                return;
-            }
+                $"Travel Distance: {distance}");
 
             if (instigator != null)
             {
@@ -83,11 +73,10 @@ namespace WalkerSim
                 }
             }
 
-            // Any values higher than 0 is considered indoors, returns [0.0, 1.0]
             var amountEnclosed = GetAmountEnclosed(position);
 
             var isIndoors = amountEnclosed > 0.0f;
-            var indoorBaseScale = isIndoors ? 0.3f : 1.0f; // 70% reduction minimum indoors
+            var indoorBaseScale = isIndoors ? 0.3f : 1.0f;
 
             var enclosureMod = isIndoors
                 ? MathEx.Lerp(1.0f, 0.7f, amountEnclosed)
@@ -95,20 +84,20 @@ namespace WalkerSim
 
             var finalScale = indoorBaseScale * enclosureMod;
 
-            var distancePreScaled = distanceScaled;
-            distanceScaled *= finalScale;
+            var distancePreScaled = distance;
+            distance *= finalScale;
             eventDuration = (ulong)(eventDuration * finalScale);
 
             Logging.DbgInfo("Enclosed: {0}, IndoorBase: {1}, EnclosureMod: {2}, FinalScale: {3}",
                 amountEnclosed, indoorBaseScale, enclosureMod, finalScale);
 
-            Logging.DbgInfo("Adjusted Sound Distance Scale: {0} to {1}", distancePreScaled, distanceScaled);
+            Logging.DbgInfo("Adjusted Sound Distance Scale: {0} to {1}", distancePreScaled, distance);
 
-            simulation.AddSoundEvent(VectorUtils.ToSim(position), distanceScaled, eventDuration);
+            simulation.AddSoundEvent(VectorUtils.ToSim(position), distance, eventDuration);
 
             if (simulation.Config.EnhancedSoundAwareness)
             {
-                NotifyNearbyEnemies(simulation, instigator, position, distanceScaled);
+                NotifyNearbyEnemies(simulation, instigator, position, distance);
             }
         }
 

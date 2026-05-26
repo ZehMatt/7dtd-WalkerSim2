@@ -1,4 +1,5 @@
 # 1.2.4 (in progress)
+- Change: Sound distance is no longer scaled by the heat map value, all sounds apply now equally.
 
 # 1.2.3
 - Fix: Properly load the prefab data from all the supported paths.

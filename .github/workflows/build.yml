@@ -212,6 +212,10 @@ jobs:
         cd artifact
         7z a -tzip "../WalkerSim2-Mod-${env:BUILD_VERSION}${env:ARTIFACT_SUFFIX}.zip" "WalkerSim2"
 
+    - name: List Mod zip contents
+      shell: pwsh
+      run: 7z l "WalkerSim2-Mod-${env:BUILD_VERSION}${env:ARTIFACT_SUFFIX}.zip"
+
     - name: Upload Mod artifact
       uses: actions/upload-artifact@v7
       with:
@@ -366,6 +370,16 @@ jobs:
       run: |
         cd Publish/Editor
         ditto -c -k --sequesterRsrc --keepParent "WalkerSim Editor" "WalkerSim2-Editor-${{ matrix.platform }}-${BUILD_VERSION}${ARTIFACT_SUFFIX}.zip"
+
+    - name: List Editor zip contents (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: 7z l "Publish/Editor/WalkerSim2-Editor-${{ matrix.platform }}-${env:BUILD_VERSION}${env:ARTIFACT_SUFFIX}.zip"
+
+    - name: List Editor zip contents (Unix)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: unzip -l "Publish/Editor/WalkerSim2-Editor-${{ matrix.platform }}-${BUILD_VERSION}${ARTIFACT_SUFFIX}.zip"
 
     - name: Upload Editor artifact
       uses: actions/upload-artifact@v7
