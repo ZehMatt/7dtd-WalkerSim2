@@ -181,6 +181,7 @@ namespace WalkerSim
 
         class Processor
         {
+            public Config.MovementProcessorType Type;
             public MovementProcessorDelegate Handler;
             public float Distance;
             public float Power;
@@ -227,6 +228,24 @@ namespace WalkerSim
             return ProcessorTypeToDelegateMap[type];
         }
 
+        private bool GroupHasProcessor(int group, Config.MovementProcessorType type)
+        {
+            if (group < 0 || group >= _processors.Count)
+                return false;
+
+            var proc = _processors[group];
+            if (proc == null)
+                return false;
+
+            foreach (var entry in proc.Entries)
+            {
+                if (entry.Type == type)
+                    return true;
+            }
+
+            return false;
+        }
+
         private void SetupProcessors()
         {
             if (_state.GroupCount == 0)
@@ -253,6 +272,7 @@ namespace WalkerSim
                 foreach (var processor in processorGroup.Entries)
                 {
                     var entry = new Processor();
+                    entry.Type = processor.Type;
                     entry.Distance = processor.Distance;
                     entry.Power = processor.Power;
                     entry.Param1 = processor.Param1;
@@ -379,18 +399,6 @@ namespace WalkerSim
                 {
                     _state.MaxNeighbourDistance = System.Math.Max(_state.MaxNeighbourDistance, processor.Distance);
                 }
-            }
-
-            // Reset travel state on all agents so stale state from a previous
-            // processor configuration (e.g. CityVisitor) doesn't interfere.
-            var agents = _state.Agents;
-            for (int i = 0; i < agents.Count; i++)
-            {
-                var agent = agents[i];
-                agent.CurrentTravelState = Agent.TravelState.Idle;
-                agent.TargetCityIndex = -1;
-                agent.RoadNodeTarget = -1;
-                agent.ClearRoadNodeHistory();
             }
         }
 

@@ -657,21 +657,30 @@ namespace WalkerSim
                     Populate();
                 }
 
-                // Reset travel state on all agents so they don't get stuck
-                // with stale state from a previous processor configuration
-                // (e.g. CityVisitor travel data when switching to StickToRoads).
+                SetupProcessors();
+
+                // Only clear travel state whose owning processor is no longer present for the
+                // agent's group, so a stale CityVisitor/StickToRoads target can't strand an
+                // agent. Editing an unrelated parameter keeps the processor, so its travel
+                // state is preserved (e.g. a CityVisitor group keeps heading to its city).
                 var agents = _state.Agents;
                 for (int i = 0; i < agents.Count; i++)
                 {
                     var agent = agents[i];
-                    agent.CurrentTravelState = Agent.TravelState.Idle;
-                    agent.TargetCityIndex = -1;
-                    agent.CityArrivalDay = 0;
-                    agent.RoadNodeTarget = -1;
-                    agent.ClearRoadNodeHistory();
-                }
 
-                SetupProcessors();
+                    if (!GroupHasProcessor(agent.Group, Config.MovementProcessorType.CityVisitor))
+                    {
+                        agent.CurrentTravelState = Agent.TravelState.Idle;
+                        agent.TargetCityIndex = -1;
+                        agent.CityArrivalDay = 0;
+                    }
+
+                    if (!GroupHasProcessor(agent.Group, Config.MovementProcessorType.StickToRoads))
+                    {
+                        agent.RoadNodeTarget = -1;
+                        agent.ClearRoadNodeHistory();
+                    }
+                }
             }
         }
 
