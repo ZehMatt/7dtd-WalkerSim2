@@ -79,8 +79,13 @@ namespace WalkerSim
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 Normalize(Vector3 vec)
         {
-            float mag = Magnitude(vec);
-            return mag > 0f ? vec / mag : Zero;
+            float magSqr = MagnitudeSqr(vec);
+            if (magSqr > 0f)
+            {
+                float inv = 1f / (float)System.Math.Sqrt(magSqr);
+                return vec * inv;
+            }
+            return Zero;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

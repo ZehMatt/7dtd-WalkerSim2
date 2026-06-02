@@ -32,7 +32,7 @@
     </System>
     <System Name="Street Hordes" Weight="4" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" MapEdgeBehavior="Warp" Color="#E60000">
       <Processor Type="StickToRoads" Distance="50" Power="0.5" />
-      <Processor Type="Wind" Distance="50" Power="0.01" />
+      <Processor Type="Wind" Distance="50" Power="0.001" />
       <Processor Type="AvoidSameGroup" Distance="5" Power="0.01" />
       <Processor Type="WorldEvents" Distance="50" Power="0.6" />
     </System>
@@ -41,6 +41,7 @@
       <Processor Type="AvoidSameGroup" Distance="6" Power="0.3" />
       <Processor Type="Wind" Distance="50" Power="0.2" />
       <Processor Type="WorldEvents" Distance="50" Power="0.6" />
+      <Processor Type="RandomWalk" Distance="50" Power="0.25" Param1="500" Param2="500" />
     </System>
     <System Name="POI Protectors" Weight="1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" MapEdgeBehavior="Warp" Color="#00A8FF">
       <Processor Type="StickToPOIs" Distance="50" Power="0.1" />

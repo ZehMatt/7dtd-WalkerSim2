@@ -588,6 +588,11 @@
                     <xs:documentation>Agents are repelled from a specific biome type</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
+            <xs:enumeration value="RandomWalk">
+                <xs:annotation>
+                    <xs:documentation>Adds a small per-group wandering force whose heading drifts over time, making each group's path more distinct</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
 

@@ -211,6 +211,7 @@ namespace WalkerSim
             { Config.MovementProcessorType.CityVisitor, CityVisitor },
             { Config.MovementProcessorType.StickToBiome, StickToBiome },
             { Config.MovementProcessorType.AvoidBiome, AvoidBiome },
+            { Config.MovementProcessorType.RandomWalk, RandomWalk },
         };
 
         private List<MovementProcessor> _processors = new List<MovementProcessor>();
@@ -559,6 +560,27 @@ namespace WalkerSim
         internal static Vector3 WindInverted(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             return Vector3.Normalize(state.WindDir * -1.0f) * power;
+        }
+
+        internal static Vector3 RandomWalk(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
+        {
+            // Per-group pseudo-random heading that drifts over time, so each group wanders a
+            // little differently and becomes distinct from the others. The heading is shared
+            // within a group, keeping the group moving as a unit.
+            //
+            // Param1 is how long (seconds) a group holds a heading before re-rolling. It needs
+            // to be long: a short hold re-randomizes so often that the drift averages to zero
+            // and groups never separate. A long hold lets a group commit to a direction and
+            // build real displacement, so groups spread apart and stay distinct.
+            float holdSeconds = param1 > 0f ? param1 : 60f;
+            uint interval = (uint)(holdSeconds * Constants.TicksPerSecond);
+            if (interval == 0)
+                interval = 1;
+
+            uint timeBucket = state.Ticks / interval;
+            float r = AgentHash(agent.Group, timeBucket, 900) / (float)0x7FFFFFFF;
+            float angle = r * (2f * (float)System.Math.PI);
+            return new Vector3((float)System.Math.Cos(angle), (float)System.Math.Sin(angle), 0f) * power;
         }
 
         // How close (bitmap pixels) to a node before advancing to the next.

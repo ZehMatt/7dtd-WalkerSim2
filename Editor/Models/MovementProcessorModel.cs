@@ -171,6 +171,7 @@ namespace Editor.Models
             { Config.MovementProcessorType.CityVisitor,    new(null, "Power", "Min Stay (days)", "Max Stay (days)", "Agents visit cities and stay for a random duration between min and max stay time (in in-game days).", 2f, 4f) },
             { Config.MovementProcessorType.StickToBiome,   new(null, "Power", null, null, "Attract agents towards a specific biome type using its signed distance field. Agents outside the biome are pulled toward it.", (float)Biomes.Type.PineForest) },
             { Config.MovementProcessorType.AvoidBiome,     new(null, "Power", null, null, "Repel agents away from a specific biome type using its signed distance field. Agents inside the biome are pushed out.", (float)Biomes.Type.PineForest) },
+            { Config.MovementProcessorType.RandomWalk,     new(null, "Power", "Hold Time (s)", null, "Add a small per-group wandering force with a heading that drifts over time, making each group's path a bit more distinct. Hold Time is how long (seconds) a group keeps a heading before re-rolling; longer holds spread groups apart more. Keep Power low.", 60f) },
         };
 
         private ParamMeta GetMeta() => MetaMap.TryGetValue(Type, out var m) ? m : DefaultMeta;

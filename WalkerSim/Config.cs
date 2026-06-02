@@ -66,6 +66,7 @@ namespace WalkerSim
             CityVisitor,
             StickToBiome,
             AvoidBiome,
+            RandomWalk,
         }
 
         public class MovementProcessor
