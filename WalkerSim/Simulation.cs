@@ -79,7 +79,7 @@ namespace WalkerSim
 
             if (_autoSaveInterval != -1)
             {
-                _nextAutoSave = DateTime.Now.AddSeconds(_autoSaveInterval);
+                _nextAutoSave = DateTime.UtcNow.AddSeconds(_autoSaveInterval);
             }
 
             Logging.CondInfo(Config.LoggingOpts.General, () => "Starting simulation...");

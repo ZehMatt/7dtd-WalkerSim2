@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 
 namespace WalkerSim
 {
@@ -14,7 +13,7 @@ namespace WalkerSim
 
     public class WalkerSimMod : IModApi
     {
-        static DateTime _lastUpdate = DateTime.Now;
+        static DateTime _lastUpdate = DateTime.UtcNow;
         static bool _firstUpdateDone = false;
         static bool _prefabsInitialized = false;
 
@@ -505,7 +504,7 @@ namespace WalkerSim
 
         static void UpdateSimulation()
         {
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             var diff = now - _lastUpdate;
 
             _lastUpdate = now;

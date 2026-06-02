@@ -9,7 +9,7 @@ namespace WalkerSim
 
         private AgentDespawnHandler _agentDespawnHandler;
 
-        private DateTime _nextDespawn = DateTime.Now;
+        private DateTime _nextDespawn = DateTime.UtcNow;
 
         public IReadOnlyDictionary<int, Agent> Active
         {
@@ -87,7 +87,7 @@ namespace WalkerSim
 
         private void CheckAgentDespawn()
         {
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             if (now < _nextDespawn)
             {
                 return;

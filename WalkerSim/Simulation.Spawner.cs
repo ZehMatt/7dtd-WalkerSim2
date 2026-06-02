@@ -21,11 +21,11 @@ namespace WalkerSim
 
         private ConcurrentQueue<SpawnData> _pendingSpawns = new ConcurrentQueue<SpawnData>();
 
-        private DateTime _nextSpawn = DateTime.Now;
+        private DateTime _nextSpawn = DateTime.UtcNow;
 
         private FixedBufferList<Agent> _nearPlayer = new FixedBufferList<Agent>(512);
 
-        private DateTime _nextSpawnCheck = DateTime.Now;
+        private DateTime _nextSpawnCheck = DateTime.UtcNow;
 
         private volatile bool _allowAgentSpawn = true;
 
@@ -69,7 +69,7 @@ namespace WalkerSim
                 return;
             }
 
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             if (_nextSpawnCheck > now)
             {
                 // We don't have to run this every tick/frame, agents typically don't move that fast.
@@ -219,7 +219,7 @@ namespace WalkerSim
 
         private void ProcessSpawnQueue()
         {
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             if (now < _nextSpawn)
             {
                 return;

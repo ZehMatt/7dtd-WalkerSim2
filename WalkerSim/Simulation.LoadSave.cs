@@ -319,7 +319,7 @@ namespace WalkerSim
         public void EnableAutoSave(string file, float interval)
         {
             _autoSaveFile = file;
-            _nextAutoSave = DateTime.Now.AddSeconds(interval);
+            _nextAutoSave = DateTime.UtcNow.AddSeconds(interval);
             _autoSaveInterval = interval;
 
             Logging.Out("Enabled auto-save, interval: {0}s, file: '{1}'.", interval, file);
@@ -340,7 +340,7 @@ namespace WalkerSim
 
         private void CheckAutoSave()
         {
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             if (now < _nextAutoSave)
                 return;
 
