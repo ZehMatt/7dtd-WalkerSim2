@@ -174,7 +174,7 @@ namespace WalkerSim
                 ctx.Serialize(ref agent.AlertPosition);
                 ctx.Serialize(ref agent.TimeToDie);
                 ctx.Serialize(ref agent.TargetCityIndex);
-                ctx.Serialize(ref agent.CityTime);
+                ctx.Serialize(ref agent.CityArrivalDay);
                 ctx.SerializeEnumByte(ref agent.CurrentTravelState);
                 ctx.Serialize(ref agent.RoadNodeTarget);
                 ctx.Serialize(ref agent.RoadNodeHistoryCount);

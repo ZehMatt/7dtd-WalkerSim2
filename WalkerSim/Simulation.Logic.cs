@@ -92,7 +92,14 @@ namespace WalkerSim
             {
                 // Simulate day progression, 4 hours is a day.
                 var dayLengthInTicks = Simulation.MinutesToTicks(60 * 4);
-                _state.GameTime += TimeScale / dayLengthInTicks;
+
+                if (TimeScale > 1.0f)
+                {
+                    // Speed up time progression when time scale is high to make it easier to test behavior.
+                    dayLengthInTicks /= (uint)MathEx.Ceiling(TimeScale / 128.0f);
+                }
+
+                _state.GameTime += 1.0 / dayLengthInTicks;
             }
 
         }

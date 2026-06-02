@@ -80,31 +80,26 @@
 							  Command="{Binding SetSimulationSpeedCommand}"
 							  CommandParameter="2"
 							  IsChecked="{Binding CurrentSpeed, Converter={x:Static converters:EqualityConverter.Instance}, ConverterParameter=2}"/>
-					<MenuItem Header="4x"
-							  ToggleType="CheckBox"
-							  Command="{Binding SetSimulationSpeedCommand}"
-							  CommandParameter="4"
-							  IsChecked="{Binding CurrentSpeed, Converter={x:Static converters:EqualityConverter.Instance}, ConverterParameter=4}"/>
-					<MenuItem Header="16x"
-							  ToggleType="CheckBox"
-							  Command="{Binding SetSimulationSpeedCommand}"
-							  CommandParameter="16"
-							  IsChecked="{Binding CurrentSpeed, Converter={x:Static converters:EqualityConverter.Instance}, ConverterParameter=16}"/>
-					<MenuItem Header="32x"
-							  ToggleType="CheckBox"
-							  Command="{Binding SetSimulationSpeedCommand}"
-							  CommandParameter="32"
-							  IsChecked="{Binding CurrentSpeed, Converter={x:Static converters:EqualityConverter.Instance}, ConverterParameter=32}"/>
-					<MenuItem Header="48x"
-							  ToggleType="CheckBox"
-							  Command="{Binding SetSimulationSpeedCommand}"
-							  CommandParameter="48"
-							  IsChecked="{Binding CurrentSpeed, Converter={x:Static converters:EqualityConverter.Instance}, ConverterParameter=48}"/>
 					<MenuItem Header="64x"
 							  ToggleType="CheckBox"
 							  Command="{Binding SetSimulationSpeedCommand}"
 							  CommandParameter="64"
 							  IsChecked="{Binding CurrentSpeed, Converter={x:Static converters:EqualityConverter.Instance}, ConverterParameter=64}"/>
+					<MenuItem Header="128x"
+							  ToggleType="CheckBox"
+							  Command="{Binding SetSimulationSpeedCommand}"
+							  CommandParameter="128"
+							  IsChecked="{Binding CurrentSpeed, Converter={x:Static converters:EqualityConverter.Instance}, ConverterParameter=128}"/>
+					<MenuItem Header="256x"
+							  ToggleType="CheckBox"
+							  Command="{Binding SetSimulationSpeedCommand}"
+							  CommandParameter="256"
+							  IsChecked="{Binding CurrentSpeed, Converter={x:Static converters:EqualityConverter.Instance}, ConverterParameter=256}"/>
+					<MenuItem Header="512x"
+							  ToggleType="CheckBox"
+							  Command="{Binding SetSimulationSpeedCommand}"
+							  CommandParameter="512"
+							  IsChecked="{Binding CurrentSpeed, Converter={x:Static converters:EqualityConverter.Instance}, ConverterParameter=512}"/>
 				</MenuItem>
 				<MenuItem Header="Advance One Tick"
 						  IsEnabled="{Binding CanAdvance}"

@@ -846,9 +846,10 @@ namespace Editor.ViewModels
                 timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds, timeSpan.Milliseconds);
 
             var simTimeMs = _simulation.AverageSimTime * 1000.0;
-            var updateTimeMs = _simulation.AverageUpdateTime * 1000.0;
             TickTime = string.Format("{0:0.00000} ms. ({1:0.000}/s)",
                 simTimeMs, simTimeMs > 0 ? 1000.0 / simTimeMs : 0);
+
+            var updateTimeMs = _simulation.AverageUpdateTime * 1000.0;
             UpdateTime = string.Format("{0:0.00000} ms. ({1:0.000}/s)",
                 updateTimeMs, updateTimeMs > 0 ? 1000.0 / updateTimeMs : 0);
 

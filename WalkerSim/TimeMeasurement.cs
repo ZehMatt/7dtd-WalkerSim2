@@ -9,11 +9,13 @@ namespace WalkerSim
 
         private volatile uint _index = 0;
         private volatile int _count = 0;
+        private float _average = 0.0f;
 
         public void Add(float time)
         {
             _samples[_index++ % _samples.Length] = time;
             _count = System.Math.Min(_count + 1, _samples.Length);
+            ComputeAverage();
         }
 
         public void Reset()
@@ -34,19 +36,23 @@ namespace WalkerSim
             return elapsed;
         }
 
-        public float Average
+        public float Elapsed()
         {
-            get
-            {
-                if (_count == 0)
-                    return 0.0f;
-                float sum = 0.0f;
-                for (int i = 0; i < _count; i++)
-                {
-                    sum += _samples[i];
-                }
-                return sum / _count;
-            }
+            return (float)_sw.Elapsed.TotalSeconds;
         }
+
+        private void ComputeAverage()
+        {
+            if (_count == 0)
+                return;
+            float sum = 0.0f;
+            for (int i = 0; i < _count; i++)
+            {
+                sum += _samples[i];
+            }
+            _average = sum / _count;
+        }
+
+        public float Average => _average;
     }
 }

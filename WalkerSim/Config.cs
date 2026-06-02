@@ -153,8 +153,8 @@ namespace WalkerSim
                     if (entry.Type == MovementProcessorType.CityVisitor &&
                         entry.Param1 == 0f && entry.Param2 == 0f)
                     {
-                        entry.Param1 = 20f;
-                        entry.Param2 = 35f;
+                        entry.Param1 = 2f;
+                        entry.Param2 = 4f;
                     }
                 }
             }

@@ -168,7 +168,7 @@ namespace Editor.Models
             { Config.MovementProcessorType.WorldEvents,    new(null, "Power", null, null, "Attract agents towards active world events such as sounds and explosions.") },
             { Config.MovementProcessorType.PreferCities,   new(null, "Power", null, null, "Attract agents towards city areas, making them gravitate towards urban zones.") },
             { Config.MovementProcessorType.AvoidCities,    new("Distance", "Power", null, null, "Repel agents away from city areas within the given distance.") },
-            { Config.MovementProcessorType.CityVisitor,    new(null, "Power", "Min Stay (min)", "Max Stay (min)", "Agents visit cities and stay for a random duration between min and max stay time (in real-time minutes).", 20f, 40f) },
+            { Config.MovementProcessorType.CityVisitor,    new(null, "Power", "Min Stay (days)", "Max Stay (days)", "Agents visit cities and stay for a random duration between min and max stay time (in in-game days).", 2f, 4f) },
             { Config.MovementProcessorType.StickToBiome,   new(null, "Power", null, null, "Attract agents towards a specific biome type using its signed distance field. Agents outside the biome are pulled toward it.", (float)Biomes.Type.PineForest) },
             { Config.MovementProcessorType.AvoidBiome,     new(null, "Power", null, null, "Repel agents away from a specific biome type using its signed distance field. Agents inside the biome are pushed out.", (float)Biomes.Type.PineForest) },
         };

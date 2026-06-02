@@ -1143,8 +1143,8 @@ namespace WalkerSim
                 if (totalEligibleWeight <= 0f)
                     return Vector3.Zero;
 
-                uint hash = (uint)((agent.Group * 2654435761) ^ ((uint)state.Ticks / Constants.MaxUpdateCountPerTick * 1597334677));
-                float randomValue = (hash % 10000) / 10000.0f;
+                uint timeBucket = (uint)state.Ticks / Constants.MaxUpdateCountPerTick;
+                float randomValue = AgentHash(agent.Group, timeBucket, 700) / (float)0x7FFFFFFF;
                 float targetWeight = randomValue * totalEligibleWeight;
 
                 int targetCityIndex = -1;
@@ -1182,7 +1182,7 @@ namespace WalkerSim
                 if (currentCity != null && currentCity.Id == targetCity.Id)
                 {
                     agent.CurrentTravelState = Agent.TravelState.Arrived;
-                    agent.CityTime = state.Ticks;
+                    agent.CityArrivalDay = state.GameTime;
                     // Fall through to Arrived state handling
                 }
                 else
@@ -1235,31 +1235,40 @@ namespace WalkerSim
 
             if (agent.CurrentTravelState == Agent.TravelState.Arrived)
             {
-                // Stay time from Param1 (min minutes) and Param2 (max minutes)
-                float minStay = param1 > 0 ? param1 : 20f;
+                // Stay time in in-game days from Param1 (min days) and Param2 (max days).
+                float minStay = param1 > 0 ? param1 : 2f;
                 float maxStay = param2 > param1 ? param2 : minStay;
-                float stayMinutes = minStay + (AgentHash(agent.Group, state.Ticks, 300) / (float)0x7FFFFFFF) * (maxStay - minStay);
-                ulong cityDuration = Simulation.MinutesToTicks((uint)stayMinutes);
-                if ((state.Ticks - agent.CityTime) >= cityDuration)
+                float stayDays = minStay + (AgentHash(agent.Group, state.Ticks, 300) / (float)0x7FFFFFFF) * (maxStay - minStay);
+                if ((state.GameTime - agent.CityArrivalDay) >= stayDays)
                 {
                     agent.CurrentTravelState = Agent.TravelState.Idle;
                     return Vector3.Zero;
                 }
 
-                // Wander between POIs of the target city. Picking real POIs keeps the
-                // wander target on an actual city cell even for irregular shapes, so
-                // agents don't drift into empty courtyards.
+                // Wander to a random cell inside the target city so the group sweeps the
+                // whole footprint (streets and open ground), not just building centers.
+                // The seed is per-group + per-time-segment so the group picks one shared
+                // target and moves there together. POI fallback if sampling fails.
                 var targetCity = cityList[agent.TargetCityIndex];
-                int poiCount = targetCity.POIs.Count;
-                if (poiCount == 0)
-                    return Vector3.Zero;
 
                 uint timeSegment = state.Ticks / 3600;
                 uint seed = (uint)(agent.Group * 2654435761 + timeSegment * 1640531527);
-                var poi = targetCity.POIs[(int)(seed % (uint)poiCount)];
 
-                float targetX = poi.Position.X;
-                float targetY = poi.Position.Y;
+                float targetX, targetY;
+                if (cities.TryGetRandomPointInCity(targetCity, seed, out var wanderPoint))
+                {
+                    targetX = wanderPoint.X;
+                    targetY = wanderPoint.Y;
+                }
+                else
+                {
+                    int poiCount = targetCity.POIs.Count;
+                    if (poiCount == 0)
+                        return Vector3.Zero;
+                    var poi = targetCity.POIs[(int)(seed % (uint)poiCount)];
+                    targetX = poi.Position.X;
+                    targetY = poi.Position.Y;
+                }
 
                 float dx = targetX - agent.Position.X;
                 float dy = targetY - agent.Position.Y;

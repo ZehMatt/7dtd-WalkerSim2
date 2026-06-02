@@ -31,7 +31,8 @@ namespace WalkerSim
             // Version 20: Road node history circular buffer (10 entries).
             // Version 21: Grid is no longer serialized, rebuilt from agent positions.
             // Version 22: GameTime is now serialized.
-            public const uint SaveVersion = 22;
+            // Version 23: CityVisitor stay time tracked in in-game days.
+            public const uint SaveVersion = 23;
         }
     }
 }

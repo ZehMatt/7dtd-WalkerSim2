@@ -13,8 +13,8 @@ Agents spawn in cities and travel between them using roads. The **CityVisitor** 
 | Parameter | Value | Why |
 |---|---|---|
 | CityVisitor Power | 0.9 | Strong pull toward destination city |
-| CityVisitor Param1 | 15 | Minimum stay time in a city (minutes) |
-| CityVisitor Param2 | 30 | Maximum stay time in a city (minutes) |
+| CityVisitor Param1 | 2 | Minimum stay time in a city (in-game days) |
+| CityVisitor Param2 | 4 | Maximum stay time in a city (in-game days) |
 | StickToRoads Power | 0.5 | Moderate road adherence — agents follow roads but can deviate slightly |
 | AgentStartPosition | RandomCity | Agents begin inside cities rather than scattered across the map |
 | WorldEvents Power | 0.7 | Agents react to player sounds — slightly lower than other presets so road/city navigation stays dominant |

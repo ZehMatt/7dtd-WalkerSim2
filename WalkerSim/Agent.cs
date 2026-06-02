@@ -64,7 +64,7 @@ namespace WalkerSim
         public Vector3 AlertPosition;
         public ulong TimeToDie = ulong.MaxValue;
         public int TargetCityIndex = -1;
-        public uint CityTime = 0;
+        public double CityArrivalDay = 0;
         public TravelState CurrentTravelState = TravelState.Idle;
         public int RoadNodeTarget = -1;
         public const int RoadNodeHistorySize = 20;
@@ -89,7 +89,7 @@ namespace WalkerSim
             CurrentState = State.Inactive;
             LastUpdateTick = 0;
             TargetCityIndex = -1;
-            CityTime = 0;
+            CityArrivalDay = 0;
             CurrentTravelState = TravelState.Idle;
             RoadNodeTarget = -1;
             ClearRoadNodeHistory();

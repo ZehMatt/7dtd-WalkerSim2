@@ -8,7 +8,7 @@
     <Events>false</Events>
   </Logging>
   <RandomSeed>665992037</RandomSeed>
-  <PopulationDensity>140</PopulationDensity>
+  <PopulationDensity>500</PopulationDensity>
   <SpawnActivationRadius>96</SpawnActivationRadius>
   <StartAgentsGrouped>true</StartAgentsGrouped>
   <EnhancedSoundAwareness>true</EnhancedSoundAwareness>
@@ -20,12 +20,12 @@
   <SpawnProtectionTime>300</SpawnProtectionTime>
   <InfiniteZombieLifetime>false</InfiniteZombieLifetime>
   <MaxSpawnedZombies>75%</MaxSpawnedZombies>
-  <PopulationStartPercent>10</PopulationStartPercent>
+  <PopulationStartPercent>100</PopulationStartPercent>
   <FullPopulationAtDay>8</FullPopulationAtDay>
   <Systems>
     <System Name="City Visitors" Weight="6" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" MapEdgeBehavior="Warp" Color="#00E600">
-      <Processor Type="CityVisitor" Distance="50" Power="0.3" Param1="30" Param2="50" />
-      <Processor Type="AvoidSameGroup" Distance="8" Power="0.1" />
+      <Processor Type="CityVisitor" Distance="50" Power="0.3" Param1="4" Param2="8" />
+      <Processor Type="AvoidAnyGroup" Distance="10" Power="0.2" />
       <Processor Type="WorldEvents" Distance="50" Power="0.6" />
       <Processor Type="AlignSameGroup" Distance="50" Power="0.1001" />
       <Processor Type="FlockSameGroup" Distance="20" Power="0.01" />
@@ -36,7 +36,7 @@
       <Processor Type="AvoidSameGroup" Distance="5" Power="0.01" />
       <Processor Type="WorldEvents" Distance="50" Power="0.6" />
     </System>
-    <System Name="General Horde" Weight="3" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" MapEdgeBehavior="Warp" Color="#FFADFF">
+    <System Name="General Horde" Weight="7" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" MapEdgeBehavior="Warp" Color="#FFADFF">
       <Processor Type="FlockSameGroup" Distance="50" Power="0.01" />
       <Processor Type="AvoidSameGroup" Distance="6" Power="0.3" />
       <Processor Type="Wind" Distance="50" Power="0.2" />
@@ -60,7 +60,7 @@
       <Processor Type="AvoidCities" Distance="50" Power="0.0501" />
     </System>
     <System Name="City/Road Visitors" Weight="1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" MapEdgeBehavior="Warp" Color="#FFE600">
-      <Processor Type="CityVisitor" Distance="50" Power="0.3" Param1="30" Param2="50" />
+      <Processor Type="CityVisitor" Distance="50" Power="0.3" Param1="2" Param2="4" />
       <Processor Type="AvoidSameGroup" Distance="8" Power="0.3" />
       <Processor Type="WorldEvents" Distance="50" Power="0.6" />
       <Processor Type="AlignSameGroup" Distance="50" Power="0.1001" />

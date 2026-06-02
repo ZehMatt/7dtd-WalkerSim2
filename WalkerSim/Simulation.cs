@@ -553,12 +553,17 @@ namespace WalkerSim
 
             float accumulator = 0;
             float unscaledAccumulator = 0;
+            bool ranTicks = false;
             while (!_shouldStop)
             {
-                var timeElapsed = _updateTime.Capture();
+                var timeElapsed = _updateTime.Elapsed();
+                // Only the cycles that actually ran ticks are meaningful as "update time";
+                // recording the idle spins would drag the average below tick time.
+                if (ranTicks)
+                    _updateTime.Add(timeElapsed);
                 _updateTime.Restart();
+                ranTicks = false;
 
-                var elapsedMs = timeElapsed;
                 var scaledDt = (float)(timeElapsed * TimeScale);
 
                 if (IsPaused())
@@ -570,11 +575,9 @@ namespace WalkerSim
                 accumulator = System.Math.Min(accumulator + scaledDt, 20.0f);
                 unscaledAccumulator = System.Math.Min(unscaledAccumulator + timeElapsed, 20.0f);
 
-                while (unscaledAccumulator >= Constants.TickRate)
-                {
-                    unscaledAccumulator -= Constants.TickRate;
-                    _state.UnscaledTicks++;
-                }
+                uint unscaledTicks = (uint)(unscaledAccumulator / Constants.TickRate);
+                _state.UnscaledTicks += unscaledTicks;
+                unscaledAccumulator -= unscaledTicks * Constants.TickRate;
 
                 if (accumulator < Constants.TickRate)
                 {
@@ -582,8 +585,10 @@ namespace WalkerSim
                         break;
 
                     // Yield to prevent busy-wait CPU spike, but don't sleep (too slow on Mono)
-                    Thread.Sleep(0);
-                    continue;
+                    if (TimeScale <= 1.0f)
+                    {
+                        Thread.Sleep(0);
+                    }
                 }
 
                 while (accumulator >= Constants.TickRate)
@@ -594,6 +599,8 @@ namespace WalkerSim
 
                     if (_shouldStop)
                         break;
+
+                    ranTicks = true;
                 }
 
                 // Don't tie this to ticks, this should work with any time scale and tick rate.
@@ -659,7 +666,7 @@ namespace WalkerSim
                     var agent = agents[i];
                     agent.CurrentTravelState = Agent.TravelState.Idle;
                     agent.TargetCityIndex = -1;
-                    agent.CityTime = 0;
+                    agent.CityArrivalDay = 0;
                     agent.RoadNodeTarget = -1;
                     agent.ClearRoadNodeHistory();
                 }

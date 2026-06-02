@@ -388,6 +388,53 @@ namespace WalkerSim
             return CityList[id - 1];
         }
 
+        // Rejection-samples a random world point that lies inside the given city by
+        // drawing candidates from its AABB and confirming the cell belongs to the city.
+        // Returns false (and the city centroid) when no candidate hits within the cap,
+        // which can happen for very sparse irregular footprints.
+        public bool TryGetRandomPointInCity(City city, uint seed, out Vector3 point)
+        {
+            point = city != null ? city.Position : Vector3.Zero;
+            if (city == null || Width == 0 || Height == 0)
+                return false;
+
+            float rangeX = city.MaxX - city.MinX;
+            float rangeY = city.MaxY - city.MinY;
+            if (rangeX <= 0f || rangeY <= 0f)
+                return false;
+
+            const int maxAttempts = 8;
+            for (int attempt = 0; attempt < maxAttempts; attempt++)
+            {
+                uint h = HashSeed(seed + (uint)attempt * 2654435761u);
+                float fx = (h & 0xFFFF) / 65535f;
+                float fy = ((h >> 16) & 0xFFFF) / 65535f;
+                float wx = city.MinX + fx * rangeX;
+                float wy = city.MinY + fy * rangeY;
+                var hit = GetCityAt(new Vector3(wx, wy, 0f));
+                if (hit != null && hit.Id == city.Id)
+                {
+                    point = new Vector3(wx, wy, 0f);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static uint HashSeed(uint h)
+        {
+            unchecked
+            {
+                h ^= h >> 16;
+                h *= 0x85ebca6bu;
+                h ^= h >> 13;
+                h *= 0xc2b2ae35u;
+                h ^= h >> 16;
+                return h;
+            }
+        }
+
         public void AssignBiomes(Biomes biomes, Vector3 worldMins, Vector3 worldMaxs)
         {
             if (biomes == null || biomes.Width == 0 || biomes.Height == 0)
