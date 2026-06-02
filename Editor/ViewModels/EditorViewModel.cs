@@ -1,6 +1,4 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -956,10 +954,6 @@ namespace Editor.ViewModels
 
             try
             {
-                // Workaround for Avalonia file-picker race that can deadlock the
-                // app when opened immediately after a ShowDialog. Drop once the
-                // upstream fix lands.
-                await Task.Delay(250);
                 var files = await owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
                 {
                     Title = "Load Configuration",
@@ -1023,8 +1017,6 @@ namespace Editor.ViewModels
 
             try
             {
-                // See ImportConfiguration — Avalonia picker race workaround.
-                await Task.Delay(250);
                 var file = await owner.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
                 {
                     Title = "Save Configuration",
@@ -1065,8 +1057,6 @@ namespace Editor.ViewModels
 
             try
             {
-                // See ImportConfiguration — Avalonia picker race workaround.
-                await Task.Delay(250);
                 var files = await owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
                 {
                     Title = "Load State Save",
@@ -1155,8 +1145,6 @@ namespace Editor.ViewModels
 
             try
             {
-                // See ImportConfiguration — Avalonia picker race workaround.
-                await Task.Delay(250);
                 var file = await owner.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
                 {
                     Title = "Save State",
