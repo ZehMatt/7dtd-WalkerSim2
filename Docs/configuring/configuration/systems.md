@@ -44,6 +44,7 @@ Where this system's agents spawn when the simulation begins.
 - **RandomPOI**: At buildings and landmarks
 - **RandomCity**: In cities
 - **Mixed**: A mix of the above
+- **RandomSnowLocation / RandomPineForestLocation / RandomDesertLocation / RandomWastelandLocation / RandomBurntForestLocation**: A random spot within that biome (falls back to a border location if the biome isn't present on the map)
 
 ### RespawnPosition
 
@@ -55,6 +56,7 @@ Where this system's agents come back after they die.
 - **RandomPOI**: Come back at buildings
 - **RandomCity**: Come back in cities
 - **Mixed**: A mix of the above
+- **RandomSnowLocation / RandomPineForestLocation / RandomDesertLocation / RandomWastelandLocation / RandomBurntForestLocation**: A random spot within that biome (falls back to a border location if the biome isn't present on the map)
 
 ### SpeedScale
 

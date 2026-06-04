@@ -434,6 +434,31 @@
                     <xs:documentation>Agents start at a mix of different locations</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
+            <xs:enumeration value="RandomSnowLocation">
+                <xs:annotation>
+                    <xs:documentation>Agents start at a random spot in the snow biome</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RandomPineForestLocation">
+                <xs:annotation>
+                    <xs:documentation>Agents start at a random spot in the pine forest biome</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RandomDesertLocation">
+                <xs:annotation>
+                    <xs:documentation>Agents start at a random spot in the desert biome</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RandomWastelandLocation">
+                <xs:annotation>
+                    <xs:documentation>Agents start at a random spot in the wasteland biome</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RandomBurntForestLocation">
+                <xs:annotation>
+                    <xs:documentation>Agents start at a random spot in the burnt forest biome</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
 
@@ -470,6 +495,31 @@
             <xs:enumeration value="Mixed">
                 <xs:annotation>
                     <xs:documentation>Agents respawn at a mix of different locations</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RandomSnowLocation">
+                <xs:annotation>
+                    <xs:documentation>Agents respawn at a random spot in the snow biome</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RandomPineForestLocation">
+                <xs:annotation>
+                    <xs:documentation>Agents respawn at a random spot in the pine forest biome</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RandomDesertLocation">
+                <xs:annotation>
+                    <xs:documentation>Agents respawn at a random spot in the desert biome</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RandomWastelandLocation">
+                <xs:annotation>
+                    <xs:documentation>Agents respawn at a random spot in the wasteland biome</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RandomBurntForestLocation">
+                <xs:annotation>
+                    <xs:documentation>Agents respawn at a random spot in the burnt forest biome</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
         </xs:restriction>

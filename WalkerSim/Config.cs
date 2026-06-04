@@ -40,6 +40,11 @@ namespace WalkerSim
             RandomPOI,
             RandomCity,
             Mixed,
+            RandomSnowLocation,
+            RandomPineForestLocation,
+            RandomDesertLocation,
+            RandomWastelandLocation,
+            RandomBurntForestLocation,
         }
 
         public enum MovementProcessorType

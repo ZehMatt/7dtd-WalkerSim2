@@ -384,10 +384,48 @@ namespace WalkerSim
                     return GetRandomPOIPosition(prng);
                 case Config.WorldLocation.RandomCity:
                     return GetRandomCityPosition(prng);
+                case Config.WorldLocation.RandomSnowLocation:
+                    return GetRandomBiomePosition(Biomes.Type.Snow, prng);
+                case Config.WorldLocation.RandomPineForestLocation:
+                    return GetRandomBiomePosition(Biomes.Type.PineForest, prng);
+                case Config.WorldLocation.RandomDesertLocation:
+                    return GetRandomBiomePosition(Biomes.Type.Desert, prng);
+                case Config.WorldLocation.RandomWastelandLocation:
+                    return GetRandomBiomePosition(Biomes.Type.Wasteland, prng);
+                case Config.WorldLocation.RandomBurntForestLocation:
+                    return GetRandomBiomePosition(Biomes.Type.BurntForest, prng);
             }
 
             // This should never happen.
             throw new System.Exception("Bad starting location type");
+        }
+
+        Vector3 GetRandomBiomePosition(Biomes.Type biome, Random prng)
+        {
+            var mapData = _state.MapData;
+            if (mapData == null || mapData.Biomes == null || mapData.Biomes.Width == 0)
+            {
+                // No biome data (e.g. viewer), fall back to a random border position.
+                return GetRandomBorderPosition(prng);
+            }
+
+            var biomes = mapData.Biomes;
+            var worldMins = _state.WorldMins;
+            var worldMaxs = _state.WorldMaxs;
+
+            // Rejection-sample random world points until one lands in the target biome.
+            const int maxAttempts = 64;
+            for (int i = 0; i < maxAttempts; i++)
+            {
+                var pos = GetRandomPosition(prng);
+                int bx = (int)MathEx.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, biomes.Width);
+                int by = (int)MathEx.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, biomes.Height);
+                if (biomes.GetBiomeType(bx, by) == biome)
+                    return pos;
+            }
+
+            // Biome absent or too sparse on this map; fall back to a random border position.
+            return GetRandomBorderPosition(prng);
         }
 
         private Config.WorldLocation GetSystemStartPosition(int group)

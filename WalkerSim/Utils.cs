@@ -27,6 +27,16 @@ namespace WalkerSim
                     return "Random City";
                 case Config.WorldLocation.Mixed:
                     return "Mixed";
+                case Config.WorldLocation.RandomSnowLocation:
+                    return "Random Location in Snow Biome";
+                case Config.WorldLocation.RandomPineForestLocation:
+                    return "Random Location in Pine Forest Biome";
+                case Config.WorldLocation.RandomDesertLocation:
+                    return "Random Location in Desert Biome";
+                case Config.WorldLocation.RandomWastelandLocation:
+                    return "Random Location in Wasteland Biome";
+                case Config.WorldLocation.RandomBurntForestLocation:
+                    return "Random Location in Burnt Forest Biome";
                 default:
                     break;
             }
