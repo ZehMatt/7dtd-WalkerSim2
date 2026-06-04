@@ -53,8 +53,16 @@ namespace WalkerSim
                 return;
             }
 
-            var distance = (float)Math.Pow(noise.volume * volumeScale * 2.35f, 1.09f) * 0.4f * config.SoundDistanceScale;
-            var eventDuration = noise.heatMapWorldTimeToLive / 60;
+            float v = noise.volume * volumeScale;
+            float distance = v * v * 0.015f * config.SoundDistanceScale;
+            var eventDuration = noise.duration * 8;
+
+            if (distance < 4.0f)
+            {
+                // Ignore very quiet noises that wouldn't be heard anyway, to save on processing.
+                Logging.CondInfo(logEvents, () => $"Calculated sound distance {distance} is below threshold, skipping sound event for clip: {clipName}.");
+                return;
+            }
 
             Logging.CondInfo(logEvents, () => $"Noise: {clipName}, " +
                 $" Volume: {noise.volume}, " +
