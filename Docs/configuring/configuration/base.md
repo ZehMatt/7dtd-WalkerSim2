@@ -73,16 +73,6 @@ Here are all the settings you can change:
 
 **Example**: Set to 1.5 to make zombies react to sounds from farther away.
 
-### GroupSize
-
-**What it does**: How many zombies are in each group.
-
-**Value**: Any number 1 or higher
-
-**Example**: Setting this to 20 means each zombie group has 20 zombies.
-
-**Note**: The total number of groups is: (Total zombies) divided by (GroupSize)
-
 ### AgentStartPosition
 
 **What it does**: Where zombies start when the simulation begins.

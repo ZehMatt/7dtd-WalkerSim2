@@ -78,15 +78,6 @@
 									   Increment="1"
 									   IsEnabled="{Binding IsNotRunning}"/>
 					</StackPanel>
-					<StackPanel Spacing="4">
-						<controls:LabelWithHelp LabelText="Group Size:" FontWeight="Medium"
-							HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html"/>
-						<NumericUpDown Value="{Binding GroupSize, Mode=TwoWay}"
-									   Minimum="1"
-									   Maximum="1024"
-									   Increment="1"
-									   IsEnabled="{Binding IsNotRunning}"/>
-					</StackPanel>
 					<CheckBox IsChecked="{Binding StartAgentsGrouped, Mode=TwoWay}"
 							  IsEnabled="{Binding IsNotRunning}">
 						<controls:LabelWithHelp LabelText="Start Agents Grouped"

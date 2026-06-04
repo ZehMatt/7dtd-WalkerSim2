@@ -119,12 +119,6 @@ namespace Editor.ViewModels
             set { Config.PopulationDensity = value; OnPropertyChanged(); MarkDirty(); RefreshAllSystemIndices(); if (!_suppressReset) ResetSimulation(); }
         }
 
-        public int GroupSize
-        {
-            get => Config.GroupSize;
-            set { Config.GroupSize = value; OnPropertyChanged(); MarkDirty(); RefreshAllSystemIndices(); if (!_suppressReset) ResetSimulation(); }
-        }
-
         public int RandomSeed
         {
             get => Config.RandomSeed;
@@ -633,7 +627,6 @@ namespace Editor.ViewModels
             _suppressReset = true;
             // Notify all wrapper properties to refresh their values from the new Config
             OnPropertyChanged(nameof(PopulationDensity));
-            OnPropertyChanged(nameof(GroupSize));
             OnPropertyChanged(nameof(RandomSeed));
             OnPropertyChanged(nameof(SpawnActivationRadius));
             OnPropertyChanged(nameof(StartPosition));

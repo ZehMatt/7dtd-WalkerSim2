@@ -93,20 +93,6 @@
                     </xs:annotation>
                 </xs:element>
 
-                <xs:element name="GroupSize">
-                    <xs:annotation>
-                        <xs:documentation>
-                            The total amount of groups will be total agents divided by
-                            this, movement processors can assign groups that will be affected
-                            starting at 0
-                        </xs:documentation>
-                    </xs:annotation>
-                    <xs:simpleType>
-                        <xs:restriction base="xs:integer">
-                            <xs:minInclusive value="1" />
-                        </xs:restriction>
-                    </xs:simpleType>
-                </xs:element>
 
                 <xs:element name="AgentStartPosition" type="SpawnPosition">
                     <xs:annotation>
@@ -239,11 +225,25 @@
                                     <xs:attribute name="Weight" type="xs:decimal" use="optional" default="1">
                                         <xs:annotation>
                                             <xs:documentation>
-                                                Relative weight for distributing spawn groups
-                                                among systems. Higher weight means more groups
+                                                Relative weight for distributing the population
+                                                among systems. Higher weight means more agents
                                                 are assigned to this system.
                                             </xs:documentation>
                                         </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="GroupSize" use="optional" default="100">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                Number of agents per group for this system. The
+                                                system's share of the population is divided into
+                                                groups of this size.
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                        <xs:simpleType>
+                                            <xs:restriction base="xs:integer">
+                                                <xs:minInclusive value="1" />
+                                            </xs:restriction>
+                                        </xs:simpleType>
                                     </xs:attribute>
                                     <xs:attribute name="SpeedScale" type="xs:decimal" use="required">
                                         <xs:annotation>

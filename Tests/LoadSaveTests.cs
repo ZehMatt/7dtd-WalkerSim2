@@ -20,7 +20,6 @@ namespace WalkerSim.Tests
             Assert.AreEqual(configA.RandomSeed, configB.RandomSeed);
             Assert.AreEqual(configA.PopulationDensity, configB.PopulationDensity);
             Assert.AreEqual(configA.StartAgentsGrouped, configB.StartAgentsGrouped);
-            Assert.AreEqual(configA.GroupSize, configB.GroupSize);
             Assert.AreEqual(configA.StartPosition, configB.StartPosition);
             Assert.AreEqual(configA.RespawnPosition, configB.RespawnPosition);
             Assert.AreEqual(configA.PauseDuringBloodmoon, configB.PauseDuringBloodmoon);
@@ -32,6 +31,7 @@ namespace WalkerSim.Tests
                 var processorsB = configB.Processors[i];
                 Assert.AreEqual(processorsA.SpeedScale, processorsB.SpeedScale);
                 Assert.AreEqual(processorsA.Weight, processorsB.Weight);
+                Assert.AreEqual(processorsA.GroupSize, processorsB.GroupSize);
 
                 Assert.AreEqual(processorsA.Entries.Count, processorsB.Entries.Count);
                 for (int y = 0; y < processorsA.Entries.Count; y++)

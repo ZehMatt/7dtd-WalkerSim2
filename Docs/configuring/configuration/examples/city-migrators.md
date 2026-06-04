@@ -39,7 +39,6 @@ Agents spawn in cities and travel between them using roads. The **CityVisitor** 
   <StartAgentsGrouped>true</StartAgentsGrouped>
   <EnhancedSoundAwareness>true</EnhancedSoundAwareness>
   <SoundDistanceScale>1</SoundDistanceScale>
-  <GroupSize>16</GroupSize>
   <AgentStartPosition>RandomCity</AgentStartPosition>
   <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>
   <PauseDuringBloodmoon>true</PauseDuringBloodmoon>
@@ -47,7 +46,7 @@ Agents spawn in cities and travel between them using roads. The **CityVisitor** 
   <InfiniteZombieLifetime>false</InfiniteZombieLifetime>
   <MaxSpawnedZombies>75%</MaxSpawnedZombies>
   <Systems>
-    <System Name="System 1" Weight="1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#DD44DD">
+    <System GroupSize="16" Name="System 1" Weight="1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#DD44DD">
       <Processor Type="CityVisitor" Distance="0" Power="0.9" Param1="15" Param2="30" />
       <Processor Type="StickToRoads" Distance="0" Power="0.5" Param1="0" Param2="0" />
       <Processor Type="AlignSameGroup" Distance="20" Power="0.6" Param1="0" Param2="0" />

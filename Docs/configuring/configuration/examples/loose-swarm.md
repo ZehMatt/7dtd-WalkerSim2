@@ -46,7 +46,6 @@ All three groups use **AvoidOtherGroup** to keep distance from each other, so th
   <StartAgentsGrouped>true</StartAgentsGrouped>
   <EnhancedSoundAwareness>true</EnhancedSoundAwareness>
   <SoundDistanceScale>1</SoundDistanceScale>
-  <GroupSize>16</GroupSize>
   <AgentStartPosition>Mixed</AgentStartPosition>
   <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>
   <PauseDuringBloodmoon>true</PauseDuringBloodmoon>
@@ -54,7 +53,7 @@ All three groups use **AvoidOtherGroup** to keep distance from each other, so th
   <InfiniteZombieLifetime>false</InfiniteZombieLifetime>
   <MaxSpawnedZombies>75%</MaxSpawnedZombies>
   <Systems>
-    <System Name="System 1" Weight="1" SpeedScale="0.8" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#44AA44">
+    <System GroupSize="16" Name="System 1" Weight="1" SpeedScale="0.8" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#44AA44">
       <Processor Type="FlockSameGroup" Distance="40" Power="0.03" Param1="0" Param2="0" />
       <Processor Type="AlignSameGroup" Distance="15" Power="0.3" Param1="0" Param2="0" />
       <Processor Type="AvoidSameGroup" Distance="20" Power="0.8" Param1="0" Param2="0" />
@@ -62,7 +61,7 @@ All three groups use **AvoidOtherGroup** to keep distance from each other, so th
       <Processor Type="WorldEvents" Distance="0" Power="0.6" Param1="0" Param2="0" />
       <Processor Type="AvoidOtherGroup" Distance="50" Power="0.0001" Param1="0" Param2="0" />
     </System>
-    <System Name="System 2" Weight="1" SpeedScale="0.8" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#9E4244">
+    <System GroupSize="16" Name="System 2" Weight="1" SpeedScale="0.8" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#9E4244">
       <Processor Type="FlockSameGroup" Distance="40" Power="0.03" Param1="0" Param2="0" />
       <Processor Type="AlignSameGroup" Distance="15" Power="0.3" Param1="0" Param2="0" />
       <Processor Type="AvoidSameGroup" Distance="20" Power="0.8" Param1="0" Param2="0" />
@@ -70,7 +69,7 @@ All three groups use **AvoidOtherGroup** to keep distance from each other, so th
       <Processor Type="WorldEvents" Distance="0" Power="0.6" Param1="0" Param2="0" />
       <Processor Type="AvoidOtherGroup" Distance="50" Power="0.0001" Param1="0" Param2="0" />
     </System>
-    <System Name="System 3" Weight="1" SpeedScale="0.8" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#57A8BF">
+    <System GroupSize="16" Name="System 3" Weight="1" SpeedScale="0.8" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#57A8BF">
       <Processor Type="FlockSameGroup" Distance="40" Power="0.03" Param1="0" Param2="0" />
       <Processor Type="AlignSameGroup" Distance="15" Power="0.3" Param1="0" Param2="0" />
       <Processor Type="AvoidSameGroup" Distance="20" Power="0.8" Param1="0" Param2="0" />

@@ -248,16 +248,13 @@ namespace WalkerSim
 
         private void SetupProcessors()
         {
-            if (_state.GroupCount == 0)
-            {
-                return;
-            }
-
             _processors.Clear();
 
             if (_state.Config.Processors.Count == 0)
             {
-                // Nothing to do.
+                _state.GroupCount = 0;
+                _groupToSystemIndex = System.Array.Empty<int>();
+                _groupSizes = System.Array.Empty<int>();
                 return;
             }
 
@@ -312,67 +309,63 @@ namespace WalkerSim
                 weights.Add(System.Math.Max(processorGroup.Weight, 0.01f));
             }
 
-            // Distribute spawn groups among systems proportionally by weight.
-            // Zero init the list based on group count.
-            for (int i = 0; i < _state.GroupCount; i++)
+            // Distribute the population among systems proportionally by weight, then chunk each
+            // system's share into groups of that system's own GroupSize. This computes the group
+            // partition (GroupCount, per-group size and system mapping) that Populate relies on.
+            int maxAgents = ComputeMaxAgents();
+
+            float totalWeight = 0;
+            for (int i = 0; i < weights.Count; i++)
+                totalWeight += weights[i];
+
+            int systemCount = configProcessors.Count;
+            var agentsForSystem = new int[systemCount];
+            int assigned = 0;
+            for (int i = 0; i < systemCount; i++)
             {
-                _processors.Add(null);
+                agentsForSystem[i] = (int)((maxAgents * weights[i]) / totalWeight);
+                assigned += agentsForSystem[i];
             }
 
-            _groupToSystemIndex = new int[_state.GroupCount];
-
-            if (configProcessors.Count == 1)
+            // Give the rounding remainder to the largest-weight system.
+            int remainder = maxAgents - assigned;
+            if (remainder != 0)
             {
-                // Single system gets all groups.
-                for (int i = 0; i < _state.GroupCount; i++)
+                int largestIdx = 0;
+                for (int i = 1; i < weights.Count; i++)
                 {
-                    _processors[i] = configProcessors[0];
-                    _groupToSystemIndex[i] = 0;
+                    if (weights[i] > weights[largestIdx])
+                        largestIdx = i;
+                }
+                agentsForSystem[largestIdx] += remainder;
+                if (agentsForSystem[largestIdx] < 0)
+                    agentsForSystem[largestIdx] = 0;
+            }
+
+            var groupSystem = new List<int>();
+            var groupSizeList = new List<int>();
+            for (int s = 0; s < systemCount; s++)
+            {
+                int remaining = agentsForSystem[s];
+                if (remaining <= 0)
+                    continue;
+
+                int gs = System.Math.Max(1, _state.Config.Processors[s].GroupSize);
+                while (remaining > 0)
+                {
+                    int size = System.Math.Min(gs, remaining);
+                    groupSystem.Add(s);
+                    groupSizeList.Add(size);
+                    remaining -= size;
                 }
             }
-            else
-            {
-                // Calculate how many groups each system gets based on weight.
-                float totalWeight = 0;
-                for (int i = 0; i < weights.Count; i++)
-                    totalWeight += weights[i];
 
-                // Assign groups proportionally, ensuring each system gets at least 1.
-                var groupCounts = new int[configProcessors.Count];
-                int assigned = 0;
-                for (int i = 0; i < configProcessors.Count; i++)
-                {
-                    groupCounts[i] = System.Math.Max(1, (int)((_state.GroupCount * weights[i]) / totalWeight));
-                    assigned += groupCounts[i];
-                }
+            _state.GroupCount = groupSystem.Count;
+            _groupToSystemIndex = groupSystem.ToArray();
+            _groupSizes = groupSizeList.ToArray();
 
-                // Distribute any remaining (or remove excess) from the largest weight system.
-                int remainder = _state.GroupCount - assigned;
-                if (remainder != 0)
-                {
-                    int largestIdx = 0;
-                    for (int i = 1; i < weights.Count; i++)
-                    {
-                        if (weights[i] > weights[largestIdx])
-                            largestIdx = i;
-                    }
-                    groupCounts[largestIdx] += remainder;
-                    if (groupCounts[largestIdx] < 1)
-                        groupCounts[largestIdx] = 1;
-                }
-
-                // Fill the processor list by assigning contiguous ranges.
-                int groupIdx = 0;
-                for (int i = 0; i < configProcessors.Count && groupIdx < _state.GroupCount; i++)
-                {
-                    for (int j = 0; j < groupCounts[i] && groupIdx < _state.GroupCount; j++)
-                    {
-                        _processors[groupIdx] = configProcessors[i];
-                        _groupToSystemIndex[groupIdx] = i;
-                        groupIdx++;
-                    }
-                }
-            }
+            for (int g = 0; g < _state.GroupCount; g++)
+                _processors.Add(configProcessors[_groupToSystemIndex[g]]);
 
             // Colorize all the groups who are still transparent
             for (int i = 0; i < _processors.Count; i++)
@@ -580,7 +573,7 @@ namespace WalkerSim
             // to be long: a short hold re-randomizes so often that the drift averages to zero
             // and groups never separate. A long hold lets a group commit to a direction and
             // build real displacement, so groups spread apart and stay distinct.
-            float holdSeconds = param1 > 0f ? param1 : 60f;
+            float holdSeconds = param1 > 0f ? param1 : 600f;
             uint interval = (uint)(holdSeconds * Constants.TicksPerSecond);
             if (interval == 0)
                 interval = 1;

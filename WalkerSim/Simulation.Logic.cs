@@ -68,40 +68,45 @@ namespace WalkerSim
 
         public void Tick()
         {
-            _simTime.Restart();
-
-            try
+            // Hold the state lock for the whole tick so a live reconfigure (ReloadConfig also
+            // locks _state) can only rebuild the agents/grid between ticks, never concurrently
+            // with the lock-free agent update on this thread.
+            lock (_state)
             {
-                UpdatePopulationRamp();
-                UpdateWindDirection();
-                UpdateEvents();
-                UpatePOICounter();
-                UpdateAgents();
-                CheckAutoSave();
-            }
-            catch (System.Exception ex)
-            {
-                Logging.Exception(ex);
-            }
+                _simTime.Restart();
 
-            _simTime.Capture();
-
-            _state.Ticks++;
-
-            if (EditorMode)
-            {
-                // Simulate day progression, 4 hours is a day.
-                var dayLengthInTicks = Simulation.MinutesToTicks(60 * 4);
-
-                if (TimeScale > 1.0f)
+                try
                 {
-                    // Speed up time progression when time scale is high to make it easier to test behavior.
-                    dayLengthInTicks /= (uint)MathEx.Ceiling(TimeScale / 128.0f);
+                    UpdatePopulationRamp();
+                    UpdateWindDirection();
+                    UpdateEvents();
+                    UpatePOICounter();
+                    UpdateAgents();
+                    CheckAutoSave();
+                }
+                catch (System.Exception ex)
+                {
+                    Logging.Exception(ex);
                 }
 
-                _state.GameTime += 1.0 / dayLengthInTicks;
-            }
+                _simTime.Capture();
 
+                _state.Ticks++;
+
+                if (EditorMode)
+                {
+                    // Simulate day progression, 4 hours is a day.
+                    var dayLengthInTicks = Simulation.MinutesToTicks(60 * 4);
+
+                    if (TimeScale > 1.0f)
+                    {
+                        // Speed up time progression when time scale is high to make it easier to test behavior.
+                        dayLengthInTicks /= (uint)MathEx.Ceiling(TimeScale / 128.0f);
+                    }
+
+                    _state.GameTime += 1.0 / dayLengthInTicks;
+                }
+            }
         }
 
         public float GetPopulationFraction()
@@ -186,7 +191,7 @@ namespace WalkerSim
                 {
                     // Compute the current average position of active agents in this group.
                     var groupCenter = GetGroupCenter(agent.Group);
-                    var maxDistance = MathEx.Clamp((float)config.GroupSize * 6.0f, 16.0f, 500.0f);
+                    var maxDistance = MathEx.Clamp((float)GetConfiguredGroupSize(agent.Group) * 6.0f, 16.0f, 500.0f);
                     float angle = (float)prng.NextDouble() * (float)System.Math.PI * 2.0f;
                     float radius = (float)prng.NextDouble() * maxDistance;
                     float offsetX = (float)System.Math.Cos(angle) * radius;
@@ -374,7 +379,7 @@ namespace WalkerSim
             {
                 // Respawn near living group members, or config start if none active.
                 var groupCenter = GetGroupCenter(agent.Group);
-                var maxDistance = MathEx.Clamp((float)config.GroupSize * 6.0f, 16.0f, 500.0f);
+                var maxDistance = MathEx.Clamp((float)GetConfiguredGroupSize(agent.Group) * 6.0f, 16.0f, 500.0f);
                 float angle = (float)_state.PRNG.NextDouble() * (float)System.Math.PI * 2.0f;
                 float radius = (float)_state.PRNG.NextDouble() * maxDistance;
                 float offsetX = (float)System.Math.Cos(angle) * radius;

@@ -187,15 +187,16 @@ namespace WalkerSim.Tests
         {
             var config = Config.GetDefault();
             config.PopulationDensity = 100;
-            config.GroupSize = 32;
+            config.Processors[0].GroupSize = 32;
 
             var sim = new Simulation();
             sim.SetWorldSize(WorldMins, WorldMaxs);
             sim.Reset(config);
 
             Assert.IsTrue(sim.GroupCount > 0);
-            // GroupCount = ceil(agentCount / groupSize)
-            int expectedGroups = (sim.Agents.Count + config.GroupSize - 1) / config.GroupSize;
+            // Single system: GroupCount = ceil(agentCount / groupSize)
+            int groupSize = config.Processors[0].GroupSize;
+            int expectedGroups = (sim.Agents.Count + groupSize - 1) / groupSize;
             Assert.AreEqual(expectedGroups, sim.GroupCount);
         }
 

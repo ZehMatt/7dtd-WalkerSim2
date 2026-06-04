@@ -17,6 +17,7 @@ namespace Editor.Models
 
             // Initialize observable backing fields from underlying data.
             _weight = group.Weight;
+            _groupSize = group.GroupSize;
             _speedScale = group.SpeedScale;
             _postSpawnBehavior = group.PostSpawnBehavior;
             _postSpawnWanderSpeed = group.PostSpawnWanderSpeed;
@@ -45,6 +46,15 @@ namespace Editor.Models
         partial void OnWeightChanged(float value)
         {
             _group.Weight = value;
+            ConfigChanged?.Invoke();
+        }
+
+        [ObservableProperty]
+        private int _groupSize = Config.DefaultGroupSize;
+
+        partial void OnGroupSizeChanged(int value)
+        {
+            _group.GroupSize = value;
             ConfigChanged?.Invoke();
         }
 

@@ -120,6 +120,17 @@
 												   FormatString="0.##"
 												   HorizontalAlignment="Stretch" FontSize="12"/>
 								</Grid>
+								<!-- Group Size -->
+								<Grid ColumnDefinitions="140,*">
+									<controls:LabelWithHelp Grid.Column="0" LabelText="Group Size:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"
+										HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/systems.html#groupsize"/>
+									<NumericUpDown Grid.Column="1"
+												   Value="{Binding GroupSize}"
+												   Minimum="1" Maximum="1024" Increment="1"
+												   FormatString="0"
+												   HorizontalAlignment="Stretch" FontSize="12"/>
+								</Grid>
+
 
 								<!-- Speed Scale -->
 								<Grid ColumnDefinitions="140,*">

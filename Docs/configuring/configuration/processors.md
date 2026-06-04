@@ -162,7 +162,7 @@ When combined with **StickToRoads** or **CityVisitor** in the same system, those
 ### RandomWalk
 Adds a small wandering force with a pseudo-random heading that drifts over time. The heading is derived per group, so every group gets its own slightly different drift and groups become more distinct from one another instead of all following the same dominant behaviors. The heading is shared within a group, so the group still moves as a unit. Keep Power low so it nudges rather than dominates.
 
-Param1 (Hold Time, in seconds) controls how long a group keeps a heading before re-rolling it. Short hold times re-randomize so often that the drift averages out and groups stay clustered; longer hold times let each group commit to a direction and spread apart. Defaults to 60 seconds when unset.
+Param1 (Hold Time, in seconds) controls how long a group keeps a heading before re-rolling it. Short hold times re-randomize so often that the drift averages out and groups stay clustered; longer hold times let each group commit to a direction and spread apart. Defaults to 600 seconds when unset.
 
 - Uses Distance: No
 - Example: Layer a low-power RandomWalk on top of other processors so groups spread out and take subtly different paths

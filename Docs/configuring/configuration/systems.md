@@ -4,28 +4,16 @@ This controls how zombies move around on the virtual map. You can make different
 
 ## How Groups Work
 
-The mod automatically creates groups of zombies based on your settings:
+The total population is split among the systems, and each system divides its share into groups of its own size.
 
-**Number of groups** = (Total zombies) ÷ (GroupSize)
+1. The total number of zombies comes from the map size and `PopulationDensity`.
+2. Each system gets a share of that population proportional to its **Weight**.
+3. Each system splits its share into groups of its own **GroupSize**.
 
-For example:
+For example, with 200 total zombies and two systems:
 
-- If you have 100 zombies total
-- And GroupSize is 20
-- You get 5 groups (numbered 0, 1, 2, 3, 4)
-
-## How Systems Get Assigned to Groups
-
-Each movement system has a **Weight** value that determines how many groups it controls. Groups are distributed proportionally based on weight.
-
-For example, with 5 groups and two systems:
-
-- System A with `Weight="2"` gets ~67% of groups → groups 0, 1, 2
-- System B with `Weight="1"` gets ~33% of groups → groups 3, 4
-
-If you only have one system, it controls all groups regardless of its weight value.
-
-Every system is guaranteed at least one group.
+- System A with `Weight="3"` and `GroupSize="20"` gets ~150 zombies → ~8 groups of 20
+- System B with `Weight="1"` and `GroupSize="50"` gets ~50 zombies → 1 group of 50
 
 ## System Settings
 
@@ -33,11 +21,19 @@ Each system can have these settings:
 
 ### Weight
 
-How many groups this system controls, relative to other systems.
+What share of the total population this system controls, relative to other systems.
 
 - `Weight="1"` is the default
-- Higher values mean more groups are assigned to this system
-- The actual number of groups depends on the total group count and other systems' weights
+- Higher values mean more zombies are assigned to this system
+- If you only have one system, it gets the entire population regardless of its weight
+
+### GroupSize
+
+How many zombies are in each of this system's groups.
+
+- `GroupSize="100"` is the default
+- The system's share of the population is divided into groups of this size (the last group may be smaller)
+- Smaller groups mean more, more independent clusters; larger groups mean fewer, larger clusters
 
 ### SpeedScale
 

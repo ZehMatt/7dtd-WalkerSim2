@@ -54,7 +54,7 @@ namespace WalkerSim.Tests
             original.StartAgentsGrouped = false;
             original.EnhancedSoundAwareness = false;
             original.SoundDistanceScale = 2.5f;
-            original.GroupSize = 64;
+            original.Processors[0].GroupSize = 64;
             original.StartPosition = Config.WorldLocation.RandomBorderLocation;
             original.RespawnPosition = Config.WorldLocation.RandomCity;
             original.PauseDuringBloodmoon = false;
@@ -80,7 +80,7 @@ namespace WalkerSim.Tests
             Assert.AreEqual(original.StartAgentsGrouped, loaded.StartAgentsGrouped);
             Assert.AreEqual(original.EnhancedSoundAwareness, loaded.EnhancedSoundAwareness);
             Assert.AreEqual(original.SoundDistanceScale, loaded.SoundDistanceScale);
-            Assert.AreEqual(original.GroupSize, loaded.GroupSize);
+            Assert.AreEqual(original.Processors[0].GroupSize, loaded.Processors[0].GroupSize);
             Assert.AreEqual(original.StartPosition, loaded.StartPosition);
             Assert.AreEqual(original.RespawnPosition, loaded.RespawnPosition);
             Assert.AreEqual(original.PauseDuringBloodmoon, loaded.PauseDuringBloodmoon);

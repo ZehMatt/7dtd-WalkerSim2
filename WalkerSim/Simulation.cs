@@ -15,6 +15,7 @@ namespace WalkerSim
         private bool _pauseRequested = false;
         private volatile bool _gamePaused = false;
         private Vector3[] _groupStarts = new Vector3[0];
+        private int[] _groupSizes = new int[0];
 
         private int _maxAllowedAliveAgents = 64;
         private float _moveSpeedDay = 1.0f;
@@ -136,17 +137,12 @@ namespace WalkerSim
 
                 SetupGrid();
 
-                var sqrKm = (WorldSize.X / 1000.0f) * (WorldSize.Y / 1000.0f);
-                if (sqrKm > 0)
-                {
-                    var maxAgents = (int)System.Math.Ceiling(sqrKm * config.PopulationDensity);
-                    maxAgents = MathEx.Clamp(maxAgents, 1, Limits.MaxAgents);
-                    _state.GroupCount = (maxAgents + (config.GroupSize - 1)) / config.GroupSize;
-                }
-
+                // SetupProcessors computes the group partition (GroupCount, per-group sizes
+                // and system mapping) from the per-system GroupSize and Weight, so it must run
+                // before BuildGroupStarts/Populate which depend on it.
+                SetupProcessors();
                 BuildGroupStarts();
                 Populate();
-                SetupProcessors();
 
                 _simTime.Reset();
                 _updateTime.Reset();
@@ -418,12 +414,33 @@ namespace WalkerSim
             }
         }
 
+        private int ComputeMaxAgents()
+        {
+            var sqrKm = (WorldSize.X / 1000.0f) * (WorldSize.Y / 1000.0f);
+            if (sqrKm <= 0)
+                return 0;
+
+            var maxAgents = (int)System.Math.Ceiling(sqrKm * _state.Config.PopulationDensity);
+            return MathEx.Clamp(maxAgents, 1, Limits.MaxAgents);
+        }
+
+        private int GetConfiguredGroupSize(int group)
+        {
+            if (group >= 0 && group < _groupToSystemIndex.Length)
+            {
+                int sys = _groupToSystemIndex[group];
+                if (sys >= 0 && sys < _state.Config.Processors.Count)
+                    return System.Math.Max(1, _state.Config.Processors[sys].GroupSize);
+            }
+            return Config.DefaultGroupSize;
+        }
+
         Vector3 GetStartLocation(int index, int groupIndex)
         {
             var config = _state.Config;
 
             // Give each agent 2 meters distance to each other.
-            var maxDistance = MathEx.Clamp((float)_state.Config.GroupSize * 6.0f, 16.0f, 500.0f);
+            var maxDistance = MathEx.Clamp((float)GetConfiguredGroupSize(groupIndex) * 6.0f, 16.0f, 500.0f);
 
             if (config.StartAgentsGrouped)
             {
@@ -444,8 +461,6 @@ namespace WalkerSim
         void Populate()
         {
             var agents = _state.Agents;
-            var config = _state.Config;
-            var prng = _state.PRNG;
 
             agents.Clear();
             SetupGrid();
@@ -455,44 +470,37 @@ namespace WalkerSim
                 return;
             }
 
-            var sqrKm = (WorldSize.X / 1000.0f) * (WorldSize.Y / 1000.0f);
-            if (sqrKm == 0)
-                return;
+            int totalAgents = 0;
+            for (int g = 0; g < _state.GroupCount; g++)
+                totalAgents += _groupSizes[g];
 
-            var maxAgents = (int)System.Math.Ceiling(sqrKm * config.PopulationDensity);
-            maxAgents = MathEx.Clamp(maxAgents, 1, Limits.MaxAgents);
+            if (totalAgents == 0)
+                return;
 
             // If population ramp is configured, only a fraction of agents start as Wandering.
             var popFraction = GetPopulationFraction();
-            var targetTotal = popFraction >= 1f ? maxAgents : (int)(maxAgents * popFraction);
+            var targetTotal = popFraction >= 1f ? totalAgents : (int)(totalAgents * popFraction);
 
-            // Pre-compute active count per group proportional to each group's actual size.
+            // Pre-compute active count per group proportional to each group's size.
             var activeForGroup = new int[_state.GroupCount];
             if (popFraction >= 1f)
             {
                 for (int g = 0; g < _state.GroupCount; g++)
-                {
-                    int groupStart = g * config.GroupSize;
-                    activeForGroup[g] = System.Math.Min(config.GroupSize, maxAgents - groupStart);
-                }
+                    activeForGroup[g] = _groupSizes[g];
             }
             else
             {
                 int assigned = 0;
                 for (int g = 0; g < _state.GroupCount; g++)
                 {
-                    int groupStart = g * config.GroupSize;
-                    int groupActualSize = System.Math.Min(config.GroupSize, maxAgents - groupStart);
-                    int groupTarget = (int)(groupActualSize * popFraction);
+                    int groupTarget = (int)(_groupSizes[g] * popFraction);
                     activeForGroup[g] = groupTarget;
                     assigned += groupTarget;
                 }
                 // Distribute any rounding remainder across groups.
                 for (int g = 0; assigned < targetTotal && g < _state.GroupCount; g++)
                 {
-                    int groupStart = g * config.GroupSize;
-                    int groupActualSize = System.Math.Min(config.GroupSize, maxAgents - groupStart);
-                    if (activeForGroup[g] < groupActualSize)
+                    if (activeForGroup[g] < _groupSizes[g])
                     {
                         activeForGroup[g]++;
                         assigned++;
@@ -500,26 +508,30 @@ namespace WalkerSim
                 }
             }
 
-            for (int index = 0; index < maxAgents; index++)
+            int index = 0;
+            for (int g = 0; g < _state.GroupCount; g++)
             {
-                int groupIndex = index / config.GroupSize;
-                int indexInGroup = index % config.GroupSize;
-
-                var agent = new Agent(index, groupIndex);
-                agent.LastUpdateTick = _state.Ticks;
-                agent.Position = GetStartLocation(index, groupIndex);
-
-                if (indexInGroup < activeForGroup[groupIndex])
+                int groupSize = _groupSizes[g];
+                for (int indexInGroup = 0; indexInGroup < groupSize; indexInGroup++)
                 {
-                    agent.CurrentState = Agent.State.Wandering;
+                    var agent = new Agent(index, g);
+                    agent.LastUpdateTick = _state.Ticks;
+                    agent.Position = GetStartLocation(index, g);
+
+                    if (indexInGroup < activeForGroup[g])
+                    {
+                        agent.CurrentState = Agent.State.Wandering;
+                    }
+
+                    // Ensure the position is not out of bounds.
+                    Warp(agent);
+
+                    agents.Add(agent);
+
+                    MoveInGrid(agent);
+
+                    index++;
                 }
-
-                // Ensure the position is not out of bounds.
-                Warp(agent);
-
-                agents.Add(agent);
-
-                MoveInGrid(agent);
             }
         }
 
@@ -652,12 +664,48 @@ namespace WalkerSim
                     return;
                 }
 
-                if (_state.Agents.Count == 0)
-                {
-                    Populate();
-                }
+                var prevGroupSizes = _groupSizes;
+                var prevGroupToSystem = _groupToSystemIndex;
 
                 SetupProcessors();
+
+                // A GroupSize/Weight change re-partitions the same population into different
+                // groups; density/world changes alter the agent count and need a full rebuild.
+                bool partitionChanged = !IntArraysEqual(prevGroupSizes, _groupSizes)
+                    || !IntArraysEqual(prevGroupToSystem, _groupToSystemIndex);
+
+                if (partitionChanged)
+                {
+                    BuildGroupStarts();
+
+                    int totalAgents = 0;
+                    for (int g = 0; g < _state.GroupCount; g++)
+                        totalAgents += _groupSizes[g];
+
+                    if (_state.Agents.Count != totalAgents)
+                    {
+                        // Agent count changed (e.g. first populate or a density change); rebuild.
+                        Populate();
+                        return;
+                    }
+
+                    // Same population, different grouping: re-bucket the existing agents into the
+                    // new groups in place so they keep their positions and the simulation keeps
+                    // running, instead of resetting everyone back to spawn.
+                    int idx = 0;
+                    for (int g = 0; g < _state.GroupCount; g++)
+                    {
+                        int size = _groupSizes[g];
+                        for (int i = 0; i < size; i++)
+                            _state.Agents[idx++].Group = g;
+                    }
+                }
+                else if (_state.Agents.Count == 0)
+                {
+                    BuildGroupStarts();
+                    Populate();
+                    return;
+                }
 
                 // Only clear travel state whose owning processor is no longer present for the
                 // agent's group, so a stale CityVisitor/StickToRoads target can't strand an
@@ -682,6 +730,20 @@ namespace WalkerSim
                     }
                 }
             }
+        }
+
+        private static bool IntArraysEqual(int[] a, int[] b)
+        {
+            if (a == b)
+                return true;
+            if (a == null || b == null || a.Length != b.Length)
+                return false;
+            for (int i = 0; i < a.Length; i++)
+            {
+                if (a[i] != b[i])
+                    return false;
+            }
+            return true;
         }
 
         public Drawing.Color GetGroupColor(int groupIndex)
