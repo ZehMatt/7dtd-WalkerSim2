@@ -43,14 +43,12 @@ Wind provides a gentle drift so groups migrate across the map over time, and Wor
   <StartAgentsGrouped>true</StartAgentsGrouped>
   <EnhancedSoundAwareness>true</EnhancedSoundAwareness>
   <SoundDistanceScale>1</SoundDistanceScale>
-  <AgentStartPosition>Mixed</AgentStartPosition>
-  <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>
   <PauseDuringBloodmoon>true</PauseDuringBloodmoon>
   <SpawnProtectionTime>300</SpawnProtectionTime>
   <InfiniteZombieLifetime>false</InfiniteZombieLifetime>
   <MaxSpawnedZombies>75%</MaxSpawnedZombies>
   <Systems>
-    <System GroupSize="16" Name="System 1" Weight="1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#FF4444">
+    <System StartPosition="Mixed" RespawnPosition="RandomBorderLocation" GroupSize="16" Name="System 1" Weight="1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#FF4444">
       <Processor Type="FlockSameGroup" Distance="30" Power="0.8" Param1="0" Param2="0" />
       <Processor Type="AlignSameGroup" Distance="25" Power="1" Param1="0" Param2="0" />
       <Processor Type="AvoidSameGroup" Distance="8" Power="1.2" Param1="0" Param2="0" />

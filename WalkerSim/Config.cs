@@ -85,6 +85,8 @@ namespace WalkerSim
             public string Name = "";
             public float Weight = 1.0f;
             public int GroupSize = DefaultGroupSize;
+            public WorldLocation StartPosition = WorldLocation.RandomLocation;
+            public WorldLocation RespawnPosition = WorldLocation.None;
             public float SpeedScale = 1.0f;
             public PostSpawnBehavior PostSpawnBehavior = PostSpawnBehavior.Wander;
             public WanderingSpeed PostSpawnWanderSpeed = WanderingSpeed.Walk;
@@ -102,7 +104,7 @@ namespace WalkerSim
             public bool Events = false;
         }
 
-        public const int CurrentVersion = 3;
+        public const int CurrentVersion = 4;
 
         public int Version = CurrentVersion;
         public LoggingOptions LoggingOpts;
@@ -112,8 +114,6 @@ namespace WalkerSim
         public bool StartAgentsGrouped = true;
         public bool EnhancedSoundAwareness = true;
         public float SoundDistanceScale = 1.0f;
-        public WorldLocation StartPosition = WorldLocation.RandomLocation;
-        public WorldLocation RespawnPosition = WorldLocation.None;
         public bool PauseDuringBloodmoon = true;
         public uint SpawnProtectionTime = 300;
         public bool InfiniteZombieLifetime = false;
@@ -215,8 +215,6 @@ namespace WalkerSim
                 config.StartAgentsGrouped = ReadBool(root, "ws:StartAgentsGrouped", nsMgr, true);
                 config.EnhancedSoundAwareness = ReadBool(root, "ws:EnhancedSoundAwareness", nsMgr, true);
                 config.SoundDistanceScale = ReadFloat(root, "ws:SoundDistanceScale", nsMgr, 1.0f);
-                config.StartPosition = ReadEnum(root, "ws:AgentStartPosition", nsMgr, WorldLocation.RandomLocation);
-                config.RespawnPosition = ReadEnum(root, "ws:AgentRespawnPosition", nsMgr, WorldLocation.None);
                 config.PauseDuringBloodmoon = ReadBool(root, "ws:PauseDuringBloodmoon", nsMgr, true);
                 config.SpawnProtectionTime = ReadUInt(root, "ws:SpawnProtectionTime", nsMgr, 300);
                 config.InfiniteZombieLifetime = ReadBool(root, "ws:InfiniteZombieLifetime", nsMgr, false);
@@ -225,8 +223,12 @@ namespace WalkerSim
                 config.FullPopulationAtDay = ReadInt(root, "ws:FullPopulationAtDay", nsMgr,
                     ReadInt(root, "ws:PopulationFullDay", nsMgr, 1));
 
-                // Legacy global group size, migrated onto any system that doesn't specify its own.
+                // Legacy global settings, migrated onto any system that doesn't specify its own.
                 int legacyGroupSize = ReadInt(root, "ws:GroupSize", nsMgr, 0);
+                bool hasLegacyStart = root.SelectSingleNode("ws:AgentStartPosition", nsMgr) != null;
+                bool hasLegacyRespawn = root.SelectSingleNode("ws:AgentRespawnPosition", nsMgr) != null;
+                WorldLocation legacyStart = ReadEnum(root, "ws:AgentStartPosition", nsMgr, WorldLocation.RandomLocation);
+                WorldLocation legacyRespawn = ReadEnum(root, "ws:AgentRespawnPosition", nsMgr, WorldLocation.None);
 
                 // Systems
                 var processorsNode = root.SelectSingleNode("ws:Systems", nsMgr);
@@ -241,6 +243,10 @@ namespace WalkerSim
                         group.GroupSize = ReadAttrInt(groupNode, "GroupSize", 0);
                         if (group.GroupSize <= 0)
                             group.GroupSize = legacyGroupSize > 0 ? legacyGroupSize : DefaultGroupSize;
+                        group.StartPosition = ReadAttrEnum(groupNode, "StartPosition",
+                            hasLegacyStart ? legacyStart : WorldLocation.RandomLocation);
+                        group.RespawnPosition = ReadAttrEnum(groupNode, "RespawnPosition",
+                            hasLegacyRespawn ? legacyRespawn : WorldLocation.None);
                         group.SpeedScale = ReadAttrFloat(groupNode, "SpeedScale", 1.0f);
                         group.PostSpawnBehavior = ReadAttrEnum(groupNode, "PostSpawnBehavior", PostSpawnBehavior.Wander);
                         group.PostSpawnWanderSpeed = ReadAttrEnum(groupNode, "PostSpawnWanderSpeed", WanderingSpeed.Walk);
@@ -288,8 +294,6 @@ namespace WalkerSim
                 RandomSeed = 1337,
                 PopulationDensity = 300,
                 SpawnActivationRadius = 96,
-                StartPosition = WorldLocation.RandomLocation,
-                RespawnPosition = WorldLocation.RandomBorderLocation,
                 StartAgentsGrouped = true,
                 EnhancedSoundAwareness = true,
                 SoundDistanceScale = 1.0f,
@@ -304,6 +308,8 @@ namespace WalkerSim
                     new MovementProcessorGroup {
                         Weight = 1.0f,
                         GroupSize = 32,
+                        StartPosition = WorldLocation.RandomLocation,
+                        RespawnPosition = WorldLocation.RandomBorderLocation,
                         SpeedScale = 1.0f,
                         Entries = new List<MovementProcessor> {
                             new MovementProcessor()
@@ -406,8 +412,6 @@ namespace WalkerSim
                 WriteElement(xw, "StartAgentsGrouped", XmlConvert.ToString(StartAgentsGrouped));
                 WriteElement(xw, "EnhancedSoundAwareness", XmlConvert.ToString(EnhancedSoundAwareness));
                 WriteElement(xw, "SoundDistanceScale", XmlConvert.ToString(SoundDistanceScale));
-                WriteElement(xw, "AgentStartPosition", StartPosition.ToString());
-                WriteElement(xw, "AgentRespawnPosition", RespawnPosition.ToString());
                 WriteElement(xw, "PauseDuringBloodmoon", XmlConvert.ToString(PauseDuringBloodmoon));
                 WriteElement(xw, "SpawnProtectionTime", XmlConvert.ToString(SpawnProtectionTime));
                 WriteElement(xw, "InfiniteZombieLifetime", XmlConvert.ToString(InfiniteZombieLifetime));
@@ -426,6 +430,8 @@ namespace WalkerSim
                             xw.WriteAttributeString("Name", group.Name);
                         xw.WriteAttributeString("Weight", XmlConvert.ToString(group.Weight));
                         xw.WriteAttributeString("GroupSize", XmlConvert.ToString(group.GroupSize));
+                        xw.WriteAttributeString("StartPosition", group.StartPosition.ToString());
+                        xw.WriteAttributeString("RespawnPosition", group.RespawnPosition.ToString());
                         xw.WriteAttributeString("SpeedScale", XmlConvert.ToString(group.SpeedScale));
                         xw.WriteAttributeString("PostSpawnBehavior", group.PostSpawnBehavior.ToString());
                         xw.WriteAttributeString("PostSpawnWanderSpeed", group.PostSpawnWanderSpeed.ToString());

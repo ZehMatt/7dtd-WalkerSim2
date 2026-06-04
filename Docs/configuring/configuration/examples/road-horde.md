@@ -18,7 +18,7 @@ Wind provides a directional bias so hordes tend to travel in one direction rathe
 | AvoidSameGroup Distance | 6 | Tight spacing — agents stay close but don't overlap |
 | FlockSameGroup Distance | 20 | Short flock range keeps sub-groups together on the road |
 | Wind Power | 0.4 | Mild directional bias without overpowering road navigation |
-| AgentStartPosition | RandomCity | Agents begin in cities and immediately start traveling roads |
+| StartPosition | RandomCity | Agents begin in cities and immediately start traveling roads |
 | WorldEvents Power | 0.8 | Strong reaction to player sounds — hordes will divert toward gunshots and explosions |
 
 ## Configuration
@@ -41,14 +41,12 @@ Wind provides a directional bias so hordes tend to travel in one direction rathe
   <StartAgentsGrouped>true</StartAgentsGrouped>
   <EnhancedSoundAwareness>true</EnhancedSoundAwareness>
   <SoundDistanceScale>1</SoundDistanceScale>
-  <AgentStartPosition>RandomCity</AgentStartPosition>
-  <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>
   <PauseDuringBloodmoon>true</PauseDuringBloodmoon>
   <SpawnProtectionTime>300</SpawnProtectionTime>
   <InfiniteZombieLifetime>false</InfiniteZombieLifetime>
   <MaxSpawnedZombies>75%</MaxSpawnedZombies>
   <Systems>
-    <System GroupSize="16" Name="System 1" Weight="1" SpeedScale="1.2" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#DDDD44">
+    <System StartPosition="RandomCity" RespawnPosition="RandomBorderLocation" GroupSize="16" Name="System 1" Weight="1" SpeedScale="1.2" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#DDDD44">
       <Processor Type="StickToRoads" Distance="0" Power="1" Param1="0" Param2="0" />
       <Processor Type="FlockSameGroup" Distance="20" Power="0.3" Param1="0" Param2="0" />
       <Processor Type="AlignSameGroup" Distance="20" Power="0.8" Param1="0" Param2="0" />

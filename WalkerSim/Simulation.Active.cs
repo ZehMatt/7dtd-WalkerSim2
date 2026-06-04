@@ -37,7 +37,7 @@ namespace WalkerSim
             _state.Spawned.TryRemove(agent.EntityId, out _);
             agent.ResetSpawnData();
 
-            if (_state.Config.RespawnPosition == Config.WorldLocation.None)
+            if (GetSystemRespawnPosition(agent.Group) == Config.WorldLocation.None)
             {
                 // No respawn, dead for good.
                 agent.CurrentState = Agent.State.Dead;

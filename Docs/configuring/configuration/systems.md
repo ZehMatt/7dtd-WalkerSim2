@@ -35,6 +35,27 @@ How many zombies are in each of this system's groups.
 - The system's share of the population is divided into groups of this size (the last group may be smaller)
 - Smaller groups mean more, more independent clusters; larger groups mean fewer, larger clusters
 
+### StartPosition
+
+Where this system's agents spawn when the simulation begins.
+
+- **RandomBorderLocation**: Around the edges of the map
+- **RandomLocation**: Anywhere on the map (default)
+- **RandomPOI**: At buildings and landmarks
+- **RandomCity**: In cities
+- **Mixed**: A mix of the above
+
+### RespawnPosition
+
+Where this system's agents come back after they die.
+
+- **None**: Dead agents don't come back (default)
+- **RandomBorderLocation**: Come back at the edges of the map
+- **RandomLocation**: Come back anywhere on the map
+- **RandomPOI**: Come back at buildings
+- **RandomCity**: Come back in cities
+- **Mixed**: A mix of the above
+
 ### SpeedScale
 
 How fast zombies move on the virtual map (not in the game).

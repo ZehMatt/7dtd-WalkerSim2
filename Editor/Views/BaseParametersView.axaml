@@ -94,18 +94,6 @@
 					<TextBlock Text="Spawning" FontWeight="SemiBold" FontSize="13"
 							   Foreground="{DynamicResource EditorTextSecondary}"/>
 					<StackPanel Spacing="4">
-						<controls:LabelWithHelp LabelText="Start Position:" FontWeight="Medium"
-							HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#agentstartposition"/>
-						<ComboBox SelectedItem="{Binding StartPosition, Mode=TwoWay}"
-								  ItemsSource="{Binding StartPositionOptions}"/>
-					</StackPanel>
-					<StackPanel Spacing="4">
-						<controls:LabelWithHelp LabelText="Respawn Position:" FontWeight="Medium"
-							HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#agentrespawnposition"/>
-						<ComboBox SelectedItem="{Binding RespawnPosition, Mode=TwoWay}"
-								  ItemsSource="{Binding RespawnPositionOptions}"/>
-					</StackPanel>
-					<StackPanel Spacing="4">
 						<controls:LabelWithHelp LabelText="Spawn Activation Radius:" FontWeight="Medium"
 							HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#spawnactivationradius"/>
 						<NumericUpDown Value="{Binding SpawnActivationRadius, Mode=TwoWay}"

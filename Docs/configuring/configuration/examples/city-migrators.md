@@ -16,7 +16,7 @@ Agents spawn in cities and travel between them using roads. The **CityVisitor** 
 | CityVisitor Param1 | 2 | Minimum stay time in a city (in-game days) |
 | CityVisitor Param2 | 4 | Maximum stay time in a city (in-game days) |
 | StickToRoads Power | 0.5 | Moderate road adherence — agents follow roads but can deviate slightly |
-| AgentStartPosition | RandomCity | Agents begin inside cities rather than scattered across the map |
+| StartPosition | RandomCity | Agents begin inside cities rather than scattered across the map |
 | WorldEvents Power | 0.7 | Agents react to player sounds — slightly lower than other presets so road/city navigation stays dominant |
 
 ## Configuration
@@ -39,14 +39,12 @@ Agents spawn in cities and travel between them using roads. The **CityVisitor** 
   <StartAgentsGrouped>true</StartAgentsGrouped>
   <EnhancedSoundAwareness>true</EnhancedSoundAwareness>
   <SoundDistanceScale>1</SoundDistanceScale>
-  <AgentStartPosition>RandomCity</AgentStartPosition>
-  <AgentRespawnPosition>RandomBorderLocation</AgentRespawnPosition>
   <PauseDuringBloodmoon>true</PauseDuringBloodmoon>
   <SpawnProtectionTime>300</SpawnProtectionTime>
   <InfiniteZombieLifetime>false</InfiniteZombieLifetime>
   <MaxSpawnedZombies>75%</MaxSpawnedZombies>
   <Systems>
-    <System GroupSize="16" Name="System 1" Weight="1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#DD44DD">
+    <System StartPosition="RandomCity" RespawnPosition="RandomBorderLocation" GroupSize="16" Name="System 1" Weight="1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#DD44DD">
       <Processor Type="CityVisitor" Distance="0" Power="0.9" Param1="15" Param2="30" />
       <Processor Type="StickToRoads" Distance="0" Power="0.5" Param1="0" Param2="0" />
       <Processor Type="AlignSameGroup" Distance="20" Power="0.6" Param1="0" Param2="0" />

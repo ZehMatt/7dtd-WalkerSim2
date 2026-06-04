@@ -18,6 +18,8 @@ namespace Editor.Models
             // Initialize observable backing fields from underlying data.
             _weight = group.Weight;
             _groupSize = group.GroupSize;
+            _startPosition = group.StartPosition;
+            _respawnPosition = group.RespawnPosition;
             _speedScale = group.SpeedScale;
             _postSpawnBehavior = group.PostSpawnBehavior;
             _postSpawnWanderSpeed = group.PostSpawnWanderSpeed;
@@ -55,6 +57,24 @@ namespace Editor.Models
         partial void OnGroupSizeChanged(int value)
         {
             _group.GroupSize = value;
+            ConfigChanged?.Invoke();
+        }
+
+        [ObservableProperty]
+        private Config.WorldLocation _startPosition = Config.WorldLocation.RandomLocation;
+
+        partial void OnStartPositionChanged(Config.WorldLocation value)
+        {
+            _group.StartPosition = value;
+            ConfigChanged?.Invoke();
+        }
+
+        [ObservableProperty]
+        private Config.WorldLocation _respawnPosition = Config.WorldLocation.None;
+
+        partial void OnRespawnPositionChanged(Config.WorldLocation value)
+        {
+            _group.RespawnPosition = value;
             ConfigChanged?.Invoke();
         }
 

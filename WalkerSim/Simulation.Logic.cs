@@ -200,7 +200,7 @@ namespace WalkerSim
                 }
                 else
                 {
-                    agent.Position = GetStartLocation();
+                    agent.Position = GetStartLocationForGroup(agent.Group);
                 }
 
                 Warp(agent);
@@ -370,10 +370,10 @@ namespace WalkerSim
             var config = _state.Config;
 
             Vector3 startPos;
-            if (config.RespawnPosition != Config.WorldLocation.None)
+            if (GetSystemRespawnPosition(agent.Group) != Config.WorldLocation.None)
             {
-                // Explicit respawn location configured.
-                startPos = GetRespawnLocation();
+                // Explicit respawn location configured for this agent's system.
+                startPos = GetRespawnLocationForGroup(agent.Group);
             }
             else if (config.StartAgentsGrouped)
             {
@@ -389,7 +389,7 @@ namespace WalkerSim
             else
             {
                 // Use the same start location logic as initial population.
-                startPos = GetStartLocation();
+                startPos = GetStartLocationForGroup(agent.Group);
             }
 
             agent.Position = startPos;

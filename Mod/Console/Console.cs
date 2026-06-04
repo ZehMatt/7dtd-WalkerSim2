@@ -249,8 +249,6 @@ namespace WalkerSim.Console
                     ConsoleOutput.Log("  Random Seed: {0}", config.RandomSeed);
                     ConsoleOutput.Log("  Population Density: {0} agents/km²", config.PopulationDensity);
                     ConsoleOutput.Log("  Start Agents Grouped: {0}", config.StartAgentsGrouped);
-                    ConsoleOutput.Log("  Start Position: {0}", config.StartPosition);
-                    ConsoleOutput.Log("  Respawn Position: {0}", config.RespawnPosition);
                     ConsoleOutput.Log("  Pause During Bloodmoon: {0}", config.PauseDuringBloodmoon);
                     ConsoleOutput.Log("  Sound Distance Scale: {0}", config.SoundDistanceScale);
                     ConsoleOutput.Log("");
@@ -260,6 +258,8 @@ namespace WalkerSim.Console
                         var group = config.Processors[i];
                         ConsoleOutput.Log("  System {0} (Weight: {1}):", string.IsNullOrEmpty(group.Name) ? (i + 1).ToString() : group.Name, group.Weight);
                         ConsoleOutput.Log("    Group Size: {0}", group.GroupSize);
+                        ConsoleOutput.Log("    Start Position: {0}", group.StartPosition);
+                        ConsoleOutput.Log("    Respawn Position: {0}", group.RespawnPosition);
                         ConsoleOutput.Log("    Speed Scale: {0}", group.SpeedScale);
                         ConsoleOutput.Log("    Post Spawn Behavior: {0}", group.PostSpawnBehavior);
                         ConsoleOutput.Log("    Post Spawn Wander Speed: {0}", group.PostSpawnWanderSpeed);

@@ -180,6 +180,26 @@
 											  HorizontalAlignment="Stretch" FontSize="12"/>
 								</Grid>
 
+								<!-- Start Position -->
+								<Grid ColumnDefinitions="140,*">
+									<controls:LabelWithHelp Grid.Column="0" LabelText="Start Position:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"
+										HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/systems.html#startposition"/>
+									<ComboBox Grid.Column="1"
+											  SelectedItem="{Binding StartPosition, Mode=TwoWay}"
+											  ItemsSource="{Binding DataContext.StartPositionOptions, ElementName=RootControl}"
+											  HorizontalAlignment="Stretch" FontSize="12"/>
+								</Grid>
+
+								<!-- Respawn Position -->
+								<Grid ColumnDefinitions="140,*">
+									<controls:LabelWithHelp Grid.Column="0" LabelText="Respawn Position:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"
+										HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/systems.html#respawnposition"/>
+									<ComboBox Grid.Column="1"
+											  SelectedItem="{Binding RespawnPosition, Mode=TwoWay}"
+											  ItemsSource="{Binding DataContext.RespawnPositionOptions, ElementName=RootControl}"
+											  HorizontalAlignment="Stretch" FontSize="12"/>
+								</Grid>
+
 							</StackPanel>
 						</DataTemplate>
 

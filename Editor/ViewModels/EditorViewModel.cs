@@ -131,18 +131,6 @@ namespace Editor.ViewModels
             set { Config.SpawnActivationRadius = value; OnPropertyChanged(); MarkDirty(); }
         }
 
-        public Config.WorldLocation StartPosition
-        {
-            get => Config.StartPosition;
-            set { Config.StartPosition = value; OnPropertyChanged(); MarkDirty(); if (!_suppressReset) ResetSimulation(); }
-        }
-
-        public Config.WorldLocation RespawnPosition
-        {
-            get => Config.RespawnPosition;
-            set { Config.RespawnPosition = value; OnPropertyChanged(); MarkDirty(); if (!_suppressReset) ResetSimulation(); }
-        }
-
         public bool StartAgentsGrouped
         {
             get => Config.StartAgentsGrouped;
@@ -629,8 +617,6 @@ namespace Editor.ViewModels
             OnPropertyChanged(nameof(PopulationDensity));
             OnPropertyChanged(nameof(RandomSeed));
             OnPropertyChanged(nameof(SpawnActivationRadius));
-            OnPropertyChanged(nameof(StartPosition));
-            OnPropertyChanged(nameof(RespawnPosition));
             OnPropertyChanged(nameof(StartAgentsGrouped));
             OnPropertyChanged(nameof(EnhancedSoundAwareness));
             OnPropertyChanged(nameof(SoundDistanceScale));

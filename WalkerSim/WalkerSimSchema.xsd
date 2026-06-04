@@ -94,18 +94,6 @@
                 </xs:element>
 
 
-                <xs:element name="AgentStartPosition" type="SpawnPosition">
-                    <xs:annotation>
-                        <xs:documentation>Starting position of agents</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-
-                <xs:element name="AgentRespawnPosition" type="RespawnPosition">
-                    <xs:annotation>
-                        <xs:documentation>Respawn position of agents (e.g., Border Location)</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-
                 <xs:element name="PauseDuringBloodmoon" type="xs:boolean">
                     <xs:annotation>
                         <xs:documentation>Whether the simulation pauses during specific events</xs:documentation>
@@ -244,6 +232,21 @@
                                                 <xs:minInclusive value="1" />
                                             </xs:restriction>
                                         </xs:simpleType>
+                                    </xs:attribute>
+                                    <xs:attribute name="StartPosition" type="SpawnPosition" use="optional" default="RandomLocation">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                Where this system's agents spawn initially.
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="RespawnPosition" type="RespawnPosition" use="optional" default="None">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                Where this system's agents respawn after dying.
+                                                None means they do not respawn.
+                                            </xs:documentation>
+                                        </xs:annotation>
                                     </xs:attribute>
                                     <xs:attribute name="SpeedScale" type="xs:decimal" use="required">
                                         <xs:annotation>

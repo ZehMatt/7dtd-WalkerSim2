@@ -390,16 +390,39 @@ namespace WalkerSim
             throw new System.Exception("Bad starting location type");
         }
 
-        Vector3 GetStartLocation()
+        private Config.WorldLocation GetSystemStartPosition(int group)
         {
-            var config = _state.Config;
-            return GetWorldLocation(config.StartPosition, _state.PRNG);
+            if (group >= 0 && group < _groupToSystemIndex.Length)
+            {
+                int sys = _groupToSystemIndex[group];
+                if (sys >= 0 && sys < _state.Config.Processors.Count)
+                    return _state.Config.Processors[sys].StartPosition;
+            }
+            return Config.WorldLocation.RandomLocation;
         }
 
-        Vector3 GetRespawnLocation()
+        private Config.WorldLocation GetSystemRespawnPosition(int group)
         {
-            var config = _state.Config;
-            return GetWorldLocation(config.RespawnPosition, _state.PRNG);
+            if (group >= 0 && group < _groupToSystemIndex.Length)
+            {
+                int sys = _groupToSystemIndex[group];
+                if (sys >= 0 && sys < _state.Config.Processors.Count)
+                    return _state.Config.Processors[sys].RespawnPosition;
+            }
+            return Config.WorldLocation.None;
+        }
+
+        Vector3 GetStartLocationForGroup(int group)
+        {
+            var loc = GetSystemStartPosition(group);
+            if (loc == Config.WorldLocation.None)
+                loc = Config.WorldLocation.RandomLocation;
+            return GetWorldLocation(loc, _state.PRNG);
+        }
+
+        Vector3 GetRespawnLocationForGroup(int group)
+        {
+            return GetWorldLocation(GetSystemRespawnPosition(group), _state.PRNG);
         }
 
         void BuildGroupStarts()
@@ -410,7 +433,10 @@ namespace WalkerSim
             _groupStarts = new Vector3[_state.GroupCount];
             for (int i = 0; i < _groupStarts.Length; i++)
             {
-                _groupStarts[i] = GetWorldLocation(config.StartPosition, prng);
+                var loc = GetSystemStartPosition(i);
+                if (loc == Config.WorldLocation.None)
+                    loc = Config.WorldLocation.RandomLocation;
+                _groupStarts[i] = GetWorldLocation(loc, prng);
             }
         }
 
@@ -454,7 +480,7 @@ namespace WalkerSim
             }
             else
             {
-                return GetStartLocation();
+                return GetStartLocationForGroup(groupIndex);
             }
         }
 
@@ -669,6 +695,10 @@ namespace WalkerSim
 
                 SetupProcessors();
 
+                // Rebuild group start positions so a live per-system StartPosition change takes
+                // effect for future respawns. Deterministic, so it's a no-op when unchanged.
+                BuildGroupStarts();
+
                 // A GroupSize/Weight change re-partitions the same population into different
                 // groups; density/world changes alter the agent count and need a full rebuild.
                 bool partitionChanged = !IntArraysEqual(prevGroupSizes, _groupSizes)
@@ -676,8 +706,6 @@ namespace WalkerSim
 
                 if (partitionChanged)
                 {
-                    BuildGroupStarts();
-
                     int totalAgents = 0;
                     for (int g = 0; g < _state.GroupCount; g++)
                         totalAgents += _groupSizes[g];
@@ -702,7 +730,6 @@ namespace WalkerSim
                 }
                 else if (_state.Agents.Count == 0)
                 {
-                    BuildGroupStarts();
                     Populate();
                     return;
                 }

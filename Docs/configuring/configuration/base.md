@@ -73,35 +73,6 @@ Here are all the settings you can change:
 
 **Example**: Set to 1.5 to make zombies react to sounds from farther away.
 
-### AgentStartPosition
-
-**What it does**: Where zombies start when the simulation begins.
-
-**Options**:
-
-- **RandomBorderLocation**: Zombies start around the edges of the map
-- **RandomLocation**: Zombies start anywhere on the map
-- **RandomPOI**: Zombies start at buildings and landmarks
-- **RandomCity**: Zombies start in cities
-- **Mixed**: A mix of all the above
-
-**Example**: Use RandomPOI to make zombies start at towns and buildings.
-
-### AgentRespawnPosition
-
-**What it does**: Where zombies come back after they die.
-
-**Options**:
-
-- **None**: Dead zombies don't come back
-- **RandomBorderLocation**: Zombies come back at the edges of the map
-- **RandomLocation**: Zombies come back anywhere on the map
-- **RandomPOI**: Zombies come back at buildings
-- **RandomCity**: Zombies come back in cities
-- **Mixed**: A mix of all the above
-
-**Example**: Use RandomBorderLocation to make zombies return from the edges of the map.
-
 ### PauseDuringBloodmoon
 
 **What it does**: Stops the simulation during Blood Moon nights.

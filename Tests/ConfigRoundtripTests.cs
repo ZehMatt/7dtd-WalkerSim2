@@ -55,8 +55,8 @@ namespace WalkerSim.Tests
             original.EnhancedSoundAwareness = false;
             original.SoundDistanceScale = 2.5f;
             original.Processors[0].GroupSize = 64;
-            original.StartPosition = Config.WorldLocation.RandomBorderLocation;
-            original.RespawnPosition = Config.WorldLocation.RandomCity;
+            original.Processors[0].StartPosition = Config.WorldLocation.RandomBorderLocation;
+            original.Processors[0].RespawnPosition = Config.WorldLocation.RandomCity;
             original.PauseDuringBloodmoon = false;
             original.SpawnProtectionTime = 600;
             original.InfiniteZombieLifetime = true;
@@ -81,8 +81,8 @@ namespace WalkerSim.Tests
             Assert.AreEqual(original.EnhancedSoundAwareness, loaded.EnhancedSoundAwareness);
             Assert.AreEqual(original.SoundDistanceScale, loaded.SoundDistanceScale);
             Assert.AreEqual(original.Processors[0].GroupSize, loaded.Processors[0].GroupSize);
-            Assert.AreEqual(original.StartPosition, loaded.StartPosition);
-            Assert.AreEqual(original.RespawnPosition, loaded.RespawnPosition);
+            Assert.AreEqual(original.Processors[0].StartPosition, loaded.Processors[0].StartPosition);
+            Assert.AreEqual(original.Processors[0].RespawnPosition, loaded.Processors[0].RespawnPosition);
             Assert.AreEqual(original.PauseDuringBloodmoon, loaded.PauseDuringBloodmoon);
             Assert.AreEqual(original.SpawnProtectionTime, loaded.SpawnProtectionTime);
             Assert.AreEqual(original.InfiniteZombieLifetime, loaded.InfiniteZombieLifetime);
