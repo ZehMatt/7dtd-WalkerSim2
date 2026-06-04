@@ -39,10 +39,15 @@ namespace Editor.Views
 
         // Cached group brushes
         private IBrush[] _groupBrushes = Array.Empty<IBrush>();
+        private (byte b, byte g, byte r, byte a)[] _groupColors = Array.Empty<(byte, byte, byte, byte)>();
         private int _cachedGroupCount = 0;
 
+        private WriteableBitmap _agentsBitmap;
+        private byte[] _agentsBuffer;
+        private int _agentsBmpW;
+        private int _agentsBmpH;
+
         // Reusable brushes (pens are created per-frame with 1/zoom thickness)
-        private readonly IBrush _activeAgentBrush = new SolidColorBrush(Color.FromArgb(255, 0, 220, 0));
         private readonly IBrush _playerBrush = new SolidColorBrush(Colors.Magenta);
         private readonly IBrush _playerPenBrush = Brushes.Blue;
         private readonly IBrush _eventPenBrush = Brushes.Red;
@@ -480,10 +485,16 @@ namespace Editor.Views
 
             var count = Math.Max(groupCount, 1);
             _groupBrushes = new IBrush[count];
+            _groupColors = new (byte, byte, byte, byte)[count];
             for (int i = 0; i < count; i++)
             {
                 var c = _simulation.GetGroupColor(i);
                 _groupBrushes[i] = new SolidColorBrush(Color.FromArgb(c.A, c.R, c.G, c.B));
+                _groupColors[i] = (
+                    (byte)(c.B * c.A / 255),
+                    (byte)(c.G * c.A / 255),
+                    (byte)(c.R * c.A / 255),
+                    c.A);
             }
             _cachedGroupCount = groupCount;
         }
@@ -566,32 +577,37 @@ namespace Editor.Views
                           * Matrix.CreateTranslation(offsetX + _panX, offsetY + _panY);
 
             using (context.PushClip(new Rect(0, BarHeight, width, height - BarHeight)))
-            using (context.PushTransform(transform))
             {
-                if (ShowBiomes)
-                    RenderBiomes(context, viewSize, viewSize);
-                if (ShowRoads)
-                    RenderRoads(context, viewSize, viewSize);
-                if (ShowCities)
-                    RenderCities(context, viewSize, viewSize);
-                if (ShowRoadNetwork)
-                    RenderRoadNetwork(context, viewSize, viewSize);
-                if (ShowPrefabs)
-                    RenderPrefabs(context, viewSize, viewSize);
-                if (ShowAgents)
-                    RenderAgents(context, viewSize, viewSize);
-                if (ShowActiveAgents)
-                    RenderActiveAgents(context, viewSize, viewSize);
-                RenderPlayers(context, viewSize, viewSize);
-                if (ShowEvents)
-                    RenderEvents(context, viewSize, viewSize);
-                // Draw highlight/blink on top of everything.
-                if (_highlightAgent != null && _blinkPhase < 1.0)
-                    RenderHighlightAgent(context, viewSize, viewSize);
-                // Draw active tool preview circle on top (still in zoomed space so the
-                // radius matches the world).
-                if (OnCanvasClick != null && _toolActive && !float.IsNaN(ToolPreviewRadius))
-                    RenderToolPreview(context, viewSize, viewSize);
+                using (context.PushTransform(transform))
+                {
+                    if (ShowBiomes)
+                        RenderBiomes(context, viewSize, viewSize);
+                    if (ShowRoads)
+                        RenderRoads(context, viewSize, viewSize);
+                    if (ShowCities)
+                        RenderCities(context, viewSize, viewSize);
+                    if (ShowRoadNetwork)
+                        RenderRoadNetwork(context, viewSize, viewSize);
+                    if (ShowPrefabs)
+                        RenderPrefabs(context, viewSize, viewSize);
+                }
+
+                if (ShowAgents || ShowActiveAgents)
+                    RenderAgentsBitmap(context, width, height, viewSize, offsetX, offsetY);
+
+                using (context.PushTransform(transform))
+                {
+                    RenderPlayers(context, viewSize, viewSize);
+                    if (ShowEvents)
+                        RenderEvents(context, viewSize, viewSize);
+                    // Draw highlight/blink on top of everything.
+                    if (_highlightAgent != null && _blinkPhase < 1.0)
+                        RenderHighlightAgent(context, viewSize, viewSize);
+                    // Draw active tool preview circle on top (still in zoomed space so the
+                    // radius matches the world).
+                    if (OnCanvasClick != null && _toolActive && !float.IsNaN(ToolPreviewRadius))
+                        RenderToolPreview(context, viewSize, viewSize);
+                }
             }
 
             // HUD bar — drawn in screen space, never affected by zoom/pan.
@@ -937,41 +953,99 @@ namespace Editor.Views
             return bmp;
         }
 
-        private void RenderAgents(DrawingContext context, double width, double height)
+        private void RenderAgentsBitmap(DrawingContext context, double width, double height, double viewSize, double offsetX, double offsetY)
         {
-            var agents = _simulation.Agents;
-            if (agents == null)
+            int bw = (int)Math.Ceiling(width);
+            int bh = (int)Math.Ceiling(height);
+            if (bw <= 0 || bh <= 0)
                 return;
 
-            // Draw at 1/zoom so the rect is always 1 screen pixel after the zoom transform.
-            double px = 1.0 / _zoom;
-            foreach (var agent in agents)
+            if (_agentsBitmap == null || _agentsBmpW != bw || _agentsBmpH != bh)
             {
-                if (agent.CurrentState != Agent.State.Wandering)
-                    continue;
-
-                var (cx, cy) = SimToCanvas(agent.Position, width, height);
-                var brush = _groupBrushes.Length > 0 ? _groupBrushes[agent.Group % _groupBrushes.Length] : Brushes.White;
-                context.FillRectangle(brush, new Rect(cx, cy, px, px));
+                _agentsBitmap?.Dispose();
+                _agentsBitmap = new WriteableBitmap(
+                    new PixelSize(bw, bh),
+                    new Vector(96, 96),
+                    Avalonia.Platform.PixelFormat.Bgra8888,
+                    Avalonia.Platform.AlphaFormat.Premul);
+                _agentsBmpW = bw;
+                _agentsBmpH = bh;
+                _agentsBuffer = null;
             }
-        }
 
-        private void RenderActiveAgents(DrawingContext context, double width, double height)
-        {
-            var active = _simulation.Active;
-            if (active == null)
-                return;
+            double vcx = viewSize / 2.0;
+            double vcy = viewSize / 2.0;
+            double zoom = _zoom;
+            double tx = offsetX + _panX;
+            double ty = offsetY + _panY;
+            int barY = (int)BarHeight;
 
-            double px = 1.0 / _zoom;
-            foreach (var kv in active)
+            using (var buf = _agentsBitmap.Lock())
             {
-                var agent = kv.Value;
-                if (agent.CurrentState != Agent.State.Spawned)
-                    continue;
+                int stride = buf.RowBytes;
+                if (_agentsBuffer == null || _agentsBuffer.Length != bh * stride)
+                    _agentsBuffer = new byte[bh * stride];
 
-                var (cx, cy) = SimToCanvas(agent.Position, width, height);
-                context.FillRectangle(_activeAgentBrush, new Rect(cx, cy, px, px));
+                var pixels = _agentsBuffer;
+                Array.Clear(pixels, 0, pixels.Length);
+
+                if (ShowAgents)
+                {
+                    var agents = _simulation.Agents;
+                    var colors = _groupColors;
+                    if (agents != null && colors.Length > 0)
+                    {
+                        foreach (var agent in agents)
+                        {
+                            if (agent.CurrentState != Agent.State.Wandering)
+                                continue;
+
+                            var (cx, cy) = SimToCanvas(agent.Position, viewSize, viewSize);
+                            int ix = (int)((cx - vcx) * zoom + vcx + tx);
+                            int iy = (int)((cy - vcy) * zoom + vcy + ty);
+                            if (ix < 0 || ix >= bw || iy < barY || iy >= bh)
+                                continue;
+
+                            var c = colors[agent.Group % colors.Length];
+                            int idx = iy * stride + ix * 4;
+                            pixels[idx + 0] = c.b;
+                            pixels[idx + 1] = c.g;
+                            pixels[idx + 2] = c.r;
+                            pixels[idx + 3] = c.a;
+                        }
+                    }
+                }
+
+                if (ShowActiveAgents)
+                {
+                    var active = _simulation.Active;
+                    if (active != null)
+                    {
+                        foreach (var kv in active)
+                        {
+                            var agent = kv.Value;
+                            if (agent.CurrentState != Agent.State.Spawned)
+                                continue;
+
+                            var (cx, cy) = SimToCanvas(agent.Position, viewSize, viewSize);
+                            int ix = (int)((cx - vcx) * zoom + vcx + tx);
+                            int iy = (int)((cy - vcy) * zoom + vcy + ty);
+                            if (ix < 0 || ix >= bw || iy < barY || iy >= bh)
+                                continue;
+
+                            int idx = iy * stride + ix * 4;
+                            pixels[idx + 0] = 0;
+                            pixels[idx + 1] = 220;
+                            pixels[idx + 2] = 0;
+                            pixels[idx + 3] = 255;
+                        }
+                    }
+                }
+
+                Marshal.Copy(pixels, 0, buf.Address, pixels.Length);
             }
+
+            context.DrawImage(_agentsBitmap, new Rect(0, 0, width, height));
         }
 
         private void RenderPlayers(DrawingContext context, double width, double height)
@@ -1232,6 +1306,9 @@ namespace Editor.Views
             _roadsBitmap = null;
             _biomesBitmap?.Dispose();
             _biomesBitmap = null;
+            _agentsBitmap?.Dispose();
+            _agentsBitmap = null;
+            _agentsBuffer = null;
         }
     }
 }
