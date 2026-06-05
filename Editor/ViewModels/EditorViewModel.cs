@@ -356,14 +356,17 @@ namespace Editor.ViewModels
                     break;
 
                 case EditorTool.AddPlayer:
-                    _simulation.AddPlayer(0, position, 0);
-                    Logging.Info($"Added player at {position}");
+                    int newPlayerId = _nextPlayerId++;
+                    _simulation.AddPlayer(newPlayerId, position, 0);
+                    Logging.Info($"Added player {newPlayerId} at {position}");
                     ActiveTool = EditorTool.None;
+                    OnPropertyChanged(nameof(HasPlayers));
+                    PlayersChanged?.Invoke();
                     break;
 
                 case EditorTool.SetPlayerPosition:
-                    _simulation.UpdatePlayer(0, position, true);
-                    Logging.Info($"Set player position to {position}");
+                    _simulation.UpdatePlayer(_targetPlayerId, position, true);
+                    Logging.Info($"Set player {_targetPlayerId} position to {position}");
                     ActiveTool = EditorTool.None;
                     break;
             }
@@ -372,8 +375,37 @@ namespace Editor.ViewModels
         [RelayCommand] public void ActivateEmitSound() => ActiveTool = EditorTool.EmitSound;
         [RelayCommand] public void ActivateKill() => ActiveTool = EditorTool.Kill;
         [RelayCommand] public void ActivateAddPlayer() => ActiveTool = EditorTool.AddPlayer;
-        [RelayCommand] public void ActivateSetPlayerPosition() => ActiveTool = EditorTool.SetPlayerPosition;
         [RelayCommand] public void CancelTool() => ActiveTool = EditorTool.None;
+
+        private int _nextPlayerId = 0;
+        private int _targetPlayerId = 0;
+
+        public Action? PlayersChanged;
+
+        public bool HasPlayers => _simulation.PlayerCount > 0;
+
+        public List<int> GetPlayerIds()
+        {
+            var ids = new List<int>();
+            foreach (var kv in _simulation.Players)
+                ids.Add(kv.Key);
+            ids.Sort();
+            return ids;
+        }
+
+        public void BeginChangePlayerLocation(int playerId)
+        {
+            _targetPlayerId = playerId;
+            ActiveTool = EditorTool.SetPlayerPosition;
+        }
+
+        public void RemovePlayer(int playerId)
+        {
+            _simulation.RemovePlayer(playerId);
+            Logging.Info($"Removed player {playerId}");
+            OnPropertyChanged(nameof(HasPlayers));
+            PlayersChanged?.Invoke();
+        }
 
         // Wired up by MainWindow.axaml.cs to the SimulationCanvas.
         public Action<WalkerSim.Agent>? NavigateToAgentRequested;

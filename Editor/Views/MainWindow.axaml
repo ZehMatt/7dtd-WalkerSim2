@@ -124,7 +124,7 @@
 				<MenuItem Header="Kill..." Click="OnToolKillClick"/>
 				<Separator/>
 				<MenuItem Header="Add Player" Click="OnToolAddPlayerClick"/>
-				<MenuItem Header="Set Player Position..." Click="OnToolSetPlayerPositionClick"/>
+				<MenuItem Header="Players" x:Name="PlayersMenu" IsVisible="{Binding HasPlayers}"/>
 			</MenuItem>
 
 			<MenuItem Header="Settings">

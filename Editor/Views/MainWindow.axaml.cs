@@ -60,6 +60,8 @@ namespace Editor.Views
                     vm2.GroupColorsChanged = () => SimCanvas.InvalidateGroupBrushes();
                     SimCanvas.TrackingStopped = () => vm2.IsTrackingAgent = false;
                     SimCanvas.OnCanvasClick = pos => vm2.HandleCanvasClick(pos);
+                    vm2.PlayersChanged = RebuildPlayersMenu;
+                    RebuildPlayersMenu();
                 }
             };
         }
@@ -245,10 +247,30 @@ namespace Editor.Views
                 vm.ActivateAddPlayerCommand.Execute(null);
         }
 
-        private void OnToolSetPlayerPositionClick(object? sender, RoutedEventArgs e)
+        private void RebuildPlayersMenu()
         {
-            if (DataContext is EditorViewModel vm)
-                vm.ActivateSetPlayerPositionCommand.Execute(null);
+            if (DataContext is not EditorViewModel vm)
+                return;
+
+            PlayersMenu.Items.Clear();
+
+            var ids = vm.GetPlayerIds();
+            for (int i = 0; i < ids.Count; i++)
+            {
+                int id = ids[i];
+
+                var changeItem = new MenuItem { Header = "Change Location" };
+                changeItem.Click += (_, _) => vm.BeginChangePlayerLocation(id);
+
+                var removeItem = new MenuItem { Header = "Remove" };
+                removeItem.Click += (_, _) => vm.RemovePlayer(id);
+
+                var playerItem = new MenuItem { Header = $"Player {i + 1}" };
+                playerItem.Items.Add(changeItem);
+                playerItem.Items.Add(removeItem);
+
+                PlayersMenu.Items.Add(playerItem);
+            }
         }
 
         // ── Settings ──────────────────────────────────────────────────────────────
