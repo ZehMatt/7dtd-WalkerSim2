@@ -298,5 +298,82 @@ namespace WalkerSim.Tests
             bool changed = initialWind.X != finalWind.X || initialWind.Y != finalWind.Y;
             Assert.IsTrue(changed, "Wind should change over time");
         }
+
+        // Drives the real spawn pipeline (CheckAgentSpawn -> ProcessSpawnQueue -> handler) for two
+        // players a given distance apart, with one border agent on player A's far side and one on
+        // A's border but right next to player B. Returns the two agents and the spawned positions.
+        private (Agent far, Agent near, System.Collections.Generic.List<Vector3> spawned) RunTwoPlayerSpawn(float distance)
+        {
+            var sim = CreateSim(50);
+            float viewRadius = sim.Config.SpawnActivationRadius;
+
+            var a = new Vector3(0, 0, 0);
+            var b = new Vector3(distance, 0, 0);
+            sim.AddPlayer(1, a, 0);
+            sim.AddPlayer(2, b, 0);
+
+            // Isolate the scenario from the random population.
+            foreach (var ag in sim.Agents)
+                ag.CurrentState = Agent.State.Inactive;
+
+            var far = sim.Agents[0];
+            far.CurrentState = Agent.State.Wandering;
+            far.LastSpawnTick = 0;
+            far.Position = new Vector3(-(viewRadius - 1f), 0, 0);
+            sim.MoveInGrid(far);
+
+            var near = sim.Agents[1];
+            near.CurrentState = Agent.State.Wandering;
+            near.LastSpawnTick = 0;
+            near.Position = new Vector3(viewRadius - 1f, 0, 0);
+            sim.MoveInGrid(near);
+
+            // Spawn cooldown is measured against UnscaledTicks, which only advances on the live
+            // thread; push it past the gate so the deterministic test can spawn.
+            sim._state.UnscaledTicks = Simulation.Limits.MinSpawnDelayTicks + 1;
+
+            var spawned = new System.Collections.Generic.List<Vector3>();
+            sim.SetAgentSpawnHandler((s, data) =>
+            {
+                spawned.Add(data.Agent.Position);
+                return 1000 + spawned.Count;
+            });
+            sim.SetEnableAgentSpawn(true);
+
+            sim.CheckAgentSpawn();
+            sim.ProcessSpawnQueue();
+
+            return (far, near, spawned);
+        }
+
+        [TestMethod]
+        public void TestSpawnGoesThroughAwayFromOtherPlayer()
+        {
+            // Players exactly viewRadius apart (the original bug distance) and a close case.
+            float viewRadius = Config.GetDefault().SpawnActivationRadius;
+            float inner = viewRadius - Simulation.Constants.SpawnBorderSize;
+
+            foreach (var distance in new[] { 20f, viewRadius })
+            {
+                var (far, near, spawned) = RunTwoPlayerSpawn(distance);
+
+                Assert.AreEqual(Agent.State.Spawned, far.CurrentState,
+                    $"far-side agent should spawn (player distance {distance})");
+                Assert.AreNotEqual(Agent.State.Spawned, near.CurrentState,
+                    $"agent next to the other player must not spawn (player distance {distance})");
+
+                Assert.IsTrue(spawned.Count > 0, $"a zombie should spawn (player distance {distance})");
+
+                var a = new Vector3(0, 0, 0);
+                var b = new Vector3(distance, 0, 0);
+                foreach (var p in spawned)
+                {
+                    Assert.IsTrue(Vector3.Distance2D(p, a) >= inner - 0.01f,
+                        $"spawn landed inside player A inner view (player distance {distance})");
+                    Assert.IsTrue(Vector3.Distance2D(p, b) >= inner - 0.01f,
+                        $"spawn landed inside player B inner view (player distance {distance})");
+                }
+            }
+        }
     }
 }

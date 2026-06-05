@@ -63,7 +63,7 @@ namespace WalkerSim
             return count;
         }
 
-        private void CheckAgentSpawn()
+        internal void CheckAgentSpawn()
         {
             if (_allowAgentSpawn == false)
             {
@@ -258,7 +258,7 @@ namespace WalkerSim
             return Config.WanderingSpeed.NoOverride;
         }
 
-        private void ProcessSpawnQueue()
+        internal void ProcessSpawnQueue()
         {
             var now = DateTime.UtcNow;
             if (now < _nextSpawn)
