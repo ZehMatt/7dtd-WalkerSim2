@@ -42,7 +42,16 @@ namespace WalkerSim
                 return;
             }
 
+            if (inst.mapTexture == null)
+            {
+                return;
+            }
+
             NativeArray<Color32> textureData = inst.mapTexture.GetRawTextureData<Color32>();
+            if (textureData == null)
+            {
+                return;
+            }
             var simulation = Simulation.Instance;
 
             int textureWidth = 2048; // vanilla 7DTD map texture size
