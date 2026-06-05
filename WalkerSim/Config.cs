@@ -154,10 +154,14 @@ namespace WalkerSim
             foreach (var proc in config.Processors)
             {
                 if (string.IsNullOrEmpty(proc.Color))
+                {
                     proc.Color = "#FF00FF";
+                }
 
                 if (proc.GroupSize < 1)
+                {
                     proc.GroupSize = DefaultGroupSize;
+                }
 
                 foreach (var entry in proc.Entries)
                 {
@@ -247,7 +251,10 @@ namespace WalkerSim
                         group.Weight = ReadAttrFloat(groupNode, "Weight", 1.0f);
                         group.GroupSize = ReadAttrInt(groupNode, "GroupSize", 0);
                         if (group.GroupSize <= 0)
+                        {
                             group.GroupSize = legacyGroupSize > 0 ? legacyGroupSize : DefaultGroupSize;
+                        }
+
                         group.StartPosition = ReadAttrEnum(groupNode, "StartPosition",
                             hasLegacyStart ? legacyStart : WorldLocation.RandomLocation);
                         group.RespawnPosition = ReadAttrEnum(groupNode, "RespawnPosition",
@@ -432,7 +439,10 @@ namespace WalkerSim
                     {
                         xw.WriteStartElement("System");
                         if (!string.IsNullOrEmpty(group.Name))
+                        {
                             xw.WriteAttributeString("Name", group.Name);
+                        }
+
                         xw.WriteAttributeString("Weight", XmlConvert.ToString(group.Weight));
                         xw.WriteAttributeString("GroupSize", XmlConvert.ToString(group.GroupSize));
                         xw.WriteAttributeString("StartPosition", group.StartPosition.ToString());
@@ -442,7 +452,9 @@ namespace WalkerSim
                         xw.WriteAttributeString("PostSpawnWanderSpeed", group.PostSpawnWanderSpeed.ToString());
                         xw.WriteAttributeString("MapEdgeBehavior", group.MapEdgeBehavior.ToString());
                         if (!string.IsNullOrEmpty(group.Color))
+                        {
                             xw.WriteAttributeString("Color", group.Color);
+                        }
 
                         foreach (var proc in group.Entries)
                         {
@@ -451,9 +463,15 @@ namespace WalkerSim
                             xw.WriteAttributeString("Distance", XmlConvert.ToString(proc.Distance));
                             xw.WriteAttributeString("Power", XmlConvert.ToString(proc.Power));
                             if (proc.Param1 != 0f)
+                            {
                                 xw.WriteAttributeString("Param1", XmlConvert.ToString(proc.Param1));
+                            }
+
                             if (proc.Param2 != 0f)
+                            {
                                 xw.WriteAttributeString("Param2", XmlConvert.ToString(proc.Param2));
+                            }
+
                             xw.WriteEndElement();
                         }
 
@@ -486,7 +504,10 @@ namespace WalkerSim
         {
             var node = parent.SelectSingleNode(xpath, nsMgr);
             if (node != null && int.TryParse(node.InnerText, NumberStyles.Integer, CultureInfo.InvariantCulture, out int result))
+            {
                 return result;
+            }
+
             return defaultValue;
         }
 
@@ -494,7 +515,10 @@ namespace WalkerSim
         {
             var node = parent.SelectSingleNode(xpath, nsMgr);
             if (node != null && uint.TryParse(node.InnerText, NumberStyles.Integer, CultureInfo.InvariantCulture, out uint result))
+            {
                 return result;
+            }
+
             return defaultValue;
         }
 
@@ -502,7 +526,10 @@ namespace WalkerSim
         {
             var node = parent.SelectSingleNode(xpath, nsMgr);
             if (node != null && float.TryParse(node.InnerText, NumberStyles.Float, CultureInfo.InvariantCulture, out float result))
+            {
                 return result;
+            }
+
             return defaultValue;
         }
 
@@ -510,7 +537,10 @@ namespace WalkerSim
         {
             var node = parent.SelectSingleNode(xpath, nsMgr);
             if (node != null && bool.TryParse(node.InnerText, out bool result))
+            {
                 return result;
+            }
+
             return defaultValue;
         }
 
@@ -518,7 +548,10 @@ namespace WalkerSim
         {
             var node = parent.SelectSingleNode(xpath, nsMgr);
             if (node != null && Enum.TryParse(node.InnerText, out T result))
+            {
                 return result;
+            }
+
             return defaultValue;
         }
 
@@ -532,7 +565,10 @@ namespace WalkerSim
         {
             var attr = node.Attributes[name];
             if (attr != null && int.TryParse(attr.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int result))
+            {
                 return result;
+            }
+
             return defaultValue;
         }
 
@@ -540,7 +576,10 @@ namespace WalkerSim
         {
             var attr = node.Attributes[name];
             if (attr != null && float.TryParse(attr.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out float result))
+            {
                 return result;
+            }
+
             return defaultValue;
         }
 
@@ -548,7 +587,10 @@ namespace WalkerSim
         {
             var attr = node.Attributes[name];
             if (attr != null && Enum.TryParse(attr.Value, out T result))
+            {
                 return result;
+            }
+
             return defaultValue;
         }
 

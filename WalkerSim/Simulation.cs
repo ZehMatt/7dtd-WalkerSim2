@@ -25,7 +25,10 @@ namespace WalkerSim
 
         public int MaxAllowedAliveAgents
         {
-            get { return _maxAllowedAliveAgents; }
+            get
+            {
+                return _maxAllowedAliveAgents;
+            }
         }
 
         TimeMeasurement _updateTime = new TimeMeasurement();
@@ -66,7 +69,9 @@ namespace WalkerSim
         public void Advance(uint numTicks)
         {
             if (_running)
+            {
                 throw new Exception("Can't advance the simulation while its running");
+            }
 
             for (uint i = 0; i < numTicks; i++)
             {
@@ -154,9 +159,13 @@ namespace WalkerSim
             if (_pauseRequested != paused)
             {
                 if (paused)
+                {
                     Logging.Out("Paused simulation.");
+                }
                 else
+                {
                     Logging.Out("Resuming simulation.");
+                }
             }
             _pauseRequested = paused;
         }
@@ -175,7 +184,9 @@ namespace WalkerSim
             {
                 var mapData = MapData.LoadFromFolder(directoryPath);
                 if (mapData == null)
+                {
                     return false;
+                }
 
                 _state.MapData = mapData;
 
@@ -329,7 +340,9 @@ namespace WalkerSim
             // Pick a random POI from the city and jitter within its footprint.
             // This keeps spawns on actual occupied cells for non-rectangular cities.
             if (selectedCity.POIs.Count == 0)
+            {
                 return selectedCity.Position;
+            }
 
             var poi = selectedCity.POIs[prng.Next(selectedCity.POIs.Count)];
             var offset = new Vector3(
@@ -358,7 +371,9 @@ namespace WalkerSim
 
             // Fall back to original group start if no active agents in this group.
             if (count == 0)
+            {
                 return _groupStarts[groupIndex];
+            }
 
             return sum * (1f / count);
         }
@@ -421,7 +436,9 @@ namespace WalkerSim
                 int bx = (int)MathEx.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, biomes.Width);
                 int by = (int)MathEx.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, biomes.Height);
                 if (biomes.GetBiomeType(bx, by) == biome)
+                {
                     return pos;
+                }
             }
 
             // Biome absent or too sparse on this map; fall back to a random border position.
@@ -434,7 +451,9 @@ namespace WalkerSim
             {
                 int sys = _groupToSystemIndex[group];
                 if (sys >= 0 && sys < _state.Config.Processors.Count)
+                {
                     return _state.Config.Processors[sys].StartPosition;
+                }
             }
             return Config.WorldLocation.RandomLocation;
         }
@@ -445,7 +464,9 @@ namespace WalkerSim
             {
                 int sys = _groupToSystemIndex[group];
                 if (sys >= 0 && sys < _state.Config.Processors.Count)
+                {
                     return _state.Config.Processors[sys].RespawnPosition;
+                }
             }
             return Config.WorldLocation.None;
         }
@@ -454,7 +475,10 @@ namespace WalkerSim
         {
             var loc = GetSystemStartPosition(group);
             if (loc == Config.WorldLocation.None)
+            {
                 loc = Config.WorldLocation.RandomLocation;
+            }
+
             return GetWorldLocation(loc, _state.PRNG);
         }
 
@@ -473,7 +497,10 @@ namespace WalkerSim
             {
                 var loc = GetSystemStartPosition(i);
                 if (loc == Config.WorldLocation.None)
+                {
                     loc = Config.WorldLocation.RandomLocation;
+                }
+
                 _groupStarts[i] = GetWorldLocation(loc, prng);
             }
         }
@@ -482,7 +509,9 @@ namespace WalkerSim
         {
             var sqrKm = (WorldSize.X / 1000.0f) * (WorldSize.Y / 1000.0f);
             if (sqrKm <= 0)
+            {
                 return 0;
+            }
 
             var maxAgents = (int)System.Math.Ceiling(sqrKm * _state.Config.PopulationDensity);
             return MathEx.Clamp(maxAgents, 1, Limits.MaxAgents);
@@ -494,7 +523,9 @@ namespace WalkerSim
             {
                 int sys = _groupToSystemIndex[group];
                 if (sys >= 0 && sys < _state.Config.Processors.Count)
+                {
                     return System.Math.Max(1, _state.Config.Processors[sys].GroupSize);
+                }
             }
             return Config.DefaultGroupSize;
         }
@@ -536,10 +567,14 @@ namespace WalkerSim
 
             int totalAgents = 0;
             for (int g = 0; g < _state.GroupCount; g++)
+            {
                 totalAgents += _groupSizes[g];
+            }
 
             if (totalAgents == 0)
+            {
                 return;
+            }
 
             // If population ramp is configured, only a fraction of agents start as Wandering.
             var popFraction = GetPopulationFraction();
@@ -550,7 +585,9 @@ namespace WalkerSim
             if (popFraction >= 1f)
             {
                 for (int g = 0; g < _state.GroupCount; g++)
+                {
                     activeForGroup[g] = _groupSizes[g];
+                }
             }
             else
             {
@@ -636,7 +673,10 @@ namespace WalkerSim
                 // Only the cycles that actually ran ticks are meaningful as "update time";
                 // recording the idle spins would drag the average below tick time.
                 if (ranTicks)
+                {
                     _updateTime.Add(timeElapsed);
+                }
+
                 _updateTime.Restart();
                 ranTicks = false;
 
@@ -658,7 +698,9 @@ namespace WalkerSim
                 if (accumulator < Constants.TickRate)
                 {
                     if (_shouldStop)
+                    {
                         break;
+                    }
 
                     // Yield to prevent busy-wait CPU spike, but don't sleep (too slow on Mono)
                     if (TimeScale <= 1.0f)
@@ -674,7 +716,9 @@ namespace WalkerSim
                     accumulator -= Constants.TickRate;
 
                     if (_shouldStop)
+                    {
                         break;
+                    }
 
                     ranTicks = true;
                 }
@@ -683,7 +727,9 @@ namespace WalkerSim
                 CheckAgentSpawn();
 
                 if (_shouldStop)
+                {
                     break;
+                }
             }
 
             _running = false;
@@ -746,7 +792,9 @@ namespace WalkerSim
                 {
                     int totalAgents = 0;
                     for (int g = 0; g < _state.GroupCount; g++)
+                    {
                         totalAgents += _groupSizes[g];
+                    }
 
                     if (_state.Agents.Count != totalAgents)
                     {
@@ -763,7 +811,9 @@ namespace WalkerSim
                     {
                         int size = _groupSizes[g];
                         for (int i = 0; i < size; i++)
+                        {
                             _state.Agents[idx++].Group = g;
+                        }
                     }
                 }
                 else if (_state.Agents.Count == 0)
@@ -800,13 +850,21 @@ namespace WalkerSim
         private static bool IntArraysEqual(int[] a, int[] b)
         {
             if (a == b)
+            {
                 return true;
+            }
+
             if (a == null || b == null || a.Length != b.Length)
+            {
                 return false;
+            }
+
             for (int i = 0; i < a.Length; i++)
             {
                 if (a[i] != b[i])
+                {
                     return false;
+                }
             }
             return true;
         }

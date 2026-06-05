@@ -92,7 +92,10 @@ namespace Editor.Views
         public float ToolPreviewRadius { get; set; } = float.NaN;
 
         /// <summary>One-line label drawn next to the cursor while a tool is active. Null hides it.</summary>
-        public string ToolPreviewHint { get; set; }
+        public string ToolPreviewHint
+        {
+            get; set;
+        }
 
         // Mouse position for tool preview
         private Vector3 _mouseWorldPosition = Vector3.Zero;
@@ -131,7 +134,10 @@ namespace Editor.Views
         private void EnsureScaledPens()
         {
             if (_cachedPenZoom == _zoom)
+            {
                 return;
+            }
+
             double t = 1.0 / _zoom;
             _playerPen = new Pen(_playerPenBrush, t);
             _eventPen = new Pen(_eventPenBrush, t);
@@ -180,7 +186,9 @@ namespace Editor.Views
         {
             _toolActive = active;
             if (!_isDragging)
+            {
                 Cursor = new Cursor(active ? StandardCursorType.Cross : StandardCursorType.Arrow);
+            }
         }
 
         public double Zoom => _zoom;
@@ -235,7 +243,9 @@ namespace Editor.Views
             var w = Bounds.Width;
             var h = Bounds.Height;
             if (w <= 0 || h <= 0)
+            {
                 return;
+            }
 
             var viewSize = Math.Min(w, h - BarHeight);
             var worldHalf = (viewSize * _zoom) / 2.0;
@@ -281,9 +291,13 @@ namespace Editor.Views
                 var shift = (e.KeyModifiers & KeyModifiers.Shift) != 0;
                 double scrollAmount = 60.0;
                 if (shift)
+                {
                     _panX += e.Delta.Y * scrollAmount;
+                }
                 else
+                {
                     _panY += e.Delta.Y * scrollAmount;
+                }
             }
             ClampPan();
             InvalidateVisual();
@@ -327,7 +341,9 @@ namespace Editor.Views
                 var dy = pos.Y - _dragStart.Y;
 
                 if (Math.Abs(dx) > PanThreshold || Math.Abs(dy) > PanThreshold)
+                {
                     _hasPanned = true;
+                }
 
                 // Stop tracking if the user manually pans the view.
                 if (_hasPanned && _trackedAgent != null)
@@ -349,7 +365,9 @@ namespace Editor.Views
             {
                 // Hovering — redraw so preview circle follows the cursor
                 if (!float.IsNaN(ToolPreviewRadius))
+                {
                     InvalidateVisual();
+                }
             }
 
             e.Handled = true;
@@ -402,7 +420,9 @@ namespace Editor.Views
             var width = bounds.Width;
             var height = bounds.Height;
             if (width <= 0 || height <= 0)
+            {
                 return Vector3.Zero;
+            }
 
             var worldHeight = height - BarHeight;
             var viewSize = Math.Min(width, worldHeight);
@@ -441,7 +461,10 @@ namespace Editor.Views
             var bounds = Bounds;
             _smoothTargetZoom = Math.Max(_zoom, TrackZoom);
             if (bounds.Width > 0)
+            {
                 (_smoothTargetPanX, _smoothTargetPanY) = ComputeCenterPan(agent, _smoothTargetZoom, bounds.Width, bounds.Height);
+            }
+
             _smoothActive = true;
             InvalidateVisual();
         }
@@ -457,7 +480,10 @@ namespace Editor.Views
             var bounds = Bounds;
             _smoothTargetZoom = TrackZoom;
             if (bounds.Width > 0)
+            {
                 (_smoothTargetPanX, _smoothTargetPanY) = ComputeCenterPan(agent, _smoothTargetZoom, bounds.Width, bounds.Height);
+            }
+
             _smoothActive = true;
             InvalidateVisual();
         }
@@ -481,7 +507,9 @@ namespace Editor.Views
         {
             var groupCount = _simulation.GroupCount;
             if (groupCount == _cachedGroupCount && _groupBrushes.Length > 0)
+            {
                 return;
+            }
 
             var count = Math.Max(groupCount, 1);
             _groupBrushes = new IBrush[count];
@@ -507,7 +535,9 @@ namespace Editor.Views
             var width = bounds.Width;
             var height = bounds.Height;
             if (width <= 0 || height <= 0)
+            {
                 return;
+            }
 
             // ── Animation step ─────────────────────────────────────────────────────
             var now = DateTime.UtcNow;
@@ -536,7 +566,9 @@ namespace Editor.Views
                 if (_trackedAgent == null &&
                     Math.Abs(_panX - _smoothTargetPanX) < 0.5 &&
                     Math.Abs(_panY - _smoothTargetPanY) < 0.5)
+                {
                     _smoothActive = false;
+                }
             }
 
             // Advance blink.
@@ -581,32 +613,54 @@ namespace Editor.Views
                 using (context.PushTransform(transform))
                 {
                     if (ShowBiomes)
+                    {
                         RenderBiomes(context, viewSize, viewSize);
+                    }
+
                     if (ShowRoads)
+                    {
                         RenderRoads(context, viewSize, viewSize);
+                    }
+
                     if (ShowCities)
+                    {
                         RenderCities(context, viewSize, viewSize);
+                    }
+
                     if (ShowRoadNetwork)
+                    {
                         RenderRoadNetwork(context, viewSize, viewSize);
+                    }
+
                     if (ShowPrefabs)
+                    {
                         RenderPrefabs(context, viewSize, viewSize);
+                    }
                 }
 
                 if (ShowAgents || ShowActiveAgents)
+                {
                     RenderAgentsBitmap(context, width, height, viewSize, offsetX, offsetY);
+                }
 
                 using (context.PushTransform(transform))
                 {
                     RenderPlayers(context, viewSize, viewSize);
                     if (ShowEvents)
+                    {
                         RenderEvents(context, viewSize, viewSize);
+                    }
                     // Draw highlight/blink on top of everything.
                     if (_highlightAgent != null && _blinkPhase < 1.0)
+                    {
                         RenderHighlightAgent(context, viewSize, viewSize);
+                    }
                     // Draw active tool preview circle on top (still in zoomed space so the
                     // radius matches the world).
                     if (OnCanvasClick != null && _toolActive && !float.IsNaN(ToolPreviewRadius))
+                    {
                         RenderToolPreview(context, viewSize, viewSize);
+                    }
                 }
             }
 
@@ -618,19 +672,25 @@ namespace Editor.Views
             // canvas (the user just clicked a sidebar tool button), and follows the
             // cursor once they move into the map.
             if (_toolActive && !string.IsNullOrEmpty(ToolPreviewHint))
+            {
                 RenderToolHint(context);
+            }
 
             // Keep animating while tracking, smooth-panning, or blinking.
             bool animating = _smoothActive || _trackedAgent != null || _highlightAgent != null;
             if (animating)
+            {
                 Dispatcher.UIThread.Post(() => InvalidateVisual(), Avalonia.Threading.DispatcherPriority.Render);
+            }
         }
 
         private void RenderHighlightAgent(DrawingContext context, double width, double height)
         {
             var agent = _highlightAgent;
             if (agent == null)
+            {
                 return;
+            }
 
             EnsureScaledPens();
             var (cx, cy) = SimToCanvas(agent.Position, width, height);
@@ -687,9 +747,13 @@ namespace Editor.Views
 
             Point topLeft;
             if (_mouseInCanvas)
+            {
                 topLeft = ComputeFollowCursorHintPosition(pillW, pillH);
+            }
             else
+            {
                 topLeft = ComputeCentredHintPosition(pillW, pillH);
+            }
 
             var pill = new Rect(topLeft.X, topLeft.Y, pillW, pillH);
             context.DrawRectangle(_toolHintBackground, _toolHintBorder, pill, 4, 4);
@@ -705,11 +769,25 @@ namespace Editor.Views
             double x = _mouseScreenPosition.X + cursorOffset;
             double y = _mouseScreenPosition.Y + cursorOffset;
             if (x + pillW > bounds.Width)
+            {
                 x = _mouseScreenPosition.X - cursorOffset - pillW;
+            }
+
             if (y + pillH > bounds.Height)
+            {
                 y = _mouseScreenPosition.Y - cursorOffset - pillH;
-            if (x < 0) x = 0;
-            if (y < BarHeight) y = BarHeight;
+            }
+
+            if (x < 0)
+            {
+                x = 0;
+            }
+
+            if (y < BarHeight)
+            {
+                y = BarHeight;
+            }
+
             return new Point(x, y);
         }
 
@@ -733,11 +811,15 @@ namespace Editor.Views
         {
             var mapData = _simulation.MapData;
             if (mapData?.Roads == null)
+            {
                 return;
+            }
 
             var roads = mapData.Roads;
             if (roads.Width == 0 || roads.Height == 0)
+            {
                 return;
+            }
 
             if (_roadsBitmap == null || _cachedRoadsPath != roads.Name)
             {
@@ -747,7 +829,9 @@ namespace Editor.Views
             }
 
             if (_roadsBitmap != null)
+            {
                 context.DrawImage(_roadsBitmap, new Rect(0, 0, width, height));
+            }
         }
 
         private WriteableBitmap BuildRoadsBitmap(Roads roads)
@@ -769,7 +853,9 @@ namespace Editor.Views
                     {
                         var roadType = roads.GetRoadType(x, y);
                         if (roadType == RoadType.None)
+                        {
                             continue;
+                        }
 
                         byte alpha = roadType == RoadType.Asphalt ? (byte)100 : (byte)50;
                         int idx = y * stride + x * 4;
@@ -799,17 +885,23 @@ namespace Editor.Views
         {
             var mapData = _simulation.MapData;
             if (mapData?.Roads == null)
+            {
                 return;
+            }
 
             var roads = mapData.Roads;
             var graph = roads.Graph;
             if (graph == null || graph.Nodes.Length == 0)
+            {
                 return;
+            }
 
             int rw = roads.Width;
             int rh = roads.Height;
             if (rw == 0 || rh == 0)
+            {
                 return;
+            }
 
             double scaleX = width / rw;
             double scaleY = height / rh;
@@ -841,7 +933,10 @@ namespace Editor.Views
                     int ci = node.Connections[c];
                     // Only draw each edge once (lower index → higher index).
                     if (ci <= i)
+                    {
                         continue;
+                    }
+
                     ref var other = ref nodes[ci];
                     var to = new Point(other.X * scaleX, other.Y * scaleY);
                     context.DrawLine(_roadNetworkEdgePen, from, to);
@@ -883,7 +978,9 @@ namespace Editor.Views
         {
             var mapData = _simulation.MapData;
             if (mapData?.Biomes == null)
+            {
                 return;
+            }
 
             var biomes = mapData.Biomes;
             if (_biomesBitmap == null || _cachedBiomesPath != biomes.Name)
@@ -894,7 +991,9 @@ namespace Editor.Views
             }
 
             if (_biomesBitmap != null)
+            {
                 context.DrawImage(_biomesBitmap, new Rect(0, 0, width, height));
+            }
         }
 
         private WriteableBitmap BuildBiomesBitmap(Biomes biomes)
@@ -902,7 +1001,9 @@ namespace Editor.Views
             int w = biomes.Width;
             int h = biomes.Height;
             if (w == 0 || h == 0)
+            {
                 return null;
+            }
 
             var bmp = new WriteableBitmap(
                 new PixelSize(w, h),
@@ -934,10 +1035,14 @@ namespace Editor.Views
                     {
                         var bt = biomes.BiomeMap[x, y];
                         if (bt == Biomes.Type.Invalid)
+                        {
                             continue;
+                        }
 
                         if (!colorLookup.TryGetValue(bt, out var c))
+                        {
                             continue;
+                        }
 
                         int idx = y * stride + x * 4;
                         pixels[idx + 0] = c.b;
@@ -958,7 +1063,9 @@ namespace Editor.Views
             int bw = (int)Math.Ceiling(width);
             int bh = (int)Math.Ceiling(height);
             if (bw <= 0 || bh <= 0)
+            {
                 return;
+            }
 
             if (_agentsBitmap == null || _agentsBmpW != bw || _agentsBmpH != bh)
             {
@@ -984,7 +1091,9 @@ namespace Editor.Views
             {
                 int stride = buf.RowBytes;
                 if (_agentsBuffer == null || _agentsBuffer.Length != bh * stride)
+                {
                     _agentsBuffer = new byte[bh * stride];
+                }
 
                 var pixels = _agentsBuffer;
                 Array.Clear(pixels, 0, pixels.Length);
@@ -998,13 +1107,17 @@ namespace Editor.Views
                         foreach (var agent in agents)
                         {
                             if (agent.CurrentState != Agent.State.Wandering)
+                            {
                                 continue;
+                            }
 
                             var (cx, cy) = SimToCanvas(agent.Position, viewSize, viewSize);
                             int ix = (int)((cx - vcx) * zoom + vcx + tx);
                             int iy = (int)((cy - vcy) * zoom + vcy + ty);
                             if (ix < 0 || ix >= bw || iy < barY || iy >= bh)
+                            {
                                 continue;
+                            }
 
                             var c = colors[agent.Group % colors.Length];
                             int idx = iy * stride + ix * 4;
@@ -1025,13 +1138,17 @@ namespace Editor.Views
                         {
                             var agent = kv.Value;
                             if (agent.CurrentState != Agent.State.Spawned)
+                            {
                                 continue;
+                            }
 
                             var (cx, cy) = SimToCanvas(agent.Position, viewSize, viewSize);
                             int ix = (int)((cx - vcx) * zoom + vcx + tx);
                             int iy = (int)((cy - vcy) * zoom + vcy + ty);
                             if (ix < 0 || ix >= bw || iy < barY || iy >= bh)
+                            {
                                 continue;
+                            }
 
                             int idx = iy * stride + ix * 4;
                             pixels[idx + 0] = 0;
@@ -1083,7 +1200,9 @@ namespace Editor.Views
         {
             var mapData = _simulation.MapData;
             if (mapData?.Prefabs?.Decorations == null)
+            {
                 return;
+            }
 
             var worldSize = _simulation.WorldSize;
 
@@ -1101,7 +1220,9 @@ namespace Editor.Views
             var mapData = _simulation.MapData;
             var cities = mapData?.Cities;
             if (cities == null || cities.CityIdMap == null || cities.CityIdMap.Length == 0)
+            {
                 return;
+            }
 
             // Cache by object reference — Cities is rebuilt from scratch on every world
             // load, so a new instance always means stale data. Comparing counts/IDs would
@@ -1114,7 +1235,9 @@ namespace Editor.Views
             }
 
             if (_citiesBitmap != null)
+            {
                 context.DrawImage(_citiesBitmap, new Rect(0, 0, width, height));
+            }
         }
 
         private WriteableBitmap BuildCitiesBitmap(Cities cities)
@@ -1122,7 +1245,9 @@ namespace Editor.Views
             int w = cities.Width;
             int h = cities.Height;
             if (w == 0 || h == 0)
+            {
                 return null;
+            }
 
             var bmp = new WriteableBitmap(
                 new PixelSize(w, h),
@@ -1160,7 +1285,9 @@ namespace Editor.Views
                     {
                         ushort id = idMap[srcRow + x];
                         if (id == 0 || id > cityCount)
+                        {
                             continue;
+                        }
 
                         var c = colorLookup[id];
                         int idx = dstRow + x * 4;
@@ -1184,17 +1311,41 @@ namespace Editor.Views
             float x = c * (1f - System.Math.Abs((hp % 2f) - 1f));
             float r1, g1, b1;
             if (hp < 1f)
-            { r1 = c; g1 = x; b1 = 0; }
+            {
+                r1 = c;
+                g1 = x;
+                b1 = 0;
+            }
             else if (hp < 2f)
-            { r1 = x; g1 = c; b1 = 0; }
+            {
+                r1 = x;
+                g1 = c;
+                b1 = 0;
+            }
             else if (hp < 3f)
-            { r1 = 0; g1 = c; b1 = x; }
+            {
+                r1 = 0;
+                g1 = c;
+                b1 = x;
+            }
             else if (hp < 4f)
-            { r1 = 0; g1 = x; b1 = c; }
+            {
+                r1 = 0;
+                g1 = x;
+                b1 = c;
+            }
             else if (hp < 5f)
-            { r1 = x; g1 = 0; b1 = c; }
+            {
+                r1 = x;
+                g1 = 0;
+                b1 = c;
+            }
             else
-            { r1 = c; g1 = 0; b1 = x; }
+            {
+                r1 = c;
+                g1 = 0;
+                b1 = x;
+            }
             float m = v - c;
             r = (byte)System.Math.Round((r1 + m) * 255f);
             g = (byte)System.Math.Round((g1 + m) * 255f);
@@ -1215,7 +1366,10 @@ namespace Editor.Views
         private void EnsureHudHeaders(bool dark)
         {
             if (_hudH1 != null && _hudLastDark == dark)
+            {
                 return;
+            }
+
             _hudLastDark = dark;
             var sec = dark ? _hudTextSecondaryDark : _hudTextSecondaryLight;
             _hudH1 = new FormattedText("Wind Dir", CultureInfo.CurrentCulture, FlowDirection.LeftToRight, _hudTypeface, 10, sec);
@@ -1228,7 +1382,10 @@ namespace Editor.Views
         private FormattedText HudVal(string s, ref string prev, ref FormattedText ft, bool dark)
         {
             if (s == prev && ft != null)
+            {
                 return ft;
+            }
+
             prev = s;
             ft = new FormattedText(s, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, _hudTypeface, 12,
                 dark ? _hudTextPrimaryDark : _hudTextPrimaryLight);

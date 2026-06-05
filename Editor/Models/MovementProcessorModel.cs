@@ -1,16 +1,26 @@
-using System.Collections.Generic;
-using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Collections.Generic;
+using System.Linq;
 using WalkerSim;
 
 namespace Editor.Models
 {
     public class BiomeOption
     {
-        public string Name { get; }
-        public Biomes.Type Value { get; }
-        public BiomeOption(string name, Biomes.Type value) { Name = name; Value = value; }
+        public string Name
+        {
+            get;
+        }
+        public Biomes.Type Value
+        {
+            get;
+        }
+        public BiomeOption(string name, Biomes.Type value)
+        {
+            Name = name;
+            Value = value;
+        }
         public override string ToString() => Name;
     }
 
@@ -18,7 +28,10 @@ namespace Editor.Models
     {
         private readonly Config.MovementProcessor _processor;
 
-        public static BiomeOption[] BiomeOptions { get; } = Biomes.ValidTypes
+        public static BiomeOption[] BiomeOptions
+        {
+            get;
+        } = Biomes.ValidTypes
             .Select(t => new BiomeOption(BiomeDisplayName(t), t))
             .ToArray();
 
@@ -26,12 +39,18 @@ namespace Editor.Models
         {
             switch (t)
             {
-                case Biomes.Type.Snow: return "Snow";
-                case Biomes.Type.PineForest: return "Pine Forest";
-                case Biomes.Type.Desert: return "Desert";
-                case Biomes.Type.Wasteland: return "Wasteland";
-                case Biomes.Type.BurntForest: return "Burnt Forest";
-                default: return t.ToString();
+                case Biomes.Type.Snow:
+                    return "Snow";
+                case Biomes.Type.PineForest:
+                    return "Pine Forest";
+                case Biomes.Type.Desert:
+                    return "Desert";
+                case Biomes.Type.Wasteland:
+                    return "Wasteland";
+                case Biomes.Type.BurntForest:
+                    return "Burnt Forest";
+                default:
+                    return t.ToString();
             }
         }
 
@@ -48,10 +67,16 @@ namespace Editor.Models
 
         public Config.MovementProcessor Underlying => _processor;
 
-        public IRelayCommand? RemoveSelfCommand { get; internal set; }
+        public IRelayCommand? RemoveSelfCommand
+        {
+            get; internal set;
+        }
 
         // Called when any processor parameter changes (for live config reload)
-        public System.Action? ConfigChanged { get; set; }
+        public System.Action? ConfigChanged
+        {
+            get; set;
+        }
 
         [ObservableProperty]
         private Config.MovementProcessorType _type;
@@ -86,7 +111,8 @@ namespace Editor.Models
 
         partial void OnSelectedBiomeChanged(BiomeOption value)
         {
-            if (value == null) return;
+            if (value == null)
+                return;
             Param1 = (float)(byte)value.Value;
         }
 

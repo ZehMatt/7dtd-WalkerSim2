@@ -50,12 +50,20 @@ namespace Editor.Views
             Dispatcher.UIThread.Post(() =>
             {
                 if (LoadingSpinner != null)
+                {
                     LoadingSpinner.IsVisible = false;
+                }
 
                 if (!WavPlayer.IsSupported)
+                {
                     return;
+                }
+
                 if (!IsVisible || _vfx == null)
+                {
                     return;
+                }
+
                 Task.Run(() =>
                 {
                     try
@@ -93,7 +101,9 @@ namespace Editor.Views
             var vfx = _vfx;
             _vfx = null;
             if (vfx != null && vfx.Parent is Panel parentPanel)
+            {
                 parentPanel.Children.Remove(vfx);
+            }
 
             // Dispose audio on a background thread — WavPlayer.Dispose joins
             // the audio thread (up to 500ms) and calls WinMM/CoreAudio teardown
@@ -101,7 +111,9 @@ namespace Editor.Views
             var synth = _synth;
             _synth = null;
             if (synth != null)
+            {
                 Task.Run(() => synth.Dispose());
+            }
 
             base.OnClosed(e);
         }

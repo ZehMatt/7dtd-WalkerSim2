@@ -139,7 +139,9 @@ namespace Editor.Views
             int w = (int)bounds.Width;
             int h = (int)bounds.Height;
             if (w < 1 || h < 1)
+            {
                 return;
+            }
 
             if (!_charWidthMeasured)
             {
@@ -164,7 +166,9 @@ namespace Editor.Views
 
             double visibleH = h - topExclusion;
             if (visibleH < lineHeight)
+            {
                 return;
+            }
 
             double baseY = topExclusion + visibleH - _scrollOffset;
 
@@ -172,20 +176,30 @@ namespace Editor.Views
             {
                 string line = Credits[lineIdx];
                 if (string.IsNullOrEmpty(line))
+                {
                     continue;
+                }
 
                 double lineY = baseY + lineIdx * lineHeight;
                 if (lineY < topExclusion - lineHeight || lineY > h + lineHeight)
+                {
                     continue;
+                }
 
                 double fade = 1.0;
                 if (lineY < topExclusion + fadeZone)
+                {
                     fade = Math.Max(0, (lineY - topExclusion) / fadeZone);
+                }
                 else if (lineY > h - fadeZone)
+                {
                     fade = Math.Max(0, (h - lineY) / fadeZone);
+                }
 
                 if (fade < 0.01)
+                {
                     continue;
+                }
 
                 double textWidth = line.Length * _charWidth;
                 double baseX = (w - textWidth) / 2.0;

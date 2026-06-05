@@ -106,7 +106,10 @@ namespace WalkerSim.Tests
             var resultsBefore = sim.QueryCells(Vector3.Zero, -1, 2000f);
             var indicesBefore = new int[resultsBefore.Count];
             for (int i = 0; i < resultsBefore.Count; i++)
+            {
                 indicesBefore[i] = resultsBefore[i].Index;
+            }
+
             System.Array.Sort(indicesBefore);
 
             // Rebuild.
@@ -116,7 +119,10 @@ namespace WalkerSim.Tests
             var resultsAfter = sim.QueryCells(Vector3.Zero, -1, 2000f);
             var indicesAfter = new int[resultsAfter.Count];
             for (int i = 0; i < resultsAfter.Count; i++)
+            {
                 indicesAfter[i] = resultsAfter[i].Index;
+            }
+
             System.Array.Sort(indicesAfter);
 
             Assert.AreEqual(indicesBefore.Length, indicesAfter.Length,
@@ -172,7 +178,11 @@ namespace WalkerSim.Tests
             bool found = false;
             foreach (var r in results)
             {
-                if (r.Index == agent.Index) { found = true; break; }
+                if (r.Index == agent.Index)
+                {
+                    found = true;
+                    break;
+                }
             }
             Assert.IsTrue(found, "Agent at world edge should be found by query");
         }

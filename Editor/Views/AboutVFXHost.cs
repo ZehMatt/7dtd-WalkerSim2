@@ -19,7 +19,9 @@ namespace Editor.Views
             {
                 _synth = value;
                 if (_gl != null)
+                {
                     _gl.Synth = value;
+                }
             }
         }
 

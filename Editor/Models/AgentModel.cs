@@ -49,27 +49,27 @@ namespace Editor.Models
         public void Pull()
         {
 #pragma warning disable MVVMTK0034
-            _index              = _agent.Index;
-            _group              = _agent.Group;
-            _currentState       = _agent.CurrentState;
-            _currentSubState    = _agent.CurrentSubState;
+            _index = _agent.Index;
+            _group = _agent.Group;
+            _currentState = _agent.CurrentState;
+            _currentSubState = _agent.CurrentSubState;
             _currentTravelState = _agent.CurrentTravelState;
-            _walkType           = _agent.WalkType;
-            _entityId           = _agent.EntityId;
-            _entityClassId      = _agent.EntityClassId;
-            _health             = _agent.Health;
-            _maxHealth          = _agent.MaxHealth;
-            _originalMaxHealth  = _agent.OriginalMaxHealth;
-            _positionX          = _agent.Position.X;
-            _positionY          = _agent.Position.Y;
-            _positionZ          = _agent.Position.Z;
-            _velocityX          = _agent.Velocity.X;
-            _velocityY          = _agent.Velocity.Y;
-            _targetCityIndex    = _agent.TargetCityIndex;
-            _roadNodeTarget     = _agent.RoadNodeTarget;
-            _roadNodeHistory    = FormatRoadHistory(_agent);
-            _lastUpdateTick     = _agent.LastUpdateTick;
-            _lastSpawnTick      = _agent.LastSpawnTick;
+            _walkType = _agent.WalkType;
+            _entityId = _agent.EntityId;
+            _entityClassId = _agent.EntityClassId;
+            _health = _agent.Health;
+            _maxHealth = _agent.MaxHealth;
+            _originalMaxHealth = _agent.OriginalMaxHealth;
+            _positionX = _agent.Position.X;
+            _positionY = _agent.Position.Y;
+            _positionZ = _agent.Position.Z;
+            _velocityX = _agent.Velocity.X;
+            _velocityY = _agent.Velocity.Y;
+            _targetCityIndex = _agent.TargetCityIndex;
+            _roadNodeTarget = _agent.RoadNodeTarget;
+            _roadNodeHistory = FormatRoadHistory(_agent);
+            _lastUpdateTick = _agent.LastUpdateTick;
+            _lastSpawnTick = _agent.LastSpawnTick;
 #pragma warning restore MVVMTK0034
 
             // Raise all at once to avoid many individual events
@@ -77,15 +77,15 @@ namespace Editor.Models
         }
 
         // ── Write-back on change ──────────────────────────────────────────────
-        partial void OnGroupChanged(int value)                      => _agent.Group = value;
-        partial void OnCurrentStateChanged(Agent.State value)       => _agent.CurrentState = value;
+        partial void OnGroupChanged(int value) => _agent.Group = value;
+        partial void OnCurrentStateChanged(Agent.State value) => _agent.CurrentState = value;
         partial void OnCurrentSubStateChanged(Agent.SubState value) => _agent.CurrentSubState = value;
         partial void OnCurrentTravelStateChanged(Agent.TravelState value) => _agent.CurrentTravelState = value;
-        partial void OnWalkTypeChanged(Agent.MoveType value)        => _agent.WalkType = value;
-        partial void OnHealthChanged(float value)                   => _agent.Health = value;
-        partial void OnMaxHealthChanged(float value)                => _agent.MaxHealth = value;
-        partial void OnTargetCityIndexChanged(int value)            => _agent.TargetCityIndex = value;
-        partial void OnRoadNodeTargetChanged(int value)              => _agent.RoadNodeTarget = value;
+        partial void OnWalkTypeChanged(Agent.MoveType value) => _agent.WalkType = value;
+        partial void OnHealthChanged(float value) => _agent.Health = value;
+        partial void OnMaxHealthChanged(float value) => _agent.MaxHealth = value;
+        partial void OnTargetCityIndexChanged(int value) => _agent.TargetCityIndex = value;
+        partial void OnRoadNodeTargetChanged(int value) => _agent.RoadNodeTarget = value;
         partial void OnPositionXChanged(float value) => _agent.Position = new Vector3(value, _agent.Position.Y, _agent.Position.Z);
         partial void OnPositionYChanged(float value) => _agent.Position = new Vector3(_agent.Position.X, value, _agent.Position.Z);
         partial void OnPositionZChanged(float value) => _agent.Position = new Vector3(_agent.Position.X, _agent.Position.Y, value);
@@ -96,7 +96,9 @@ namespace Editor.Models
         private static string FormatRoadHistory(Agent agent)
         {
             if (agent.RoadNodeHistoryCount == 0)
+            {
                 return "(empty)";
+            }
 
             var sb = new System.Text.StringBuilder();
             // Show oldest to newest.
@@ -107,7 +109,11 @@ namespace Editor.Models
             for (int i = 0; i < agent.RoadNodeHistoryCount; i++)
             {
                 int idx = (start + i) % Agent.RoadNodeHistorySize;
-                if (i > 0) sb.Append(" → ");
+                if (i > 0)
+                {
+                    sb.Append(" → ");
+                }
+
                 sb.Append(agent.RoadNodeHistory[idx]);
             }
             return sb.ToString();

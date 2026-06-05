@@ -12,7 +12,10 @@ namespace Editor.Views
     // sky tint, lamp brightness, road glow, and step tempo.
     public sealed class AboutVFXGl : OpenGlControlBase
     {
-        public WavPlayer Synth { get; set; }
+        public WavPlayer Synth
+        {
+            get; set;
+        }
 
         // Fires once (from the GL render thread) after the first successful
         // frame has been rendered — i.e., after shader compilation has
@@ -119,8 +122,14 @@ namespace Editor.Views
             float time = (float)(now - _startTime).TotalSeconds;
             float dt = (float)(now - _lastFrame).TotalSeconds;
             _lastFrame = now;
-            if (dt < 0f) dt = 0f;
-            else if (dt > 0.1f) dt = 0.1f;
+            if (dt < 0f)
+            {
+                dt = 0f;
+            }
+            else if (dt > 0.1f)
+            {
+                dt = 0.1f;
+            }
 
             float bass = 0, energy = 0, perc = 0, lead = 0;
             int chord = 0;
@@ -140,7 +149,10 @@ namespace Editor.Views
 
             // Step phase tied to distance travelled - one leg cycle per 1.5m.
             _stepPhase += WalkSpeed * dt * (6.2832f / 1.5f);
-            if (_stepPhase > 1e6f) _stepPhase -= 1e6f;
+            if (_stepPhase > 1e6f)
+            {
+                _stepPhase -= 1e6f;
+            }
 
             UpdateLightning(time, dt, bass, perc, chord);
 
@@ -158,8 +170,15 @@ namespace Editor.Views
         {
             _strikeCharge += bass * dt * 0.8f + perc * dt * 0.3f;
             _strikeCharge -= dt * 0.15f;
-            if (_strikeCharge < 0f) _strikeCharge = 0f;
-            if (_strikeCharge > 1.6f) _strikeCharge = 1.6f;
+            if (_strikeCharge < 0f)
+            {
+                _strikeCharge = 0f;
+            }
+
+            if (_strikeCharge > 1.6f)
+            {
+                _strikeCharge = 1.6f;
+            }
 
             bool chordChanged = chord != _lastChord;
             _lastChord = chord;
@@ -183,7 +202,10 @@ namespace Editor.Views
             }
 
             _flash *= MathF.Exp(-dt * 6.0f);
-            if (_flash < 1e-4f) _flash = 0f;
+            if (_flash < 1e-4f)
+            {
+                _flash = 0f;
+            }
         }
 
         private static unsafe void GlClearMagenta(GlInterface gl, int fb)
@@ -194,7 +216,10 @@ namespace Editor.Views
             var clearColor = (delegate* unmanaged<float, float, float, float, void>)gl.GetProcAddress("glClearColor");
             var clear = (delegate* unmanaged<uint, void>)gl.GetProcAddress("glClear");
             if (bindFb == null || clearColor == null || clear == null)
+            {
                 return;
+            }
+
             bindFb(GL_FRAMEBUFFER, (uint)fb);
             clearColor(1f, 0f, 1f, 1f);
             clear(GL_COLOR_BUFFER_BIT);

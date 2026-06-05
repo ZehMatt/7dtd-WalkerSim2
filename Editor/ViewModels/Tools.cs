@@ -19,7 +19,10 @@ namespace Editor.ViewModels
 
     internal static class Tool
     {
-        public static ITool? Active { get; set; }
+        public static ITool? Active
+        {
+            get; set;
+        }
     }
 
     internal class SoundEventTool : ITool
@@ -42,7 +45,9 @@ namespace Editor.ViewModels
             var height = bounds.Height;
 
             if (width <= 0 || height <= 0)
+            {
                 return;
+            }
 
             // Convert simulation position to canvas pixel coordinates
             var mapped = simulation.RemapPosition2D(position, Vector3.Zero, new Vector3((float)width, (float)height));
@@ -86,7 +91,9 @@ namespace Editor.ViewModels
             var height = bounds.Height;
 
             if (width <= 0 || height <= 0)
+            {
                 return;
+            }
 
             var mapped = simulation.RemapPosition2D(position, Vector3.Zero, new Vector3((float)width, (float)height));
             var cx = mapped.X;
@@ -116,7 +123,9 @@ namespace Editor.ViewModels
             var height = bounds.Height;
 
             if (width <= 0 || height <= 0)
+            {
                 return;
+            }
 
             var mapped = simulation.RemapPosition2D(position, Vector3.Zero, new Vector3((float)width, (float)height));
             var cx = mapped.X;
@@ -146,7 +155,9 @@ namespace Editor.ViewModels
             var height = bounds.Height;
 
             if (width <= 0 || height <= 0)
+            {
                 return;
+            }
 
             var mapped = simulation.RemapPosition2D(position, Vector3.Zero, new Vector3((float)width, (float)height));
             var cx = mapped.X;

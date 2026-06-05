@@ -72,7 +72,10 @@ namespace WalkerSim.WebView
                 foreach (var c in mapData.Cities.CityList)
                 {
                     if (!first)
+                    {
                         w.WriteValueSeparator();
+                    }
+
                     first = false;
                     w.WriteBeginObject();
                     w.WritePropertyName("id");
@@ -101,7 +104,10 @@ namespace WalkerSim.WebView
             for (int i = 0; i < groupCount; i++)
             {
                 if (i > 0)
+                {
                     w.WriteValueSeparator();
+                }
+
                 var col = sim.GetGroupColor(i);
                 w.WriteString(string.Format("#{0:X2}{1:X2}{2:X2}", col.R, col.G, col.B));
             }
@@ -131,7 +137,10 @@ namespace WalkerSim.WebView
                 for (int i = 0; i < graph.Nodes.Length; i++)
                 {
                     if (i > 0)
+                    {
                         w.WriteValueSeparator();
+                    }
+
                     var n = graph.Nodes[i];
                     int connCount = n.Connections != null ? n.Connections.Length : 0;
                     int type = connCount <= 1 ? 1 : (connCount >= 3 ? 2 : 0);
@@ -151,14 +160,23 @@ namespace WalkerSim.WebView
                 {
                     var conns = graph.Nodes[i].Connections;
                     if (conns == null)
+                    {
                         continue;
+                    }
+
                     for (int c = 0; c < conns.Length; c++)
                     {
                         int j = conns[c];
                         if (j <= i)
+                        {
                             continue;
+                        }
+
                         if (!first)
+                        {
                             w.WriteValueSeparator();
+                        }
+
                         first = false;
                         w.WriteInt32(i);
                         w.WriteValueSeparator();
@@ -202,9 +220,15 @@ namespace WalkerSim.WebView
                 {
                     var a = agents[i];
                     if (a.CurrentState != Agent.State.Wandering)
+                    {
                         continue;
+                    }
+
                     if (!first)
+                    {
                         w.WriteValueSeparator();
+                    }
+
                     first = false;
                     w.WriteInt32((int)a.Position.X);
                     w.WriteValueSeparator();
@@ -226,9 +250,15 @@ namespace WalkerSim.WebView
                 {
                     var a = kv.Value;
                     if (a.CurrentState != Agent.State.Spawned)
+                    {
                         continue;
+                    }
+
                     if (!first)
+                    {
                         w.WriteValueSeparator();
+                    }
+
                     first = false;
                     w.WriteInt32((int)a.Position.X);
                     w.WriteValueSeparator();
@@ -246,7 +276,10 @@ namespace WalkerSim.WebView
             foreach (var kv in sim.Players)
             {
                 if (!firstP)
+                {
                     w.WriteValueSeparator();
+                }
+
                 firstP = false;
                 w.WriteInt32((int)kv.Value.Position.X);
                 w.WriteValueSeparator();
@@ -265,7 +298,10 @@ namespace WalkerSim.WebView
                 {
                     var ev = events[i];
                     if (!firstE)
+                    {
                         w.WriteValueSeparator();
+                    }
+
                     firstE = false;
                     w.WriteSingle(ev.Position.X);
                     w.WriteValueSeparator();

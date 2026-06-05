@@ -25,7 +25,8 @@ namespace Editor.ViewModels
 
         partial void OnColorStringChanged(string value)
         {
-            if (_updating) return;
+            if (_updating)
+                return;
             _updating = true;
             try
             {
@@ -40,16 +41,47 @@ namespace Editor.ViewModels
             ColorChanged?.Invoke(value);
         }
 
-        partial void OnColorRChanged(int value) { if (value < 0 || value > 255) { ColorR = Math.Clamp(value, 0, 255); return; } SyncStringFromRgb(); }
-        partial void OnColorGChanged(int value) { if (value < 0 || value > 255) { ColorG = Math.Clamp(value, 0, 255); return; } SyncStringFromRgb(); }
-        partial void OnColorBChanged(int value) { if (value < 0 || value > 255) { ColorB = Math.Clamp(value, 0, 255); return; } SyncStringFromRgb(); }
+        partial void OnColorRChanged(int value)
+        {
+            if (value < 0 || value > 255)
+            {
+                ColorR = Math.Clamp(value, 0, 255);
+                return;
+            }
+            SyncStringFromRgb();
+        }
+        partial void OnColorGChanged(int value)
+        {
+            if (value < 0 || value > 255)
+            {
+                ColorG = Math.Clamp(value, 0, 255);
+                return;
+            }
+            SyncStringFromRgb();
+        }
+        partial void OnColorBChanged(int value)
+        {
+            if (value < 0 || value > 255)
+            {
+                ColorB = Math.Clamp(value, 0, 255);
+                return;
+            }
+            SyncStringFromRgb();
+        }
 
         private void SyncStringFromRgb()
         {
-            if (_updating) return;
+            if (_updating)
+            {
+                return;
+            }
+
             _updating = true;
             var str = $"#{ColorR:X2}{ColorG:X2}{ColorB:X2}";
-            try { ColorString = str; }
+            try
+            {
+                ColorString = str;
+            }
             finally { _updating = false; }
 
             OnPropertyChanged(nameof(ColorValue));
@@ -60,7 +92,10 @@ namespace Editor.ViewModels
         {
             get
             {
-                try { return Color.Parse(ColorString); }
+                try
+                {
+                    return Color.Parse(ColorString);
+                }
                 catch { return Colors.Gray; }
             }
         }
@@ -68,8 +103,14 @@ namespace Editor.ViewModels
         private static Color ParseColor(string value)
         {
             if (!string.IsNullOrEmpty(value))
-                try { return Color.Parse(value); }
+            {
+                try
+                {
+                    return Color.Parse(value);
+                }
                 catch { }
+            }
+
             return Colors.Gray;
         }
     }

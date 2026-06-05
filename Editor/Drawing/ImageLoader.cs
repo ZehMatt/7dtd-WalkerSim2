@@ -5,7 +5,10 @@ namespace Editor.Drawing
 {
     internal class SkiaBitmapImpl : WalkerSim.Drawing.IBitmap
     {
-        public SKBitmap Inner { get; private set; }
+        public SKBitmap Inner
+        {
+            get; private set;
+        }
 
         public int Width => Inner?.Width ?? 0;
         public int Height => Inner?.Height ?? 0;
@@ -44,17 +47,24 @@ namespace Editor.Drawing
         {
             using var fileData = SKData.Create(filePath);
             if (fileData == null)
+            {
                 throw new Exception($"Failed to read file: {filePath}");
+            }
+
             using var codec = SKCodec.Create(fileData);
             if (codec == null)
+            {
                 throw new Exception($"Failed to create codec for image: {filePath}");
+            }
 
             var info = new SKImageInfo(codec.Info.Width, codec.Info.Height,
                 SKColorType.Rgba8888, SKAlphaType.Unpremul);
             var bitmap = new SKBitmap(info);
             var result = codec.GetPixels(info, bitmap.GetPixels());
             if (result != SKCodecResult.Success && result != SKCodecResult.IncompleteInput)
+            {
                 throw new Exception($"Failed to decode image: {filePath}, result: {result}");
+            }
 
             return new SkiaBitmapImpl(bitmap);
         }

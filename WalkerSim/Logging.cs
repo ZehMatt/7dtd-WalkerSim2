@@ -58,7 +58,10 @@ namespace WalkerSim
         public static void EndScope()
         {
             if (_scopeDepth > 0)
+            {
                 _scopeDepth--;
+            }
+
             _indent = _scopeDepth > 0 ? new string(' ', _scopeDepth * 2) : "";
         }
 
@@ -79,7 +82,9 @@ namespace WalkerSim
         public static void AddSink(ISink sink)
         {
             if (sink == null)
+            {
                 throw new ArgumentNullException(nameof(sink));
+            }
 
             _sinks.Add(sink);
         }
@@ -106,17 +111,26 @@ namespace WalkerSim
         // Conditional - fully lazy evaluation via delegate.
         public static void CondInfo(bool log, Func<string> messageFunc)
         {
-            if (log) Message(Level.Info, messageFunc());
+            if (log)
+            {
+                Message(Level.Info, messageFunc());
+            }
         }
 
         public static void CondErr(bool log, Func<string> messageFunc)
         {
-            if (log) Message(Level.Error, messageFunc());
+            if (log)
+            {
+                Message(Level.Error, messageFunc());
+            }
         }
 
         public static void CondWrn(bool log, Func<string> messageFunc)
         {
-            if (log) Message(Level.Warning, messageFunc());
+            if (log)
+            {
+                Message(Level.Warning, messageFunc());
+            }
         }
 
         // Debug-only methods

@@ -44,7 +44,9 @@ namespace WalkerSim
                 foreach (var ev in events)
                 {
                     if (ev.Type != data.Type)
+                    {
                         continue;
+                    }
 
                     // Check if the current event fits in the new event and swallow it.
                     var dist = Vector3.Distance(ev.Position, data.Position);
@@ -115,13 +117,17 @@ namespace WalkerSim
                 {
                     events[i].Duration -= dt;
                     if (events[i].Duration <= 0.0f)
+                    {
                         events.RemoveAt(i);
+                    }
                 }
 
                 // Copy into the temp list so the simulation can use this without locking for queries.
                 _state.EventsTemp.Clear();
                 for (int i = 0; i < events.Count; i++)
+                {
                     _state.EventsTemp.Add(events[i]);
+                }
             }
         }
     }

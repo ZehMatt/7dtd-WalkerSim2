@@ -50,7 +50,9 @@ namespace WalkerSim
 
             public bool MoveNext() => ++_index < _list._count;
             public void Reset() => _index = -1;
-            public void Dispose() { }
+            public void Dispose()
+            {
+            }
         }
     }
 }

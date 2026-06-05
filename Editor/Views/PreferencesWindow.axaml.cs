@@ -11,7 +11,10 @@ namespace Editor.Views
     {
         private readonly ObservableCollection<string> _folders = new ObservableCollection<string>();
 
-        public bool SettingsSaved { get; private set; }
+        public bool SettingsSaved
+        {
+            get; private set;
+        }
 
         public PreferencesWindow()
         {
@@ -43,18 +46,28 @@ namespace Editor.Views
 
             _folders.Clear();
             foreach (var folder in settings.GameFolders)
+            {
                 _folders.Add(folder);
+            }
         }
 
         private void ApplyToSettings()
         {
             var settings = EditorSettings.Instance;
             if (ThemeCombo.SelectedItem is AppTheme theme)
+            {
                 settings.Theme = theme;
+            }
+
             if (PanButtonCombo.SelectedItem is MouseButton pan)
+            {
                 settings.PanButton = pan;
+            }
+
             if (ZoomModifierCombo.SelectedItem is ZoomModifier zoom)
+            {
                 settings.ZoomModifier = zoom;
+            }
 
             settings.UserDataFolder = (UserDataFolderBox.Text ?? string.Empty).Trim();
             settings.GameFolders.Clear();
@@ -104,14 +117,18 @@ namespace Editor.Views
             {
                 var path = result[0].TryGetLocalPath();
                 if (!string.IsNullOrEmpty(path) && !_folders.Contains(path))
+                {
                     _folders.Add(path);
+                }
             }
         }
 
         private void OnRemoveFolderClick(object sender, RoutedEventArgs e)
         {
             if (FoldersList.SelectedItem is string selected)
+            {
                 _folders.Remove(selected);
+            }
         }
 
         private async void OnBrowseUserDataFolderClick(object sender, RoutedEventArgs e)
@@ -126,7 +143,9 @@ namespace Editor.Views
             {
                 var path = result[0].TryGetLocalPath();
                 if (!string.IsNullOrEmpty(path))
+                {
                     UserDataFolderBox.Text = path;
+                }
             }
         }
 

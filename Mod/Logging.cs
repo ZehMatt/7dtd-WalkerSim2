@@ -84,7 +84,9 @@ namespace WalkerSim
         public void Message(Logging.Level level, string message)
         {
             if (string.IsNullOrEmpty(_filePath))
+            {
                 return;
+            }
 
             var levelString = "INF";
             switch (level)

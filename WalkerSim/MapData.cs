@@ -27,31 +27,64 @@ namespace WalkerSim
 
             public string PositionString
             {
-                get { return Position.ToString(); }
-                set { Position = Vector3.Parse(value, true); }
+                get
+                {
+                    return Position.ToString();
+                }
+                set
+                {
+                    Position = Vector3.Parse(value, true);
+                }
             }
 
             public int Rotation;
             public bool YIsGroundlevel;
         }
 
-        public Roads Roads { get; private set; }
+        public Roads Roads
+        {
+            get; private set;
+        }
 
-        public Biomes Biomes { get; private set; }
+        public Biomes Biomes
+        {
+            get; private set;
+        }
 
-        public MapInfo Info { get; private set; }
+        public MapInfo Info
+        {
+            get; private set;
+        }
 
-        public PrefabsData Prefabs { get; private set; }
+        public PrefabsData Prefabs
+        {
+            get; private set;
+        }
 
-        public Vector3 WorldSize { get; private set; }
+        public Vector3 WorldSize
+        {
+            get; private set;
+        }
 
-        public Vector3 WorldMins { get; private set; }
+        public Vector3 WorldMins
+        {
+            get; private set;
+        }
 
-        public Vector3 WorldMaxs { get; private set; }
+        public Vector3 WorldMaxs
+        {
+            get; private set;
+        }
 
-        public SpawnGroups SpawnGroups { get; private set; }
+        public SpawnGroups SpawnGroups
+        {
+            get; private set;
+        }
 
-        public Cities Cities { get; private set; }
+        public Cities Cities
+        {
+            get; private set;
+        }
 
         private static MapInfo LoadMapInfo(string path)
         {
@@ -258,7 +291,9 @@ namespace WalkerSim
 
                 cities.AssignBiomes(biomes, worldMins, worldMaxs);
                 if (roads.Graph != null)
+                {
                     roads.Graph.AssignBiomes(biomes, roads.Width, roads.Height);
+                }
             }
 
             timeWatch.Stop();

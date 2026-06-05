@@ -6,7 +6,10 @@ namespace Editor.Audio
 {
     public sealed class Audio : IDisposable
     {
-        private enum Backend { None, WinMM, CoreAudio, Alsa }
+        private enum Backend
+        {
+            None, WinMM, CoreAudio, Alsa
+        }
 
         #region Windows P/Invoke
 
@@ -191,7 +194,9 @@ namespace Editor.Audio
         {
             var devices = new System.Collections.Generic.List<string>();
             if (snd_device_name_hint(-1, "pcm", out IntPtr hints) < 0)
+            {
                 return devices;
+            }
 
             try
             {
@@ -199,7 +204,9 @@ namespace Editor.Audio
                 {
                     IntPtr entry = Marshal.ReadIntPtr(hints, i * IntPtr.Size);
                     if (entry == IntPtr.Zero)
+                    {
                         break;
+                    }
 
                     IntPtr namePtr = snd_device_name_get_hint(entry, "NAME");
                     if (namePtr != IntPtr.Zero)
@@ -207,7 +214,9 @@ namespace Editor.Audio
                         string name = Marshal.PtrToStringUTF8(namePtr);
                         posix_free(namePtr);
                         if (!string.IsNullOrEmpty(name) && name != "null")
+                        {
                             devices.Add(name);
+                        }
                     }
                 }
             }
@@ -258,12 +267,21 @@ namespace Editor.Audio
         private static bool ProbeSupport()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
                 return true;
+            }
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
                 return true;
+            }
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                try { return NativeLibrary.TryLoad("libasound.so.2", out _); }
+                try
+                {
+                    return NativeLibrary.TryLoad("libasound.so.2", out _);
+                }
                 catch { return false; }
             }
             return false;
@@ -282,16 +300,26 @@ namespace Editor.Audio
         public bool Open()
         {
             if (_opened || _disposed)
+            {
                 return false;
+            }
 
             try
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
                     return OpenWinMM();
+                }
+
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
                     return OpenCoreAudio();
+                }
+
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
                     return OpenAlsa();
+                }
             }
             catch { }
 
@@ -301,7 +329,9 @@ namespace Editor.Audio
         public void SetVolume(float volume)
         {
             if (!_opened)
+            {
                 return;
+            }
 
             try
             {
@@ -325,7 +355,9 @@ namespace Editor.Audio
         public bool IsBufferAvailable()
         {
             if (!_opened)
+            {
                 return false;
+            }
 
             try
             {
@@ -347,7 +379,9 @@ namespace Editor.Audio
         public bool SubmitBuffer(byte[] data, int length)
         {
             if (!_opened)
+            {
                 return false;
+            }
 
             try
             {
@@ -369,7 +403,9 @@ namespace Editor.Audio
         public void Reset()
         {
             if (!_opened)
+            {
                 return;
+            }
 
             try
             {
@@ -392,7 +428,9 @@ namespace Editor.Audio
         public void Close()
         {
             if (!_opened)
+            {
                 return;
+            }
 
             try
             {
@@ -418,7 +456,9 @@ namespace Editor.Audio
         public void Dispose()
         {
             if (_disposed)
+            {
                 return;
+            }
 
             _disposed = true;
             Close();
@@ -440,7 +480,9 @@ namespace Editor.Audio
             };
 
             if (waveOutOpen(out _winHandle, -1, ref fmt, IntPtr.Zero, IntPtr.Zero, CALLBACK_NULL) != 0)
+            {
                 return false;
+            }
 
             _winBuffers = new byte[_numBuffers][];
             _winPinned = new GCHandle[_numBuffers];
@@ -477,7 +519,9 @@ namespace Editor.Audio
             {
                 uint flags = (uint)Marshal.ReadInt32(_winHdrPtrs[i], WinFlagsOffset);
                 if ((flags & WHDR_DONE) != 0)
+                {
                     return true;
+                }
             }
             return false;
         }
@@ -509,13 +553,17 @@ namespace Editor.Audio
                 {
                     uint flags = (uint)Marshal.ReadInt32(_winHdrPtrs[i], WinFlagsOffset);
                     if ((flags & WHDR_PREPARED) != 0)
+                    {
                         waveOutUnprepareHeader(_winHandle, _winHdrPtrs[i], WinHdrSize);
+                    }
 
                     Marshal.FreeHGlobal(_winHdrPtrs[i]);
                     _winHdrPtrs[i] = IntPtr.Zero;
                 }
                 if (_winPinned[i].IsAllocated)
+                {
                     _winPinned[i].Free();
+                }
             }
 
             waveOutClose(_winHandle);
@@ -547,7 +595,9 @@ namespace Editor.Audio
 
             if (AudioQueueNewOutput(ref desc, callbackPtr, IntPtr.Zero,
                     IntPtr.Zero, IntPtr.Zero, 0, out _macQueue) != 0)
+            {
                 return false;
+            }
 
             _macBufferPtrs = new IntPtr[_numBuffers];
             _macAvailable = new int[_numBuffers];
@@ -578,7 +628,9 @@ namespace Editor.Audio
         private void MacCallback(IntPtr userData, IntPtr queue, IntPtr bufferRef)
         {
             if (_macBufferPtrs == null)
+            {
                 return;
+            }
 
             for (int i = 0; i < _macBufferPtrs.Length; i++)
             {
@@ -595,7 +647,9 @@ namespace Editor.Audio
             for (int i = 0; i < _numBuffers; i++)
             {
                 if (Volatile.Read(ref _macAvailable[i]) != 0)
+                {
                     return true;
+                }
             }
             return false;
         }
@@ -647,7 +701,9 @@ namespace Editor.Audio
                 foreach (var device in devices)
                 {
                     if (snd_pcm_open(out _alsaPcm, device, SND_PCM_STREAM_PLAYBACK, 0) < 0)
+                    {
                         continue;
+                    }
 
                     if (snd_pcm_set_params(_alsaPcm, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED,
                             (uint)_channels, (uint)_sampleRate, 1, latencyUs) < 0)

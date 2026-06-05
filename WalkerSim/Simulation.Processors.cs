@@ -45,7 +45,9 @@ namespace WalkerSim
             public void Process(Agent neighbor)
             {
                 if (neighbor.Group != AgentGroup)
+                {
                     return;
+                }
 
                 Mean += neighbor.Position;
                 Count++;
@@ -61,7 +63,9 @@ namespace WalkerSim
             public void Process(Agent neighbor)
             {
                 if (neighbor.Group == AgentGroup)
+                {
                     return;
+                }
 
                 Mean += neighbor.Position;
                 Count++;
@@ -89,7 +93,9 @@ namespace WalkerSim
             public void Process(Agent neighbor)
             {
                 if (neighbor.Group != AgentGroup)
+                {
                     return;
+                }
 
                 MeanVel += neighbor.Velocity;
                 Count++;
@@ -105,7 +111,9 @@ namespace WalkerSim
             public void Process(Agent neighbor)
             {
                 if (neighbor.Group == AgentGroup)
+                {
                     return;
+                }
 
                 MeanVel += neighbor.Velocity;
                 Count++;
@@ -137,7 +145,9 @@ namespace WalkerSim
             public void Process(Agent neighbor)
             {
                 if (neighbor.Group != AgentGroup)
+                {
                     return;
+                }
 
                 var delta = AgentPos - neighbor.Position;
                 var dist = delta.X * delta.X + delta.Y * delta.Y;
@@ -156,7 +166,9 @@ namespace WalkerSim
             public void Process(Agent neighbor)
             {
                 if (neighbor.Group == AgentGroup)
+                {
                     return;
+                }
 
                 var delta = AgentPos - neighbor.Position;
                 var dist = delta.X * delta.X + delta.Y * delta.Y;
@@ -231,16 +243,22 @@ namespace WalkerSim
         private bool GroupHasProcessor(int group, Config.MovementProcessorType type)
         {
             if (group < 0 || group >= _processors.Count)
+            {
                 return false;
+            }
 
             var proc = _processors[group];
             if (proc == null)
+            {
                 return false;
+            }
 
             foreach (var entry in proc.Entries)
             {
                 if (entry.Type == type)
+                {
                     return true;
+                }
             }
 
             return false;
@@ -291,9 +309,13 @@ namespace WalkerSim
                 foreach (var p in processorGroup.Entries)
                 {
                     if (p.Type == Config.MovementProcessorType.StickToBiome)
+                    {
                         group.PreferredBiome = (Biomes.Type)(byte)p.Param1;
+                    }
                     else if (p.Type == Config.MovementProcessorType.AvoidBiome)
+                    {
                         group.AvoidedBiome = (Biomes.Type)(byte)p.Param1;
+                    }
                 }
 
                 if (processorGroup.Color == "")
@@ -316,7 +338,9 @@ namespace WalkerSim
 
             float totalWeight = 0;
             for (int i = 0; i < weights.Count; i++)
+            {
                 totalWeight += weights[i];
+            }
 
             int systemCount = configProcessors.Count;
             var agentsForSystem = new int[systemCount];
@@ -335,11 +359,15 @@ namespace WalkerSim
                 for (int i = 1; i < weights.Count; i++)
                 {
                     if (weights[i] > weights[largestIdx])
+                    {
                         largestIdx = i;
+                    }
                 }
                 agentsForSystem[largestIdx] += remainder;
                 if (agentsForSystem[largestIdx] < 0)
+                {
                     agentsForSystem[largestIdx] = 0;
+                }
             }
 
             var groupSystem = new List<int>();
@@ -348,7 +376,9 @@ namespace WalkerSim
             {
                 int remaining = agentsForSystem[s];
                 if (remaining <= 0)
+                {
                     continue;
+                }
 
                 int gs = System.Math.Max(1, _state.Config.Processors[s].GroupSize);
                 while (remaining > 0)
@@ -365,14 +395,18 @@ namespace WalkerSim
             _groupSizes = groupSizeList.ToArray();
 
             for (int g = 0; g < _state.GroupCount; g++)
+            {
                 _processors.Add(configProcessors[_groupToSystemIndex[g]]);
+            }
 
             // Colorize all the groups who are still transparent
             for (int i = 0; i < _processors.Count; i++)
             {
                 var group = _processors[i];
                 if (group == null)
+                {
                     continue;
+                }
 
                 if (group.Color == Drawing.Color.Transparent)
                 {
@@ -386,7 +420,9 @@ namespace WalkerSim
             foreach (var processorList in _processors)
             {
                 if (processorList == null)
+                {
                     continue;
+                }
 
                 foreach (var processor in processorList.Entries)
                 {
@@ -406,7 +442,9 @@ namespace WalkerSim
             sim.ForEachNearby(agent.Position, agent.Index, distance, ref processor);
 
             if (processor.Count == 0)
+            {
                 return Vector3.Zero;
+            }
 
             processor.Mean /= processor.Count;
             var center = processor.Mean - agent.Position;
@@ -425,7 +463,9 @@ namespace WalkerSim
             sim.ForEachNearby(agent.Position, agent.Index, distance, ref processor);
 
             if (processor.Count == 0)
+            {
                 return Vector3.Zero;
+            }
 
             processor.Mean /= processor.Count;
             var center = processor.Mean - agent.Position;
@@ -444,7 +484,9 @@ namespace WalkerSim
             sim.ForEachNearby(agent.Position, agent.Index, distance, ref processor);
 
             if (processor.Count == 0)
+            {
                 return Vector3.Zero;
+            }
 
             processor.Mean /= processor.Count;
             var center = processor.Mean - agent.Position;
@@ -462,7 +504,9 @@ namespace WalkerSim
             sim.ForEachNearby(agent.Position, agent.Index, distance, ref processor);
 
             if (processor.Count == 0)
+            {
                 return Vector3.Zero;
+            }
 
             processor.MeanVel /= processor.Count;
             var delta = processor.MeanVel - agent.Velocity;
@@ -482,7 +526,9 @@ namespace WalkerSim
             sim.ForEachNearby(agent.Position, agent.Index, distance, ref processor);
 
             if (processor.Count == 0)
+            {
                 return Vector3.Zero;
+            }
 
             processor.MeanVel /= processor.Count;
             var delta = processor.MeanVel - agent.Velocity;
@@ -501,7 +547,9 @@ namespace WalkerSim
             sim.ForEachNearby(agent.Position, agent.Index, distance, ref processor);
 
             if (processor.Count == 0)
+            {
                 return Vector3.Zero;
+            }
 
             processor.MeanVel /= processor.Count;
             var delta = processor.MeanVel - agent.Velocity;
@@ -576,7 +624,9 @@ namespace WalkerSim
             float holdSeconds = param1 > 0f ? param1 : 600f;
             uint interval = (uint)(holdSeconds * Constants.TicksPerSecond);
             if (interval == 0)
+            {
                 interval = 1;
+            }
 
             uint timeBucket = state.Ticks / interval;
             float r = AgentHash(agent.Group, timeBucket, 900) / (float)0x7FFFFFFF;
@@ -594,15 +644,21 @@ namespace WalkerSim
         internal static Vector3 StickToRoads(Simulation sim, State state, Agent agent, float distance, float power, float param1, float param2)
         {
             if (state.MapData == null)
+            {
                 return Vector3.Zero;
+            }
 
             var roads = state.MapData.Roads;
             if (roads == null)
+            {
                 return Vector3.Zero;
+            }
 
             var graph = roads.Graph;
             if (graph == null || graph.Nodes.Length == 0)
+            {
                 return Vector3.Zero;
+            }
 
             var pos = agent.Position;
             var worldMins = state.WorldMins;
@@ -708,28 +764,39 @@ namespace WalkerSim
             {
                 int nearest = graph.FindNearestNode(bx, by);
                 if (nearest < 0)
+                {
                     return Vector3.Zero;
+                }
 
                 var nearestNode = graph.Nodes[nearest];
                 float ndx = nearestNode.X - bx;
                 float ndy = nearestNode.Y - by;
                 if (ndx * ndx + ndy * ndy > RoadNodeSearchDist * RoadNodeSearchDist)
+                {
                     return Vector3.Zero; // Too far from any road.
+                }
 
                 // We're near this node, pick a connected node to walk toward.
                 if (preferredBiome != Biomes.Type.Invalid && graph.NodeBiomes.Length == graph.Nodes.Length
                     && graph.NodeBiomes[nearest] != preferredBiome)
+                {
                     return Vector3.Zero;
+                }
+
                 if (avoidedBiome != Biomes.Type.Invalid && graph.NodeBiomes.Length == graph.Nodes.Length
                     && graph.NodeBiomes[nearest] == avoidedBiome)
+                {
                     return Vector3.Zero;
+                }
 
                 agent.ClearRoadNodeHistory();
                 agent.PushRoadNodeHistory(nearest);
                 agent.RoadNodeTarget = PickNextRoadNode(graph, agent, agent.Velocity, state.Ticks, biasX, biasY, preferredBiome, avoidedBiome);
 
                 if (agent.RoadNodeTarget < 0)
+                {
                     agent.RoadNodeTarget = nearest; // Isolated node, just attract to it.
+                }
             }
 
             // Steer toward the target node.
@@ -755,7 +822,9 @@ namespace WalkerSim
                     float curDistSqr = (biasX - bx) * (biasX - bx) + (biasY - by) * (biasY - by);
                     float tgtDistSqr = (biasX - target.X) * (biasX - target.X) + (biasY - target.Y) * (biasY - target.Y);
                     if (tgtDistSqr >= curDistSqr)
+                    {
                         return Vector3.Zero; // Road node is farther from city; let CityVisitor take over.
+                    }
                 }
 
                 return new Vector3(dx, dy) * (power * typeScale);
@@ -778,7 +847,9 @@ namespace WalkerSim
                 : -1;
 
             if (arrivedAt < 0 || arrivedAt >= graph.Nodes.Length)
+            {
                 return -1;
+            }
 
             var node = graph.Nodes[arrivedAt];
             var connections = node.Connections;
@@ -792,21 +863,34 @@ namespace WalkerSim
                 {
                     var b = graph.NodeBiomes[connections[i]];
                     if (preferredBiome != Biomes.Type.Invalid && b != preferredBiome)
+                    {
                         continue;
+                    }
+
                     if (avoidedBiome != Biomes.Type.Invalid && b == avoidedBiome)
+                    {
                         continue;
+                    }
+
                     filtered.Add(connections[i]);
                 }
                 if (filtered.Count == 0)
+                {
                     return -1;
+                }
+
                 connections = filtered.ToArray();
             }
 
             if (connections.Length == 0)
+            {
                 return -1; // Isolated node.
+            }
 
             if (connections.Length == 1)
+            {
                 return connections[0]; // Dead end: traverse back.
+            }
 
             bool hasBias = !float.IsNaN(biasX);
 
@@ -824,21 +908,28 @@ namespace WalkerSim
             bool pickRandom = isBridgeNode
                 || (!hasBias && connections.Length >= 3 && AgentHash(agent.Index, tick, 0) % 3 == 0);
             if (pickRandom)
+            {
                 hasBias = false;
+            }
 
             // Prepare velocity direction for velocity-aligned selection.
             float velX = velocity.X;
             float velY = velocity.Y;
             float velLen = (float)System.Math.Sqrt(velX * velX + velY * velY);
             if (velLen > 0.01f)
-            { velX /= velLen; velY /= velLen; }
+            {
+                velX /= velLen;
+                velY /= velLen;
+            }
 
             // Count how many non-history candidates we have.
             int availableCount = 0;
             for (int i = 0; i < connections.Length; i++)
             {
                 if (!agent.IsInRoadNodeHistory(connections[i]))
+                {
                     availableCount++;
+                }
             }
 
             // All neighbors are already in history — clear and pick any neighbor.
@@ -862,7 +953,10 @@ namespace WalkerSim
                 if (agent.IsInRoadNodeHistory(connIdx))
                 {
                     if (fallbackIdx < 0)
+                    {
                         fallbackIdx = connIdx;
+                    }
+
                     continue;
                 }
 
@@ -871,7 +965,9 @@ namespace WalkerSim
                 if (pickRandom)
                 {
                     if (AgentHash(agent.Index, tick, 100 + i) % candidateCount == 0)
+                    {
                         bestIdx = connIdx;
+                    }
                 }
                 else if (hasBias)
                 {
@@ -893,7 +989,10 @@ namespace WalkerSim
                     float dy = nextNode.Y - currentNode.Y;
                     float len = (float)System.Math.Sqrt(dx * dx + dy * dy);
                     if (len > 0)
-                    { dx /= len; dy /= len; }
+                    {
+                        dx /= len;
+                        dy /= len;
+                    }
 
                     float dot = velX * dx + velY * dy;
                     if (dot > bestDot)
@@ -905,7 +1004,9 @@ namespace WalkerSim
                 else
                 {
                     if (AgentHash(agent.Index, tick, 200 + i) % candidateCount == 0)
+                    {
                         bestIdx = connIdx;
+                    }
                 }
             }
 
@@ -977,7 +1078,9 @@ namespace WalkerSim
                 if (state.AgentsNearPOICounter != null)
                 {
                     if (state.AgentsNearPOICounter[i] >= 64)
+                    {
                         continue;
+                    }
                 }
 
                 var dist = Vector3.Distance2DSqr(agent.Position, deco.Position);
@@ -1076,7 +1179,9 @@ namespace WalkerSim
         {
             var cities = state.MapData?.Cities;
             if (cities == null || cities.SDFWidth == 0)
+            {
                 return Vector3.Zero;
+            }
 
             var pos = agent.Position;
             float bx = MathEx.Remap(pos.X, state.WorldMins.X, state.WorldMaxs.X, 0f, cities.Width);
@@ -1111,7 +1216,9 @@ namespace WalkerSim
             var grad = cities.SampleSDFGradient(bx, by);
             float len = grad.Magnitude();
             if (len < 0.001f)
+            {
                 return Vector3.Zero;
+            }
 
             return (grad / len) * (power * sign * strength);
         }
@@ -1157,14 +1264,22 @@ namespace WalkerSim
                 {
                     var c = cityList[i];
                     if (preferredBiome != Biomes.Type.Invalid && c.Biome != preferredBiome)
+                    {
                         continue;
+                    }
+
                     if (avoidedBiome != Biomes.Type.Invalid && c.Biome == avoidedBiome)
+                    {
                         continue;
+                    }
+
                     totalEligibleWeight += cities.CityAreaWeights[i];
                 }
 
                 if (totalEligibleWeight <= 0f)
+                {
                     return Vector3.Zero;
+                }
 
                 uint timeBucket = (uint)state.Ticks / Constants.MaxUpdateCountPerTick;
                 float randomValue = AgentHash(agent.Group, timeBucket, 700) / (float)0x7FFFFFFF;
@@ -1176,9 +1291,15 @@ namespace WalkerSim
                 {
                     var c = cityList[i];
                     if (preferredBiome != Biomes.Type.Invalid && c.Biome != preferredBiome)
+                    {
                         continue;
+                    }
+
                     if (avoidedBiome != Biomes.Type.Invalid && c.Biome == avoidedBiome)
+                    {
                         continue;
+                    }
+
                     accumulatedWeight += cities.CityAreaWeights[i];
                     if (accumulatedWeight >= targetWeight)
                     {
@@ -1188,7 +1309,9 @@ namespace WalkerSim
                 }
 
                 if (targetCityIndex < 0)
+                {
                     return Vector3.Zero;
+                }
 
                 agent.TargetCityIndex = targetCityIndex;
                 agent.CurrentTravelState = Agent.TravelState.Approaching;
@@ -1287,7 +1410,10 @@ namespace WalkerSim
                 {
                     int poiCount = targetCity.POIs.Count;
                     if (poiCount == 0)
+                    {
                         return Vector3.Zero;
+                    }
+
                     var poi = targetCity.POIs[(int)(seed % (uint)poiCount)];
                     targetX = poi.Position.X;
                     targetY = poi.Position.Y;
@@ -1318,11 +1444,15 @@ namespace WalkerSim
         internal static Vector3 BiomeForce(Simulation sim, State state, Agent agent, float power, float param1, float sign)
         {
             if (state.MapData == null)
+            {
                 return Vector3.Zero;
+            }
 
             var biomes = state.MapData.Biomes;
             if (biomes == null || biomes.SDFWidth == 0)
+            {
                 return Vector3.Zero;
+            }
 
             var biomeType = (Biomes.Type)(byte)param1;
 
@@ -1359,7 +1489,9 @@ namespace WalkerSim
             var grad = biomes.SampleSDFGradient(biomeType, bx, by);
             float len = grad.Magnitude();
             if (len < 0.001f)
+            {
                 return Vector3.Zero;
+            }
 
             return (grad / len) * (power * sign * strength);
         }

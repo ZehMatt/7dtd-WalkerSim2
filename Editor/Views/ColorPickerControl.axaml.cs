@@ -37,7 +37,11 @@ namespace Editor.Views
 
             _vm.ColorChanged = str =>
             {
-                if (_updatingStyledProp) return;
+                if (_updatingStyledProp)
+                {
+                    return;
+                }
+
                 _updatingFromVm = true;
                 SetValue(ColorStringProperty, str);
                 _updatingFromVm = false;
@@ -55,7 +59,10 @@ namespace Editor.Views
                 return;
             }
 
-            try { Color.Parse(text); }
+            try
+            {
+                Color.Parse(text);
+            }
             catch
             {
                 _vm.ColorString = "#FF00FF";

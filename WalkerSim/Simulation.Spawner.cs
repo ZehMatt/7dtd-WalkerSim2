@@ -49,7 +49,9 @@ namespace WalkerSim
             {
                 var agent = kv.Value;
                 if (agent.CurrentState != Agent.State.Spawned)
+                {
                     continue;
+                }
 
                 var dist = Vector3.Distance2D(position, agent.Position);
                 if (dist <= radius)
@@ -105,10 +107,14 @@ namespace WalkerSim
                 var player = kv.Value;
 
                 if (player.EntityId == -1)
+                {
                     continue;
+                }
 
                 if (player.IsAlive == false)
+                {
                     continue;
+                }
 
                 if (UnscaledTicks < player.NextPossibleSpawnTime)
                 {
@@ -139,22 +145,38 @@ namespace WalkerSim
                     var agent = _nearPlayer[i];
 
                     if (agent.CurrentState != Agent.State.Wandering)
+                    {
                         continue;
+                    }
 
                     var dist = Vector3.Distance2D(playerPos, agent.Position);
                     if (dist > viewRadius)
+                    {
                         continue;
+                    }
 
                     var rainZombie = false;
                     if (dist < viewRadius - Constants.SpawnBorderSize)
                     {
                         if (!player.ZombieRain)
+                        {
                             continue;
+                        }
 
                         if (dist > 15)
+                        {
                             continue;
+                        }
 
                         rainZombie = true;
+                    }
+
+                    // A border spawn for this player can land inside another nearby player's
+                    // view (e.g. two players ~activation radius apart), popping a zombie in
+                    // right next to them. Skip those.
+                    if (IsInsideOtherPlayerView(agent.Position, player.EntityId, viewRadius - Constants.SpawnBorderSize))
+                    {
+                        continue;
                     }
 
                     // TODO: We are not handling overflow of Ticks but it takes a lot of time to get there.
@@ -202,6 +224,25 @@ namespace WalkerSim
                 Logging.Warn("Excessive amount of pending spawns: {0}", _pendingSpawns.Count);
             }
 #endif
+        }
+
+        private bool IsInsideOtherPlayerView(Vector3 pos, int excludePlayerId, float radius)
+        {
+            foreach (var kv in _state.Players)
+            {
+                var other = kv.Value;
+                if (other.EntityId == excludePlayerId || other.EntityId == -1 || !other.IsAlive)
+                {
+                    continue;
+                }
+
+                if (Vector3.Distance2D(pos, other.Position) < radius)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public Config.WanderingSpeed GetPostSpawnWanderSpeed(int entityId)
@@ -285,7 +326,9 @@ namespace WalkerSim
         public void SetEnableAgentSpawn(bool allowSpawn)
         {
             if (_allowAgentSpawn == allowSpawn)
+            {
                 return;
+            }
 
             if (!allowSpawn)
             {

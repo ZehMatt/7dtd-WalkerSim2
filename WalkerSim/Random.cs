@@ -45,7 +45,9 @@ namespace WalkerSim
         public Int32 Next(Int32 max)
         {
             if (max <= 0)
+            {
                 throw new ArgumentOutOfRangeException(nameof(max), "max must be greater than 0.");
+            }
 
             return Next() % max;
         }
@@ -53,10 +55,14 @@ namespace WalkerSim
         public Int32 Next(Int32 min, Int32 max)
         {
             if (min > max)
+            {
                 throw new ArgumentOutOfRangeException(nameof(min), "min must be less than or equal to max.");
+            }
 
             if (min == max)
+            {
                 return min;
+            }
 
             return min + Next(max - min);
         }

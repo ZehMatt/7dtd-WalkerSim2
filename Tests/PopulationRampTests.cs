@@ -41,9 +41,13 @@ namespace WalkerSim.Tests
             foreach (var agent in sim.Agents)
             {
                 if (agent.CurrentState == Agent.State.Wandering)
+                {
                     wandering++;
+                }
                 else if (agent.CurrentState == Agent.State.Inactive)
+                {
                     inactive++;
+                }
             }
 
             // Roughly 50% should be wandering at game time 0.
@@ -111,7 +115,9 @@ namespace WalkerSim.Tests
             foreach (var agent in sim.Agents)
             {
                 if (agent.CurrentState == Agent.State.Wandering)
+                {
                     initialWandering++;
+                }
             }
 
             // Advance game time to full day and tick enough for the ramp to take effect.
@@ -123,7 +129,9 @@ namespace WalkerSim.Tests
             foreach (var agent in sim.Agents)
             {
                 if (agent.CurrentState == Agent.State.Wandering)
+                {
                     finalWandering++;
+                }
             }
 
             Assert.IsTrue(finalWandering > initialWandering,

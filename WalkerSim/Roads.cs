@@ -67,11 +67,15 @@ namespace WalkerSim
                     int cx = gridX + dx;
                     int cy = gridY + dy;
                     if (cx < 0 || cx >= _gridColumns || cy < 0 || cy >= _gridRows)
+                    {
                         continue;
+                    }
 
                     int nodeIdx = _nodeGrid[cy * _gridColumns + cx];
                     if (nodeIdx == -1)
+                    {
                         continue;
+                    }
 
                     var node = Nodes[nodeIdx];
                     float distX = node.X - bitmapX;
@@ -108,7 +112,9 @@ namespace WalkerSim
         {
             int n = nodes.Length;
             if (n == 0)
+            {
                 return System.Array.Empty<bool>();
+            }
 
             var disc = new int[n];
             var low = new int[n];
@@ -128,7 +134,10 @@ namespace WalkerSim
             for (int root = 0; root < n; root++)
             {
                 if (visited[root])
+                {
                     continue;
+                }
+
                 visited[root] = true;
                 disc[root] = timer;
                 low[root] = timer;
@@ -160,7 +169,9 @@ namespace WalkerSim
                         else if (v != parent[u])
                         {
                             if (disc[v] < low[u])
+                            {
                                 low[u] = disc[v];
+                            }
                         }
                     }
                     else
@@ -170,7 +181,10 @@ namespace WalkerSim
                         if (par >= 0)
                         {
                             if (low[u] < low[par])
+                            {
                                 low[par] = low[u];
+                            }
+
                             if (low[u] > disc[par])
                             {
                                 // Edge (par, u) is a bridge — tag both endpoints.
@@ -213,10 +227,15 @@ namespace WalkerSim
                     {
                         int lx = edgeX - 1 - m;
                         if (lx >= 0 && lx < width && data[lx, y] != RoadType.None)
+                        {
                             foundLeft = true;
+                        }
+
                         int rx = edgeX + m;
                         if (rx >= 0 && rx < width && data[rx, y] != RoadType.None)
+                        {
                             foundRight = true;
+                        }
                     }
                 }
                 return foundLeft && foundRight;
@@ -238,10 +257,15 @@ namespace WalkerSim
                     {
                         int ty = edgeY - 1 - m;
                         if (ty >= 0 && ty < height && data[x, ty] != RoadType.None)
+                        {
                             foundTop = true;
+                        }
+
                         int by = edgeY + m;
                         if (by >= 0 && by < height && data[x, by] != RoadType.None)
+                        {
                             foundBottom = true;
+                        }
                     }
                 }
                 return foundTop && foundBottom;
@@ -261,9 +285,15 @@ namespace WalkerSim
                 int axEnd = System.Math.Min(axStart + margin, width);
                 int ayEnd = System.Math.Min(ayStart + margin, height);
                 for (int y = System.Math.Max(ayStart, 0); y < ayEnd && !foundA; y++)
+                {
                     for (int x = System.Math.Max(axStart, 0); x < axEnd && !foundA; x++)
+                    {
                         if (data[x, y] != RoadType.None)
+                        {
                             foundA = true;
+                        }
+                    }
+                }
 
                 // Cell B side of the corner.
                 int bxStart = dx > 0 ? cornerX : cornerX - margin;
@@ -271,9 +301,15 @@ namespace WalkerSim
                 int bxEnd = System.Math.Min(bxStart + margin, width);
                 int byEnd = System.Math.Min(byStart + margin, height);
                 for (int y = System.Math.Max(byStart, 0); y < byEnd && !foundB; y++)
+                {
                     for (int x = System.Math.Max(bxStart, 0); x < bxEnd && !foundB; x++)
+                    {
                         if (data[x, y] != RoadType.None)
+                        {
                             foundB = true;
+                        }
+                    }
+                }
 
                 return foundA && foundB;
             }
@@ -295,10 +331,15 @@ namespace WalkerSim
                 changed = false;
                 SkeletonizePass(data, marks, width, height, true);
                 if (RemoveMarked(data, marks, width, height))
+                {
                     changed = true;
+                }
+
                 SkeletonizePass(data, marks, width, height, false);
                 if (RemoveMarked(data, marks, width, height))
+                {
                     changed = true;
+                }
             }
         }
 
@@ -309,7 +350,9 @@ namespace WalkerSim
                 for (int x = 1; x < width - 1; x++)
                 {
                     if (data[x, y] == RoadType.None)
+                    {
                         continue;
+                    }
 
                     int p2 = data[x, y - 1] != RoadType.None ? 1 : 0;
                     int p3 = data[x + 1, y - 1] != RoadType.None ? 1 : 0;
@@ -325,19 +368,25 @@ namespace WalkerSim
                             ((1 - p6) & (p7 | p8)) +
                             ((1 - p8) & (p9 | p2));
                     if (c != 1)
+                    {
                         continue;
+                    }
 
                     int n1 = (p9 | p2) + (p3 | p4) + (p5 | p6) + (p7 | p8);
                     int n2 = (p2 | p3) + (p4 | p5) + (p6 | p7) + (p8 | p9);
                     int n = n1 < n2 ? n1 : n2;
                     if (n < 2 || n > 3)
+                    {
                         continue;
+                    }
 
                     int m = firstSub
                         ? ((p2 | p3 | (1 - p5)) & p4)
                         : ((p6 | p7 | (1 - p9)) & p8);
                     if (m != 0)
+                    {
                         continue;
+                    }
 
                     marks[x, y] = true;
                 }
@@ -368,7 +417,10 @@ namespace WalkerSim
             float dy = nb.Y - na.Y;
             float len = (float)System.Math.Sqrt(dx * dx + dy * dy);
             if (len < 1f)
+            {
                 return true;
+            }
+
             int steps = (int)len;
             float stepX = dx / steps;
             float stepY = dy / steps;
@@ -379,10 +431,15 @@ namespace WalkerSim
                 int cx = (int)(fx / NodeSpacing);
                 int cy = (int)(fy / NodeSpacing);
                 if (cx < 0 || cx >= graph._gridColumns || cy < 0 || cy >= graph._gridRows)
+                {
                     continue;
+                }
+
                 int nodeIdx = graph._nodeGrid[cy * graph._gridColumns + cx];
                 if (nodeIdx >= 0 && nodeIdx != a && nodeIdx != b)
+                {
                     return false;
+                }
             }
             return true;
         }
@@ -403,7 +460,9 @@ namespace WalkerSim
                 Parallel.For(0, height, y =>
                 {
                     for (int x = 0; x < width; x++)
+                    {
                         thinned[x, y] = data[x, y];
+                    }
                 });
                 Skeletonize(thinned, width, height);
                 data = thinned;
@@ -414,7 +473,9 @@ namespace WalkerSim
                 graph._nodeGrid = new int[totalCells];
 
                 for (int i = 0; i < graph._nodeGrid.Length; i++)
+                {
                     graph._nodeGrid[i] = -1;
+                }
 
                 // Pass 1: Create nodes at road pixel centroids per grid cell.
                 // Step 1a: Compute centroids in parallel.
@@ -447,7 +508,9 @@ namespace WalkerSim
                                 sumY += y;
                                 count++;
                                 if (roadType == RoadType.Asphalt)
+                                {
                                     asphaltCount++;
+                                }
                             }
                         }
                     }
@@ -482,14 +545,18 @@ namespace WalkerSim
                 // form a continuous path between them (parallelized per grid cell).
                 var connectionLists = new List<int>[nodes.Count];
                 for (int i = 0; i < connectionLists.Length; i++)
+                {
                     connectionLists[i] = new List<int>(4);
+                }
 
                 var nodeGrid = graph._nodeGrid;
                 Parallel.For(0, totalCells, cellIndex =>
                 {
                     int nodeIdx = nodeGrid[cellIndex];
                     if (nodeIdx == -1)
+                    {
                         return;
+                    }
 
                     int gy = cellIndex / gridColumns;
                     int gx = cellIndex % gridColumns;
@@ -501,16 +568,22 @@ namespace WalkerSim
                         for (int dx = -1; dx <= 1; dx++)
                         {
                             if (dx == 0 && dy == 0)
+                            {
                                 continue;
+                            }
 
                             int nx = gx + dx;
                             int ny = gy + dy;
                             if (nx < 0 || nx >= gridColumns || ny < 0 || ny >= gridRows)
+                            {
                                 continue;
+                            }
 
                             int neighborIdx = nodeGrid[ny * gridColumns + nx];
                             if (neighborIdx == -1)
+                            {
                                 continue;
+                            }
 
                             // For diagonal connections, skip if both intermediate
                             // cardinal cells have nodes — the path already exists
@@ -520,13 +593,17 @@ namespace WalkerSim
                                 int cardA = nodeGrid[gy * gridColumns + nx]; // (nx, gy)
                                 int cardB = nodeGrid[ny * gridColumns + gx]; // (gx, ny)
                                 if (cardA != -1 && cardB != -1)
+                                {
                                     continue;
+                                }
                             }
 
                             // Check that road pixels exist on both sides of the
                             // shared cell boundary (handles curves correctly).
                             if (HasSharedBorderRoad(data, width, height, gx, gy, nx, ny))
+                            {
                                 localConns.Add(neighborIdx);
+                            }
                         }
                     }
 
@@ -546,7 +623,9 @@ namespace WalkerSim
                 const int MinComponentSize = 10;
                 var componentId = new int[nodes.Count];
                 for (int i = 0; i < componentId.Length; i++)
+                {
                     componentId[i] = -1;
+                }
 
                 int numComponents = 0;
                 var componentSizes = new List<int>();
@@ -555,7 +634,9 @@ namespace WalkerSim
                 for (int i = 0; i < nodes.Count; i++)
                 {
                     if (componentId[i] >= 0)
+                    {
                         continue;
+                    }
 
                     int id = numComponents++;
                     int size = 0;
@@ -585,9 +666,13 @@ namespace WalkerSim
                 for (int i = 0; i < nodes.Count; i++)
                 {
                     if (componentId[i] >= 0 && componentSizes[componentId[i]] >= MinComponentSize)
+                    {
                         keep[i] = true;
+                    }
                     else
+                    {
                         removedNodes++;
+                    }
                 }
 
                 if (removedNodes > 0)
@@ -596,20 +681,27 @@ namespace WalkerSim
                     var newIndex = new int[nodes.Count];
                     int nextIdx = 0;
                     for (int i = 0; i < nodes.Count; i++)
+                    {
                         newIndex[i] = keep[i] ? nextIdx++ : -1;
+                    }
 
                     var newNodes = new List<RoadNode>(nextIdx);
                     for (int i = 0; i < nodes.Count; i++)
                     {
                         if (!keep[i])
+                        {
                             continue;
+                        }
+
                         var node = nodes[i];
                         // Remap connections, dropping references to removed nodes.
                         var newConns = new List<int>();
                         foreach (int conn in connectionLists[i])
                         {
                             if (keep[conn])
+                            {
                                 newConns.Add(newIndex[conn]);
+                            }
                         }
                         node.Connections = newConns.ToArray();
                         newNodes.Add(node);
@@ -633,14 +725,20 @@ namespace WalkerSim
                     // Compute connected components.
                     var compId = new int[nodes.Count];
                     for (int i = 0; i < compId.Length; i++)
+                    {
                         compId[i] = -1;
+                    }
+
                     int nComp = 0;
                     var compSizes = new List<int>();
                     var bfsQueue = new Queue<int>();
                     for (int i = 0; i < nodes.Count; i++)
                     {
                         if (compId[i] >= 0)
+                        {
                             continue;
+                        }
+
                         int cid = nComp++;
                         int size = 0;
                         bfsQueue.Enqueue(i);
@@ -668,12 +766,16 @@ namespace WalkerSim
                         for (int i = 1; i < compSizes.Count; i++)
                         {
                             if (compSizes[i] > compSizes[largestComp])
+                            {
                                 largestComp = i;
+                            }
                         }
 
                         var connLists = new List<int>[nodes.Count];
                         for (int i = 0; i < nodes.Count; i++)
+                        {
                             connLists[i] = new List<int>(nodes[i].Connections);
+                        }
 
                         int bridged = 0;
 
@@ -682,14 +784,18 @@ namespace WalkerSim
                         for (int comp = 0; comp < nComp; comp++)
                         {
                             if (comp == largestComp)
+                            {
                                 continue;
+                            }
 
                             // Collect component node indices for the parallel search.
                             var compNodes = new List<int>();
                             for (int i = 0; i < nodes.Count; i++)
                             {
                                 if (compId[i] == comp)
+                                {
                                     compNodes.Add(i);
+                                }
                             }
 
                             // Parallel nearest-neighbor search: each thread finds its
@@ -714,7 +820,9 @@ namespace WalkerSim
                                     for (int j = 0; j < capturedNodes.Count; j++)
                                     {
                                         if (capturedCompId[j] == capturedComp)
+                                        {
                                             continue;
+                                        }
 
                                         float dx = nodeX - capturedNodes[j].X;
                                         float dy = nodeY - capturedNodes[j].Y;
@@ -727,7 +835,12 @@ namespace WalkerSim
                                         }
                                     }
 
-                                    return new { Dist = lBestDist, A = lBestA, B = lBestB };
+                                    return new
+                                    {
+                                        Dist = lBestDist,
+                                        A = lBestA,
+                                        B = lBestB
+                                    };
                                 },
                                 localBest =>
                                 {
@@ -757,7 +870,9 @@ namespace WalkerSim
                                 for (int i = 0; i < compId.Length; i++)
                                 {
                                     if (compId[i] == oldComp)
+                                    {
                                         compId[i] = newComp;
+                                    }
                                 }
                             }
                         }
@@ -783,12 +898,16 @@ namespace WalkerSim
 
                     var connLists = new List<int>[nodes.Count];
                     for (int i = 0; i < nodes.Count; i++)
+                    {
                         connLists[i] = new List<int>(nodes[i].Connections);
+                    }
 
                     for (int a = 0; a < nodes.Count; a++)
                     {
                         if (connLists[a].Count != 1)
+                        {
                             continue;
+                        }
 
                         var na = nodes[a];
                         int gxA = (int)(na.X / NodeSpacing);
@@ -804,24 +923,43 @@ namespace WalkerSim
                                 int cx = gxA + dx;
                                 int cy = gyA + dy;
                                 if (cx < 0 || cx >= graph._gridColumns || cy < 0 || cy >= graph._gridRows)
+                                {
                                     continue;
+                                }
+
                                 int b = graph._nodeGrid[cy * graph._gridColumns + cx];
                                 if (b < 0 || b == a)
+                                {
                                     continue;
+                                }
+
                                 if (connLists[b].Count != 1)
+                                {
                                     continue;
+                                }
 
                                 float ddx = nodes[b].X - na.X;
                                 float ddy = nodes[b].Y - na.Y;
                                 float distSqr = ddx * ddx + ddy * ddy;
                                 if (distSqr > BridgeRadius * BridgeRadius)
+                                {
                                     continue;
+                                }
+
                                 if (distSqr >= bestDistSqr)
+                                {
                                     continue;
+                                }
+
                                 if (connLists[a].Contains(b))
+                                {
                                     continue;
+                                }
+
                                 if (!SegmentClear(graph, a, b, na, nodes[b]))
+                                {
                                     continue;
+                                }
 
                                 best = b;
                                 bestDistSqr = distSqr;
@@ -859,15 +997,24 @@ namespace WalkerSim
                 graph.IsBridgeEndpoint = FindBridgeEndpoints(graph.Nodes);
                 int tagCount = 0;
                 for (int i = 0; i < graph.IsBridgeEndpoint.Length; i++)
+                {
                     if (graph.IsBridgeEndpoint[i])
+                    {
                         tagCount++;
+                    }
+                }
+
                 Logging.Info("Road graph: {0} bridge-endpoint nodes tagged", tagCount);
                 for (int i = 0; i < graph.Nodes.Length; i++)
                 {
                     if (graph.Nodes[i].Connections.Length == 1)
+                    {
                         deadEnds++;
+                    }
                     else if (graph.Nodes[i].Connections.Length >= 3)
+                    {
                         intersections++;
+                    }
                 }
 
                 Logging.Info("Road graph: {0} nodes ({1} dead ends, {2} intersections), grid {3}x{4}",
@@ -942,7 +1089,10 @@ namespace WalkerSim
             get => _rowCount;
         }
 
-        public RoadGraph Graph { get; private set; }
+        public RoadGraph Graph
+        {
+            get; private set;
+        }
 
         public static Roads LoadFromFile(string splatPath)
         {
@@ -1007,7 +1157,9 @@ namespace WalkerSim
                 {
                     var roadType = data[x, y];
                     if (roadType == RoadType.None)
+                    {
                         continue;
+                    }
 
                     var cellX = x / CellSize;
                     var cellY = y / CellSize;
@@ -1056,7 +1208,9 @@ namespace WalkerSim
         {
             int index = y * _width + x;
             if (index < 0 || index >= _data.Length)
+            {
                 return RoadType.None;
+            }
 
             return _data[x, y];
         }
@@ -1119,7 +1273,9 @@ namespace WalkerSim
                             float toPointY = point.Y - y;
                             float toPointLength = (float)System.Math.Sqrt(toPointX * toPointX + toPointY * toPointY);
                             if (toPointLength == 0)
+                            {
                                 continue;
+                            }
 
                             var dist = toPointLength * toPointLength; // Use squared distance
                             if (dist < closestDist)

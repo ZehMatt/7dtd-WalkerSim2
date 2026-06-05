@@ -21,22 +21,24 @@ namespace Editor.Models
                 var key = Level switch
                 {
                     WalkerSim.Logging.Level.Warning => "LogWarning",
-                    WalkerSim.Logging.Level.Error   => "LogError",
-                    _                               => "LogInfo"
+                    WalkerSim.Logging.Level.Error => "LogError",
+                    _ => "LogInfo"
                 };
 
                 var app = Application.Current;
                 if (app != null &&
                     app.Resources.TryGetResource(key, app.ActualThemeVariant, out var resource) &&
                     resource is IBrush brush)
+                {
                     return brush;
+                }
 
                 // Fallback when resources are unavailable
                 return Level switch
                 {
                     WalkerSim.Logging.Level.Warning => Brushes.Yellow,
-                    WalkerSim.Logging.Level.Error   => Brushes.Red,
-                    _                               => Brushes.White
+                    WalkerSim.Logging.Level.Error => Brushes.Red,
+                    _ => Brushes.White
                 };
             }
         }

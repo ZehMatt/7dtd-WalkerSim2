@@ -30,7 +30,9 @@ namespace WalkerSim
         static void Prefix(string _spawnerName, ref bool _isSpawnEnemy, ChunkAreaBiomeSpawnData _spawnData)
         {
             if (!_isSpawnEnemy)
+            {
                 return;
+            }
 
             // Logging.Out("Preventing biome spawn.");
             _isSpawnEnemy = false;
@@ -56,11 +58,15 @@ namespace WalkerSim
         static void Prefix(Entity _entity, UnityEngine.Vector3 _position, string _soundName, float volumeScale)
         {
             if (_entity == null || _entity is EntityPlayer)
+            {
                 return;
+            }
 
             var ai = GameManager.Instance?.World?.aiDirector;
             if (ai == null)
+            {
                 return;
+            }
 
             try
             {

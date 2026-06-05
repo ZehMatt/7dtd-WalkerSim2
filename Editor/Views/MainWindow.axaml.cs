@@ -37,7 +37,9 @@ namespace Editor.Views
             {
                 _updateTimer?.Stop();
                 if (DataContext is EditorViewModel vm)
+                {
                     vm.StopSimulation();
+                }
             };
 
             // Listen on the tunneling phase so the focused control (TextBox, NumericUpDown,
@@ -92,10 +94,14 @@ namespace Editor.Views
 
             // Keep agents list live while that tab is open
             if (AgentsPanel.IsVisible && DataContext is EditorViewModel vm2)
+            {
                 vm2.RefreshAgentModels();
+            }
 
             if (!_renderingPaused)
+            {
                 SimCanvas.InvalidateVisual();
+            }
         }
 
         // ── Tab switching ──────────────────────────────────────────────────────────
@@ -130,7 +136,9 @@ namespace Editor.Views
             MovementSystemsPanel.IsVisible = false;
 
             if (DataContext is EditorViewModel vm)
+            {
                 vm.RefreshAgentModels();
+            }
         }
 
         // ── Exit / Close ────────────────────────────────────────────────────────
@@ -144,7 +152,9 @@ namespace Editor.Views
             base.OnClosing(e);
 
             if (_forceClose)
+            {
                 return;
+            }
 
             if (DataContext is EditorViewModel vm && vm.HasUnsavedChanges)
             {
@@ -229,28 +239,40 @@ namespace Editor.Views
         private void OnToolEmitSoundClick(object? sender, RoutedEventArgs e)
         {
             if (DataContext is not EditorViewModel vm)
+            {
                 return;
+            }
+
             if (sender is MenuItem { Tag: string tag } && float.TryParse(tag, out float radius))
+            {
                 vm.SoundRadius = radius;
+            }
+
             vm.ActivateEmitSoundCommand.Execute(null);
         }
 
         private void OnToolKillClick(object? sender, RoutedEventArgs e)
         {
             if (DataContext is EditorViewModel vm)
+            {
                 vm.ActivateKillCommand.Execute(null);
+            }
         }
 
         private void OnToolAddPlayerClick(object? sender, RoutedEventArgs e)
         {
             if (DataContext is EditorViewModel vm)
+            {
                 vm.ActivateAddPlayerCommand.Execute(null);
+            }
         }
 
         private void RebuildPlayersMenu()
         {
             if (DataContext is not EditorViewModel vm)
+            {
                 return;
+            }
 
             PlayersMenu.Items.Clear();
 
@@ -283,10 +305,12 @@ namespace Editor.Views
             if (window.SettingsSaved)
             {
                 SimCanvas.ApplySettings();
-                
+
                 // Folders may have changed — repopulate worlds.
                 if (DataContext is EditorViewModel vm)
+                {
                     vm.ReloadWorldList();
+                }
             }
         }
 
@@ -322,7 +346,9 @@ namespace Editor.Views
         private void OnViewToggleClick(object? sender, RoutedEventArgs e)
         {
             if (sender is not MenuItem item)
+            {
                 return;
+            }
 
             switch (item.Name)
             {
@@ -425,7 +451,10 @@ namespace Editor.Views
         private ScrollViewer? GetLogScrollViewer()
         {
             if (_logScrollViewer != null)
+            {
                 return _logScrollViewer;
+            }
+
             _logScrollViewer = LogListBox.GetVisualDescendants()
                 .OfType<ScrollViewer>()
                 .FirstOrDefault();
@@ -436,11 +465,15 @@ namespace Editor.Views
         {
             var sv = GetLogScrollViewer();
             if (sv == null)
+            {
                 return;
+            }
 
             bool nearBottom = (sv.Extent.Height - sv.Offset.Y - sv.Viewport.Height) <= NearBottomThreshold;
             if (forceScroll || nearBottom)
+            {
                 sv.ScrollToEnd();
+            }
         }
 
     }

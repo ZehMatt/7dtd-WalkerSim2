@@ -109,7 +109,9 @@ namespace WalkerSim
             RoadNodeHistory[RoadNodeHistoryPos] = (ushort)nodeIndex;
             RoadNodeHistoryPos = (byte)((RoadNodeHistoryPos + 1) % RoadNodeHistorySize);
             if (RoadNodeHistoryCount < RoadNodeHistorySize)
+            {
                 RoadNodeHistoryCount++;
+            }
         }
 
         public bool IsInRoadNodeHistory(int nodeIndex)
@@ -117,7 +119,9 @@ namespace WalkerSim
             for (int i = 0; i < RoadNodeHistoryCount; i++)
             {
                 if (RoadNodeHistory[i] == nodeIndex)
+                {
                     return true;
+                }
             }
             return false;
         }

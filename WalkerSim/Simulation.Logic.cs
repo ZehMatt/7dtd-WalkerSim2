@@ -113,17 +113,23 @@ namespace WalkerSim
         {
             var config = _state.Config;
             if (config.FullPopulationAtDay <= 1 && config.PopulationStartPercent >= 100f)
+            {
                 return 1f;
+            }
 
             var gameDay = (float)_state.GameTime;
             if (gameDay <= 0f)
+            {
                 return config.PopulationStartPercent / 100f;
+            }
 
             var startFraction = MathEx.Clamp(config.PopulationStartPercent / 100f, 0f, 1f);
             var fullDay = (float)System.Math.Max(config.FullPopulationAtDay, 1);
 
             if (gameDay >= fullDay)
+            {
                 return 1f;
+            }
 
             // Linear interpolation from startFraction to 1.0 over [day 1, fullDay].
             var t = MathEx.Clamp((gameDay - 1f) / (fullDay - 1f), 0f, 1f);
@@ -136,16 +142,22 @@ namespace WalkerSim
 
             // Feature not configured, skip entirely.
             if (config.FullPopulationAtDay <= 1 && config.PopulationStartPercent >= 100f)
+            {
                 return;
+            }
 
             // Only check every second, not every tick.
             if (_state.Ticks % Constants.TicksPerSecond != 0)
+            {
                 return;
+            }
 
             var agents = _state.Agents;
             var totalAgents = agents.Count;
             if (totalAgents == 0)
+            {
                 return;
+            }
 
             var fraction = GetPopulationFraction();
             var targetTotal = fraction >= 1f ? totalAgents : (int)(totalAgents * fraction);
@@ -155,12 +167,16 @@ namespace WalkerSim
             for (int i = 0; i < totalAgents; i++)
             {
                 if (agents[i].CurrentState != Agent.State.Inactive)
+                {
                     currentActive++;
+                }
             }
 
             int toWake = targetTotal - currentActive;
             if (toWake <= 0)
+            {
                 return;
+            }
 
             // Pick random Inactive agents to activate.
             var prng = _state.PRNG;
@@ -168,7 +184,9 @@ namespace WalkerSim
             for (int i = 0; i < totalAgents; i++)
             {
                 if (agents[i].CurrentState == Agent.State.Inactive)
+                {
                     inactive.Add(i);
+                }
             }
 
             // Fisher-Yates shuffle, then take first toWake.
@@ -270,9 +288,14 @@ namespace WalkerSim
 
             // Check if curVel is near zero.
             if (System.Math.Abs(curVel.X) < 1e-6f)
+            {
                 curVel.X = 0;
+            }
+
             if (System.Math.Abs(curVel.Y) < 1e-6f)
+            {
                 curVel.Y = 0;
+            }
 
             // Safe access to processors - may be modified by editor thread
             var processorGroup = (agent.Group >= 0 && agent.Group < _processors.Count) ? _processors[agent.Group] : null;
@@ -439,16 +462,24 @@ namespace WalkerSim
 
             float turn = .5f;
             if (agent.Position.X <= worldMins.X)
+            {
                 agent.Velocity.X += turn;
+            }
 
             if (agent.Position.X >= worldMaxs.X)
+            {
                 agent.Velocity.X -= turn;
+            }
 
             if (agent.Position.Y <= worldMins.Y)
+            {
                 agent.Velocity.Y += turn;
+            }
 
             if (agent.Position.Y >= worldMaxs.Y)
+            {
                 agent.Velocity.Y -= turn;
+            }
 
             agent.Position = Vector3.Clamp(agent.Position, worldMins, worldMaxs);
         }
@@ -467,16 +498,24 @@ namespace WalkerSim
             float EdgeDistance = 100.0f;
 
             if (agent.Position.X < worldMins.X + BorderSize)
+            {
                 agent.Position.X = worldMaxs.X - BorderSize - EdgeDistance;
+            }
 
             if (agent.Position.X > worldMaxs.X - BorderSize)
+            {
                 agent.Position.X = worldMins.X + BorderSize + EdgeDistance;
+            }
 
             if (agent.Position.Y < worldMins.Y + BorderSize)
+            {
                 agent.Position.Y = worldMaxs.Y - BorderSize - EdgeDistance;
+            }
 
             if (agent.Position.Y > worldMaxs.Y - BorderSize)
+            {
                 agent.Position.Y = worldMins.Y + BorderSize + EdgeDistance;
+            }
         }
 
         private void ApplyMapEdgeBehavior(Agent agent, Config.MapEdgeBehavior behavior)

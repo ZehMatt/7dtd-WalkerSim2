@@ -17,18 +17,27 @@ namespace WalkerSim
         {
             var result = new List<string>();
             if (ctx == null)
+            {
                 return result;
+            }
 
             if (!string.IsNullOrEmpty(ctx.UserDataFolder))
+            {
                 AddIfExists(result, Path.Combine(ctx.UserDataFolder, "LocalPrefabs"));
+            }
 
             foreach (var modPath in EnumerateModPaths(ctx))
+            {
                 AddIfExists(result, Path.Combine(modPath, "Prefabs"));
+            }
 
             foreach (var install in ctx.InstallRoots)
             {
                 if (string.IsNullOrEmpty(install))
+                {
                     continue;
+                }
+
                 AddIfExists(result, Path.Combine(install, "Data", "Prefabs"));
             }
 
@@ -40,18 +49,27 @@ namespace WalkerSim
             var result = new List<string>();
             var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             if (ctx == null)
+            {
                 return result;
+            }
 
             if (!string.IsNullOrEmpty(ctx.UserDataFolder))
+            {
                 AddWorldChildren(result, seen, Path.Combine(ctx.UserDataFolder, "GeneratedWorlds"));
+            }
 
             foreach (var modPath in EnumerateModPaths(ctx))
+            {
                 AddWorldChildren(result, seen, Path.Combine(modPath, "Worlds"));
+            }
 
             foreach (var install in ctx.InstallRoots)
             {
                 if (string.IsNullOrEmpty(install))
+                {
                     continue;
+                }
+
                 AddWorldChildren(result, seen, Path.Combine(install, "Data", "Worlds"));
             }
 
@@ -79,7 +97,9 @@ namespace WalkerSim
                 foreach (var p in ctx.LoadedModPaths)
                 {
                     if (!string.IsNullOrEmpty(p) && Directory.Exists(p))
+                    {
                         yield return p;
+                    }
                 }
                 yield break;
             }
@@ -87,22 +107,31 @@ namespace WalkerSim
             if (!string.IsNullOrEmpty(ctx.UserDataFolder))
             {
                 foreach (var p in EnumerateModSubdirs(Path.Combine(ctx.UserDataFolder, "Mods")))
+                {
                     yield return p;
+                }
             }
 
             foreach (var install in ctx.InstallRoots)
             {
                 if (string.IsNullOrEmpty(install))
+                {
                     continue;
+                }
+
                 foreach (var p in EnumerateModSubdirs(Path.Combine(install, "Mods")))
+                {
                     yield return p;
+                }
             }
         }
 
         private static IEnumerable<string> EnumerateModSubdirs(string modsRoot)
         {
             if (!Directory.Exists(modsRoot))
+            {
                 yield break;
+            }
 
             string[] dirs;
             try
@@ -116,19 +145,25 @@ namespace WalkerSim
 
             Array.Sort(dirs, StringComparer.OrdinalIgnoreCase);
             foreach (var d in dirs)
+            {
                 yield return d;
+            }
         }
 
         private static void AddIfExists(List<string> result, string path)
         {
             if (!string.IsNullOrEmpty(path) && Directory.Exists(path))
+            {
                 result.Add(path);
+            }
         }
 
         private static void AddWorldChildren(List<string> result, HashSet<string> seen, string parent)
         {
             if (!Directory.Exists(parent))
+            {
                 return;
+            }
 
             string[] dirs;
             try
@@ -145,7 +180,9 @@ namespace WalkerSim
             {
                 var name = Path.GetFileName(d);
                 if (seen.Add(name))
+                {
                     result.Add(d);
+                }
             }
         }
     }

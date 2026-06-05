@@ -176,7 +176,9 @@ namespace WalkerSim
         private static Color32[] GetBiomeColorLookup()
         {
             if (_biomeColors != null)
+            {
                 return _biomeColors;
+            }
 
             var table = new Color32[256];
             const byte alpha = 110;
@@ -198,18 +200,24 @@ namespace WalkerSim
         {
             var mapData = simulation.MapData;
             if (mapData == null)
+            {
                 return;
+            }
 
             var biomes = mapData.Biomes;
             if (biomes == null || biomes.Width == 0 || biomes.Height == 0)
+            {
                 return;
+            }
 
             var worldMins = mapData.WorldMins;
             var worldMaxs = mapData.WorldMaxs;
             float worldRangeX = worldMaxs.X - worldMins.X;
             float worldRangeY = worldMaxs.Y - worldMins.Y;
             if (worldRangeX <= 0f || worldRangeY <= 0f)
+            {
                 return;
+            }
 
             var biomeMap = biomes.BiomeMap;
             int bWidth = biomes.Width;
@@ -226,7 +234,9 @@ namespace WalkerSim
                 float simY = -wz;
                 int by = (int)((simY - worldMins.Y) * invRangeY);
                 if (by < 0 || by >= bHeight)
+                {
                     continue;
+                }
 
                 int tzOffset = wz - mapStartZ;
                 int tz = global::Utils.WrapIndex(textureStartZ + tzOffset, textureWidth);
@@ -236,12 +246,16 @@ namespace WalkerSim
                 {
                     int bx = (int)((wx - worldMins.X) * invRangeX);
                     if (bx < 0 || bx >= bWidth)
+                    {
                         continue;
+                    }
 
                     var bt = biomeMap[bx, by];
                     var color = colorLookup[(byte)bt];
                     if (color.a == 0)
+                    {
                         continue;
+                    }
 
                     int tx = global::Utils.WrapIndex(textureStartX + (wx - mapStartX), textureWidth);
                     DrawPixel(textureData, rowBase + tx, color);
@@ -255,7 +269,9 @@ namespace WalkerSim
         private static Color32[] GetCityColorLookup(Cities cities)
         {
             if (ReferenceEquals(_cachedCitiesRef, cities) && _cityColorLookup != null)
+            {
                 return _cityColorLookup;
+            }
 
             int cityCount = cities.CityList.Count;
             var table = new Color32[cityCount + 1];
@@ -278,17 +294,41 @@ namespace WalkerSim
             float x = c * (1f - System.Math.Abs((hp % 2f) - 1f));
             float r1, g1, b1;
             if (hp < 1f)
-            { r1 = c; g1 = x; b1 = 0; }
+            {
+                r1 = c;
+                g1 = x;
+                b1 = 0;
+            }
             else if (hp < 2f)
-            { r1 = x; g1 = c; b1 = 0; }
+            {
+                r1 = x;
+                g1 = c;
+                b1 = 0;
+            }
             else if (hp < 3f)
-            { r1 = 0; g1 = c; b1 = x; }
+            {
+                r1 = 0;
+                g1 = c;
+                b1 = x;
+            }
             else if (hp < 4f)
-            { r1 = 0; g1 = x; b1 = c; }
+            {
+                r1 = 0;
+                g1 = x;
+                b1 = c;
+            }
             else if (hp < 5f)
-            { r1 = x; g1 = 0; b1 = c; }
+            {
+                r1 = x;
+                g1 = 0;
+                b1 = c;
+            }
             else
-            { r1 = c; g1 = 0; b1 = x; }
+            {
+                r1 = c;
+                g1 = 0;
+                b1 = x;
+            }
             float m = v - c;
             r = (byte)System.Math.Round((r1 + m) * 255f);
             g = (byte)System.Math.Round((g1 + m) * 255f);
@@ -304,11 +344,15 @@ namespace WalkerSim
         {
             var mapData = simulation.MapData;
             if (mapData == null)
+            {
                 return;
+            }
 
             var cities = mapData.Cities;
             if (cities == null || cities.Width == 0 || cities.Height == 0 || cities.CityIdMap == null)
+            {
                 return;
+            }
 
             var idMap = cities.CityIdMap;
             int cWidth = cities.Width;
@@ -323,7 +367,9 @@ namespace WalkerSim
                 float simY = -wz;
                 int gy = (int)((simY - cWorldMins.Y) / cellSize);
                 if (gy < 0 || gy >= cHeight)
+                {
                     continue;
+                }
 
                 int tzOffset = wz - mapStartZ;
                 int tz = global::Utils.WrapIndex(textureStartZ + tzOffset, textureWidth);
@@ -334,11 +380,15 @@ namespace WalkerSim
                 {
                     int gx = (int)((wx - cWorldMins.X) / cellSize);
                     if (gx < 0 || gx >= cWidth)
+                    {
                         continue;
+                    }
 
                     ushort id = idMap[srcRowBase + gx];
                     if (id == 0 || id > cityCount)
+                    {
                         continue;
+                    }
 
                     int tx = global::Utils.WrapIndex(textureStartX + (wx - mapStartX), textureWidth);
                     DrawPixel(textureData, rowBase + tx, colorLookup[id]);
@@ -355,22 +405,30 @@ namespace WalkerSim
         {
             var mapData = simulation.MapData;
             if (mapData == null)
+            {
                 return;
+            }
 
             var roads = mapData.Roads;
             if (roads == null)
+            {
                 return;
+            }
 
             var graph = roads.Graph;
             if (graph == null || graph.Nodes.Length == 0)
+            {
                 return;
+            }
 
             var worldMins = mapData.WorldMins;
             var worldMaxs = mapData.WorldMaxs;
             float worldRangeX = worldMaxs.X - worldMins.X;
             float worldRangeY = worldMaxs.Y - worldMins.Y;
             if (worldRangeX <= 0f || worldRangeY <= 0f)
+            {
                 return;
+            }
 
             int bitmapWidth = roads.Width;
             int bitmapHeight = roads.Height;
@@ -408,11 +466,15 @@ namespace WalkerSim
                 {
                     int j = conns[c];
                     if (j <= i)
+                    {
                         continue; // Draw each edge once.
+                    }
 
                     var b = nodes[j];
                     if (!aVisible && !IsNodeVisible(b))
+                    {
                         continue;
+                    }
 
                     BitmapToTextureRaw(a.X, a.Y, out int ax, out int az);
                     BitmapToTextureRaw(b.X, b.Y, out int bx, out int bz);
@@ -426,7 +488,9 @@ namespace WalkerSim
             {
                 var node = nodes[i];
                 if (!IsNodeVisible(node))
+                {
                     continue;
+                }
 
                 BitmapToTextureRaw(node.X, node.Y, out int tx, out int tz);
                 int wx = global::Utils.WrapIndex(tx, textureWidth);
@@ -456,7 +520,9 @@ namespace WalkerSim
                 DrawPixel(textureData, idx, color);
 
                 if (x0 == x1 && y0 == y1)
+                {
                     break;
+                }
 
                 int e2 = 2 * err;
                 if (e2 >= dy)
@@ -503,7 +569,10 @@ namespace WalkerSim
             void SetPixel(int x, int z)
             {
                 if (x < 0 || x >= textureWidth || z < 0 || z >= textureWidth)
+                {
                     return;
+                }
+
                 int idx = z * textureWidth + x;
                 DrawPixel(textureData, idx, color);
             }
@@ -539,7 +608,9 @@ namespace WalkerSim
                         int z = centerZ + dz;
 
                         if (x < 0 || x >= textureWidth || z < 0 || z >= textureWidth)
+                        {
                             continue;
+                        }
 
                         int idx = z * textureWidth + x;
 

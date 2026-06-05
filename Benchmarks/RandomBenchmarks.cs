@@ -15,7 +15,9 @@ namespace WalkerSim.Benchmarks
             _rng = new Random(12345);
             _shuffleList = new List<int>(100);
             for (int i = 0; i < 100; i++)
+            {
                 _shuffleList.Add(i);
+            }
         }
 
         [Benchmark]

@@ -9,11 +9,26 @@ namespace WalkerSim
         public class City
         {
             // 1-based id matching the component id used in CityIdMap. 0 is reserved for "no city".
-            public int Id { get; set; }
-            public Vector3 Position { get; set; }
-            public Vector3 Bounds { get; set; }
-            public int CellCount { get; set; }
-            public List<MapData.Decoration> POIs { get; set; }
+            public int Id
+            {
+                get; set;
+            }
+            public Vector3 Position
+            {
+                get; set;
+            }
+            public Vector3 Bounds
+            {
+                get; set;
+            }
+            public int CellCount
+            {
+                get; set;
+            }
+            public List<MapData.Decoration> POIs
+            {
+                get; set;
+            }
             public Biomes.Type Biome { get; set; } = Biomes.Type.Invalid;
 
             public City()
@@ -27,23 +42,56 @@ namespace WalkerSim
             public float MaxY => Position.Y + Bounds.Y / 2;
         }
 
-        public List<City> CityList { get; private set; }
-        public float[] CityAreaWeights { get; private set; }
-        public float TotalAreaWeight { get; private set; }
+        public List<City> CityList
+        {
+            get; private set;
+        }
+        public float[] CityAreaWeights
+        {
+            get; private set;
+        }
+        public float TotalAreaWeight
+        {
+            get; private set;
+        }
 
         // City-id raster. 0 = not a city, otherwise 1-based city id.
-        public int Width { get; private set; }
-        public int Height { get; private set; }
-        public ushort[] CityIdMap { get; private set; }
+        public int Width
+        {
+            get; private set;
+        }
+        public int Height
+        {
+            get; private set;
+        }
+        public ushort[] CityIdMap
+        {
+            get; private set;
+        }
 
         // World bounds captured at build time so GetCityAt can remap without needing State.
-        public Vector3 WorldMins { get; private set; }
-        public Vector3 WorldMaxs { get; private set; }
-        public float CellSize { get; private set; }
+        public Vector3 WorldMins
+        {
+            get; private set;
+        }
+        public Vector3 WorldMaxs
+        {
+            get; private set;
+        }
+        public float CellSize
+        {
+            get; private set;
+        }
 
         // Signed distance field for "inside any city": positive inside, negative outside.
-        public int SDFWidth { get; private set; }
-        public int SDFHeight { get; private set; }
+        public int SDFWidth
+        {
+            get; private set;
+        }
+        public int SDFHeight
+        {
+            get; private set;
+        }
         private float[] _sdf;
 
         public Cities()
@@ -130,22 +178,44 @@ namespace WalkerSim
                 int gy1 = py1 + dilation;
 
                 if (gx0 < 0)
+                {
                     gx0 = 0;
+                }
+
                 if (gy0 < 0)
+                {
                     gy0 = 0;
+                }
+
                 if (gx1 >= width)
+                {
                     gx1 = width - 1;
+                }
+
                 if (gy1 >= height)
+                {
                     gy1 = height - 1;
+                }
 
                 if (px0 < 0)
+                {
                     px0 = 0;
+                }
+
                 if (py0 < 0)
+                {
                     py0 = 0;
+                }
+
                 if (px1 >= width)
+                {
                     px1 = width - 1;
+                }
+
                 if (py1 >= height)
+                {
                     py1 = height - 1;
+                }
 
                 for (int y = gy0; y <= gy1; y++)
                 {
@@ -190,7 +260,9 @@ namespace WalkerSim
                 {
                     int idx = y * width + x;
                     if (occupancy[idx] == 0 || idMap[idx] != 0)
+                    {
                         continue;
+                    }
 
                     ushort id = nextId++;
                     idMap[idx] = id;
@@ -205,17 +277,31 @@ namespace WalkerSim
                         int cur = queue.Dequeue();
                         count++;
                         if (poiOccupancy[cur] != 0)
+                        {
                             poiCount++;
+                        }
+
                         int cx = cur % width;
                         int cy = cur / width;
                         if (cx < minCX)
+                        {
                             minCX = cx;
+                        }
+
                         if (cx > maxCX)
+                        {
                             maxCX = cx;
+                        }
+
                         if (cy < minCY)
+                        {
                             minCY = cy;
+                        }
+
                         if (cy > maxCY)
+                        {
                             maxCY = cy;
+                        }
 
                         // 4-connected neighbors.
                         if (cx > 0)
@@ -274,11 +360,15 @@ namespace WalkerSim
                 int gx = (int)Math.Floor((poi.Position.X - worldMins.X) / cellSize);
                 int gy = (int)Math.Floor((poi.Position.Y - worldMins.Y) / cellSize);
                 if (gx < 0 || gx >= width || gy < 0 || gy >= height)
+                {
                     continue;
+                }
 
                 ushort id = idMap[gy * width + gx];
                 if (id == 0)
+                {
                     continue;
+                }
 
                 if (!poisByComponent.TryGetValue(id, out var list))
                 {
@@ -296,11 +386,15 @@ namespace WalkerSim
             {
                 int cells = componentCells[rawId];
                 if (cells < minCellsPerCity)
+                {
                     continue;
+                }
 
                 if (!poisByComponent.TryGetValue((ushort)rawId, out var componentPois) ||
                     componentPois.Count < minPOIsPerCity)
+                {
                     continue;
+                }
 
                 // Coverage ratio: fraction of the dilated component that is actually
                 // covered by POI footprints. Strings of POIs along a road have big
@@ -341,7 +435,9 @@ namespace WalkerSim
             {
                 ushort id = idMap[i];
                 if (id != 0)
+                {
                     idMap[i] = idRemap[id];
+                }
             }
 
             cities.CityIdMap = idMap;
@@ -374,16 +470,22 @@ namespace WalkerSim
         public City GetCityAt(Vector3 position)
         {
             if (Width == 0 || Height == 0)
+            {
                 return null;
+            }
 
             int gx = (int)Math.Floor((position.X - WorldMins.X) / CellSize);
             int gy = (int)Math.Floor((position.Y - WorldMins.Y) / CellSize);
             if (gx < 0 || gx >= Width || gy < 0 || gy >= Height)
+            {
                 return null;
+            }
 
             ushort id = CityIdMap[gy * Width + gx];
             if (id == 0 || id > CityList.Count)
+            {
                 return null;
+            }
 
             return CityList[id - 1];
         }
@@ -396,12 +498,16 @@ namespace WalkerSim
         {
             point = city != null ? city.Position : Vector3.Zero;
             if (city == null || Width == 0 || Height == 0)
+            {
                 return false;
+            }
 
             float rangeX = city.MaxX - city.MinX;
             float rangeY = city.MaxY - city.MinY;
             if (rangeX <= 0f || rangeY <= 0f)
+            {
                 return false;
+            }
 
             const int maxAttempts = 8;
             for (int attempt = 0; attempt < maxAttempts; attempt++)
@@ -438,12 +544,16 @@ namespace WalkerSim
         public void AssignBiomes(Biomes biomes, Vector3 worldMins, Vector3 worldMaxs)
         {
             if (biomes == null || biomes.Width == 0 || biomes.Height == 0)
+            {
                 return;
+            }
 
             float worldRangeX = worldMaxs.X - worldMins.X;
             float worldRangeY = worldMaxs.Y - worldMins.Y;
             if (worldRangeX <= 0 || worldRangeY <= 0)
+            {
                 return;
+            }
 
             for (int i = 0; i < CityList.Count; i++)
             {
@@ -461,7 +571,9 @@ namespace WalkerSim
         public float SampleSDF(float bx, float by)
         {
             if (_sdf.Length == 0)
+            {
                 return -1e6f;
+            }
 
             float sx = (bx / Width) * (SDFWidth - 1);
             float sy = (by / Height) * (SDFHeight - 1);
@@ -472,24 +584,46 @@ namespace WalkerSim
             int y1 = y0 + 1;
 
             if (x0 < 0)
+            {
                 x0 = 0;
+            }
+
             if (y0 < 0)
+            {
                 y0 = 0;
+            }
+
             if (x1 >= SDFWidth)
+            {
                 x1 = SDFWidth - 1;
+            }
+
             if (y1 >= SDFHeight)
+            {
                 y1 = SDFHeight - 1;
+            }
+
             if (x0 >= SDFWidth)
+            {
                 x0 = SDFWidth - 1;
+            }
+
             if (y0 >= SDFHeight)
+            {
                 y0 = SDFHeight - 1;
+            }
 
             float fx = sx - (int)sx;
             float fy = sy - (int)sy;
             if (fx < 0)
+            {
                 fx = 0;
+            }
+
             if (fy < 0)
+            {
                 fy = 0;
+            }
 
             float v00 = _sdf[y0 * SDFWidth + x0];
             float v10 = _sdf[y0 * SDFWidth + x1];
@@ -508,7 +642,9 @@ namespace WalkerSim
         public Vector3 SampleSDFGradient(float bx, float by)
         {
             if (_sdf.Length == 0)
+            {
                 return Vector3.Zero;
+            }
 
             float step = (float)Width / SDFWidth;
             float dx = SampleSDF(bx + step, by) - SampleSDF(bx - step, by);
@@ -583,7 +719,9 @@ namespace WalkerSim
             int height = cities.Height;
             int total = width * height;
             if (total == 0 || cities.CityList.Count == 0)
+            {
                 return 0;
+            }
 
             // Phase 1: mark every empty cell reachable from any grid boundary cell as
             // "exterior" via BFS. Anything left empty after this is an enclosed hole.
@@ -607,13 +745,24 @@ namespace WalkerSim
                 int cx = cur % width;
                 int cy = cur / width;
                 if (cx > 0)
+                {
                     SeedExterior(idMap, exterior, queue, cur - 1);
+                }
+
                 if (cx < width - 1)
+                {
                     SeedExterior(idMap, exterior, queue, cur + 1);
+                }
+
                 if (cy > 0)
+                {
                     SeedExterior(idMap, exterior, queue, cur - width);
+                }
+
                 if (cy < height - 1)
+                {
                     SeedExterior(idMap, exterior, queue, cur + width);
+                }
             }
 
             // Phase 2: walk hole components, find dominant bordering city, fill if small.
@@ -627,7 +776,9 @@ namespace WalkerSim
             for (int seed = 0; seed < total; seed++)
             {
                 if (idMap[seed] != 0 || exterior[seed] || visited[seed])
+                {
                     continue;
+                }
 
                 holeCells.Clear();
                 neighborCounts.Clear();
@@ -643,17 +794,30 @@ namespace WalkerSim
                     int cy = cur / width;
 
                     if (cx > 0)
+                    {
                         VisitHoleNeighbor(cur - 1, idMap, visited, hq, neighborCounts);
+                    }
+
                     if (cx < width - 1)
+                    {
                         VisitHoleNeighbor(cur + 1, idMap, visited, hq, neighborCounts);
+                    }
+
                     if (cy > 0)
+                    {
                         VisitHoleNeighbor(cur - width, idMap, visited, hq, neighborCounts);
+                    }
+
                     if (cy < height - 1)
+                    {
                         VisitHoleNeighbor(cur + width, idMap, visited, hq, neighborCounts);
+                    }
                 }
 
                 if (holeCells.Count > maxHoleCells || neighborCounts.Count == 0)
+                {
                     continue;
+                }
 
                 ushort dominantId = 0;
                 int dominantCount = 0;
@@ -667,13 +831,20 @@ namespace WalkerSim
                 }
 
                 foreach (var c in holeCells)
+                {
                     idMap[c] = dominantId;
+                }
+
                 totalFilled += holeCells.Count;
 
                 if (addedPerCity.TryGetValue(dominantId, out int existing))
+                {
                     addedPerCity[dominantId] = existing + holeCells.Count;
+                }
                 else
+                {
                     addedPerCity[dominantId] = holeCells.Count;
+                }
             }
 
             // Update per-city cell counts so area weights and sdf scaling stay accurate.
@@ -681,7 +852,9 @@ namespace WalkerSim
             {
                 int idx = kv.Key - 1;
                 if (idx >= 0 && idx < cities.CityList.Count)
+                {
                     cities.CityList[idx].CellCount += kv.Value;
+                }
             }
 
             return totalFilled;
@@ -710,9 +883,13 @@ namespace WalkerSim
             else
             {
                 if (neighborCounts.TryGetValue(id, out int existing))
+                {
                     neighborCounts[id] = existing + 1;
+                }
                 else
+                {
                     neighborCounts[id] = 1;
+                }
             }
         }
 
@@ -755,12 +932,16 @@ namespace WalkerSim
             for (int x = 0; x < w; x++)
             {
                 for (int y = 0; y < h; y++)
+                {
                     col[y] = grid[y * w + x];
+                }
 
                 EDT1D(col, colOut, h);
 
                 for (int y = 0; y < h; y++)
+                {
                     grid[y * w + x] = colOut[y];
+                }
             }
 
             var row = new float[w];
@@ -768,19 +949,25 @@ namespace WalkerSim
             for (int y = 0; y < h; y++)
             {
                 for (int x = 0; x < w; x++)
+                {
                     row[x] = grid[y * w + x];
+                }
 
                 EDT1D(row, rowOut, w);
 
                 for (int x = 0; x < w; x++)
+                {
                     grid[y * w + x] = rowOut[x];
+                }
             }
         }
 
         private static void EDT1D(float[] f, float[] d, int n)
         {
             if (n == 0)
+            {
                 return;
+            }
 
             var v = new int[n];
             var z = new float[n + 1];
@@ -812,7 +999,10 @@ namespace WalkerSim
             for (int q = 0; q < n; q++)
             {
                 while (z[k + 1] < q)
+                {
                     k++;
+                }
+
                 float diff = q - v[k];
                 d[q] = diff * diff + f[v[k]];
             }

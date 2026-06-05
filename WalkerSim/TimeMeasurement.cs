@@ -44,7 +44,10 @@ namespace WalkerSim
         private void ComputeAverage()
         {
             if (_count == 0)
+            {
                 return;
+            }
+
             float sum = 0.0f;
             for (int i = 0; i < _count; i++)
             {

@@ -37,19 +37,26 @@ namespace Editor.Controls
             if (change.Property == LabelTextProperty)
             {
                 if (PART_Label != null)
+                {
                     PART_Label.Text = (string)change.NewValue;
+                }
             }
             else if (change.Property == HelpUrlProperty)
             {
                 if (PART_HelpButton != null)
+                {
                     PART_HelpButton.IsVisible = !string.IsNullOrEmpty((string)change.NewValue);
+                }
             }
         }
 
         private void OnHelpClick(object sender, RoutedEventArgs e)
         {
             var url = HelpUrl;
-            if (string.IsNullOrEmpty(url)) return;
+            if (string.IsNullOrEmpty(url))
+            {
+                return;
+            }
 
             url = url.Replace("<version>", WalkerSim.BuildInfo.Branch);
 

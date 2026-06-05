@@ -19,7 +19,9 @@ namespace WalkerSim.Benchmarks
             sim.SetGameTime(2.0);
             sim.Tick();
             for (int i = 0; i < 100; i++)
+            {
                 sim.Tick();
+            }
 
             // Benchmarks should measure the normal game path, not the editor path.
             sim.EditorMode = false;

@@ -119,11 +119,19 @@ namespace WalkerSim
             [CallerLineNumber] int callingFileLineNumber = 0)
         {
             if (float.IsNaN(X))
+            {
                 throw new Exception($"NaN detected in X (Method: {callingMethod}, File: {callingFilePath}, Line: {callingFileLineNumber})");
+            }
+
             if (float.IsNaN(Y))
+            {
                 throw new Exception($"NaN detected in Y (Method: {callingMethod}, File: {callingFilePath}, Line: {callingFileLineNumber})");
+            }
+
             if (float.IsNaN(Z))
+            {
                 throw new Exception($"NaN detected in Z (Method: {callingMethod}, File: {callingFilePath}, Line: {callingFileLineNumber})");
+            }
         }
 
         public static Vector3 Lerp(Vector3 start, Vector3 end, float t)
@@ -142,7 +150,9 @@ namespace WalkerSim
         {
             var parts = s.Split(',');
             if (parts.Length != 3)
+            {
                 throw new FormatException("Invalid Vector3 format. Expected 3 comma-separated floats.");
+            }
 
             float x = float.Parse(parts[0].Trim());
             float y = float.Parse(parts[1].Trim());

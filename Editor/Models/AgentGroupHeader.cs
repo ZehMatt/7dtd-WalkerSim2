@@ -2,8 +2,14 @@ namespace Editor.Models
 {
     public class AgentGroupHeader
     {
-        public int GroupIndex { get; }
-        public string SystemName { get; }
+        public int GroupIndex
+        {
+            get;
+        }
+        public string SystemName
+        {
+            get;
+        }
         public string Label => string.IsNullOrEmpty(SystemName)
             ? $"Group {GroupIndex}"
             : $"Group {GroupIndex} — {SystemName}";

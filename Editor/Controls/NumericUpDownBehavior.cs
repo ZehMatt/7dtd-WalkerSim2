@@ -49,14 +49,23 @@ namespace Editor.Controls
         {
             nud.TemplateApplied -= OnTemplateApplied;
             if (e.NewValue is true)
+            {
                 nud.TemplateApplied += OnTemplateApplied;
+            }
         }
 
         private static bool IsDecimalMode(NumericUpDown nud)
         {
             var mode = GetInputMode(nud);
-            if (mode == NumericInputMode.Integer) return false;
-            if (mode == NumericInputMode.Decimal) return true;
+            if (mode == NumericInputMode.Integer)
+            {
+                return false;
+            }
+
+            if (mode == NumericInputMode.Decimal)
+            {
+                return true;
+            }
             // Auto: infer from Increment — if it has a fractional part, allow decimals.
             return nud.Increment % 1 != 0;
         }
@@ -64,17 +73,24 @@ namespace Editor.Controls
         private static void OnTemplateApplied(object? sender, TemplateAppliedEventArgs e)
         {
             if (sender is not NumericUpDown nud)
+            {
                 return;
+            }
+
             var textBox = e.NameScope.Find<TextBox>("PART_TextBox");
             if (textBox == null)
+            {
                 return;
+            }
 
             // Filter input at the tunnel level — invalid characters never reach the TextBox.
             textBox.AddHandler(InputElement.TextInputEvent, (_, args) =>
             {
                 var input = args.Text;
                 if (string.IsNullOrEmpty(input))
+                {
                     return;
+                }
 
                 var currentText = textBox.Text ?? "";
                 var caretIndex = textBox.CaretIndex;
@@ -84,14 +100,18 @@ namespace Editor.Controls
                 foreach (var ch in input)
                 {
                     if (char.IsDigit(ch))
+                    {
                         continue;
+                    }
 
                     // Decimal separator: allow dot and comma as interchangeable decimal separators.
                     if (allowDecimal && (ch == '.' || ch == ','))
                     {
                         // Only allow one decimal separator in the text.
                         if (!currentText.Contains('.') && !currentText.Contains(','))
+                        {
                             continue;
+                        }
 
                         args.Handled = true;
                         return;
@@ -99,7 +119,9 @@ namespace Editor.Controls
 
                     // Minus: only at position 0, only one, only if field allows negative.
                     if (ch == '-' && allowNegative && caretIndex == 0 && !currentText.Contains("-"))
+                    {
                         continue;
+                    }
 
                     args.Handled = true;
                     return;
@@ -113,7 +135,10 @@ namespace Editor.Controls
             nud.PropertyChanged += (_, args) =>
             {
                 if (args.Property != NumericUpDown.ValueProperty || restoring)
+                {
                     return;
+                }
+
                 if (nud.Value.HasValue)
                 {
                     lastGoodValue = nud.Value.Value;
@@ -143,12 +168,21 @@ namespace Editor.Controls
             {
                 var text = textBox.Text;
                 if (string.IsNullOrEmpty(text))
+                {
                     return;
+                }
+
                 if (!decimal.TryParse(text, NumberStyles.Any, CultureInfo.CurrentCulture, out var parsed))
+                {
                     return;
+                }
+
                 var clamped = Math.Clamp(parsed, nud.Minimum, nud.Maximum);
                 if (clamped == parsed)
+                {
                     return;
+                }
+
                 Dispatcher.UIThread.Post(() => nud.Value = clamped);
             };
         }

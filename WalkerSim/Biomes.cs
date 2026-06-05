@@ -39,16 +39,28 @@ namespace WalkerSim
         // Full-resolution biome map for rendering.
         public Type[,] BiomeMap { get; private set; } = new Type[0, 0];
 
-        public int Width { get; private set; }
-        public int Height { get; private set; }
+        public int Width
+        {
+            get; private set;
+        }
+        public int Height
+        {
+            get; private set;
+        }
         public string Name { get; private set; } = string.Empty;
 
         // Signed distance fields per biome type at reduced resolution.
         // Positive = inside biome, negative = outside.
         private Dictionary<Type, float[]> _sdfFields = new Dictionary<Type, float[]>();
 
-        public int SDFWidth { get; private set; }
-        public int SDFHeight { get; private set; }
+        public int SDFWidth
+        {
+            get; private set;
+        }
+        public int SDFHeight
+        {
+            get; private set;
+        }
 
         const int MaxScaledSize = 2048;
         const int SDFSize = 256;
@@ -162,7 +174,9 @@ namespace WalkerSim
         public float SampleSDF(Type biome, float bx, float by)
         {
             if (!_sdfFields.TryGetValue(biome, out var sdf))
+            {
                 return -1e6f;
+            }
 
             // Map from biome-map coords to SDF coords.
             float sx = (bx / Width) * (SDFWidth - 1);
@@ -175,13 +189,24 @@ namespace WalkerSim
             int y1 = y0 + 1;
 
             if (x0 < 0)
+            {
                 x0 = 0;
+            }
+
             if (y0 < 0)
+            {
                 y0 = 0;
+            }
+
             if (x1 >= SDFWidth)
+            {
                 x1 = SDFWidth - 1;
+            }
+
             if (y1 >= SDFHeight)
+            {
                 y1 = SDFHeight - 1;
+            }
 
             float fx = sx - (int)sx;
             float fy = sy - (int)sy;
@@ -308,12 +333,16 @@ namespace WalkerSim
             for (int x = 0; x < w; x++)
             {
                 for (int y = 0; y < h; y++)
+                {
                     col[y] = grid[y * w + x];
+                }
 
                 EDT1D(col, colOut, h);
 
                 for (int y = 0; y < h; y++)
+                {
                     grid[y * w + x] = colOut[y];
+                }
             }
 
             // Transform rows.
@@ -322,12 +351,16 @@ namespace WalkerSim
             for (int y = 0; y < h; y++)
             {
                 for (int x = 0; x < w; x++)
+                {
                     row[x] = grid[y * w + x];
+                }
 
                 EDT1D(row, rowOut, w);
 
                 for (int x = 0; x < w; x++)
+                {
                     grid[y * w + x] = rowOut[x];
+                }
             }
         }
 
@@ -339,7 +372,9 @@ namespace WalkerSim
         private static void EDT1D(float[] f, float[] d, int n)
         {
             if (n == 0)
+            {
                 return;
+            }
 
             var v = new int[n];     // Locations of parabolas in lower envelope.
             var z = new float[n + 1]; // Boundaries between parabolas.
@@ -371,7 +406,10 @@ namespace WalkerSim
             for (int q = 0; q < n; q++)
             {
                 while (z[k + 1] < q)
+                {
                     k++;
+                }
+
                 float diff = q - v[k];
                 d[q] = diff * diff + f[v[k]];
             }

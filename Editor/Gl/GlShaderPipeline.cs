@@ -146,7 +146,9 @@ namespace Editor.Gl
 
             _parallelSupported = _glMaxShaderCompilerThreadsKHR != null;
             if (_parallelSupported)
+            {
                 _glMaxShaderCompilerThreadsKHR(0xFFFFFFFF);
+            }
 
             _program = (int)_glCreateProgram();
 
@@ -168,7 +170,9 @@ namespace Editor.Gl
 
             // Tell the driver we want the linked binary back later.
             if (_glProgramParameteri != null)
+            {
                 _glProgramParameteri((uint)_program, (uint)GL_PROGRAM_BINARY_RETRIEVABLE_HINT, 1);
+            }
 
             _vs = (int)_glCreateShader((uint)GL_VERTEX_SHADER);
             _fs = (int)_glCreateShader((uint)GL_FRAGMENT_SHADER);
@@ -195,11 +199,23 @@ namespace Editor.Gl
 
         private string ReadGlString(uint name)
         {
-            if (_glGetString == null) return "";
+            if (_glGetString == null)
+            {
+                return "";
+            }
+
             byte* p = _glGetString(name);
-            if (p == null) return "";
+            if (p == null)
+            {
+                return "";
+            }
+
             int len = 0;
-            while (p[len] != 0) len++;
+            while (p[len] != 0)
+            {
+                len++;
+            }
+
             return System.Text.Encoding.UTF8.GetString(p, len);
         }
 
@@ -208,15 +224,31 @@ namespace Editor.Gl
 
         private bool TryLoadProgramBinary()
         {
-            if (_glProgramBinary == null || _cacheDir == null) return false;
+            if (_glProgramBinary == null || _cacheDir == null)
+            {
+                return false;
+            }
+
             string path = CachePath;
-            if (!System.IO.File.Exists(path)) return false;
+            if (!System.IO.File.Exists(path))
+            {
+                return false;
+            }
+
             try
             {
                 byte[] data = System.IO.File.ReadAllBytes(path);
-                if (data.Length < 8) return false;
+                if (data.Length < 8)
+                {
+                    return false;
+                }
+
                 uint magic = BitConverter.ToUInt32(data, 0);
-                if (magic != CACHE_MAGIC) return false;
+                if (magic != CACHE_MAGIC)
+                {
+                    return false;
+                }
+
                 uint format = BitConverter.ToUInt32(data, 4);
                 int payloadLen = data.Length - 8;
                 fixed (byte* pData = data)
@@ -229,7 +261,11 @@ namespace Editor.Gl
                 {
                     // Driver rejected the binary — probably a driver/version
                     // change. Drop the file and fall back to compiling.
-                    try { System.IO.File.Delete(path); } catch { }
+                    try
+                    {
+                        System.IO.File.Delete(path);
+                    }
+                    catch { }
                     return false;
                 }
                 return true;
@@ -242,12 +278,20 @@ namespace Editor.Gl
 
         private void SaveProgramBinary()
         {
-            if (_glGetProgramBinary == null || _cacheDir == null) return;
+            if (_glGetProgramBinary == null || _cacheDir == null)
+            {
+                return;
+            }
+
             try
             {
                 int len = 0;
                 _glGetProgramiv((uint)_program, (uint)GL_PROGRAM_BINARY_LENGTH, &len);
-                if (len <= 0) return;
+                if (len <= 0)
+                {
+                    return;
+                }
+
                 byte[] data = new byte[len + 8];
                 BitConverter.GetBytes(CACHE_MAGIC).CopyTo(data, 0);
                 uint format = 0;
@@ -257,7 +301,11 @@ namespace Editor.Gl
                     _glGetProgramBinary((uint)_program, len, &written, &format, p + 8);
                 }
                 BitConverter.GetBytes(format).CopyTo(data, 4);
-                if (written <= 0) return;
+                if (written <= 0)
+                {
+                    return;
+                }
+
                 Array.Resize(ref data, written + 8);
                 System.IO.Directory.CreateDirectory(_cacheDir);
                 System.IO.File.WriteAllBytes(CachePath, data);
@@ -272,7 +320,10 @@ namespace Editor.Gl
         // this once per frame during loading.
         public bool Poll()
         {
-            if (_ready) return true;
+            if (_ready)
+            {
+                return true;
+            }
 
             // Cache hit path — program is already linked, just finalize.
             if (_loadedFromCache)
@@ -289,7 +340,10 @@ namespace Editor.Gl
                     int vsDone = 0, fsDone = 0;
                     _glGetShaderiv((uint)_vs, GL_COMPLETION_STATUS_KHR, &vsDone);
                     _glGetShaderiv((uint)_fs, GL_COMPLETION_STATUS_KHR, &fsDone);
-                    if (vsDone == 0 || fsDone == 0) return false;
+                    if (vsDone == 0 || fsDone == 0)
+                    {
+                        return false;
+                    }
                 }
                 CheckShaderStatus(_vs, "vertex");
                 CheckShaderStatus(_fs, "fragment");
@@ -306,7 +360,10 @@ namespace Editor.Gl
                 {
                     int linkDone = 0;
                     _glGetProgramiv((uint)_program, GL_COMPLETION_STATUS_KHR, &linkDone);
-                    if (linkDone == 0) return false;
+                    if (linkDone == 0)
+                    {
+                        return false;
+                    }
                 }
                 CheckProgramStatus(_program);
                 // Persist the linked binary to disk so future runs skip the
@@ -323,8 +380,10 @@ namespace Editor.Gl
 
         private void FinalizePipeline()
         {
-            _glDeleteShader((uint)_vs); _vs = 0;
-            _glDeleteShader((uint)_fs); _fs = 0;
+            _glDeleteShader((uint)_vs);
+            _vs = 0;
+            _glDeleteShader((uint)_fs);
+            _fs = 0;
 
             _uResolution = _gl.GetUniformLocationString(_program, "u_resolution");
             _uTime = _gl.GetUniformLocationString(_program, "u_time");
@@ -386,13 +445,24 @@ namespace Editor.Gl
 
         private string ReadInfoLog(int handle, int logLen, bool isShader)
         {
-            if (logLen <= 1) return "(no info log)";
+            if (logLen <= 1)
+            {
+                return "(no info log)";
+            }
+
             byte[] buf = new byte[logLen];
             fixed (byte* pb = buf)
             {
                 int written = 0;
-                if (isShader) _glGetShaderInfoLog((uint)handle, logLen, &written, pb);
-                else _glGetProgramInfoLog((uint)handle, logLen, &written, pb);
+                if (isShader)
+                {
+                    _glGetShaderInfoLog((uint)handle, logLen, &written, pb);
+                }
+                else
+                {
+                    _glGetProgramInfoLog((uint)handle, logLen, &written, pb);
+                }
+
                 return System.Text.Encoding.UTF8.GetString(buf, 0, Math.Max(0, written));
             }
         }
@@ -412,16 +482,55 @@ namespace Editor.Gl
             _glClear(GL_COLOR_BUFFER_BIT);
 
             _glUseProgram((uint)_program);
-            if (_uResolution >= 0) _glUniform2f(_uResolution, width, height);
-            if (_uTime >= 0) _glUniform1f(_uTime, time);
-            if (_uBass >= 0) _glUniform1f(_uBass, bass);
-            if (_uEnergy >= 0) _glUniform1f(_uEnergy, energy);
-            if (_uPerc >= 0) _glUniform1f(_uPerc, perc);
-            if (_uLead >= 0) _glUniform1f(_uLead, lead);
-            if (_uChord >= 0) _glUniform1i(_uChord, chord);
-            if (_uCamZ >= 0) _glUniform1f(_uCamZ, camZ);
-            if (_uPhase >= 0) _glUniform1f(_uPhase, phase);
-            if (_uFlash >= 0) _glUniform1f(_uFlash, flash);
+            if (_uResolution >= 0)
+            {
+                _glUniform2f(_uResolution, width, height);
+            }
+
+            if (_uTime >= 0)
+            {
+                _glUniform1f(_uTime, time);
+            }
+
+            if (_uBass >= 0)
+            {
+                _glUniform1f(_uBass, bass);
+            }
+
+            if (_uEnergy >= 0)
+            {
+                _glUniform1f(_uEnergy, energy);
+            }
+
+            if (_uPerc >= 0)
+            {
+                _glUniform1f(_uPerc, perc);
+            }
+
+            if (_uLead >= 0)
+            {
+                _glUniform1f(_uLead, lead);
+            }
+
+            if (_uChord >= 0)
+            {
+                _glUniform1i(_uChord, chord);
+            }
+
+            if (_uCamZ >= 0)
+            {
+                _glUniform1f(_uCamZ, camZ);
+            }
+
+            if (_uPhase >= 0)
+            {
+                _glUniform1f(_uPhase, phase);
+            }
+
+            if (_uFlash >= 0)
+            {
+                _glUniform1f(_uFlash, flash);
+            }
 
             _glBindBuffer(GL_ARRAY_BUFFER, (uint)_vbo);
             _glVertexAttribPointer(0, 2, GL_FLOAT, 0, 0, null);
@@ -443,7 +552,9 @@ namespace Editor.Gl
         public void Dispose()
         {
             if (_gl == null)
+            {
                 return;
+            }
 
             // If the pipeline isn't ready yet, we're somewhere in the
             // compile/link state machine: glCompileShader is queued, or
@@ -457,7 +568,11 @@ namespace Editor.Gl
 
             if (_vbo != 0)
             {
-                try { _gl.DeleteBuffer(_vbo); } catch { }
+                try
+                {
+                    _gl.DeleteBuffer(_vbo);
+                }
+                catch { }
                 _vbo = 0;
             }
 
@@ -465,13 +580,23 @@ namespace Editor.Gl
             {
                 // Leak GL handles deliberately: deleting them while a compile
                 // is in flight makes the driver block the render thread.
-                _vs = 0; _fs = 0; _program = 0;
+                _vs = 0;
+                _fs = 0;
+                _program = 0;
                 _gl = null;
                 return;
             }
 
-            if (_vs != 0) { _glDeleteShader((uint)_vs); _vs = 0; }
-            if (_fs != 0) { _glDeleteShader((uint)_fs); _fs = 0; }
+            if (_vs != 0)
+            {
+                _glDeleteShader((uint)_vs);
+                _vs = 0;
+            }
+            if (_fs != 0)
+            {
+                _glDeleteShader((uint)_fs);
+                _fs = 0;
+            }
             if (_program != 0)
             {
                 _glDeleteProgram((uint)_program);

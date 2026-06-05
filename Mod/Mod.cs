@@ -48,7 +48,10 @@ namespace WalkerSim
         static void EnsurePrefabsInitialized()
         {
             if (_prefabsInitialized)
+            {
                 return;
+            }
+
             _prefabsInitialized = true;
 
             try
@@ -73,7 +76,9 @@ namespace WalkerSim
             {
                 var modFolder = GetModFolder();
                 if (string.IsNullOrEmpty(modFolder))
+                {
                     return;
+                }
 
                 var webDllPath = System.IO.Path.Combine(modFolder, "WebMod", "WalkerSimMod.Web.dll");
                 if (!System.IO.File.Exists(webDllPath))
@@ -85,7 +90,10 @@ namespace WalkerSim
                 var webAsm = System.Reflection.Assembly.LoadFrom(webDllPath);
                 var ourMod = ModManager.GetModForAssembly(System.Reflection.Assembly.GetExecutingAssembly());
                 if (ourMod != null)
+                {
                     ourMod.allAssemblies.Add(webAsm);
+                }
+
                 Logging.Out("Loaded web integration from '{0}'.", webDllPath);
             }
             catch (Exception ex)
@@ -115,13 +123,17 @@ namespace WalkerSim
 
             var installRoot = Prefabs.GuessInstallRoot(GetModFolder());
             if (!string.IsNullOrEmpty(installRoot))
+            {
                 ctx.InstallRoots.Add(installRoot);
+            }
 
             var loadedMods = ModManager.GetLoadedMods().ToArray();
             foreach (var mod in loadedMods)
             {
                 if (!string.IsNullOrEmpty(mod?.Path))
+                {
                     ctx.LoadedModPaths.Add(mod.Path);
+                }
             }
 
             return ctx;
@@ -313,7 +325,9 @@ namespace WalkerSim
         {
             var config = LoadConfiguration();
             if (config == null)
+            {
                 return;
+            }
 
             var simConfig = Simulation.Instance.Config;
             if (!simConfig.Compare(config))
@@ -373,9 +387,13 @@ namespace WalkerSim
                 });
 
                 if (loaded)
+                {
                     Logging.Out("Map Data Loaded in {0}.", elapsed);
+                }
                 else
+                {
                     Logging.Err("Failed to load map data");
+                }
             }
 
             var (worldMins, worldMaxs) = GetActualWorldSize();
@@ -522,11 +540,15 @@ namespace WalkerSim
 
             var world = GameManager.Instance.World;
             if (world == null)
+            {
                 return;
+            }
 
             var simulation = Simulation.Instance;
             if (simulation == null)
+            {
                 return;
+            }
 
             // Update state.
             simulation.SetEnableAgentSpawn(GamePrefs.GetBool(EnumGamePrefs.EnemySpawnMode));
@@ -588,7 +610,9 @@ namespace WalkerSim
         static int GetPlayerEntityId(ClientInfo _cInfo)
         {
             if (_cInfo != null)
+            {
                 return _cInfo.entityId;
+            }
 
             // On a local host this is set to null, grab id from player list.
             var world = GameManager.Instance.World;

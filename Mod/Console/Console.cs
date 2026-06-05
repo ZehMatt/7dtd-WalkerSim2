@@ -268,11 +268,7 @@ namespace WalkerSim.Console
                         ConsoleOutput.Log("    Processors ({0}):", group.Entries.Count);
                         foreach (var processor in group.Entries)
                         {
-                            if (processor.Distance > 0)
-                                ConsoleOutput.Log("      - {0} (Distance: {1}, Power: {2})", processor.Type, processor.Distance, processor.Power);
-                            else
-                                ConsoleOutput.Log("      - {0} (Power: {1})", processor.Type, processor.Power);
-                        }
+                            if (processor.Distance > 0) { ConsoleOutput.Log("      - {0} (Distance: {1}, Power: {2})", processor.Type, processor.Distance, processor.Power); } else { ConsoleOutput.Log("      - {0} (Power: {1})", processor.Type, processor.Power); } }
                     }
                 }),
             },
@@ -366,7 +362,9 @@ namespace WalkerSim.Console
             foreach (var cmd in Commands)
             {
                 if (cmd.Name.Length > maxNameLength)
+                {
                     maxNameLength = cmd.Name.Length;
+                }
             }
 
             ConsoleOutput.Log("Available Commands:");
@@ -386,7 +384,9 @@ namespace WalkerSim.Console
                 string cmdLine = cmd.Name + paramString;
                 int padding = maxNameLength + 20 - cmdLine.Length;
                 if (padding < 2)
+                {
                     padding = 2;
+                }
 
                 ConsoleOutput.Log("  {0}{1}{2}",
                     cmdLine,

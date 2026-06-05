@@ -39,11 +39,17 @@ namespace Editor.Audio
         public void Play()
         {
             if (!IsSupported || _audio != null)
+            {
                 return;
+            }
+
             try
             {
                 if (!LoadAndDecode())
+                {
                     return;
+                }
+
                 _audio = new Audio(_sampleRate, 1, 16, OutBufferSamples, NumBuffers);
                 if (!_audio.Open())
                 {
@@ -70,7 +76,11 @@ namespace Editor.Audio
             _thread?.Join(500);
             if (_audio != null)
             {
-                try { _audio.Close(); } catch { }
+                try
+                {
+                    _audio.Close();
+                }
+                catch { }
                 _audio = null;
             }
         }
@@ -78,7 +88,10 @@ namespace Editor.Audio
         public void Dispose()
         {
             if (_disposed)
+            {
                 return;
+            }
+
             _disposed = true;
             Stop();
         }
@@ -99,7 +112,10 @@ namespace Editor.Audio
         private void FillNext()
         {
             if (_pcm == null || _pcm.Length == 0)
+            {
                 return;
+            }
+
             int total = _pcm.Length;
             for (int i = 0; i < OutBufferSamples; i++)
             {
@@ -111,7 +127,9 @@ namespace Editor.Audio
 
                 _posSamples++;
                 if (_posSamples >= total)
+                {
                     _posSamples = 0;
+                }
             }
         }
 
@@ -143,7 +161,11 @@ namespace Editor.Audio
             // suppress small fluctuations, and fast release so kicks fire
             // discretely instead of staying saturated.
             double bassDelta = absBass - _prevBassAbs;
-            if (bassDelta < 0.003) bassDelta = 0;
+            if (bassDelta < 0.003)
+            {
+                bassDelta = 0;
+            }
+
             bassDelta *= 60.0;
             _percEnv = _percEnv < bassDelta ? bassDelta : _percEnv * 0.9945;
             _prevBassAbs = absBass;
@@ -167,7 +189,10 @@ namespace Editor.Audio
             using var stream = Avalonia.Platform.AssetLoader.Open(
                 new Uri("avares://Editor/Assets/Audio/WalkerSim.adpcm.wav"));
             if (stream == null)
+            {
                 return false;
+            }
+
             using var ms = new System.IO.MemoryStream();
             stream.CopyTo(ms);
             return ParseAndDecode(ms.ToArray());
@@ -175,9 +200,20 @@ namespace Editor.Audio
 
         private bool ParseAndDecode(byte[] b)
         {
-            if (b.Length < 44) return false;
-            if (b[0] != 'R' || b[1] != 'I' || b[2] != 'F' || b[3] != 'F') return false;
-            if (b[8] != 'W' || b[9] != 'A' || b[10] != 'V' || b[11] != 'E') return false;
+            if (b.Length < 44)
+            {
+                return false;
+            }
+
+            if (b[0] != 'R' || b[1] != 'I' || b[2] != 'F' || b[3] != 'F')
+            {
+                return false;
+            }
+
+            if (b[8] != 'W' || b[9] != 'A' || b[10] != 'V' || b[11] != 'E')
+            {
+                return false;
+            }
 
             int fmtCode = 0, channels = 0, sampleRate = 0, blockAlign = 0, samplesPerBlock = 0;
             int dataOff = -1, dataLen = 0;
@@ -197,7 +233,9 @@ namespace Editor.Audio
                     sampleRate = b[body + 4] | (b[body + 5] << 8) | (b[body + 6] << 16) | (b[body + 7] << 24);
                     blockAlign = b[body + 12] | (b[body + 13] << 8);
                     if (size >= 20 && body + 20 <= b.Length)
+                    {
                         samplesPerBlock = b[body + 18] | (b[body + 19] << 8);
+                    }
                 }
                 else if (id == ID_DATA)
                 {
@@ -206,18 +244,29 @@ namespace Editor.Audio
                 }
                 int step = size + (size & 1);
                 p = body + step;
-                if (dataOff >= 0 && fmtCode != 0) break;
+                if (dataOff >= 0 && fmtCode != 0)
+                {
+                    break;
+                }
             }
 
             if (dataOff < 0 || fmtCode != 0x0011 || channels != 1 || blockAlign < 5)
+            {
                 return false;
+            }
+
             if (samplesPerBlock <= 0)
+            {
                 samplesPerBlock = ((blockAlign - 4) * 2) + 1;
+            }
 
             _sampleRate = sampleRate;
 
             if (dataOff + dataLen > b.Length)
+            {
                 dataLen = b.Length - dataOff;
+            }
+
             int numBlocks = dataLen / blockAlign;
             int totalSamples = numBlocks * samplesPerBlock;
             _pcm = new short[totalSamples];
@@ -253,8 +302,15 @@ namespace Editor.Audio
         {
             int predictor = (short)(src[off] | (src[off + 1] << 8));
             int stepIndex = src[off + 2];
-            if (stepIndex < 0) stepIndex = 0;
-            else if (stepIndex > 88) stepIndex = 88;
+            if (stepIndex < 0)
+            {
+                stepIndex = 0;
+            }
+            else if (stepIndex > 88)
+            {
+                stepIndex = 88;
+            }
+
             dst[dstIdx++] = (short)predictor;
 
             for (int i = 4; i < blockSize; i++)
@@ -265,31 +321,97 @@ namespace Editor.Audio
                 int nibble = data & 0x0F;
                 int step = ImaStepTable[stepIndex];
                 int diff = step >> 3;
-                if ((nibble & 1) != 0) diff += step >> 2;
-                if ((nibble & 2) != 0) diff += step >> 1;
-                if ((nibble & 4) != 0) diff += step;
-                if ((nibble & 8) != 0) predictor -= diff;
-                else predictor += diff;
-                if (predictor > 32767) predictor = 32767;
-                else if (predictor < -32768) predictor = -32768;
+                if ((nibble & 1) != 0)
+                {
+                    diff += step >> 2;
+                }
+
+                if ((nibble & 2) != 0)
+                {
+                    diff += step >> 1;
+                }
+
+                if ((nibble & 4) != 0)
+                {
+                    diff += step;
+                }
+
+                if ((nibble & 8) != 0)
+                {
+                    predictor -= diff;
+                }
+                else
+                {
+                    predictor += diff;
+                }
+
+                if (predictor > 32767)
+                {
+                    predictor = 32767;
+                }
+                else if (predictor < -32768)
+                {
+                    predictor = -32768;
+                }
+
                 stepIndex += ImaIndexTable[nibble];
-                if (stepIndex < 0) stepIndex = 0;
-                else if (stepIndex > 88) stepIndex = 88;
+                if (stepIndex < 0)
+                {
+                    stepIndex = 0;
+                }
+                else if (stepIndex > 88)
+                {
+                    stepIndex = 88;
+                }
+
                 dst[dstIdx++] = (short)predictor;
 
                 nibble = (data >> 4) & 0x0F;
                 step = ImaStepTable[stepIndex];
                 diff = step >> 3;
-                if ((nibble & 1) != 0) diff += step >> 2;
-                if ((nibble & 2) != 0) diff += step >> 1;
-                if ((nibble & 4) != 0) diff += step;
-                if ((nibble & 8) != 0) predictor -= diff;
-                else predictor += diff;
-                if (predictor > 32767) predictor = 32767;
-                else if (predictor < -32768) predictor = -32768;
+                if ((nibble & 1) != 0)
+                {
+                    diff += step >> 2;
+                }
+
+                if ((nibble & 2) != 0)
+                {
+                    diff += step >> 1;
+                }
+
+                if ((nibble & 4) != 0)
+                {
+                    diff += step;
+                }
+
+                if ((nibble & 8) != 0)
+                {
+                    predictor -= diff;
+                }
+                else
+                {
+                    predictor += diff;
+                }
+
+                if (predictor > 32767)
+                {
+                    predictor = 32767;
+                }
+                else if (predictor < -32768)
+                {
+                    predictor = -32768;
+                }
+
                 stepIndex += ImaIndexTable[nibble];
-                if (stepIndex < 0) stepIndex = 0;
-                else if (stepIndex > 88) stepIndex = 88;
+                if (stepIndex < 0)
+                {
+                    stepIndex = 0;
+                }
+                else if (stepIndex > 88)
+                {
+                    stepIndex = 88;
+                }
+
                 dst[dstIdx++] = (short)predictor;
             }
         }

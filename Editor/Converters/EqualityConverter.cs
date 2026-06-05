@@ -15,11 +15,15 @@ namespace Editor.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is int intVal && parameter is int intParam)
+            {
                 return intVal == intParam;
+            }
 
             // Parameter arrives as string from XAML
             if (value is int v && parameter is string s && int.TryParse(s, out var p))
+            {
                 return v == p;
+            }
 
             return false;
         }

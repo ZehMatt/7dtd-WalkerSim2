@@ -13,7 +13,9 @@ namespace WalkerSim
 
             var grid = new int[totalCells];
             for (int i = 0; i < totalCells; i++)
+            {
                 grid[i] = -1;
+            }
 
             _state.Grid = grid;
         }
@@ -70,13 +72,19 @@ namespace WalkerSim
 
             // Unlink prev.
             if (agent.PrevInCell != -1)
+            {
                 agents[agent.PrevInCell].NextInCell = agent.NextInCell;
+            }
             else
+            {
                 grid[cell] = agent.NextInCell; // Was head.
+            }
 
             // Unlink next.
             if (agent.NextInCell != -1)
+            {
                 agents[agent.NextInCell].PrevInCell = agent.PrevInCell;
+            }
 
             agent.PrevInCell = -1;
             agent.NextInCell = -1;
@@ -96,26 +104,39 @@ namespace WalkerSim
             agent.CellIndex = cellIndex;
 
             if (oldHead != -1)
+            {
                 agents[oldHead].PrevInCell = agent.Index;
+            }
         }
 
         public void MoveInGrid(Agent agent)
         {
             var grid = _state.Grid;
             if (grid.Length == 0)
+            {
                 return;
+            }
 
             var newCellIndex = GetCellIndex(agent.Position);
             if (newCellIndex < 0)
+            {
                 newCellIndex = 0;
+            }
+
             if (newCellIndex >= grid.Length)
+            {
                 newCellIndex = grid.Length - 1;
+            }
 
             if (newCellIndex == agent.CellIndex)
+            {
                 return;
+            }
 
             if (agent.CellIndex != -1)
+            {
                 RemoveFromCell(agent);
+            }
 
             InsertIntoCell(agent, newCellIndex);
         }
@@ -124,14 +145,20 @@ namespace WalkerSim
         private void ValidateAgentInCorrectCell(Agent agent)
         {
             if (agent.CellIndex == -1)
+            {
                 return;
+            }
 
             if (agent.CurrentState != Agent.State.Wandering)
+            {
                 return;
+            }
 
             var correctCellIndex = GetCellIndex(agent.Position);
             if (agent.CellIndex != correctCellIndex)
+            {
                 throw new System.Exception("Bug: agent in wrong cell");
+            }
 
             // Walk the chain to confirm agent is present.
             var grid = _state.Grid;
@@ -140,7 +167,10 @@ namespace WalkerSim
             while (idx != -1)
             {
                 if (idx == agent.Index)
+                {
                     return;
+                }
+
                 idx = agents[idx].NextInCell;
             }
             throw new System.Exception("Bug: agent not found in cell chain");
@@ -154,7 +184,9 @@ namespace WalkerSim
 
             var cellIndex = cellX * _cellCountY + cellY;
             if (cellIndex < 0 || cellIndex >= grid.Length)
+            {
                 return;
+            }
 
             var maxDistSqr = maxDist * maxDist;
             int idx = grid[cellIndex];
@@ -164,17 +196,23 @@ namespace WalkerSim
                 idx = other.NextInCell;
 
                 if (other.CurrentState != Agent.State.Wandering)
+                {
                     continue;
+                }
 
                 if (other.Index == excludeIndex)
+                {
                     continue;
+                }
 
                 var distance = Vector3.Distance2DSqr(pos, other.Position);
                 if (distance < maxDistSqr)
                 {
                     res.Add(other);
                     if (res.Full)
+                    {
                         return;
+                    }
                 }
             }
         }
@@ -182,7 +220,9 @@ namespace WalkerSim
         private FixedBufferList<Agent> QueryCellsLockFree(Vector3 pos, int excludeIndex, float maxDistance, FixedBufferList<Agent> res = null)
         {
             if (res == null)
+            {
                 res = new FixedBufferList<Agent>(1024);
+            }
 
             var worldMins = _state.WorldMins;
             var worldMaxs = _state.WorldMaxs;
@@ -196,7 +236,9 @@ namespace WalkerSim
             int cellRadius = (int)(maxDistance / CellSize) + 1;
 
             if (res.Full)
+            {
                 return res;
+            }
 
             for (int x = -cellRadius; x <= cellRadius; x++)
             {
@@ -204,7 +246,9 @@ namespace WalkerSim
                 {
                     QueryCell(pos, cellX + x, cellY + y, excludeIndex, maxDistance, res);
                     if (res.Full)
+                    {
                         return res;
+                    }
                 }
             }
 
@@ -226,7 +270,9 @@ namespace WalkerSim
 
             var cellIndex = cellX * _cellCountY + cellY;
             if (cellIndex < 0 || cellIndex >= grid.Length)
+            {
                 return count;
+            }
 
             var maxDistSqr = maxDist * maxDist;
             int idx = grid[cellIndex];
@@ -236,14 +282,18 @@ namespace WalkerSim
                 idx = other.NextInCell;
 
                 if (other.CurrentState != Agent.State.Wandering)
+                {
                     continue;
+                }
 
                 var distance = Vector3.Distance2DSqr(pos, other.Position);
                 if (distance < maxDistSqr)
                 {
                     count++;
                     if (count >= maxCount)
+                    {
                         return count;
+                    }
                 }
             }
 
@@ -271,7 +321,9 @@ namespace WalkerSim
                 {
                     count = QueryCellCount(pos, cellX + x, cellY + y, maxDistance, count, maxCount);
                     if (count >= maxCount)
+                    {
                         return count;
+                    }
                 }
             }
 
@@ -312,7 +364,9 @@ namespace WalkerSim
                 {
                     var cellIndex = baseIndex + (cellY + y);
                     if (cellIndex < 0 || cellIndex >= gridLength)
+                    {
                         continue;
+                    }
 
                     int idx = grid[cellIndex];
                     while (idx != -1)
@@ -321,10 +375,14 @@ namespace WalkerSim
                         idx = other.NextInCell;
 
                         if (other.CurrentState != Agent.State.Wandering)
+                        {
                             continue;
+                        }
 
                         if (other.Index == excludeIndex)
+                        {
                             continue;
+                        }
 
                         var distance = Vector3.Distance2DSqr(pos, other.Position);
                         if (distance < maxDistSqr)

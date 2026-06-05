@@ -125,17 +125,27 @@ namespace WalkerSim.Unity.Drawing
             Parallel.For(0, newHeight, y =>
             {
                 int sy = (int)(y * yRatio);
-                if (sy >= srcH) sy = srcH - 1;
+                if (sy >= srcH)
+                {
+                    sy = srcH - 1;
+                }
+
                 int srcRow = sy * srcW * bpp;
                 int dstRow = y * newWidth * bpp;
                 for (int x = 0; x < newWidth; x++)
                 {
                     int sx = (int)(x * xRatio);
-                    if (sx >= srcW) sx = srcW - 1;
+                    if (sx >= srcW)
+                    {
+                        sx = srcW - 1;
+                    }
+
                     int s = srcRow + sx * bpp;
                     int d = dstRow + x * bpp;
                     for (int b = 0; b < bpp; b++)
+                    {
                         dstData[d + b] = srcData[s + b];
+                    }
                 }
             });
 

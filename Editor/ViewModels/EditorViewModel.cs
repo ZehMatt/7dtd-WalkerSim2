@@ -39,7 +39,9 @@ namespace Editor.ViewModels
                 using var reader = new System.IO.StreamReader(stream);
                 var cfg = Config.LoadFromStream(reader);
                 if (cfg != null)
+                {
                     return cfg;
+                }
             }
             catch { }
             return Config.GetDefault();
@@ -109,74 +111,152 @@ namespace Editor.ViewModels
         private void MarkDirty()
         {
             if (!_suppressReset)
+            {
                 HasUnsavedChanges = true;
+            }
         }
 
         // Wrapper properties for Config fields (Config uses fields, not properties, so we need wrappers for binding)
         public int PopulationDensity
         {
             get => Config.PopulationDensity;
-            set { Config.PopulationDensity = value; OnPropertyChanged(); MarkDirty(); RefreshAllSystemIndices(); if (!_suppressReset) ResetSimulation(); }
+            set
+            {
+                Config.PopulationDensity = value;
+                OnPropertyChanged();
+                MarkDirty();
+                RefreshAllSystemIndices();
+                if (!_suppressReset)
+                {
+                    ResetSimulation();
+                }
+            }
         }
 
         public int RandomSeed
         {
             get => Config.RandomSeed;
-            set { Config.RandomSeed = value; OnPropertyChanged(); MarkDirty(); }
+            set
+            {
+                Config.RandomSeed = value;
+                OnPropertyChanged();
+                MarkDirty();
+            }
         }
 
         public int SpawnActivationRadius
         {
             get => Config.SpawnActivationRadius;
-            set { Config.SpawnActivationRadius = value; OnPropertyChanged(); MarkDirty(); }
+            set
+            {
+                Config.SpawnActivationRadius = value;
+                OnPropertyChanged();
+                MarkDirty();
+            }
         }
 
         public bool StartAgentsGrouped
         {
             get => Config.StartAgentsGrouped;
-            set { Config.StartAgentsGrouped = value; OnPropertyChanged(); MarkDirty(); if (!_suppressReset) ResetSimulation(); }
+            set
+            {
+                Config.StartAgentsGrouped = value;
+                OnPropertyChanged();
+                MarkDirty();
+                if (!_suppressReset)
+                {
+                    ResetSimulation();
+                }
+            }
         }
 
         public bool EnhancedSoundAwareness
         {
             get => Config.EnhancedSoundAwareness;
-            set { Config.EnhancedSoundAwareness = value; OnPropertyChanged(); MarkDirty(); }
+            set
+            {
+                Config.EnhancedSoundAwareness = value;
+                OnPropertyChanged();
+                MarkDirty();
+            }
         }
 
         public float SoundDistanceScale
         {
             get => Config.SoundDistanceScale;
-            set { Config.SoundDistanceScale = value; OnPropertyChanged(); MarkDirty(); }
+            set
+            {
+                Config.SoundDistanceScale = value;
+                OnPropertyChanged();
+                MarkDirty();
+            }
         }
 
         public bool PauseDuringBloodmoon
         {
             get => Config.PauseDuringBloodmoon;
-            set { Config.PauseDuringBloodmoon = value; OnPropertyChanged(); MarkDirty(); }
+            set
+            {
+                Config.PauseDuringBloodmoon = value;
+                OnPropertyChanged();
+                MarkDirty();
+            }
         }
 
         public uint SpawnProtectionTime
         {
             get => Config.SpawnProtectionTime;
-            set { Config.SpawnProtectionTime = value; OnPropertyChanged(); MarkDirty(); if (!_suppressReset) ResetSimulation(); }
+            set
+            {
+                Config.SpawnProtectionTime = value;
+                OnPropertyChanged();
+                MarkDirty();
+                if (!_suppressReset)
+                {
+                    ResetSimulation();
+                }
+            }
         }
 
         public bool InfiniteZombieLifetime
         {
             get => Config.InfiniteZombieLifetime;
-            set { Config.InfiniteZombieLifetime = value; OnPropertyChanged(); MarkDirty(); }
+            set
+            {
+                Config.InfiniteZombieLifetime = value;
+                OnPropertyChanged();
+                MarkDirty();
+            }
         }
 
         public float PopulationStartPercent
         {
             get => Config.PopulationStartPercent;
-            set { Config.PopulationStartPercent = value; OnPropertyChanged(); MarkDirty(); if (!_suppressReset) ResetSimulation(); }
+            set
+            {
+                Config.PopulationStartPercent = value;
+                OnPropertyChanged();
+                MarkDirty();
+                if (!_suppressReset)
+                {
+                    ResetSimulation();
+                }
+            }
         }
 
         public int FullPopulationAtDay
         {
             get => Config.FullPopulationAtDay;
-            set { Config.FullPopulationAtDay = value; OnPropertyChanged(); MarkDirty(); if (!_suppressReset) ResetSimulation(); }
+            set
+            {
+                Config.FullPopulationAtDay = value;
+                OnPropertyChanged();
+                MarkDirty();
+                if (!_suppressReset)
+                {
+                    ResetSimulation();
+                }
+            }
         }
 
         // Wrapper properties for movement processor parameters to support live editing
@@ -185,7 +265,11 @@ namespace Editor.ViewModels
         public Models.MovementProcessorModel SelectedMovementProcessor
         {
             get => _selectedMovementProcessor ??= MovementSystems.FirstOrDefault(s => s.Processors.Count > 0).Processors[0];
-            set { _selectedMovementProcessor = value; OnPropertyChanged(); }
+            set
+            {
+                _selectedMovementProcessor = value;
+                OnPropertyChanged();
+            }
         }
 
         public float MovementProcessorDistance
@@ -199,7 +283,9 @@ namespace Editor.ViewModels
                     proc.Distance = value;
                     OnPropertyChanged();
                     if (!_suppressReset)
+                    {
                         _simulation.ReloadConfig(Config);
+                    }
                 }
             }
         }
@@ -215,7 +301,9 @@ namespace Editor.ViewModels
                     proc.Power = value;
                     OnPropertyChanged();
                     if (!_suppressReset)
+                    {
                         _simulation.ReloadConfig(Config);
+                    }
                 }
             }
         }
@@ -271,7 +359,10 @@ namespace Editor.ViewModels
         [ObservableProperty]
         private uint _tickNextWindChange = 0;
 
-        public ObservableCollection<Models.MovementProcessorGroupModel> MovementSystems { get; }
+        public ObservableCollection<Models.MovementProcessorGroupModel> MovementSystems
+        {
+            get;
+        }
 
         public ObservableCollection<object> AgentListItems { get; } = new ObservableCollection<object>();
 
@@ -301,7 +392,10 @@ namespace Editor.ViewModels
 
         // ── Tool state ────────────────────────────────────────────────────────────
 
-        public enum EditorTool { None, EmitSound, Kill, AddPlayer, SetPlayerPosition }
+        public enum EditorTool
+        {
+            None, EmitSound, Kill, AddPlayer, SetPlayerPosition
+        }
 
         [ObservableProperty]
         private EditorTool _activeTool = EditorTool.None;
@@ -388,7 +482,10 @@ namespace Editor.ViewModels
         {
             var ids = new List<int>();
             foreach (var kv in _simulation.Players)
+            {
                 ids.Add(kv.Key);
+            }
+
             ids.Sort();
             return ids;
         }
@@ -417,14 +514,19 @@ namespace Editor.ViewModels
         public void GoToAgent()
         {
             if (SelectedAgent != null)
+            {
                 NavigateToAgentRequested?.Invoke(SelectedAgent.Underlying);
+            }
         }
 
         [RelayCommand]
         public void TrackSelectedAgent()
         {
             if (SelectedAgent == null)
+            {
                 return;
+            }
+
             IsTrackingAgent = true;
             TrackAgentRequested?.Invoke(SelectedAgent.Underlying);
         }
@@ -484,13 +586,17 @@ namespace Editor.ViewModels
                 var sys = SelectedSystem;
                 var proc = SelectedProcessor;
                 if (sys == null)
+                {
                     return AllProcessorTypes;
+                }
 
                 var usedTypes = new System.Collections.Generic.HashSet<Config.MovementProcessorType>();
                 foreach (var p in sys.Processors)
                 {
                     if (p != proc) // Don't exclude the current processor's own type.
+                    {
                         usedTypes.Add(p.Type);
+                    }
                 }
 
                 return AllProcessorTypes.Where(t => !usedTypes.Contains(t)).ToArray();
@@ -586,7 +692,9 @@ namespace Editor.ViewModels
                 _worldFolders = folders;
                 WorldNames.Clear();
                 foreach (var f in folders)
+                {
                     WorldNames.Add(Path.GetFileName(f));
+                }
 
                 Logging.Info($"Found {folders.Count} world(s).");
 
@@ -665,7 +773,9 @@ namespace Editor.ViewModels
         {
             var proc = SelectedSystem?.AddProcessor();
             if (proc != null)
+            {
                 TreeSelectedItem = proc;
+            }
         }
 
         [RelayCommand]
@@ -676,7 +786,9 @@ namespace Editor.ViewModels
                 ? MovementSystems.FirstOrDefault(s => s.Processors.Contains(SelectedProcessor))
                 : null);
             if (sys != null)
+            {
                 DuplicateMovementSystem(sys);
+            }
         }
 
         [RelayCommand]
@@ -694,18 +806,26 @@ namespace Editor.ViewModels
                 sys.RemoveProcessor(proc);
                 SelectedProcessor = null;
                 if (procs.Count > 0)
+                {
                     TreeSelectedItem = procs[idx < procs.Count ? idx : procs.Count - 1];
+                }
                 else
+                {
                     TreeSelectedItem = sys;
+                }
             }
             else if (sys != null)
             {
                 int idx = MovementSystems.IndexOf(sys);
                 RemoveMovementSystem(sys);
                 if (MovementSystems.Count > 0)
+                {
                     TreeSelectedItem = MovementSystems[idx < MovementSystems.Count ? idx : MovementSystems.Count - 1];
+                }
                 else
+                {
                     TreeSelectedItem = null;
+                }
             }
         }
 
@@ -734,7 +854,9 @@ namespace Editor.ViewModels
         public void StartSimulation()
         {
             if (IsSimulationRunning)
+            {
                 return;
+            }
 
             _simulation.Start();
             IsSimulationRunning = true;
@@ -744,7 +866,9 @@ namespace Editor.ViewModels
         public void StopSimulation()
         {
             if (!IsSimulationRunning)
+            {
                 return;
+            }
 
             _simulation.Stop();
             IsSimulationRunning = false;
@@ -765,7 +889,9 @@ namespace Editor.ViewModels
         public void AdvanceOneTick()
         {
             if (IsSimulationRunning)
+            {
                 return;
+            }
 
             _simulation.Advance(1);
             UpdateSimulationStats();
@@ -792,15 +918,24 @@ namespace Editor.ViewModels
             // Count current agent models in the list
             int currentAgentCount = 0;
             foreach (var item in AgentListItems)
+            {
                 if (item is Models.AgentModel)
+                {
                     currentAgentCount++;
+                }
+            }
 
             if (currentAgentCount == agents.Count && !_agentsDirty)
             {
                 // Structure unchanged: pull live data into all agent models
                 foreach (var item in AgentListItems)
+                {
                     if (item is Models.AgentModel model)
+                    {
                         model.Pull();
+                    }
+                }
+
                 return;
             }
 
@@ -825,14 +960,19 @@ namespace Editor.ViewModels
                 {
                     var sysIdx = groupToSystem[group.Key];
                     if (sysIdx >= 0 && sysIdx < MovementSystems.Count)
+                    {
                         systemName = MovementSystems[sysIdx].DisplayName;
+                    }
                 }
                 AgentListItems.Add(new Models.AgentGroupHeader(group.Key, systemName));
                 foreach (var agent in group)
                 {
                     var model = new Models.AgentModel(agent);
                     if (agent == prevUnderlying)
+                    {
                         newSelected = model;
+                    }
+
                     AgentListItems.Add(model);
                 }
             }
@@ -875,7 +1015,9 @@ namespace Editor.ViewModels
         public void DuplicateMovementSystem(Models.MovementProcessorGroupModel? system)
         {
             if (system == null)
+            {
                 return;
+            }
 
             var source = system.Underlying;
             var newGroup = new Config.MovementProcessorGroup
@@ -913,7 +1055,9 @@ namespace Editor.ViewModels
         public void RemoveMovementSystem(Models.MovementProcessorGroupModel? system)
         {
             if (system == null)
+            {
                 return;
+            }
 
             Config.Processors.Remove(system.Underlying);
             MovementSystems.Remove(system);
@@ -962,7 +1106,9 @@ namespace Editor.ViewModels
         private async Task ImportConfiguration(Window owner)
         {
             if (owner == null)
+            {
                 return;
+            }
 
             try
             {
@@ -1002,9 +1148,14 @@ namespace Editor.ViewModels
                     {
                         var m = CreateMovementSystemModel(proc);
                         if (string.IsNullOrEmpty(m.Name))
+                        {
                             m.Name = $"System {++sysIdx}";
+                        }
                         else
+                        {
                             sysIdx++;
+                        }
+
                         MovementSystems.Add(m);
                     }
                     RefreshAllSystemIndices();
@@ -1025,7 +1176,9 @@ namespace Editor.ViewModels
         private async Task ExportConfiguration(Window owner)
         {
             if (owner == null)
+            {
                 return;
+            }
 
             try
             {
@@ -1065,7 +1218,9 @@ namespace Editor.ViewModels
         private async Task LoadState(Window owner)
         {
             if (owner == null)
+            {
                 return;
+            }
 
             try
             {
@@ -1119,9 +1274,14 @@ namespace Editor.ViewModels
                     {
                         var m = CreateMovementSystemModel(proc);
                         if (string.IsNullOrEmpty(m.Name))
+                        {
                             m.Name = $"System {++sysIdx}";
+                        }
                         else
+                        {
                             sysIdx++;
+                        }
+
                         MovementSystems.Add(m);
                     }
                     RefreshAllSystemIndices();
@@ -1135,7 +1295,9 @@ namespace Editor.ViewModels
                     foreach (var agent in _simulation.Agents)
                     {
                         if (agent.CurrentState == WalkerSim.Agent.State.Dead)
+                        {
                             numDead++;
+                        }
                     }
 
                     Logging.Info($"Loaded state save with {_simulation.AgentCount} agents, {numDead} dead.");
@@ -1153,7 +1315,9 @@ namespace Editor.ViewModels
         private async Task SaveState(Window owner)
         {
             if (owner == null)
+            {
                 return;
+            }
 
             try
             {

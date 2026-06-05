@@ -29,7 +29,9 @@ namespace Editor
 
     [JsonSourceGenerationOptions(WriteIndented = true)]
     [JsonSerializable(typeof(EditorSettings))]
-    internal partial class EditorSettingsContext : JsonSerializerContext { }
+    internal partial class EditorSettingsContext : JsonSerializerContext
+    {
+    }
 
     public class EditorSettings
     {
@@ -46,7 +48,10 @@ namespace Editor
             get
             {
                 if (_instance == null)
+                {
                     _instance = Load();
+                }
+
                 return _instance;
             }
         }
@@ -83,7 +88,9 @@ namespace Editor
                     var json = File.ReadAllText(SettingsPath);
                     var settings = JsonSerializer.Deserialize(json, EditorSettingsContext.Default.EditorSettings);
                     if (settings != null)
+                    {
                         return settings;
+                    }
                 }
             }
             catch (Exception ex)

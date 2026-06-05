@@ -24,7 +24,9 @@ namespace Editor
         {
             var overrideValue = EditorSettings.Instance.UserDataFolder;
             if (!string.IsNullOrWhiteSpace(overrideValue) && Directory.Exists(overrideValue))
+            {
                 return overrideValue;
+            }
 
             return GetDefaultUserDataFolder();
         }
@@ -92,13 +94,17 @@ namespace Editor
             {
                 var candidate = Path.GetFullPath(Path.Combine(exe, "..", ".."));
                 if (Directory.Exists(candidate))
+                {
                     paths.Add(candidate);
+                }
             }
 
             foreach (var extra in EditorSettings.Instance.GameFolders)
             {
                 if (Directory.Exists(extra))
+                {
                     paths.Add(extra);
+                }
             }
 
             return paths.Where(p => !string.IsNullOrEmpty(p) && Directory.Exists(p)).ToList();
@@ -110,7 +116,9 @@ namespace Editor
             {
                 var reg = GetSteamPathFromRegistry();
                 if (!string.IsNullOrEmpty(reg))
+                {
                     yield return reg;
+                }
 
                 var pf = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
                 yield return Path.Combine(pf, "Steam");
@@ -140,7 +148,9 @@ namespace Editor
                     using var hive = Microsoft.Win32.RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, view);
                     using var key = hive.OpenSubKey($@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App {AppID}", false);
                     if (key?.GetValue("InstallLocation") is string loc)
+                    {
                         return loc;
+                    }
                 }
                 catch { }
             }
@@ -166,7 +176,9 @@ namespace Editor
 
             var vdf = Path.Combine(steamRoot, "steamapps", "libraryfolders.vdf");
             if (!File.Exists(vdf))
+            {
                 return result.ToList();
+            }
 
             try
             {
@@ -175,7 +187,9 @@ namespace Editor
                 {
                     var p = m.Groups[1].Value.Replace(@"\\", @"\");
                     if (Directory.Exists(p))
+                    {
                         result.Add(p);
+                    }
                 }
             }
             catch { }

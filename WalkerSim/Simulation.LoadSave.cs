@@ -180,7 +180,9 @@ namespace WalkerSim
                 ctx.Serialize(ref agent.RoadNodeHistoryCount);
                 ctx.Serialize(ref agent.RoadNodeHistoryPos);
                 for (int h = 0; h < Agent.RoadNodeHistorySize; h++)
+                {
                     ctx.Serialize(ref agent.RoadNodeHistory[h]);
+                }
 
                 if (ctx.IsReading)
                 {
@@ -328,7 +330,9 @@ namespace WalkerSim
         public void AutoSave()
         {
             if (_autoSaveFile == null)
+            {
                 return;
+            }
 
             var elapsedMs = Utils.Measure(() =>
             {
@@ -342,7 +346,9 @@ namespace WalkerSim
         {
             var now = DateTime.UtcNow;
             if (now < _nextAutoSave)
+            {
                 return;
+            }
 
             AutoSave();
 

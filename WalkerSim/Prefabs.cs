@@ -85,7 +85,10 @@ namespace WalkerSim
             foreach (var p in searchPaths)
             {
                 if (string.IsNullOrEmpty(p) || !Directory.Exists(p))
+                {
                     continue;
+                }
+
                 pathList.Add(p);
             }
 
@@ -99,7 +102,9 @@ namespace WalkerSim
             using (Logging.Scope())
             {
                 foreach (var p in pathList)
+                {
                     Logging.Info("{0}", p);
+                }
             }
 
             foreach (var path in pathList)
@@ -120,7 +125,9 @@ namespace WalkerSim
                     filesScanned++;
                     var name = Path.GetFileNameWithoutExtension(file);
                     if (_entries.ContainsKey(name))
+                    {
                         continue;
+                    }
 
                     if (TryReadPrefabInfo(file, out var info))
                     {
@@ -158,7 +165,9 @@ namespace WalkerSim
         public static string GuessInstallRoot(string startPath)
         {
             if (string.IsNullOrEmpty(startPath))
+            {
                 return null;
+            }
 
             try
             {
@@ -167,7 +176,10 @@ namespace WalkerSim
                 {
                     if (Directory.Exists(Path.Combine(dir.FullName, "Data")) &&
                         Directory.Exists(Path.Combine(dir.FullName, "Mods")))
+                    {
                         return dir.FullName;
+                    }
+
                     dir = dir.Parent;
                 }
             }
@@ -217,11 +229,15 @@ namespace WalkerSim
 
                     var posAttr = el.Attributes["position"]?.Value;
                     if (posAttr != null)
+                    {
                         dec.PositionString = posAttr;
+                    }
 
                     var rotAttr = el.Attributes["rotation"]?.Value;
                     if (rotAttr != null && int.TryParse(rotAttr, out int rot))
+                    {
                         dec.Rotation = rot;
+                    }
 
                     var yAttr = el.Attributes["y_is_groundlevel"]?.Value;
                     dec.YIsGroundlevel = yAttr != null && bool.TryParse(yAttr, out bool yVal) && yVal;
@@ -245,7 +261,9 @@ namespace WalkerSim
                     }
 
                     if ((dec.Rotation & 1) != 0)
+                    {
                         (sx, sz) = (sz, sx);
+                    }
 
                     if (sx < MinPrefabGroundSize || sz < MinPrefabGroundSize)
                     {
@@ -299,7 +317,9 @@ namespace WalkerSim
         {
             int n = decorations.Count;
             if (n < 2)
+            {
                 return 0;
+            }
 
             // Sort by area descending — largest first.
             decorations.Sort((a, b) =>
@@ -334,7 +354,10 @@ namespace WalkerSim
                 for (int j = 0; j < i; j++)
                 {
                     if (drop[j])
+                    {
                         continue;
+                    }
+
                     if (ix0 >= minX[j] && ix1 <= maxX[j] &&
                         iy0 >= minY[j] && iy1 <= maxY[j])
                     {
@@ -378,20 +401,30 @@ namespace WalkerSim
                     while (reader.Read())
                     {
                         if (reader.NodeType != XmlNodeType.Element || reader.Name != "property")
+                        {
                             continue;
+                        }
 
                         var propName = reader.GetAttribute("name");
                         if (propName == null)
+                        {
                             continue;
+                        }
 
                         if (propName == "PrefabSize")
                         {
                             var value = reader.GetAttribute("value");
                             if (value == null)
+                            {
                                 continue;
+                            }
+
                             var parts = value.Split(',');
                             if (parts.Length != 3)
+                            {
                                 continue;
+                            }
+
                             sizeX = float.Parse(parts[0].Trim(), CultureInfo.InvariantCulture);
                             sizeZ = float.Parse(parts[2].Trim(), CultureInfo.InvariantCulture);
                             sizeFound = true;
@@ -400,16 +433,22 @@ namespace WalkerSim
                         {
                             var value = reader.GetAttribute("value");
                             if (value != null)
+                            {
                                 kind = ClassifyZoning(value);
+                            }
                         }
 
                         if (sizeFound && kind != PrefabKind.Building)
+                        {
                             break;
+                        }
                     }
                 }
 
                 if (!sizeFound)
+                {
                     return false;
+                }
 
                 info = new PrefabInfo(sizeX, sizeZ, kind);
                 return true;
@@ -429,26 +468,48 @@ namespace WalkerSim
             {
                 var token = rawToken.Trim();
                 if (token.Length == 0)
+                {
                     continue;
+                }
 
                 if (string.Equals(token, "NavOnly", StringComparison.OrdinalIgnoreCase))
+                {
                     sawNavOnly = true;
+                }
                 else if (string.Equals(token, "BiomeOnly", StringComparison.OrdinalIgnoreCase))
+                {
                     sawBiomeOnly = true;
+                }
                 else if (string.Equals(token, "DevOnly", StringComparison.OrdinalIgnoreCase))
+                {
                     sawDevOnly = true;
+                }
                 else
+                {
                     sawBuildingZone = true;
+                }
             }
 
             if (sawBuildingZone)
+            {
                 return PrefabKind.Building;
+            }
+
             if (sawNavOnly)
+            {
                 return PrefabKind.NavOnly;
+            }
+
             if (sawBiomeOnly)
+            {
                 return PrefabKind.BiomeOnly;
+            }
+
             if (sawDevOnly)
+            {
                 return PrefabKind.DevOnly;
+            }
+
             return PrefabKind.Building;
         }
     }

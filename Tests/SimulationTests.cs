@@ -69,7 +69,9 @@ namespace WalkerSim.Tests
             foreach (var agent in sim.Agents)
             {
                 if (agent.CurrentState != Agent.State.Wandering)
+                {
                     continue;
+                }
 
                 Assert.IsTrue(agent.Position.X >= WorldMins.X && agent.Position.X <= WorldMaxs.X,
                     $"Agent X={agent.Position.X} out of bounds [{WorldMins.X}, {WorldMaxs.X}]");
@@ -165,7 +167,9 @@ namespace WalkerSim.Tests
             {
                 if (agent.CurrentState == Agent.State.Dead ||
                     agent.CurrentState == Agent.State.Respawning)
+                {
                     dead++;
+                }
             }
             Assert.AreEqual(killed, dead, "Killed count should match dead+respawning agents");
         }

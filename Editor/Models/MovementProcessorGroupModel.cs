@@ -40,7 +40,10 @@ namespace Editor.Models
         public Config.MovementProcessorGroup Underlying => _group;
 
         // Called when any group parameter changes (for live config reload)
-        public System.Action? ConfigChanged { get; set; }
+        public System.Action? ConfigChanged
+        {
+            get; set;
+        }
 
         [ObservableProperty]
         private float _weight = 1.0f;
@@ -130,7 +133,10 @@ namespace Editor.Models
             {
                 if (!string.IsNullOrEmpty(Color))
                 {
-                    try { return Avalonia.Media.Color.Parse(Color); }
+                    try
+                    {
+                        return Avalonia.Media.Color.Parse(Color);
+                    }
                     catch { }
                 }
                 return Avalonia.Media.Colors.Gray;
@@ -151,12 +157,19 @@ namespace Editor.Models
         public int SystemIndex
         {
             get => _systemIndex;
-            set { _systemIndex = value; OnPropertyChanged(nameof(DisplayName)); }
+            set
+            {
+                _systemIndex = value;
+                OnPropertyChanged(nameof(DisplayName));
+            }
         }
 
         public string DisplayName => string.IsNullOrWhiteSpace(Name) ? $"System {_systemIndex}" : Name;
 
-        public ObservableCollection<MovementProcessorModel> Processors { get; }
+        public ObservableCollection<MovementProcessorModel> Processors
+        {
+            get;
+        }
 
 
         private static readonly Config.MovementProcessorType[] AllProcessorTypes =
@@ -170,7 +183,9 @@ namespace Editor.Models
                 Processors.Select(p => p.Type));
             var available = AllProcessorTypes.Where(t => !usedTypes.Contains(t)).ToArray();
             if (available.Length == 0)
+            {
                 return null; // All types used.
+            }
 
             var newProcessor = new Config.MovementProcessor
             {

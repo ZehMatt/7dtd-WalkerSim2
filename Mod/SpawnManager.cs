@@ -340,10 +340,14 @@ namespace WalkerSim
         {
             float total = 0f;
             for (int i = 0; i < list.Count; i++)
+            {
                 total += list[i].prob;
+            }
 
             if (total <= 0f || System.Math.Abs(total - 1f) < 0.001f)
+            {
                 return;
+            }
 
             for (int i = 0; i < list.Count; i++)
             {
@@ -405,13 +409,17 @@ namespace WalkerSim
                 int idx = (startIndex + i) % groupList.Count;
                 var grpList = groupList[idx];
                 if (grpList.Count == 0)
+                {
                     continue;
+                }
 
                 int classId = GetRandomFromGroupList(grpList, rand);
 
                 // "none" or no match, try next group
                 if (classId == 0 || classId == -1)
+                {
                     continue;
+                }
 
                 // Accept if not already active in the world
                 if (GetSpawnedClassIdCount(classId) == 0)
@@ -439,7 +447,9 @@ namespace WalkerSim
 
                 int fallbackId = GetRandomFromGroup(_spawnGeneric, rand);
                 if (fallbackId != 0 && fallbackId != -1)
+                {
                     return fallbackId;
+                }
             }
 
             Logging.CondWrn(config.LoggingOpts.EntityClassSelection,

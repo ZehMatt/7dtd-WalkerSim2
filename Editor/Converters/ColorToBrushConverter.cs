@@ -12,7 +12,10 @@ namespace Editor.Converters
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is Color color)
+            {
                 return new SolidColorBrush(color);
+            }
+
             return new SolidColorBrush(Colors.Gray);
         }
 

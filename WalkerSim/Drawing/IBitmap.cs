@@ -6,9 +6,15 @@ namespace WalkerSim
     {
         public interface IBitmap : IDisposable
         {
-            int Width { get; }
+            int Width
+            {
+                get;
+            }
 
-            int Height { get; }
+            int Height
+            {
+                get;
+            }
 
             void LockPixels();
 

@@ -54,7 +54,9 @@ namespace Editor
         public void Message(WalkerSim.Logging.Level level, string message)
         {
             if (string.IsNullOrEmpty(_filePath))
+            {
                 return;
+            }
 
             var levelString = level switch
             {

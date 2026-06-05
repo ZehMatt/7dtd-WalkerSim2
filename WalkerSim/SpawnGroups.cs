@@ -15,11 +15,26 @@ namespace WalkerSim
 
         public class SpawnGroup
         {
-            public string ColorString { get; set; }
-            public string EntityGroupDay { get; set; }
-            public string EntityGroupNight { get; set; }
+            public string ColorString
+            {
+                get; set;
+            }
+            public string EntityGroupDay
+            {
+                get; set;
+            }
+            public string EntityGroupNight
+            {
+                get; set;
+            }
 
-            public Drawing.Color Color { get { return Drawing.Color.FromHtml(ColorString); } }
+            public Drawing.Color Color
+            {
+                get
+                {
+                    return Drawing.Color.FromHtml(ColorString);
+                }
+            }
         }
 
         public bool Load(string worldFolder, int worldSizeX, int worldSizeY)

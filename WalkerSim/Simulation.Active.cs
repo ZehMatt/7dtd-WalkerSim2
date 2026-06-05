@@ -100,11 +100,15 @@ namespace WalkerSim
             {
                 var agent = kv.Value;
                 if (agent.CurrentState != Agent.State.Spawned)
+                {
                     continue;
+                }
 
                 var insidePlayerView = IsInsidePlayerMaxView(agent.Position);
                 if (insidePlayerView)
+                {
                     continue;
+                }
 
                 Logging.CondInfo(log, () => $"Agent {agent.Index} is outside player view, despawning {agent.EntityId}...");
 
