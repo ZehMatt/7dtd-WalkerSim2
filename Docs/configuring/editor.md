@@ -37,17 +37,17 @@ Common locations to load from:
 !!! tip "Try the example configurations"
     Download any of the [example configurations](configuration/examples/index.md) and load them directly into the Editor to see different movement behaviors in action. This is a great way to understand how processors interact before building your own setup.
 
-### Exporting Your Configuration
+### Saving Your Configuration
 
-Once you're happy with your setup, you must export it to use in the game:
+Once you're happy with your setup, you must save it to use in the game:
 
-1. Click `File` > `Export Configuration`
+1. Click `File` > `Save Configuration`
 2. Choose where to save it:
     - Save to `Mods/WalkerSim2/WalkerSim.xml` to use for all worlds
     - Save to your world folder to use for one specific world only
 3. Click Save
 
-**Important**: The Editor only previews your settings. You must export to use them in the game!
+**Important**: The Editor only previews your settings. You must save to use them in the game!
 
 ### Saving and Loading Simulation States
 
@@ -100,6 +100,16 @@ You can:
 
 ---
 
+## Display Options
+
+The `View` menu controls what is drawn on the map and how the camera behaves. These only affect the preview display, not the simulation or your saved configuration.
+
+- `Zoom` > `Reset` / `In` / `Out` (also `Ctrl +` and `Ctrl -`)
+- `Pause Rendering` freezes drawing while the simulation keeps running
+- Layer toggles: `Biomes`, `Roads`, `Road Network`, `Cities`, `Prefabs`, `Inactive Agents`, `Active Agents`, `Events`
+
+---
+
 ## Testing Your Setup
 
 ### Starting the Preview
@@ -110,30 +120,39 @@ You can:
 
 ### Speed Controls
 
-You can make the preview run faster to test things quickly.
+Use `Simulation` > `Speed` to change how fast the preview runs: `1x`, `2x`, `64x`, `128x`, or `256x`. Higher multipliers fast-forward the simulation so you can quickly observe long-term behavior such as the population ramp, respawns, and city migration. `Simulation` > `Advance One Tick` steps the simulation forward a single tick, useful for inspecting movement closely.
 
 !!! note
     Very fast speeds might not be accurate. After speeding up, slow back down to normal speed and let it run for a bit to see the real behavior.
 
 ---
 
-## Testing Tools
+## Tools
 
-Click these tools and then click on the map to use them:
+The `Tools` menu interacts with the running preview. For the location based tools, pick the option from the menu and then click on the map.
 
 ### Emit Sound
 
-Creates a loud noise at the spot you click. This tests if zombies move toward loud sounds (needs the WorldEvents behavior).
+`Tools` > `Emit Sound` > (distance) creates a noise of the chosen radius at the spot you click. This tests if zombies move toward loud sounds (needs a sound-aware processor such as `WorldEvents`).
 
 - The circle shows how far the sound travels
 - Zombies should start walking toward it
 
 ### Kill
 
-Kills all zombies in a circle where you click. This tests if zombies come back (respawn) properly.
+`Tools` > `Kill...` kills all zombies in a circle where you click. This tests if zombies come back (respawn) properly.
 
 - The circle shows which zombies will die
 - Watch to see if/where new zombies appear
+
+### Players
+
+Spawning and despawning happen around players, so you need at least one player to preview spawn behavior.
+
+- `Tools` > `Add Player` adds a player to the simulation. Add more than one to test multiplayer spawning.
+- Once a player exists, a `Players` submenu lists each one. For any player choose:
+    - `Change Location`, then click on the map to move that player
+    - `Remove` to delete that player from the simulation
 
 ---
 
@@ -141,8 +160,8 @@ Kills all zombies in a circle where you click. This tests if zombies come back (
 
 1. **Load** a configuration to start with (or use the default)
 2. **Adjust** settings and test with the preview
-3. **Export** your configuration when you're happy with it
-4. Put the exported file in your mod or world folder
+3. **Save** your configuration when you're happy with it
+4. Put the saved file in your mod or world folder
 5. Launch 7 Days to Die to use your settings
 
-The Editor is just for testing - always remember to export your configuration!
+The Editor is just for testing - always remember to save your configuration!
