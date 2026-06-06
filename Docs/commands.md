@@ -248,6 +248,25 @@ walkersim timescale 10.0   # 10x speed
 
 ---
 
+### gamestages
+
+**Usage**: `walkersim gamestages`
+
+**Feature**: Game stage spawning (see [Game Stage Spawning](configuring/game-stage-spawning.md)).
+
+**What it does**: Prints the game stage based spawn gating in effect at the calling player's current position.
+
+**Output includes**:
+
+- The player's game stage and the sampled area game stage (the value the spawner uses, combining nearby players)
+- The number of captured game stage gated spawn entries (confirms `mings`/`maxgs` were read from `spawning.xml`)
+- The biome at the player's position
+- Each biome spawn group with its captured game stage range (or `ungated`) and whether it is currently eligible
+
+**Details**: This is the primary tool for verifying game stage spawning. A group that shows a real range rather than `ungated` confirms the `mings`/`maxgs` from `spawning.xml` were matched to that group. `eligible=False` means the current game stage is outside the group's range, so it will not be selected. Groups without `mings`/`maxgs` always show `ungated` and stay eligible. This is only meaningful when the loaded `spawning.xml` uses `mings`/`maxgs`, which the base game does not.
+
+---
+
 ## Tips
 
 - Use `walkersim stats` regularly to monitor the health and performance of your simulation
@@ -255,3 +274,4 @@ walkersim timescale 10.0   # 10x speed
 - If you make changes to your XML configuration, use `walkersim restart` to apply them without restarting the server
 - The `show` command is great for quickly checking zombie distribution without permanently enabling the overlay
 - Use `timescale` to speed up testing when experimenting with different configuration settings
+- Use `gamestages` to verify game stage based spawning when running an overhaul that sets `mings`/`maxgs` in `spawning.xml`

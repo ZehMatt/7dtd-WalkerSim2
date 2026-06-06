@@ -27,6 +27,7 @@ nav:
             - Loose Swarm: configuring/configuration/examples/loose-swarm.md
             - Road Horde: configuring/configuration/examples/road-horde.md
         - Spawn Group Masks (Advanced): configuring/spawn-groups.md
+        - Game Stage Spawning (Advanced): configuring/game-stage-spawning.md
     - Sound System: sounds.md
     - Console Commands: commands.md
     - FAQ: faq.md
