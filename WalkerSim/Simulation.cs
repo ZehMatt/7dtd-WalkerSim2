@@ -381,7 +381,7 @@ namespace WalkerSim
             return sum * (1f / count);
         }
 
-        Vector3 GetWorldLocation(Config.WorldLocation worldLoc, Random prng)
+        Vector3 GetWorldLocation(Config.WorldLocation worldLoc, Config.WorldBiome biome, Random prng)
         {
             if (worldLoc == Config.WorldLocation.Mixed)
             {
@@ -390,10 +390,31 @@ namespace WalkerSim
                 worldLoc = (Config.WorldLocation)prng.Next((int)min, (int)max + 1);
             }
 
+            if (biome == Config.WorldBiome.Any || !HasBiomeData())
+            {
+                return GetLocationPosition(worldLoc, prng);
+            }
+
+            // Rejection-sample the chosen location type until it lands in the target biome.
+            var biomeType = MapBiome(biome);
+            const int maxAttempts = 64;
+            for (int i = 0; i < maxAttempts; i++)
+            {
+                var pos = GetLocationPosition(worldLoc, prng);
+                if (GetBiomeAt(pos) == biomeType)
+                {
+                    return pos;
+                }
+            }
+
+            // Biome absent or too sparse for this location type, accept the last attempt.
+            return GetLocationPosition(worldLoc, prng);
+        }
+
+        Vector3 GetLocationPosition(Config.WorldLocation worldLoc, Random prng)
+        {
             switch (worldLoc)
             {
-                case Config.WorldLocation.None:
-                    break;
                 case Config.WorldLocation.RandomBorderLocation:
                     return GetRandomBorderPosition(prng);
                 case Config.WorldLocation.RandomLocation:
@@ -402,50 +423,43 @@ namespace WalkerSim
                     return GetRandomPOIPosition(prng);
                 case Config.WorldLocation.RandomCity:
                     return GetRandomCityPosition(prng);
-                case Config.WorldLocation.RandomSnowLocation:
-                    return GetRandomBiomePosition(Biomes.Type.Snow, prng);
-                case Config.WorldLocation.RandomPineForestLocation:
-                    return GetRandomBiomePosition(Biomes.Type.PineForest, prng);
-                case Config.WorldLocation.RandomDesertLocation:
-                    return GetRandomBiomePosition(Biomes.Type.Desert, prng);
-                case Config.WorldLocation.RandomWastelandLocation:
-                    return GetRandomBiomePosition(Biomes.Type.Wasteland, prng);
-                case Config.WorldLocation.RandomBurntForestLocation:
-                    return GetRandomBiomePosition(Biomes.Type.BurntForest, prng);
             }
 
             // This should never happen.
             throw new System.Exception("Bad starting location type");
         }
 
-        Vector3 GetRandomBiomePosition(Biomes.Type biome, Random prng)
+        bool HasBiomeData()
         {
             var mapData = _state.MapData;
-            if (mapData == null || mapData.Biomes == null || mapData.Biomes.Width == 0)
+            return mapData != null && mapData.Biomes != null && mapData.Biomes.Width != 0;
+        }
+
+        Biomes.Type GetBiomeAt(Vector3 pos)
+        {
+            var biomes = _state.MapData.Biomes;
+            int bx = (int)MathEx.Remap(pos.X, _state.WorldMins.X, _state.WorldMaxs.X, 0f, biomes.Width);
+            int by = (int)MathEx.Remap(pos.Y, _state.WorldMins.Y, _state.WorldMaxs.Y, 0f, biomes.Height);
+            return biomes.GetBiomeType(bx, by);
+        }
+
+        static Biomes.Type MapBiome(Config.WorldBiome biome)
+        {
+            switch (biome)
             {
-                // No biome data (e.g. viewer), fall back to a random border position.
-                return GetRandomBorderPosition(prng);
+                case Config.WorldBiome.Snow:
+                    return Biomes.Type.Snow;
+                case Config.WorldBiome.PineForest:
+                    return Biomes.Type.PineForest;
+                case Config.WorldBiome.Desert:
+                    return Biomes.Type.Desert;
+                case Config.WorldBiome.Wasteland:
+                    return Biomes.Type.Wasteland;
+                case Config.WorldBiome.BurntForest:
+                    return Biomes.Type.BurntForest;
+                default:
+                    return Biomes.Type.Invalid;
             }
-
-            var biomes = mapData.Biomes;
-            var worldMins = _state.WorldMins;
-            var worldMaxs = _state.WorldMaxs;
-
-            // Rejection-sample random world points until one lands in the target biome.
-            const int maxAttempts = 64;
-            for (int i = 0; i < maxAttempts; i++)
-            {
-                var pos = GetRandomPosition(prng);
-                int bx = (int)MathEx.Remap(pos.X, worldMins.X, worldMaxs.X, 0f, biomes.Width);
-                int by = (int)MathEx.Remap(pos.Y, worldMins.Y, worldMaxs.Y, 0f, biomes.Height);
-                if (biomes.GetBiomeType(bx, by) == biome)
-                {
-                    return pos;
-                }
-            }
-
-            // Biome absent or too sparse on this map; fall back to a random border position.
-            return GetRandomBorderPosition(prng);
         }
 
         private Config.WorldLocation GetSystemStartPosition(int group)
@@ -474,6 +488,32 @@ namespace WalkerSim
             return Config.WorldLocation.None;
         }
 
+        private Config.WorldBiome GetSystemStartBiome(int group)
+        {
+            if (group >= 0 && group < _groupToSystemIndex.Length)
+            {
+                int sys = _groupToSystemIndex[group];
+                if (sys >= 0 && sys < _state.Config.Processors.Count)
+                {
+                    return _state.Config.Processors[sys].StartBiome;
+                }
+            }
+            return Config.WorldBiome.Any;
+        }
+
+        private Config.WorldBiome GetSystemRespawnBiome(int group)
+        {
+            if (group >= 0 && group < _groupToSystemIndex.Length)
+            {
+                int sys = _groupToSystemIndex[group];
+                if (sys >= 0 && sys < _state.Config.Processors.Count)
+                {
+                    return _state.Config.Processors[sys].RespawnBiome;
+                }
+            }
+            return Config.WorldBiome.Any;
+        }
+
         Vector3 GetStartLocationForGroup(int group)
         {
             var loc = GetSystemStartPosition(group);
@@ -482,12 +522,12 @@ namespace WalkerSim
                 loc = Config.WorldLocation.RandomLocation;
             }
 
-            return GetWorldLocation(loc, _state.PRNG);
+            return GetWorldLocation(loc, GetSystemStartBiome(group), _state.PRNG);
         }
 
         Vector3 GetRespawnLocationForGroup(int group)
         {
-            return GetWorldLocation(GetSystemRespawnPosition(group), _state.PRNG);
+            return GetWorldLocation(GetSystemRespawnPosition(group), GetSystemRespawnBiome(group), _state.PRNG);
         }
 
         void BuildGroupStarts()
@@ -504,7 +544,7 @@ namespace WalkerSim
                     loc = Config.WorldLocation.RandomLocation;
                 }
 
-                _groupStarts[i] = GetWorldLocation(loc, prng);
+                _groupStarts[i] = GetWorldLocation(loc, GetSystemStartBiome(i), prng);
             }
         }
 

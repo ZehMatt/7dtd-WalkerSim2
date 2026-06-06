@@ -19,7 +19,9 @@ namespace Editor.Models
             _weight = group.Weight;
             _groupSize = group.GroupSize;
             _startPosition = group.StartPosition;
+            _startBiome = group.StartBiome;
             _respawnPosition = group.RespawnPosition;
+            _respawnBiome = group.RespawnBiome;
             _speedScale = group.SpeedScale;
             _postSpawnBehavior = group.PostSpawnBehavior;
             _postSpawnWanderSpeed = group.PostSpawnWanderSpeed;
@@ -41,6 +43,12 @@ namespace Editor.Models
 
         // Called when any group parameter changes (for live config reload)
         public System.Action? ConfigChanged
+        {
+            get; set;
+        }
+
+        // Called when a change requires a full simulation reset to take effect (start/respawn location and biome).
+        public System.Action? ResetRequired
         {
             get; set;
         }
@@ -69,7 +77,7 @@ namespace Editor.Models
         partial void OnStartPositionChanged(Config.WorldLocation value)
         {
             _group.StartPosition = value;
-            ConfigChanged?.Invoke();
+            ResetRequired?.Invoke();
         }
 
         [ObservableProperty]
@@ -78,7 +86,25 @@ namespace Editor.Models
         partial void OnRespawnPositionChanged(Config.WorldLocation value)
         {
             _group.RespawnPosition = value;
-            ConfigChanged?.Invoke();
+            ResetRequired?.Invoke();
+        }
+
+        [ObservableProperty]
+        private Config.WorldBiome _startBiome = Config.WorldBiome.Any;
+
+        partial void OnStartBiomeChanged(Config.WorldBiome value)
+        {
+            _group.StartBiome = value;
+            ResetRequired?.Invoke();
+        }
+
+        [ObservableProperty]
+        private Config.WorldBiome _respawnBiome = Config.WorldBiome.Any;
+
+        partial void OnRespawnBiomeChanged(Config.WorldBiome value)
+        {
+            _group.RespawnBiome = value;
+            ResetRequired?.Invoke();
         }
 
         [ObservableProperty]

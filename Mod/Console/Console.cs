@@ -258,8 +258,10 @@ namespace WalkerSim.Console
                         var group = config.Processors[i];
                         ConsoleOutput.Log("  System {0} (Weight: {1}):", string.IsNullOrEmpty(group.Name) ? (i + 1).ToString() : group.Name, group.Weight);
                         ConsoleOutput.Log("    Group Size: {0}", group.GroupSize);
-                        ConsoleOutput.Log("    Start Position: {0}", group.StartPosition);
-                        ConsoleOutput.Log("    Respawn Position: {0}", group.RespawnPosition);
+                        ConsoleOutput.Log("    Start Location: {0}", group.StartPosition);
+                        ConsoleOutput.Log("    Start Biome: {0}", group.StartBiome);
+                        ConsoleOutput.Log("    Respawn Location: {0}", group.RespawnPosition);
+                        ConsoleOutput.Log("    Respawn Biome: {0}", group.RespawnBiome);
                         ConsoleOutput.Log("    Speed Scale: {0}", group.SpeedScale);
                         ConsoleOutput.Log("    Post Spawn Behavior: {0}", group.PostSpawnBehavior);
                         ConsoleOutput.Log("    Post Spawn Wander Speed: {0}", group.PostSpawnWanderSpeed);

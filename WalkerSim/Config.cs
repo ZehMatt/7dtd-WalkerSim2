@@ -40,11 +40,16 @@ namespace WalkerSim
             RandomPOI,
             RandomCity,
             Mixed,
-            RandomSnowLocation,
-            RandomPineForestLocation,
-            RandomDesertLocation,
-            RandomWastelandLocation,
-            RandomBurntForestLocation,
+        }
+
+        public enum WorldBiome
+        {
+            Any = 0,
+            Snow,
+            PineForest,
+            Desert,
+            Wasteland,
+            BurntForest,
         }
 
         public enum MovementProcessorType
@@ -91,7 +96,9 @@ namespace WalkerSim
             public float Weight = 1.0f;
             public int GroupSize = DefaultGroupSize;
             public WorldLocation StartPosition = WorldLocation.RandomLocation;
+            public WorldBiome StartBiome = WorldBiome.Any;
             public WorldLocation RespawnPosition = WorldLocation.None;
+            public WorldBiome RespawnBiome = WorldBiome.Any;
             public float SpeedScale = 1.0f;
             public PostSpawnBehavior PostSpawnBehavior = PostSpawnBehavior.Wander;
             public WanderingSpeed PostSpawnWanderSpeed = WanderingSpeed.Walk;
@@ -257,8 +264,10 @@ namespace WalkerSim
 
                         group.StartPosition = ReadAttrEnum(groupNode, "StartPosition",
                             hasLegacyStart ? legacyStart : WorldLocation.RandomLocation);
+                        group.StartBiome = ReadAttrEnum(groupNode, "StartBiome", WorldBiome.Any);
                         group.RespawnPosition = ReadAttrEnum(groupNode, "RespawnPosition",
                             hasLegacyRespawn ? legacyRespawn : WorldLocation.None);
+                        group.RespawnBiome = ReadAttrEnum(groupNode, "RespawnBiome", WorldBiome.Any);
                         group.SpeedScale = ReadAttrFloat(groupNode, "SpeedScale", 1.0f);
                         group.PostSpawnBehavior = ReadAttrEnum(groupNode, "PostSpawnBehavior", PostSpawnBehavior.Wander);
                         group.PostSpawnWanderSpeed = ReadAttrEnum(groupNode, "PostSpawnWanderSpeed", WanderingSpeed.Walk);
@@ -446,7 +455,9 @@ namespace WalkerSim
                         xw.WriteAttributeString("Weight", XmlConvert.ToString(group.Weight));
                         xw.WriteAttributeString("GroupSize", XmlConvert.ToString(group.GroupSize));
                         xw.WriteAttributeString("StartPosition", group.StartPosition.ToString());
+                        xw.WriteAttributeString("StartBiome", group.StartBiome.ToString());
                         xw.WriteAttributeString("RespawnPosition", group.RespawnPosition.ToString());
+                        xw.WriteAttributeString("RespawnBiome", group.RespawnBiome.ToString());
                         xw.WriteAttributeString("SpeedScale", XmlConvert.ToString(group.SpeedScale));
                         xw.WriteAttributeString("PostSpawnBehavior", group.PostSpawnBehavior.ToString());
                         xw.WriteAttributeString("PostSpawnWanderSpeed", group.PostSpawnWanderSpeed.ToString());

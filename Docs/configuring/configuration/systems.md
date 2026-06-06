@@ -44,7 +44,13 @@ Where this system's agents spawn when the simulation begins.
 - **RandomPOI**: At buildings and landmarks
 - **RandomCity**: In cities
 - **Mixed**: A mix of the above
-- **RandomSnowLocation / RandomPineForestLocation / RandomDesertLocation / RandomWastelandLocation / RandomBurntForestLocation**: A random spot within that biome (falls back to a border location if the biome isn't present on the map)
+
+### StartBiome
+
+Restricts the start location to a biome. Combined with `StartPosition`, so for example `RandomCity` + `Snow` places agents in cities that lie in the snow biome.
+
+- **Any**: No biome preference, the whole map is used (default)
+- **Snow / PineForest / Desert / Wasteland / BurntForest**: Only positions within that biome (falls back to the chosen location anywhere if the biome isn't present or is too sparse on the map)
 
 ### RespawnPosition
 
@@ -56,7 +62,13 @@ Where this system's agents come back after they die.
 - **RandomPOI**: Come back at buildings
 - **RandomCity**: Come back in cities
 - **Mixed**: A mix of the above
-- **RandomSnowLocation / RandomPineForestLocation / RandomDesertLocation / RandomWastelandLocation / RandomBurntForestLocation**: A random spot within that biome (falls back to a border location if the biome isn't present on the map)
+
+### RespawnBiome
+
+Restricts the respawn location to a biome, the same way `StartBiome` constrains `StartPosition`.
+
+- **Any**: No biome preference, the whole map is used (default)
+- **Snow / PineForest / Desert / Wasteland / BurntForest**: Only positions within that biome (falls back to the chosen location anywhere if the biome isn't present or is too sparse on the map)
 
 ### SpeedScale
 

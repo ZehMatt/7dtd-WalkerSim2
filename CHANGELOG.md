@@ -7,7 +7,7 @@
 - Improve: The simulation preview in the Editor is now rendered into a single bitmap, greatly improving performance with a high agent count.
 - Improve: Default configuration was tweaked to make use of the new changes and to have better distribution across the map to have less empty pockets.
 - Feature: Added the `RandomWalk` movement processor, it applies small per-group noise so groups become distinct, the hold time is configurable via `Param1` in seconds.
-- Feature: Biomes can now be used as spawn and respawn locations (`RandomSnowLocation`, `RandomPineForestLocation`, `RandomDesertLocation`, `RandomWastelandLocation`, `RandomBurntForestLocation`), a random spot within the biome is picked.
+- Feature: Movement systems can restrict their start and respawn to a biome via separate `StartBiome` and `RespawnBiome` settings (Snow, PineForest, Desert, Wasteland, BurntForest, or Any for the whole map). These combine with the start/respawn location, so for example Random City + Snow places agents in cities within the snow biome.
 - Feature: The Editor can now add and control more than one player, a `Players` submenu under `Tools` allows changing the location of or removing each player.
 - Feature: The Editor now has 128x and 256x simulation speed options.
 - Feature: Game stage based spawning. When `spawning.xml` entries specify `mings`/`maxgs`, WalkerSim only spawns from biome groups whose game stage range matches the players near the spawn. Entries without those attributes are unaffected. A new `walkersim gamestages` console command shows the gating at the player's position.

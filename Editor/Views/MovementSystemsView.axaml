@@ -180,24 +180,46 @@
 											  HorizontalAlignment="Stretch" FontSize="12"/>
 								</Grid>
 
-								<!-- Start Position -->
+								<TextBlock Text="Start" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource EditorTextNormal}" Margin="0,4,0,0"/>
+									<!-- Start Location -->
 								<Grid ColumnDefinitions="140,*">
-									<controls:LabelWithHelp Grid.Column="0" LabelText="Start Position:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"
+									<controls:LabelWithHelp Grid.Column="0" LabelText="Location:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"
 										HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/systems.html#startposition"/>
 									<ComboBox Grid.Column="1"
-											  SelectedItem="{Binding StartPosition, Mode=TwoWay}"
+											  SelectedItem="{Binding StartPosition, Mode=TwoWay}" IsEnabled="{Binding DataContext.IsNotRunning, ElementName=RootControl}"
 											  ItemsSource="{Binding DataContext.StartPositionOptions, ElementName=RootControl}"
 											  HorizontalAlignment="Stretch" FontSize="12"/>
 								</Grid>
 
-								<!-- Respawn Position -->
+								<!-- Start Biome -->
+									<Grid ColumnDefinitions="140,*">
+										<controls:LabelWithHelp Grid.Column="0" LabelText="Biome:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"
+											HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/systems.html#startbiome"/>
+										<ComboBox Grid.Column="1"
+												  SelectedItem="{Binding StartBiome, Mode=TwoWay}" IsEnabled="{Binding DataContext.IsNotRunning, ElementName=RootControl}"
+												  ItemsSource="{Binding DataContext.BiomeOptions, ElementName=RootControl}"
+												  HorizontalAlignment="Stretch" FontSize="12"/>
+									</Grid>
+
+								<TextBlock Text="Respawn" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource EditorTextNormal}" Margin="0,4,0,0"/>
+									<!-- Respawn Location -->
 								<Grid ColumnDefinitions="140,*">
-									<controls:LabelWithHelp Grid.Column="0" LabelText="Respawn Position:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"
+									<controls:LabelWithHelp Grid.Column="0" LabelText="Location:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"
 										HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/systems.html#respawnposition"/>
 									<ComboBox Grid.Column="1"
-											  SelectedItem="{Binding RespawnPosition, Mode=TwoWay}"
+											  SelectedItem="{Binding RespawnPosition, Mode=TwoWay}" IsEnabled="{Binding DataContext.IsNotRunning, ElementName=RootControl}"
 											  ItemsSource="{Binding DataContext.RespawnPositionOptions, ElementName=RootControl}"
 											  HorizontalAlignment="Stretch" FontSize="12"/>
+								</Grid>
+
+								<!-- Respawn Biome -->
+								<Grid ColumnDefinitions="140,*">
+									<controls:LabelWithHelp Grid.Column="0" LabelText="Biome:" VerticalAlignment="Center" Foreground="{DynamicResource EditorTextMuted}" FontSize="12"
+										HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/systems.html#respawnbiome"/>
+									<ComboBox Grid.Column="1"
+									          SelectedItem="{Binding RespawnBiome, Mode=TwoWay}" IsEnabled="{Binding DataContext.IsNotRunning, ElementName=RootControl}"
+									          ItemsSource="{Binding DataContext.BiomeOptions, ElementName=RootControl}"
+									          HorizontalAlignment="Stretch" FontSize="12"/>
 								</Grid>
 
 							</StackPanel>

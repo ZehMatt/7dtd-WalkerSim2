@@ -564,6 +564,8 @@ namespace Editor.ViewModels
 
         public Config.WorldLocation[] RespawnPositionOptions { get; } = Enum.GetValues<Config.WorldLocation>();
 
+        public Config.WorldBiome[] BiomeOptions { get; } = Enum.GetValues<Config.WorldBiome>();
+
         public Config.PostSpawnBehavior[] PostSpawnBehaviorOptions { get; } = Enum.GetValues<Config.PostSpawnBehavior>();
 
         public Config.WanderingSpeed[] WanderingSpeedOptions { get; } = Enum.GetValues<Config.WanderingSpeed>();
@@ -1104,6 +1106,7 @@ namespace Editor.ViewModels
         {
             var model = new Models.MovementProcessorGroupModel(group);
             model.ConfigChanged = ReloadConfigLive;
+            model.ResetRequired = ResetConfigLive;
 
             // Wire up ConfigChanged for all existing processors
             foreach (var proc in model.Processors)
@@ -1121,6 +1124,16 @@ namespace Editor.ViewModels
                 HasUnsavedChanges = true;
                 _simulation.ReloadConfig(Config);
                 GroupColorsChanged?.Invoke();
+            }
+        }
+
+        // Start/respawn location and biome only take effect on a full reset, an in-place reload won't apply them.
+        private void ResetConfigLive()
+        {
+            if (!_suppressReset)
+            {
+                HasUnsavedChanges = true;
+                ResetSimulation();
             }
         }
 

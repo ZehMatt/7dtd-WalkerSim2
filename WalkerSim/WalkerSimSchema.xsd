@@ -240,11 +240,27 @@
                                             </xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
+                                    <xs:attribute name="StartBiome" type="Biome" use="optional" default="Any">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                Restrict the start location to a biome.
+                                                Any means the whole map is used.
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
                                     <xs:attribute name="RespawnPosition" type="RespawnPosition" use="optional" default="None">
                                         <xs:annotation>
                                             <xs:documentation>
                                                 Where this system's agents respawn after dying.
                                                 None means they do not respawn.
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="RespawnBiome" type="Biome" use="optional" default="Any">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                Restrict the respawn location to a biome.
+                                                Any means the whole map is used.
                                             </xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
@@ -434,31 +450,6 @@
                     <xs:documentation>Agents start at a mix of different locations</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
-            <xs:enumeration value="RandomSnowLocation">
-                <xs:annotation>
-                    <xs:documentation>Agents start at a random spot in the snow biome</xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="RandomPineForestLocation">
-                <xs:annotation>
-                    <xs:documentation>Agents start at a random spot in the pine forest biome</xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="RandomDesertLocation">
-                <xs:annotation>
-                    <xs:documentation>Agents start at a random spot in the desert biome</xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="RandomWastelandLocation">
-                <xs:annotation>
-                    <xs:documentation>Agents start at a random spot in the wasteland biome</xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="RandomBurntForestLocation">
-                <xs:annotation>
-                    <xs:documentation>Agents start at a random spot in the burnt forest biome</xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
 
@@ -497,29 +488,42 @@
                     <xs:documentation>Agents respawn at a mix of different locations</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
-            <xs:enumeration value="RandomSnowLocation">
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="Biome">
+        <xs:annotation>
+            <xs:documentation>Enumeration for biome preference, Any uses the whole map</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Any">
                 <xs:annotation>
-                    <xs:documentation>Agents respawn at a random spot in the snow biome</xs:documentation>
+                    <xs:documentation>No biome preference, the whole map is used</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
-            <xs:enumeration value="RandomPineForestLocation">
+            <xs:enumeration value="Snow">
                 <xs:annotation>
-                    <xs:documentation>Agents respawn at a random spot in the pine forest biome</xs:documentation>
+                    <xs:documentation>Restrict to the snow biome</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
-            <xs:enumeration value="RandomDesertLocation">
+            <xs:enumeration value="PineForest">
                 <xs:annotation>
-                    <xs:documentation>Agents respawn at a random spot in the desert biome</xs:documentation>
+                    <xs:documentation>Restrict to the pine forest biome</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
-            <xs:enumeration value="RandomWastelandLocation">
+            <xs:enumeration value="Desert">
                 <xs:annotation>
-                    <xs:documentation>Agents respawn at a random spot in the wasteland biome</xs:documentation>
+                    <xs:documentation>Restrict to the desert biome</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
-            <xs:enumeration value="RandomBurntForestLocation">
+            <xs:enumeration value="Wasteland">
                 <xs:annotation>
-                    <xs:documentation>Agents respawn at a random spot in the burnt forest biome</xs:documentation>
+                    <xs:documentation>Restrict to the wasteland biome</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="BurntForest">
+                <xs:annotation>
+                    <xs:documentation>Restrict to the burnt forest biome</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
         </xs:restriction>
