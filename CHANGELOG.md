@@ -9,6 +9,7 @@
 - Feature: Biomes can now be used as spawn and respawn locations (`RandomSnowLocation`, `RandomPineForestLocation`, `RandomDesertLocation`, `RandomWastelandLocation`, `RandomBurntForestLocation`), a random spot within the biome is picked.
 - Feature: The Editor can now add and control more than one player, a `Players` submenu under `Tools` allows changing the location of or removing each player.
 - Feature: The Editor now has 128x and 256x simulation speed options.
+- Feature: Game stage based spawning. When `spawning.xml` entries specify `mings`/`maxgs`, WalkerSim only spawns from biome groups whose game stage range matches the players near the spawn. Entries without those attributes are unaffected. A new `walkersim gamestages` console command shows the gating at the player's position.
 - Change: `GroupSize` is now configured per movement system instead of globally, existing configurations are migrated automatically.
 - Change: Spawn and respawn locations are now configured per movement system instead of globally, existing configurations are migrated automatically.
 - Change: The stay time for CityVisitor is now measured in in-game days (default 2, max 4) instead of real-time minutes.
