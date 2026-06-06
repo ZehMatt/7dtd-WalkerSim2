@@ -805,6 +805,58 @@ namespace WalkerSim
             return GameStageDefinition.CalcPartyLevel(stages);
         }
 
+        internal static List<string> DescribeGameStageGating(Simulation simulation, UnityEngine.Vector3 worldPos)
+        {
+            var lines = new List<string>();
+
+            var world = GameManager.Instance.World;
+            if (world == null)
+            {
+                lines.Add("No world.");
+                return lines;
+            }
+
+            int gameStage = CalcGameStage(simulation, worldPos);
+            lines.Add($"Sampled area game stage: {gameStage}");
+            lines.Add($"Captured gated spawn entries: {SpawnGameStages.Count}");
+
+            int worldX = Mathf.FloorToInt(worldPos.x);
+            int worldZ = Mathf.FloorToInt(worldPos.z);
+
+            var chunk = world.GetChunkSync(World.toChunkXZ(worldX), World.toChunkXZ(worldZ)) as Chunk;
+            if (chunk == null)
+            {
+                lines.Add("Chunk not loaded at position.");
+                return lines;
+            }
+
+            var biomeId = chunk.GetBiomeId(World.toBlockXZ(worldX), World.toBlockXZ(worldZ));
+            var biomeData = world.Biomes.GetBiome(biomeId);
+            if (biomeData == null)
+            {
+                lines.Add("No biome at position.");
+                return lines;
+            }
+
+            lines.Add($"Biome: {biomeData.m_sBiomeName}");
+
+            if (!BiomeSpawningClass.list.TryGetValue(biomeData.m_sBiomeName, out BiomeSpawnEntityGroupList biomeList))
+            {
+                lines.Add("No biome spawn list for this biome.");
+                return lines;
+            }
+
+            foreach (var group in biomeList.list)
+            {
+                bool gated = SpawnGameStages.TryGetRange(biomeData.m_sBiomeName, group.idHash, out int min, out int max);
+                bool eligible = gameStage >= min && gameStage <= max;
+                string range = gated ? $"[{min}, {max}]" : "ungated";
+                lines.Add($"  {group.entityGroupName} ({group.daytime}) {range} eligible={eligible}");
+            }
+
+            return lines;
+        }
+
         static private (bool, UnityEngine.Vector3) GetFinalSpawnPosition(Chunk chunk, UnityEngine.Vector3 position)
         {
             var world = GameManager.Instance.World;

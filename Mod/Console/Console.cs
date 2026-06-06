@@ -347,6 +347,35 @@ namespace WalkerSim.Console
 
                     }
                 }),
+            },
+            new SubCommand
+            {
+                Name = "gamestages",
+                Description = "Prints the captured game stage spawn gating for the calling player's current position.",
+                Handler = new Action<CommandSenderInfo>((sender) =>
+                {
+                    EntityPlayer player = null;
+                    if (sender.RemoteClientInfo == null)
+                    {
+                        player = GameManager.Instance.World.GetPrimaryPlayer() as EntityPlayer;
+                    }
+                    else
+                    {
+                        player = GameManager.Instance.World.GetEntity(sender.RemoteClientInfo.entityId) as EntityPlayer;
+                    }
+
+                    if (player == null)
+                    {
+                        ConsoleOutput.Log("No player found for this command.");
+                        return;
+                    }
+
+                    ConsoleOutput.Log("Player {0} game stage: {1}", player.PlayerDisplayName, player.gameStage);
+                    foreach (var line in SpawnManager.DescribeGameStageGating(Simulation.Instance, player.position))
+                    {
+                        ConsoleOutput.Log("{0}", line);
+                    }
+                }),
             }
         };
 
