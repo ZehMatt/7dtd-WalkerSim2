@@ -144,6 +144,16 @@ namespace WalkerSim
         }
     }
 
+    [HarmonyPatch(typeof(BiomeSpawningFromXml), "Load")]
+    class BiomeSpawningLoadHook
+    {
+        static void Prefix(XmlFile _xmlFile)
+        {
+            SpawnGameStages.Parse(_xmlFile?.XmlDoc?.Root);
+            Logging.Out("Captured {0} game stage gated biome spawn entries.", SpawnGameStages.Count);
+        }
+    }
+
     static class Hooks
     {
         public static void Init()

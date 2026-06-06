@@ -6,8 +6,16 @@ namespace WalkerSim
     internal class SpawnManager
     {
 
-        static Dictionary<long, List<List<SEntityClassAndProb>>> _spawnDataNight = new Dictionary<long, List<List<SEntityClassAndProb>>>();
-        static Dictionary<long, List<List<SEntityClassAndProb>>> _spawnDataDay = new Dictionary<long, List<List<SEntityClassAndProb>>>();
+        struct SpawnGroupClasses
+        {
+            public int MinGameStage;
+            public int MaxGameStage;
+            public string GroupName;
+            public List<SEntityClassAndProb> Classes;
+        }
+
+        static Dictionary<long, List<SpawnGroupClasses>> _spawnDataNight = new Dictionary<long, List<SpawnGroupClasses>>();
+        static Dictionary<long, List<SpawnGroupClasses>> _spawnDataDay = new Dictionary<long, List<SpawnGroupClasses>>();
         static List<SEntityClassAndProb> _spawnGeneric;
 
         static Dictionary<int, int> _classIdCounter = new Dictionary<int, int>();
@@ -306,7 +314,7 @@ namespace WalkerSim
             }
         }
 
-        static List<List<SEntityClassAndProb>> GetBiomeEntityClasses(long chunkKey)
+        static List<SpawnGroupClasses> GetBiomeEntityClasses(long chunkKey)
         {
             var world = GameManager.Instance.World;
             if (world.IsDaytime())
@@ -554,7 +562,7 @@ namespace WalkerSim
                 }
             }
 
-            List<List<SEntityClassAndProb>> spawnList = GetBiomeEntityClasses(chunk.Key);
+            List<SpawnGroupClasses> spawnList = GetBiomeEntityClasses(chunk.Key);
             if (spawnList == null)
             {
                 Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
@@ -621,8 +629,8 @@ namespace WalkerSim
                 }
 
                 // Extract possible groups from the bit mask.
-                List<List<SEntityClassAndProb>> spawnDataNight = new List<List<SEntityClassAndProb>>();
-                List<List<SEntityClassAndProb>> spawnDataDay = new List<List<SEntityClassAndProb>>();
+                List<SpawnGroupClasses> spawnDataNight = new List<SpawnGroupClasses>();
+                List<SpawnGroupClasses> spawnDataDay = new List<SpawnGroupClasses>();
 
                 for (int i = 0; i < biomeList.list.Count; i++)
                 {
@@ -673,16 +681,35 @@ namespace WalkerSim
                     NormalizeGroupList(entityClassesDay);
                     NormalizeGroupList(entityClassesNight);
 
-                    spawnDataDay.Add(entityClassesDay);
-                    spawnDataNight.Add(entityClassesNight);
+                    bool gated = SpawnGameStages.TryGetRange(biomeData.m_sBiomeName, group.idHash, out int minGameStage, out int maxGameStage);
+                    if (gated)
+                    {
+                        Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                            () => $"  Group {group.entityGroupName} gated to game stage [{minGameStage}, {maxGameStage}]");
+                    }
+
+                    spawnDataDay.Add(new SpawnGroupClasses
+                    {
+                        MinGameStage = minGameStage,
+                        MaxGameStage = maxGameStage,
+                        GroupName = group.entityGroupName,
+                        Classes = entityClassesDay,
+                    });
+                    spawnDataNight.Add(new SpawnGroupClasses
+                    {
+                        MinGameStage = minGameStage,
+                        MaxGameStage = maxGameStage,
+                        GroupName = group.entityGroupName,
+                        Classes = entityClassesNight,
+                    });
                 }
 
                 Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
                     () => $"  Spawn groups for chunk {chunk.Key} (Day: {spawnDataNight.Count}, Night: {spawnDataDay.Count}), Biome: {biomeData.m_sBiomeName}");
 
                 // Remove empty groups to avoid unnecessary selection attempts.
-                spawnDataNight.RemoveAll(group => group.Count == 0);
-                spawnDataDay.RemoveAll(group => group.Count == 0);
+                spawnDataNight.RemoveAll(group => group.Classes.Count == 0);
+                spawnDataDay.RemoveAll(group => group.Classes.Count == 0);
 
                 _spawnDataNight.Add(chunk.Key, spawnDataNight);
                 _spawnDataDay.Add(chunk.Key, spawnDataDay);
@@ -694,7 +721,7 @@ namespace WalkerSim
                     foreach (var group in spawnDataDay)
                     {
                         Logging.Info("  >");
-                        foreach (var entry in group)
+                        foreach (var entry in group.Classes)
                         {
                             Logging.Info("    Entity Class {0}:{1}, Probability: {2}",
                                 GetEntityClassName(entry.entityClassId), entry.entityClassId, entry.prob);
@@ -705,7 +732,7 @@ namespace WalkerSim
                     foreach (var group in spawnDataNight)
                     {
                         Logging.Info("  >");
-                        foreach (var entry in group)
+                        foreach (var entry in group.Classes)
                         {
                             Logging.Info("    Entity Class {0}:{1}, Probability: {2}",
                                 GetEntityClassName(entry.entityClassId), entry.entityClassId, entry.prob);
@@ -716,7 +743,22 @@ namespace WalkerSim
                 spawnList = world.IsDaytime() ? spawnDataDay : spawnDataNight;
             }
 
-            int classId = PerformSelection(simulation, spawnList);
+            int gameStage = CalcGameStage(simulation, worldPos);
+
+            var eligibleGroups = new List<List<SEntityClassAndProb>>(spawnList.Count);
+            foreach (var group in spawnList)
+            {
+                if (gameStage < group.MinGameStage || gameStage > group.MaxGameStage)
+                {
+                    Logging.CondInfo(config.LoggingOpts.EntityClassSelection,
+                        () => $"Skipping group {group.GroupName}, game stage {gameStage} outside range {group.MinGameStage}-{group.MaxGameStage}");
+                    continue;
+                }
+
+                eligibleGroups.Add(group.Classes);
+            }
+
+            int classId = PerformSelection(simulation, eligibleGroups);
             if (classId == 0 || classId == -1)
             {
                 // Selection failed.
@@ -724,6 +766,43 @@ namespace WalkerSim
             }
 
             return classId;
+        }
+
+        static int CalcGameStage(Simulation simulation, UnityEngine.Vector3 worldPos)
+        {
+            var world = GameManager.Instance.World;
+            if (world == null)
+            {
+                return 0;
+            }
+
+            float radius = simulation.Config.SpawnActivationRadius + 32f;
+            float radiusSqr = radius * radius;
+
+            var stages = new List<int>();
+            var players = world.Players.list;
+            for (int i = 0; i < players.Count; i++)
+            {
+                var player = players[i];
+                if (player == null || !player.IsAlive())
+                {
+                    continue;
+                }
+
+                if ((player.position - worldPos).sqrMagnitude > radiusSqr)
+                {
+                    continue;
+                }
+
+                stages.Add(player.gameStage);
+            }
+
+            if (stages.Count == 0)
+            {
+                return 0;
+            }
+
+            return GameStageDefinition.CalcPartyLevel(stages);
         }
 
         static private (bool, UnityEngine.Vector3) GetFinalSpawnPosition(Chunk chunk, UnityEngine.Vector3 position)

@@ -39,6 +39,7 @@
     <Compile Include="MapDrawing.cs" />
     <Compile Include="Sound.cs" />
     <Compile Include="SpawnManager.cs" />
+    <Compile Include="SpawnGameStages.cs" />
     <Compile Include="Console\Console.cs" />
     <Compile Include="Drawing.Primitives.cs" />
     <Compile Include="Hooks.cs" />
@@ -65,6 +66,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml">
       <HintPath>..\Binaries\System.Xml.dll</HintPath>
       <Private>False</Private>
