@@ -400,7 +400,7 @@
 		<!-- Busy overlay: covers everything (incl. menu) and swallows all pointer input while heavy work runs -->
 		<Border x:Name="BusyOverlay"
 				IsVisible="{Binding IsBusy}"
-				Background="#99000000">
+				Background="#E6000000">
 			<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="14">
 				<ProgressBar IsIndeterminate="True" Width="220" Height="4"/>
 				<TextBlock Text="{Binding BusyText}"
@@ -450,7 +450,7 @@
 		</Style>
 		<Style Selector="TextBlock.StatValue">
 			<Setter Property="FontSize" Value="14"/>
-			<Setter Property="FontWeight" Value="SemiBold"/>
+			<Setter Property="FontWeight" Value="Normal"/>
 			<Setter Property="Foreground" Value="{DynamicResource EditorTextBright}"/>
 			<Setter Property="FontFamily" Value="Consolas,JetBrains Mono,Mono,courier"/>
 		</Style>

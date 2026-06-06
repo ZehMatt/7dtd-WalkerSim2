@@ -1013,8 +1013,8 @@ namespace Editor.ViewModels
         public void UpdateSimulationStats()
         {
             TotalAgents = _simulation.AgentCount;
-            ActiveAgents = _simulation.SpawnedCount;
-            InactiveAgents = TotalAgents - ActiveAgents;
+            InactiveAgents = _simulation.NumAgentsInactive;
+            ActiveAgents = TotalAgents - InactiveAgents;
             GroupCount = _simulation.GroupCount;
             SimulationTicks = _simulation.Ticks;
 
