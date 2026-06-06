@@ -129,7 +129,10 @@ namespace WalkerSim
                 _state.SoftReset();
                 _state.Config = config;
                 _state.PRNG = new WalkerSim.Random(config.RandomSeed);
-                _state.GameTime = 0.0;
+                // The game presents day 1 at the start, the mod stores that 1-based value via
+                // worldTime/24000 + 1. The editor self-advances time, so start it at day 1 too,
+                // otherwise the first day stays in the population ramp's clamped-flat region.
+                _state.GameTime = EditorMode ? 1.0 : 0.0;
                 _state.WindDir = new Vector3(1, 0, 0);
                 _state.WindDirTarget = new Vector3(1, 0, 0);
                 _state.WindTime = 0;
