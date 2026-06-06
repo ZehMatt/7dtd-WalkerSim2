@@ -736,6 +736,7 @@ namespace Editor.ViewModels
             if (WalkerSim.Paths.TryGetWorldPath(_worldFolders, value, out var worldPath))
             {
                 var worldName = value;
+                var suppressReset = _suppressReset;
                 Logging.Info("Loading world '{0}' from: {1}", worldName, worldPath);
                 IsBusy = true;
                 BusyText = $"Loading world '{worldName}'...";
@@ -756,8 +757,11 @@ namespace Editor.ViewModels
                     {
                         if (result)
                         {
-                            Logging.Info("Resetting simulation for '{0}'...", worldName);
-                            ResetSimulation();
+                            if (!suppressReset)
+                            {
+                                Logging.Info("Resetting simulation for '{0}'...", worldName);
+                                ResetSimulation();
+                            }
                             Logging.Info($"Loaded world: {worldName}");
                             WorldLoaded?.Invoke();
                         }
@@ -1285,7 +1289,10 @@ namespace Editor.ViewModels
                     {
                         Dispatcher.UIThread.Post(() =>
                         {
+                            // Load the world's map but keep the loaded state instead of resetting.
+                            _suppressReset = true;
                             SelectedWorldName = loadedWorldName;
+                            _suppressReset = false;
                         });
                     }
 
@@ -1309,6 +1316,10 @@ namespace Editor.ViewModels
                     }
                     RefreshAllSystemIndices();
                     _suppressReset = false;
+
+                    // The world load is suppressed from resetting, so refresh the view with the loaded agents.
+                    _agentsDirty = true;
+                    GroupColorsChanged?.Invoke();
 
                     // Update stats
                     UpdateSimulationStats();
