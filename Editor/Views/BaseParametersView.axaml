@@ -31,6 +31,13 @@
 								  ItemsSource="{Binding WorldNames}"
 								  IsEnabled="{Binding IsNotRunning}"
 								  HorizontalAlignment="Stretch"/>
+							<Border BorderBrush="{DynamicResource EditorAccent}"
+									BorderThickness="1" CornerRadius="3" Padding="8"
+									IsVisible="{Binding NoWorldsFound}">
+								<TextBlock TextWrapping="Wrap" FontSize="12"
+										   Foreground="{DynamicResource EditorAccent}"
+										   Text="No game or worlds found. Open Settings &gt; Preferences to set the game path or user data folder."/>
+							</Border>
 					</StackPanel>
 					<StackPanel Spacing="4">
 						<controls:LabelWithHelp LabelText="Random Seed:" FontWeight="Medium"

@@ -622,6 +622,9 @@ namespace Editor.ViewModels
         [ObservableProperty]
         private string _selectedWorldName = null;
 
+        [ObservableProperty]
+        private bool _noWorldsFound = false;
+
         public IAsyncRelayCommand<Window> ImportConfigurationCommand => new AsyncRelayCommand<Window>(ImportConfiguration);
 
         public IAsyncRelayCommand<Window> ExportConfigurationCommand => new AsyncRelayCommand<Window>(ExportConfiguration);
@@ -709,6 +712,8 @@ namespace Editor.ViewModels
                         SelectedWorldName = navezgane;
                     }
                 }
+
+                NoWorldsFound = WorldNames.Count == 0;
             });
         }
 
