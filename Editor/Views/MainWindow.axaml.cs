@@ -70,6 +70,13 @@ namespace Editor.Views
 
         private void OnPreviewKeyDown(object? sender, KeyEventArgs e)
         {
+            // While busy the UI is fully locked, swallow all key input so hotkeys can't fire.
+            if (DataContext is EditorViewModel busyVm && busyVm.IsBusy)
+            {
+                e.Handled = true;
+                return;
+            }
+
             // Cancel an active tool on Escape, regardless of which descendant has focus.
             // Gated on IsToolActive so we don't steal Escape from menus / dialogs / popups
             // when no tool is selected.

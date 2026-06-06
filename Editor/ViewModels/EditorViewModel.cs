@@ -625,6 +625,12 @@ namespace Editor.ViewModels
         [ObservableProperty]
         private bool _noWorldsFound = false;
 
+        [ObservableProperty]
+        private bool _isBusy = false;
+
+        [ObservableProperty]
+        private string _busyText = "Loading...";
+
         public IAsyncRelayCommand<Window> ImportConfigurationCommand => new AsyncRelayCommand<Window>(ImportConfiguration);
 
         public IAsyncRelayCommand<Window> ExportConfigurationCommand => new AsyncRelayCommand<Window>(ExportConfiguration);
@@ -731,11 +737,21 @@ namespace Editor.ViewModels
             {
                 var worldName = value;
                 Logging.Info("Loading world '{0}' from: {1}", worldName, worldPath);
+                IsBusy = true;
+                BusyText = $"Loading world '{worldName}'...";
                 Task.Run(() =>
                 {
-                    Logging.Info("Loading map data for '{0}'...", worldName);
-                    var result = _simulation.LoadMapData(worldPath, worldName);
-                    Logging.Info("Map data load {0} for '{1}'.", result ? "succeeded" : "failed", worldName);
+                    var result = false;
+                    try
+                    {
+                        Logging.Info("Loading map data for '{0}'...", worldName);
+                        result = _simulation.LoadMapData(worldPath, worldName);
+                        Logging.Info("Map data load {0} for '{1}'.", result ? "succeeded" : "failed", worldName);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logging.Err("Exception while loading world '{0}': {1}", worldName, ex.Message);
+                    }
                     Dispatcher.UIThread.Post(() =>
                     {
                         if (result)
@@ -749,6 +765,8 @@ namespace Editor.ViewModels
                         {
                             Logging.Err($"Failed to load world: {worldName}");
                         }
+
+                        IsBusy = false;
                     });
                 });
             }

@@ -22,6 +22,7 @@
 		<KeyBinding Gesture="F7" Command="{Binding AdvanceOneTickCommand}"/>
 	</Window.KeyBindings>
 
+	<Grid>
 	<DockPanel>
 		<!-- Top Menu Bar -->
 		<Menu DockPanel.Dock="Top">
@@ -395,6 +396,19 @@
 		</Grid>
 
 	</DockPanel>
+
+		<!-- Busy overlay: covers everything (incl. menu) and swallows all pointer input while heavy work runs -->
+		<Border x:Name="BusyOverlay"
+				IsVisible="{Binding IsBusy}"
+				Background="#99000000">
+			<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="14">
+				<ProgressBar IsIndeterminate="True" Width="220" Height="4"/>
+				<TextBlock Text="{Binding BusyText}"
+						   Foreground="White" FontSize="16"
+						   HorizontalAlignment="Center"/>
+			</StackPanel>
+		</Border>
+	</Grid>
 
 	<Window.Styles>
 		<Style Selector="ToggleButton.TabButton">

@@ -103,14 +103,14 @@
 					<StackPanel Spacing="4">
 						<controls:LabelWithHelp LabelText="Spawn Activation Radius:" FontWeight="Medium"
 							HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#spawnactivationradius"/>
-						<NumericUpDown Value="{Binding SpawnActivationRadius, Mode=TwoWay}"
+						<NumericUpDown Value="{Binding SpawnActivationRadius, Mode=TwoWay}" IsEnabled="{Binding IsNotRunning}"
 									   Minimum="0"
 									   Increment="1"/>
 					</StackPanel>
 					<StackPanel Spacing="4">
 						<controls:LabelWithHelp LabelText="Spawn Protection Time (seconds):" FontWeight="Medium"
 							HelpUrl="https://7dtd-walkersim2.readthedocs.io/&lt;version&gt;/configuring/configuration/base.html#spawnprotectiontime"/>
-						<NumericUpDown Value="{Binding SpawnProtectionTime, Mode=TwoWay}"
+						<NumericUpDown Value="{Binding SpawnProtectionTime, Mode=TwoWay}" IsEnabled="{Binding IsNotRunning}"
 									   Minimum="0"
 									   Maximum="3600"
 									   Increment="1"/>
