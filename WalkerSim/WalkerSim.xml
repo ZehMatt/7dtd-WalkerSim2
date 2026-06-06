@@ -17,7 +17,7 @@
   <SpawnProtectionTime>300</SpawnProtectionTime>
   <InfiniteZombieLifetime>false</InfiniteZombieLifetime>
   <MaxSpawnedZombies>75%</MaxSpawnedZombies>
-  <PopulationStartPercent>100</PopulationStartPercent>
+  <PopulationStartPercent>10</PopulationStartPercent>
   <FullPopulationAtDay>8</FullPopulationAtDay>
   <Systems>
     <System Name="City Visitors" Weight="8" GroupSize="24" StartPosition="RandomCity" RespawnPosition="RandomBorderLocation" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" MapEdgeBehavior="Warp" Color="#00E600">
