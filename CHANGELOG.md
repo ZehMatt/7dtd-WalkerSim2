@@ -2,6 +2,7 @@
 - Fix: Changing a parameter in the Editor no longer resets the state of CityVisitor groups, the configuration can now be edited live without a full reset.
 - Fix: With multiple players close together, one player could cause zombies to spawn right in front of or behind another player, spawns now avoid other players view.
 - Fix: Guard against potential null dereferences during spawning.
+- Fix: In the Editor the simulated in-game time advanced far too fast at higher simulation speeds, so the day count and day/night cycle did not reflect real in-game time. Day progression is now tied to the tick count instead of the time scale.
 - Improve: CityVisitor now spreads agents across the whole city region instead of only the POIs, and groups are distributed more evenly across cities.
 - Improve: The simulation preview in the Editor is now rendered into a single bitmap, greatly improving performance with a high agent count.
 - Improve: Default configuration was tweaked to make use of the new changes and to have better distribution across the map to have less empty pockets.
