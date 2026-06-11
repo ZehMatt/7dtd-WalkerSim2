@@ -6,6 +6,7 @@
 - Improve: CityVisitor now spreads agents across the whole city region instead of only the POIs, and groups are distributed more evenly across cities.
 - Improve: The simulation preview in the Editor is now rendered into a single bitmap, greatly improving performance with a high agent count.
 - Improve: Default configuration was tweaked to make use of the new changes and to have better distribution across the map to have less empty pockets.
+- Improve: When horde night starts, already spawned agents without a target now attack the closest player instead of idling around, this frees up slots for the actual horde night zombies.
 - Feature: Added the `RandomWalk` movement processor, it applies small per-group noise so groups become distinct, the hold time is configurable via `Param1` in seconds.
 - Feature: Movement systems can restrict their start and respawn to a biome via separate `StartBiome` and `RespawnBiome` settings (Snow, PineForest, Desert, Wasteland, BurntForest, or Any for the whole map). These combine with the start/respawn location, so for example Random City + Snow places agents in cities within the snow biome.
 - Feature: The Editor can now add and control more than one player, a `Players` submenu under `Tools` allows changing the location of or removing each player.
