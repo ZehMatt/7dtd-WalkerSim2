@@ -1219,6 +1219,7 @@ namespace WalkerSim
             var world = GameManager.Instance.World;
 
             var simulation = Simulation.Instance;
+            var config = simulation.Config;
 
             // Don't allocate unless there are actual dead agents.
             List<Agent> deadAgents = null;
@@ -1264,6 +1265,22 @@ namespace WalkerSim
                     // Dismemberment state.
                     agent.Dismemberment = BuildDismembermentMask(entity);
                     agent.WalkType = TranslateMoveType(entity.walkType);
+
+                    // Horde night transition, this is to make up space for the actual horde zombies.
+                    if (simulation.IsBloodmoon)
+                    {
+                        if (entity is EntityEnemy entityEnemy)
+                        {
+                            if (entityEnemy.attackTarget == null)
+                            {
+                                var closestPlayer = world.GetClosestPlayer(entityEnemy, 200.0f, false);
+                                if (closestPlayer != null)
+                                {
+                                    entityEnemy.SetAttackTarget(closestPlayer, 6000);
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
