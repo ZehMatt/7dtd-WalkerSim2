@@ -114,13 +114,15 @@ The `View` menu controls what is drawn on the map and how the camera behaves. Th
 
 ### Starting the Preview
 
-1. Click `Simulation` > `Start` to begin
+1. Click `Simulation` > `Start` (or press `F5`) to begin
 2. Watch zombies move around on the map
 3. You can change settings while it's running (some settings need a restart)
 
+`Simulation` > `Stop` (or `Shift+F5`) stops the preview, and `Simulation` > `Reset` resets the simulation back to its initial state.
+
 ### Speed Controls
 
-Use `Simulation` > `Speed` to change how fast the preview runs: `1x`, `2x`, `64x`, `128x`, or `256x`. Higher multipliers fast-forward the simulation so you can quickly observe long-term behavior such as the population ramp, respawns, and city migration. `Simulation` > `Advance One Tick` steps the simulation forward a single tick, useful for inspecting movement closely.
+Use `Simulation` > `Speed` to change how fast the preview runs: `1x`, `2x`, `64x`, `128x`, or `256x`. Higher multipliers fast-forward the simulation so you can quickly observe long-term behavior such as the population ramp, respawns, and city migration. `Simulation` > `Advance One Tick` (or `F7`) steps the simulation forward a single tick, useful for inspecting movement closely.
 
 !!! note
     Very fast speeds might not be accurate. After speeding up, slow back down to normal speed and let it run for a bit to see the real behavior.
@@ -153,6 +155,18 @@ Spawning and despawning happen around players, so you need at least one player t
 - Once a player exists, a `Players` submenu lists each one. For any player choose:
     - `Change Location`, then click on the map to move that player
     - `Remove` to delete that player from the simulation
+
+---
+
+## Preferences
+
+`Settings` > `Preferences...` opens the Editor preferences:
+
+- **Theme**: Changes the appearance of the Editor
+- **Pan Button** / **Zoom Modifier**: Which mouse button pans the map view and which modifier key is used for zooming
+- **User Data Folder**: Overrides where the Editor looks for game data such as generated worlds. Only set this if you launch the game with `-userdatafolder=<path>`, the default is `%APPDATA%/7DaysToDie`
+- **Detected Game Folders**: Game installations auto-detected from Steam and the registry, these are always scanned for worlds
+- **Additional Game Folders**: Extra folders to scan for worlds, useful for custom install locations
 
 ---
 

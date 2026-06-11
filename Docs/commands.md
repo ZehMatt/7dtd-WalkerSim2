@@ -17,6 +17,14 @@ WalkerSim 2 provides several console commands to control and monitor the simulat
 
 ## Available Commands
 
+### help
+
+**Usage**: `walkersim help`
+
+**What it does**: Lists all available subcommands with a short description of each.
+
+---
+
 ### show
 
 **Usage**: `walkersim show`
@@ -158,24 +166,41 @@ walkersim map 0
 
 **Output includes**:
 
-- **World Size**: The dimensions of the simulated world
-- **Ticks**: How many simulation updates have occurred
+**Simulation**
+
 - **Active**: Whether the simulation is running
 - **Paused**: Whether the simulation is paused
-- **Players**: Number of players in the game
-- **Total Agents**: Total number of virtual zombies in the simulation
-- **Total Groups**: Number of zombie groups
-- **Successful Spawns**: How many zombies have successfully spawned
-- **Failed Spawns**: How many spawn attempts failed (e.g., due to obstructions)
-- **Total Despawns**: How many zombies have been despawned
-- **Active Agents**: Current number of spawned zombies in the game world
-- **Bloodmoon**: Whether a Blood Moon is currently active
-- **DayTime**: Whether it's currently day or night
+- **Ticks** / **Unscaled Ticks**: How many simulation updates have occurred (scaled and unscaled by the time scale)
+- **Simulation Time**: How long the simulation has been running
 - **Time Scale**: The speed multiplier of the simulation
 - **Average Tick Time**: Performance metric showing how long each simulation update takes
-- **Wind Direction**: Current wind direction affecting zombie movement
-- **Wind Target**: The target direction wind is changing toward
-- **Next Wind Change**: When the wind direction will change next
+
+**World**
+
+- **World Size**: The dimensions of the simulated world
+- **Day**: The current in-game day
+- **Daytime**: Whether it's currently day or night
+- **Bloodmoon**: Whether a Blood Moon is currently active
+- **Players**: Number of players in the game
+- **Wind**: Current wind direction, its target direction, and when it changes next
+
+**Agents**
+
+- **Population Total**: Total number of virtual zombies in the simulation
+- **Population Active**: How many of them are active (not dormant due to the population ramp)
+- **Alive** / **Dead**: How many virtual zombies are alive or waiting to respawn
+- **Groups**: Number of zombie groups
+- **Spawned**: Current number of spawned zombies in the game world
+
+**Spawning Stats**
+
+- **Successful**: How many zombies have successfully spawned
+- **Failed**: How many spawn attempts failed (e.g., due to obstructions)
+- **Despawns**: How many zombies have been despawned
+
+**Players**
+
+- One line per player with entity id, position, and whether spawning around them is currently allowed
 
 **Details**: This command is useful for debugging, monitoring performance, and understanding the current state of the simulation.
 
@@ -234,7 +259,7 @@ walkersim timescale 10.0   # 10x speed
 
 **Usage**: `walkersim maskinfo`
 
-**Feature**: Spawn group masks (advanced — see [Spawn Group Masks](configuring/spawn-groups.md)).
+**Feature**: Spawn group masks (advanced, see [Spawn Group Masks](configuring/spawn-groups.md)).
 
 **What it does**: Resolves and prints the spawn group at the player's current world position by sampling the configured spawn group mask image (`ws_spawngroupsmask.png`).
 

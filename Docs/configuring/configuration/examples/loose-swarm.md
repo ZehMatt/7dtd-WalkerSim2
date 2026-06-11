@@ -8,9 +8,9 @@ Three independent groups drift across the map in different patterns. Each group 
 
 The groups move in different directions:
 
-- **System 1** (green) — follows the wind
-- **System 2** (red) — moves against the wind
-- **System 3** (blue) — moves against the wind at reduced power, creating a slower diagonal drift
+- **System 1** (green) - follows the wind
+- **System 2** (red) - moves against the wind
+- **System 3** (blue) - moves against the wind at reduced power, creating a slower diagonal drift
 
 All three groups use **AvoidOtherGroup** to keep distance from each other, so they occupy different parts of the map.
 
@@ -19,12 +19,12 @@ All three groups use **AvoidOtherGroup** to keep distance from each other, so th
 | Parameter | Value | Why |
 |---|---|---|
 | SpeedScale | 0.8 | Slower movement for a more ambient feel |
-| FlockSameGroup Power | 0.03 | Very weak cohesion — groups barely hold together |
+| FlockSameGroup Power | 0.03 | Very weak cohesion - groups barely hold together |
 | AvoidSameGroup Distance | 20 | Large avoidance range spreads agents out |
 | AvoidSameGroup Power | 0.8 | Strong separation keeps agents well-spaced |
 | AvoidOtherGroup Power | 0.0001 | Subtle inter-group repulsion over long distances |
 | Wind / WindInverted | varies | Different wind responses push groups in opposing directions |
-| WorldEvents Power | 0.6 | Agents react to player sounds — moderate so swarm drift isn't completely overridden |
+| WorldEvents Power | 0.6 | Agents react to player sounds - moderate so swarm drift isn't completely overridden |
 
 ## Configuration
 

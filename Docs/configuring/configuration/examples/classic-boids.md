@@ -6,9 +6,9 @@
 
 This preset uses the three classic [boid](https://en.wikipedia.org/wiki/Boids) rules to create natural-looking flocking behavior:
 
-- **FlockSameGroup** (cohesion) — agents steer toward the center of nearby group members
-- **AlignSameGroup** (alignment) — agents match the heading of nearby group members
-- **AvoidSameGroup** (separation) — agents steer away from group members that are too close
+- **FlockSameGroup** (cohesion) - agents steer toward the center of nearby group members
+- **AlignSameGroup** (alignment) - agents match the heading of nearby group members
+- **AvoidSameGroup** (separation) - agents steer away from group members that are too close
 
 Wind provides a gentle drift so groups migrate across the map over time, and WorldEvents lets agents react to sounds.
 
@@ -19,7 +19,7 @@ Wind provides a gentle drift so groups migrate across the map over time, and Wor
 | FlockSameGroup Distance | 30 | Medium cohesion range keeps groups together without clumping |
 | AlignSameGroup Distance | 25 | Slightly smaller than flock range so alignment kicks in before attraction |
 | AvoidSameGroup Distance | 8 | Short range prevents overlapping without breaking formations |
-| AvoidSameGroup Power | 1.2 | Strongest processor — separation always wins at close range |
+| AvoidSameGroup Power | 1.2 | Strongest processor - separation always wins at close range |
 | Wind Power | 0.5 | Gentle push so groups drift without overriding flock behavior |
 | WorldEvents Power | 0.8 | Agents react strongly to player-generated sounds like gunshots and explosions |
 

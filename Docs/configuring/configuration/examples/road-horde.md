@@ -13,13 +13,13 @@ Wind provides a directional bias so hordes tend to travel in one direction rathe
 | Parameter | Value | Why |
 |---|---|---|
 | SpeedScale | 1.2 | Faster than default for an aggressive marching feel |
-| StickToRoads Power | 1 | Maximum road adherence — agents stay locked to road nodes |
+| StickToRoads Power | 1 | Maximum road adherence - agents stay locked to road nodes |
 | AlignSameGroup Power | 0.8 | Strong alignment keeps the horde moving as a unit |
-| AvoidSameGroup Distance | 6 | Tight spacing — agents stay close but don't overlap |
+| AvoidSameGroup Distance | 6 | Tight spacing - agents stay close but don't overlap |
 | FlockSameGroup Distance | 20 | Short flock range keeps sub-groups together on the road |
 | Wind Power | 0.4 | Mild directional bias without overpowering road navigation |
 | StartPosition | RandomCity | Agents begin in cities and immediately start traveling roads |
-| WorldEvents Power | 0.8 | Strong reaction to player sounds — hordes will divert toward gunshots and explosions |
+| WorldEvents Power | 0.8 | Strong reaction to player sounds - hordes will divert toward gunshots and explosions |
 
 ## Configuration
 

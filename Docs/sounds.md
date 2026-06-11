@@ -47,12 +47,11 @@ The game automatically scales sound volume based on various factors:
 
 ## Sound Event Merging
 
-To keep performance smooth, WalkerSim intelligently merges nearby sound events. When multiple sounds happen close together:
+To keep performance smooth, WalkerSim intelligently merges nearby sound events. When a new sound happens:
 
-- If sounds occur within 25 meters of each other, they merge into a single larger event
-- The merged event takes the longer duration of the two sounds
-- The radius grows to encompass both sound sources (up to a maximum of 500 meters)
-- The position shifts slightly toward the center of both sounds
+- If an existing sound event fits entirely inside the new one, it is swallowed by the new event
+- If the new sound occurs within 25 meters of an existing event and their radii differ by at most 5 meters, the two are merged
+- A merged event moves to the position and radius of the new sound and keeps the longer duration of the two
 
 This creates realistic scenarios - for example, a prolonged firefight will create a large, sustained sound event rather than hundreds of tiny individual ones.
 
@@ -93,7 +92,7 @@ WalkerSim handles sound in two distinct ways:
 When a sound occurs, WalkerSim calculates how far it travels using this formula:
 
 ```
-Travel Distance = (Volume × Volume Scale × 3.0) × Sound Distance Scale
+Travel Distance = (Volume × Volume Scale)² × 0.015 × Sound Distance Scale
 ```
 
 Where:
@@ -102,7 +101,13 @@ Where:
 - **Volume Scale**: Modifier based on circumstances (silencers, crouching, etc.)
 - **Sound Distance Scale**: Your configuration setting (default 1.0)
 
-The game then scales this distance based on the sound's "heat map strength" - a value that determines how much the sound should attract zombies (0.0 to 1.0).
+Because the volume is squared, loud sounds carry disproportionately farther than quiet ones. Sounds with a travel distance below 4 meters are dropped entirely.
+
+The duration of the resulting sound event is 8 times the duration of the game's noise clip.
+
+### Indoor Attenuation
+
+If the sound originates indoors (no sky light reaches its position), both the travel distance and the duration are reduced to 30% of their outdoor values, and further down to 21% the more enclosed the spot is. Firing a gun inside a basement attracts far fewer zombies than firing it on the street.
 
 ## Configuration Options
 

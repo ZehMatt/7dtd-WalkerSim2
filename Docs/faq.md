@@ -45,7 +45,7 @@ So if that same zombie comes back later, it will still be hurt if you damaged it
 
 ## When Do Zombies Respawn?
 
-Zombies only respawn when they are killed. When a zombie dies, it is returned to the simulation as a new virtual agent. This does not mean a zombie will immediately appear in the game world — the virtual agent must first move into a player's activation zone before it becomes a real zombie again.
+Zombies only respawn when they are killed. When a zombie dies, it is returned to the simulation as a new virtual agent. This does not mean a zombie will immediately appear in the game world - the virtual agent must first move into a player's activation zone before it becomes a real zombie again.
 
 ## Where Do Zombies Respawn?
 
@@ -57,11 +57,11 @@ No. The Editor is a tool to help create a configuration and export it to the xml
 
 ## How Is This Different from Vanilla?
 
-In vanilla, zombies spawn randomly near players with no persistence. With WalkerSim, thousands of virtual zombies move around the entire map at all times. They only become real when they get close to a player. If a zombie despawns because you walked away, it continues moving in the simulation — it's still the same zombie. This creates a world that feels more alive and reactive, with emergent hordes and consequences for making noise.
+In vanilla, zombies spawn randomly near players with no persistence. With WalkerSim, thousands of virtual zombies move around the entire map at all times. They only become real when they get close to a player. If a zombie despawns because you walked away, it continues moving in the simulation - it's still the same zombie. This creates a world that feels more alive and reactive, with emergent hordes and consequences for making noise.
 
 ## What About Wandering Hordes and Screamers?
 
-WalkerSim entirely replaces vanilla wandering hordes. Mods that change vanilla wandering hordes (such as Improved Hordes) will have no effect. Screamers are unaffected — they still spawn from heat activity as normal.
+WalkerSim entirely replaces vanilla wandering hordes. Mods that change vanilla wandering hordes (such as Improved Hordes) will have no effect. Screamers are unaffected - they still spawn from heat activity as normal.
 
 ## How Do I Adjust the Number of Zombies?
 
@@ -71,7 +71,7 @@ Adjust the [PopulationDensity](configuring/configuration/base.md#populationdensi
 
 The population ramp is controlled by two settings: [PopulationStartPercent](configuring/configuration/base.md#populationstartpercent) and [FullPopulationAtDay](configuring/configuration/base.md#fullpopulationatday).
 
-`PopulationStartPercent` controls what percentage of zombies are active on day 1 — the rest are dormant. `FullPopulationAtDay` sets the day by which the population reaches 100%. The population scales linearly between those two values.
+`PopulationStartPercent` controls what percentage of zombies are active on day 1 - the rest are dormant. `FullPopulationAtDay` sets the day by which the population reaches 100%. The population scales linearly between those two values.
 
 In the default configuration, `PopulationStartPercent` is set to 10 and `FullPopulationAtDay` is set to 8. This means you start with only 10% of zombies on day 1, ramping up to full population by day 8. These values are config-specific and can be changed in the XML to suit your preference.
 

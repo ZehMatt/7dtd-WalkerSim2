@@ -139,7 +139,17 @@ If the same system also includes **StickToBiome** or **AvoidBiome**, target city
 
 These processors use a signed distance field (SDF) computed from the map's biome data to attract or repel agents toward specific biome types. A **Biome** parameter selects which biome to target: Snow, Pine Forest, Desert, Wasteland, or Burnt Forest.
 
-The force is proportional to how far the agent is from the biome boundary — stronger when far away, tapering to zero at the edge to prevent overshooting.
+In the Editor the biome is selected from a dropdown. When editing the XML by hand, the biome is stored in the `Param1` attribute using the game's biome ids:
+
+| Biome | Param1 |
+|---|---|
+| Snow | 1 |
+| Pine Forest | 3 |
+| Desert | 5 |
+| Wasteland | 8 |
+| Burnt Forest | 9 |
+
+The force is proportional to how far the agent is from the biome boundary - stronger when far away, tapering to zero at the edge to prevent overshooting.
 
 ### StickToBiome
 Zombies are attracted toward a specific biome. Agents outside the target biome are pulled toward it. Once inside, a gentle nudge near the boundary keeps them from drifting out, while deep inside no force is applied so other processors drive movement freely.
@@ -190,7 +200,7 @@ Here's how to set up zombie behaviors in your config file:
     <Processor Type="AvoidCities" Distance="100.0" Power="0.8" />
   </System>
   <System Weight="1" SpeedScale="1.0" PostSpawnBehavior="Wander" Color="#FF00FF">
-    <Processor Type="CityVisitor" Power="0.9" Param1="15" Param2="30" />
+    <Processor Type="CityVisitor" Power="0.9" Param1="2" Param2="4" />
   </System>
 </Systems>
 ```

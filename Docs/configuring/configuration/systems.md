@@ -86,6 +86,7 @@ What zombies do after they appear in your game:
 
 - **Wander**: Zombies just walk around randomly
 - **ChaseActivator**: Zombies chase whatever made them spawn (usually you)
+- **Nothing**: No post-spawn order is given, zombies stand idle until the game's normal AI reacts to something
 
 ### PostSpawnWanderSpeed
 

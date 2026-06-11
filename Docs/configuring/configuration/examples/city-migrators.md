@@ -4,7 +4,7 @@
 ![City Migrators](../../../img/city-migrators-example.gif)
 </div>
 
-Agents spawn in cities and travel between them using roads. The **CityVisitor** processor gives each agent a destination city — larger cities are more likely to be chosen. Once an agent arrives, it explores for a while before picking a new destination and heading out again.
+Agents spawn in cities and travel between them using roads. The **CityVisitor** processor gives each agent a destination city, larger cities are more likely to be chosen. Once an agent arrives, it explores for a while before picking a new destination and heading out again.
 
 **StickToRoads** keeps agents on the road network during travel. Combined with alignment and separation, groups move together along roads in loose formations. **WorldEvents** ensures agents still react to player-generated sounds like gunshots and explosions.
 
@@ -15,9 +15,9 @@ Agents spawn in cities and travel between them using roads. The **CityVisitor** 
 | CityVisitor Power | 0.9 | Strong pull toward destination city |
 | CityVisitor Param1 | 2 | Minimum stay time in a city (in-game days) |
 | CityVisitor Param2 | 4 | Maximum stay time in a city (in-game days) |
-| StickToRoads Power | 0.5 | Moderate road adherence — agents follow roads but can deviate slightly |
+| StickToRoads Power | 0.5 | Moderate road adherence - agents follow roads but can deviate slightly |
 | StartPosition | RandomCity | Agents begin inside cities rather than scattered across the map |
-| WorldEvents Power | 0.7 | Agents react to player sounds — slightly lower than other presets so road/city navigation stays dominant |
+| WorldEvents Power | 0.7 | Agents react to player sounds - slightly lower than other presets so road/city navigation stays dominant |
 
 ## Configuration
 
@@ -45,7 +45,7 @@ Agents spawn in cities and travel between them using roads. The **CityVisitor** 
   <MaxSpawnedZombies>75%</MaxSpawnedZombies>
   <Systems>
     <System StartPosition="RandomCity" RespawnPosition="RandomBorderLocation" GroupSize="16" Name="System 1" Weight="1" SpeedScale="1" PostSpawnBehavior="Wander" PostSpawnWanderSpeed="Walk" Color="#DD44DD">
-      <Processor Type="CityVisitor" Distance="0" Power="0.9" Param1="15" Param2="30" />
+      <Processor Type="CityVisitor" Distance="0" Power="0.9" Param1="2" Param2="4" />
       <Processor Type="StickToRoads" Distance="0" Power="0.5" Param1="0" Param2="0" />
       <Processor Type="AlignSameGroup" Distance="20" Power="0.6" Param1="0" Param2="0" />
       <Processor Type="AvoidSameGroup" Distance="10" Power="1" Param1="0" Param2="0" />

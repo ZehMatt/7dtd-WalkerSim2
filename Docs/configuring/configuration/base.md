@@ -54,11 +54,11 @@ Here are all the settings you can change:
 
 ### EnhancedSoundAwareness
 
-**What it does**: Makes zombies hear loud sounds from farther away.
+**What it does**: Makes already-spawned zombies investigate loud sounds within the sound's travel distance.
 
-**Value**: True (zombies hear better) or False (normal hearing)
+**Value**: True (spawned zombies investigate sounds) or False (only virtual zombies in the simulation react)
 
-**Example**: When True, zombies will walk toward gunshots and explosions from much farther away than normal.
+**Example**: When True, idle zombies near a gunshot will turn and investigate the source, even if they couldn't see you.
 
 ### SoundDistanceScale
 
@@ -96,7 +96,7 @@ Here are all the settings you can change:
 
 ### InfiniteZombieLifetime
 
-**What it does**: Prevents zombies spawned by WalkerSim from dying due to the game's built-in lifetime expiration. The base game assigns a limited lifetime to spawned zombies, causing them to suddenly die after some time. Enabling this setting overrides that behavior. This does not make zombies invincible to damage — they can still be killed normally by players.
+**What it does**: Prevents zombies spawned by WalkerSim from dying due to the game's built-in lifetime expiration. The base game assigns a limited lifetime to spawned zombies, causing them to suddenly die after some time. Enabling this setting overrides that behavior. This does not make zombies invincible to damage - they can still be killed normally by players.
 
 **Value**: True (prevent expiration) or False (use game default lifetime)
 
