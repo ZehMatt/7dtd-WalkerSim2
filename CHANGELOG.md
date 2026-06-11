@@ -1,3 +1,5 @@
+# 2.0.1 (in progress)
+
 # 2.0.0
 - Fix: Changing a parameter in the Editor no longer resets the state of CityVisitor groups, the configuration can now be edited live without a full reset.
 - Fix: With multiple players close together, one player could cause zombies to spawn right in front of or behind another player, spawns now avoid other players view.
