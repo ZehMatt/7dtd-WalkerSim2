@@ -857,6 +857,34 @@ namespace WalkerSim
             return lines;
         }
 
+        static private bool IsPositionInsideLandClaim(Vector3i blockPos)
+        {
+            var persistentPlayers = GameManager.Instance.persistentPlayers;
+            if (persistentPlayers == null)
+            {
+                return false;
+            }
+
+            var lpBlocks = persistentPlayers.m_lpBlockMap;
+            if (lpBlocks == null || lpBlocks.Count == 0)
+            {
+                return false;
+            }
+
+            var halfSize = (GameStats.GetInt(EnumGameStats.LandClaimSize) - 1) / 2;
+
+            foreach (var entry in lpBlocks)
+            {
+                var claimPos = entry.Key;
+                if (Mathf.Abs(claimPos.x - blockPos.x) <= halfSize && Mathf.Abs(claimPos.z - blockPos.z) <= halfSize)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         static private (bool, UnityEngine.Vector3) GetFinalSpawnPosition(Chunk chunk, UnityEngine.Vector3 position)
         {
             var world = GameManager.Instance.World;
@@ -872,6 +900,12 @@ namespace WalkerSim
             }
 
             var blockPos = World.worldToBlockPos(position);
+
+            if (IsPositionInsideLandClaim(blockPos))
+            {
+                Logging.DbgInfo("Position {0} is inside a land claim", position);
+                return (false, UnityEngine.Vector3.zero);
+            }
 
             var terrainHeight = chunk.GetTerrainHeight(World.toBlockXZ(blockPos.x), World.toBlockXZ(blockPos.z));
             var height = chunk.GetHeight(World.toBlockXZ(blockPos.x), World.toBlockXZ(blockPos.z));
