@@ -139,6 +139,49 @@ namespace WalkerSim
             return ctx;
         }
 
+        static System.Reflection.MethodInfo _getLocationMethod;
+
+        internal static string GetWorldFolder(string worldName)
+        {
+            try
+            {
+                if (_getLocationMethod == null)
+                {
+                    _getLocationMethod = typeof(PathAbstractions.SearchDefinition).GetMethod("GetLocation");
+                }
+
+                if (_getLocationMethod == null)
+                {
+                    Logging.Err("PathAbstractions.SearchDefinition.GetLocation not found, incompatible game version.");
+                    return string.Empty;
+                }
+
+                var pars = _getLocationMethod.GetParameters();
+                if (pars.Length < 1 || pars[0].ParameterType != typeof(string))
+                {
+                    Logging.Err("Unexpected GetLocation signature, incompatible game version.");
+                    return string.Empty;
+                }
+
+                var args = new object[pars.Length];
+                args[0] = worldName;
+                for (int i = 1; i < pars.Length; i++)
+                {
+                    args[i] = pars[i].HasDefaultValue ? pars[i].DefaultValue : null;
+                }
+
+                var location = (PathAbstractions.AbstractedLocation)_getLocationMethod.Invoke(PathAbstractions.WorldsSearchPaths, args);
+                return location.FullPath;
+            }
+            catch (Exception ex)
+            {
+                Logging.Out("Resolving world folder for '{0}' failed.", worldName);
+                Logging.Exception(ex);
+
+                return string.Empty;
+            }
+        }
+
         internal static string GetModFolder()
         {
             try
@@ -186,7 +229,7 @@ namespace WalkerSim
         internal static Config LoadConfiguration()
         {
             // Attempt to load world specific config first.
-            var worldFolder = PathAbstractions.WorldsSearchPaths.GetLocation(GamePrefs.GetString(EnumGamePrefs.GameWorld)).FullPath;
+            var worldFolder = GetWorldFolder(GamePrefs.GetString(EnumGamePrefs.GameWorld));
             Logging.Out("World Folder: {0}", worldFolder);
 
             var worldFolderConfig = System.IO.Path.Combine(worldFolder, "WalkerSim.xml");
@@ -373,7 +416,7 @@ namespace WalkerSim
         static void InitializeSimulation(Simulation simulation)
         {
             string worldName = GamePrefs.GetString(EnumGamePrefs.GameWorld);
-            string worldFolder = PathAbstractions.WorldsSearchPaths.GetLocation(worldName).FullPath;
+            string worldFolder = GetWorldFolder(worldName);
 
             // Load the map data
             {
