@@ -1,3 +1,5 @@
+# 2.0.2 (in progress)
+
 # 2.0.1
 - Fix: WalkerSim now works on both 2.4 and 2.4+ from a single build, the world folder lookup was bound to a game method whose signature changed between versions and is now resolved at runtime.
 - Feature: Spawns are now blocked inside the area claimed by land claim blocks, vanilla does not prevent spawns there.
