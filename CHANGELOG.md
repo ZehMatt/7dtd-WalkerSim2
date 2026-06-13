@@ -1,4 +1,6 @@
 # 2.0.1 (in progress)
+- Fix: WalkerSim now works on both 2.4 and 2.4+ from a single build, the world folder lookup was bound to a game method whose signature changed between versions and is now resolved at runtime.
+- Feature: Spawns are now blocked inside the area claimed by land claim blocks, vanilla does not prevent spawns there.
 
 # 2.0.0
 - Fix: Changing a parameter in the Editor no longer resets the state of CityVisitor groups, the configuration can now be edited live without a full reset.
