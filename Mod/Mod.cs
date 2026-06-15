@@ -64,14 +64,28 @@ namespace WalkerSim
             }
         }
 
+        static System.Reflection.Assembly ResolveWebServerAssembly(object sender, ResolveEventArgs args)
+        {
+            var requested = new System.Reflection.AssemblyName(args.Name);
+            if (!string.Equals(requested.Name, "WebServer", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            var hostType = Type.GetType("Webserver.WebAPI.AbsRestApi, Assembly-CSharp");
+            return hostType?.Assembly;
+        }
+
         static void TryLoadWebMod()
         {
-            if (Type.GetType("Webserver.WebAPI.AbsRestApi, WebServer") == null)
+            if (Type.GetType("Webserver.WebAPI.AbsRestApi, WebServer") == null &&
+                Type.GetType("Webserver.WebAPI.AbsRestApi, Assembly-CSharp") == null)
             {
                 Logging.Out("WebServer not loaded, skipping web integration.");
                 return;
             }
 
+            bool resolverInstalled = false;
             try
             {
                 var modFolder = GetModFolder();
@@ -87,7 +101,12 @@ namespace WalkerSim
                     return;
                 }
 
+                AppDomain.CurrentDomain.AssemblyResolve += ResolveWebServerAssembly;
+                resolverInstalled = true;
+
                 var webAsm = System.Reflection.Assembly.LoadFrom(webDllPath);
+                webAsm.GetTypes();
+
                 var ourMod = ModManager.GetModForAssembly(System.Reflection.Assembly.GetExecutingAssembly());
                 if (ourMod != null)
                 {
@@ -99,6 +118,13 @@ namespace WalkerSim
             catch (Exception ex)
             {
                 Logging.Err("Failed to load web integration: {0}", ex.Message);
+            }
+            finally
+            {
+                if (resolverInstalled)
+                {
+                    AppDomain.CurrentDomain.AssemblyResolve -= ResolveWebServerAssembly;
+                }
             }
         }
 
