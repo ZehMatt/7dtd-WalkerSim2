@@ -1,4 +1,5 @@
 # 2.0.2 (in progress)
+- Fix: Web integration now loads on both game 2.x and 3.0 from a single build, the `WebServer` types moved into `Assembly-CSharp` in 3.0 so they are now redirected at load time instead of failing with a missing assembly.
 
 # 2.0.1
 - Fix: WalkerSim now works on both 2.4 and 2.4+ from a single build, the world folder lookup was bound to a game method whose signature changed between versions and is now resolved at runtime.
