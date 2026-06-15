@@ -4,6 +4,12 @@ namespace WalkerSim
 {
     public partial class Simulation
     {
+        public enum BehaviorOverride
+        {
+            Normal,
+            Bad,
+        }
+
         public class Player
         {
             public Vector3 Position;
@@ -11,6 +17,7 @@ namespace WalkerSim
             public bool IsAlive;
             public uint NextPossibleSpawnTime;
             public bool ZombieRain;
+            public BehaviorOverride Behavior;
         }
 
         public IEnumerable<KeyValuePair<int, Player>> Players
@@ -23,13 +30,14 @@ namespace WalkerSim
             get => _state.Players.Count;
         }
 
-        public void AddPlayer(int entityId, Vector3 pos, uint spawnDelay)
+        public void AddPlayer(int entityId, Vector3 pos, uint spawnDelay, BehaviorOverride behavior = BehaviorOverride.Normal)
         {
             Player player = new Player();
             player.EntityId = entityId;
             player.Position = pos;
             player.IsAlive = true;
             player.NextPossibleSpawnTime = UnscaledTicks + spawnDelay;
+            player.Behavior = behavior;
 
             _state.Players.TryAdd(entityId, player);
 

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using static WalkerSim.Simulation;
 
 namespace WalkerSim
 {
@@ -23,6 +24,9 @@ namespace WalkerSim
         // Vanilla: up to 5 groups scanned, up to 5 retries for entity selection.
         const int MaxGroupScan = 5;
         const int MaxEntityRetries = 5;
+
+        const float RainDropHeight = 50f;
+        const float RainRagdollStunTime = 2.0f;
 
         static Agent.DismembermentMask BuildDismembermentMask(EntityAlive entity)
         {
@@ -200,6 +204,24 @@ namespace WalkerSim
             stats.Health.MaxPassive = PassiveEffects.None;
         }
 
+        const int BadBehaviorHealth = 1000000;
+
+        public static void ApplyBadBehavior(EntityAlive spawnedAgent)
+        {
+            spawnedAgent.Buffs.RemoveBuff("buffentityspawnheal");
+
+            var stats = spawnedAgent.Stats;
+            stats.Health.m_baseMax = BadBehaviorHealth;
+            stats.Health.m_originalBaseMax = BadBehaviorHealth;
+            stats.Health.m_maxModifier = 0;
+            stats.Health.MaxPassive = PassiveEffects.None;
+            stats.Health.Value = BadBehaviorHealth;
+            stats.Health.m_originalValue = BadBehaviorHealth;
+            stats.Health.m_changed = true;
+
+            spawnedAgent.IsBloodMoon = true;
+        }
+
         public static void ApplyLifeTime(Config config, Agent agent, EntityAlive spawnedAgent)
         {
             // Handle zombie lifetime.
@@ -263,11 +285,16 @@ namespace WalkerSim
             }
         }
 
-        static private bool CanSpawnZombie(Simulation simulation)
+        static private bool CanSpawnZombie(Simulation simulation, BehaviorOverride behavior)
         {
             // Check for maximum count, this is ordinarily checked before spawning but to be sure.
             var alive = simulation.SpawnedCount;
             var maxAllowed = simulation.MaxAllowedAliveAgents;
+
+            if (behavior == BehaviorOverride.Bad)
+            {
+                maxAllowed = 200;
+            }
 
             if (alive >= maxAllowed)
             {
@@ -951,7 +978,7 @@ namespace WalkerSim
                 return -1;
             }
 
-            if (!CanSpawnZombie(simulation))
+            if (!CanSpawnZombie(simulation, spawnData.ActivatorBehavior))
             {
                 return -1;
             }
@@ -981,7 +1008,7 @@ namespace WalkerSim
             // Easter egg.
             if (spawnData.ZombieRain)
             {
-                worldPos.y = 150;
+                worldPos.y += RainDropHeight;
             }
 
             Logging.CondInfo(config.LoggingOpts.Spawns, () => $"Spawning agent {agent.Index} at {worldPos}");
@@ -1074,8 +1101,19 @@ namespace WalkerSim
 
             ApplyEntityState(config, agent, spawnedAgent);
 
+            if (spawnData.ActivatorBehavior == Simulation.BehaviorOverride.Bad)
+            {
+                ApplyBadBehavior(spawnedAgent);
+            }
+
             // Post spawn behavior.
             var isAlerted = spawnData.SubState == Agent.SubState.Alerted;
+            if (spawnData.PostSpawnBehavior == Config.PostSpawnBehavior.ChaseActivator)
+            {
+                // Don't roam towards the alert position if this setting is set.
+                isAlerted = false;
+            }
+
             if (isAlerted)
             {
                 var destPos = VectorUtils.ToUnity(spawnData.AlertPosition);
@@ -1137,7 +1175,7 @@ namespace WalkerSim
 
             if (spawnData.ZombieRain)
             {
-                spawnedAgent.emodel.DoRagdoll(5.0f, EnumBodyPartHit.None, UnityEngine.Vector3.zero, UnityEngine.Vector3.zero, false);
+                spawnedAgent.emodel.DoRagdoll(RainRagdollStunTime, EnumBodyPartHit.None, UnityEngine.Vector3.zero, UnityEngine.Vector3.zero, false);
             }
 
             // Update the agent data.

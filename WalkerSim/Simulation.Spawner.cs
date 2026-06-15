@@ -10,6 +10,7 @@ namespace WalkerSim
             public Agent Agent;
             public Config.PostSpawnBehavior PostSpawnBehavior;
             public int ActivatorEntityId;
+            public BehaviorOverride ActivatorBehavior;
             public Agent.SubState SubState;
             public Vector3 AlertPosition;
             public bool ZombieRain;
@@ -36,8 +37,13 @@ namespace WalkerSim
             _agentSpawnHandler = handler;
         }
 
-        private bool HasReachedMaximumSpawnedAgents()
+        private bool HasReachedMaximumSpawnedAgents(BehaviorOverride behaviorOverride)
         {
+            if (behaviorOverride == BehaviorOverride.Bad)
+            {
+                // Bad behavior override bypasses the max alive agents limit.
+                return false;
+            }
             return _pendingSpawns.Count + _state.Spawned.Count >= _maxAllowedAliveAgents;
         }
 
@@ -92,7 +98,9 @@ namespace WalkerSim
 
             foreach (var kv in _state.Players)
             {
-                if (HasReachedMaximumSpawnedAgents())
+                var player = kv.Value;
+
+                if (HasReachedMaximumSpawnedAgents(player.Behavior))
                 {
                     // We have reached the maximum amount of agents alive, do not spawn more.
                     Logging.CondInfo(Config.LoggingOpts.Spawns,
@@ -104,8 +112,6 @@ namespace WalkerSim
                     return;
                 }
 
-                var player = kv.Value;
-
                 if (player.EntityId == -1)
                 {
                     continue;
@@ -116,14 +122,17 @@ namespace WalkerSim
                     continue;
                 }
 
-                if (UnscaledTicks < player.NextPossibleSpawnTime)
+                if (UnscaledTicks < player.NextPossibleSpawnTime && player.Behavior != BehaviorOverride.Bad)
                 {
                     //Logging.Debug("Player {0} is not alive long enough to spawn agents, skipping...", player.EntityId);
                     continue;
                 }
 
+                var playerBehavior = player.Behavior;
+                var badPlayer = playerBehavior == BehaviorOverride.Bad;
+
                 var activeNearby = GetCountActiveNearby(player.Position, viewRadius);
-                if (activeNearby >= maxActivePerPlayer)
+                if (activeNearby >= maxActivePerPlayer && !badPlayer)
                 {
                     // Too many active agents nearby, do not spawn more.
                     Logging.CondInfo(Config.LoggingOpts.Spawns,
@@ -158,7 +167,7 @@ namespace WalkerSim
                     var rainZombie = false;
                     if (dist < viewRadius - Constants.SpawnBorderSize)
                     {
-                        if (!player.ZombieRain)
+                        if (!player.ZombieRain && !badPlayer)
                         {
                             continue;
                         }
@@ -201,11 +210,18 @@ namespace WalkerSim
                     agent.CurrentState = Agent.State.PendingSpawn;
 
                     var processorGroup = _processors[agent.Group];
+                    var postSpawnBehavior = processorGroup != null ? processorGroup.PostSpawnBehavior : Config.PostSpawnBehavior.Wander;
+                    if (badPlayer)
+                    {
+                        postSpawnBehavior = Config.PostSpawnBehavior.ChaseActivator;
+                    }
+
                     var spawnData = new SpawnData()
                     {
                         Agent = agent,
-                        PostSpawnBehavior = processorGroup != null ? processorGroup.PostSpawnBehavior : Config.PostSpawnBehavior.Wander,
+                        PostSpawnBehavior = postSpawnBehavior,
                         ActivatorEntityId = player.EntityId,
+                        ActivatorBehavior = player.Behavior,
                         SubState = agent.CurrentSubState,
                         AlertPosition = agent.AlertPosition,
                         ZombieRain = rainZombie,

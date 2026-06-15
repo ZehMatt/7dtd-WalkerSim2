@@ -697,7 +697,8 @@ namespace WalkerSim
                 case RespawnType.NewGame:
                 case RespawnType.LoadedGame:
                     var entityId = GetPlayerEntityId(data.ClientInfo);
-                    simulation.AddPlayer(entityId, VectorUtils.ToSim(data.Position), spawnDelay);
+                    var behavior = Game.GetBehaviorOverride(data.ClientInfo);
+                    simulation.AddPlayer(entityId, VectorUtils.ToSim(data.Position), spawnDelay, behavior);
                     break;
                 case RespawnType.Died:
                     simulation.NotifyPlayerSpawned(GetPlayerEntityId(data.ClientInfo), spawnDelay);
