@@ -204,24 +204,6 @@ namespace WalkerSim
             stats.Health.MaxPassive = PassiveEffects.None;
         }
 
-        const int BadBehaviorHealth = 1000000;
-
-        public static void ApplyBadBehavior(EntityAlive spawnedAgent)
-        {
-            spawnedAgent.Buffs.RemoveBuff("buffentityspawnheal");
-
-            var stats = spawnedAgent.Stats;
-            stats.Health.m_baseMax = BadBehaviorHealth;
-            stats.Health.m_originalBaseMax = BadBehaviorHealth;
-            stats.Health.m_maxModifier = 0;
-            stats.Health.MaxPassive = PassiveEffects.None;
-            stats.Health.Value = BadBehaviorHealth;
-            stats.Health.m_originalValue = BadBehaviorHealth;
-            stats.Health.m_changed = true;
-
-            spawnedAgent.IsBloodMoon = true;
-        }
-
         public static void ApplyLifeTime(Config config, Agent agent, EntityAlive spawnedAgent)
         {
             // Handle zombie lifetime.
@@ -1103,7 +1085,7 @@ namespace WalkerSim
 
             if (spawnData.ActivatorBehavior == Simulation.BehaviorOverride.Bad)
             {
-                ApplyBadBehavior(spawnedAgent);
+                spawnedAgent.IsBloodMoon = true;
             }
 
             // Post spawn behavior.
@@ -1171,11 +1153,6 @@ namespace WalkerSim
             else
             {
                 Logging.Err("Unknown post spawn behavior: {0}", spawnData.PostSpawnBehavior);
-            }
-
-            if (spawnData.ZombieRain)
-            {
-                spawnedAgent.emodel.DoRagdoll(RainRagdollStunTime, EnumBodyPartHit.None, UnityEngine.Vector3.zero, UnityEngine.Vector3.zero, false);
             }
 
             // Update the agent data.
