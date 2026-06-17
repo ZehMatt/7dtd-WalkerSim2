@@ -1,4 +1,4 @@
-# 2.0.3 (in progress)
+# 2.0.3
 - Fix: Potential error with 3.0.
 
 # 2.0.2
