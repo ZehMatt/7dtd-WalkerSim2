@@ -1,4 +1,5 @@
 # 2.0.3 (in progress)
+- Fix: Potential error with 3.0.
 
 # 2.0.2
 - Fix: Web integration now loads on both game 2.x and 3.0 from a single build, the `WebServer` types moved into `Assembly-CSharp` in 3.0 so they are now redirected at load time instead of failing with a missing assembly.
