@@ -6,7 +6,7 @@ env:
   DEPOT_DOWNLOADER_VERSION: "3.4.0"
   APP_ID: "294420"
   DEPOT_ID: "294422"
-  MANIFEST_ID: "4777960841829662519"
+  MANIFEST_ID: "5955696906242074551"
 
 jobs:
   build-mod:
@@ -192,6 +192,15 @@ jobs:
           !./**/obj/**
         searchFolder: ./Tests/bin/x64/Release
         runInParallel: true
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Check API compatibility
+      shell: pwsh
+      run: ./Scripts/Check-ApiCompat.ps1 -DepotDownloader ./tools/DepotDownloader.exe
 
     - name: Prepare Mod artifact
       run: |
