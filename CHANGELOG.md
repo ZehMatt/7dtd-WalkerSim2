@@ -1,4 +1,5 @@
 # 2.0.4 (in progress)
+- Fix: More errors due to binary compatibility issues, this should now properly work across 2.4, 2.6, 3.0-experimental. 
 
 # 2.0.3
 - Fix: Potential error with 3.0.
