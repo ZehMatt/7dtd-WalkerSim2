@@ -1,4 +1,5 @@
 # 2.0.5 (in progress)
+- Change: Spawn and respawn locations can again be configured globally via `AgentStartPosition` and `AgentRespawnPosition`. Each movement system still has its own `StartPosition`/`RespawnPosition`, which now default to `Global` and fall back to the global setting unless overridden with a specific location.
 
 # 2.0.4
 - Fix: More errors due to binary compatibility issues, this should now properly work across 2.4, 2.6, 3.0-experimental. 
