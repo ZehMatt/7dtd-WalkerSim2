@@ -189,7 +189,7 @@ namespace WalkerSim
                 () => $"Using previous health: {agent.Health}");
 
             // Remove this buff otherwise they regenerate health.
-            spawnedAgent.Buffs.RemoveBuff("buffentityspawnheal");
+            GameApi.RemoveBuff.Invoke(spawnedAgent.Buffs, "buffentityspawnheal");
 
             // When restoring health/max health we use absolute values.
             var stats = spawnedAgent.Stats;
