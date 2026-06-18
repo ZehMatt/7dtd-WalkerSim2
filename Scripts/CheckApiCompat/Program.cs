@@ -89,9 +89,15 @@ namespace CheckApiCompat
                 }
             }
 
-            Console.WriteLine($"  checked {typeChecks} type refs, {memberChecks} member refs against {target}");
+            var contractFailures = new SortedSet<string>(StringComparer.Ordinal);
+            int contractChecks = CheckContracts(module, managedDir, target, contractFailures);
 
-            if (missingTypes.Count == 0 && missingMembers.Count == 0)
+            string tally = $"  checked {typeChecks} type refs, {memberChecks} member refs";
+            if (contractChecks > 0)
+                tally += $", {contractChecks} contracts";
+            Console.WriteLine(tally + $" against {target}");
+
+            if (missingTypes.Count == 0 && missingMembers.Count == 0 && contractFailures.Count == 0)
             {
                 Console.WriteLine("  OK: all references resolve");
                 return 0;
@@ -101,9 +107,61 @@ namespace CheckApiCompat
                 Console.WriteLine("  MISSING TYPE   " + t);
             foreach (var m in missingMembers)
                 Console.WriteLine("  MISSING " + m);
+            foreach (var c in contractFailures)
+                Console.WriteLine("  MISSING " + c);
 
-            Console.WriteLine($"  FAIL: {missingTypes.Count} missing type(s), {missingMembers.Count} missing member(s)");
+            Console.WriteLine($"  FAIL: {missingTypes.Count} missing type(s), {missingMembers.Count} missing member(s), {contractFailures.Count} broken contract(s)");
             return 1;
+        }
+
+        static int CheckContracts(ModuleDefinition modModule, string managedDir, string target, ISet<string> failures)
+        {
+            var gameApi = modModule.GetType("WalkerSim.GameApi");
+            if (gameApi == null)
+                return 0;
+
+            var members = gameApi.Fields
+                .Where(f => f.IsStatic && f.FieldType is GenericInstanceType git
+                    && (git.ElementType.Name.StartsWith("GameMethod") || git.ElementType.Name.StartsWith("GameFunc")))
+                .ToList();
+            if (members.Count == 0)
+                return 0;
+
+            string dll = Path.Combine(managedDir, target + ".dll");
+            using var gameModule = ModuleDefinition.ReadModule(dll);
+
+            foreach (var f in members)
+            {
+                var git = (GenericInstanceType)f.FieldType;
+                bool isFunc = git.ElementType.Name.StartsWith("GameFunc");
+                var generics = git.GenericArguments;
+                var declaring = generics[0];
+                TypeReference returnType = isFunc ? generics[1] : null;
+                int argStart = isFunc ? 2 : 1;
+                var argTypes = generics.Skip(argStart).ToList();
+
+                string methodName = f.Name;
+                string firstParam = argTypes.Count > 0 ? argTypes[0].Name : null;
+                int minParams = argTypes.Count;
+
+                var type = gameModule.GetType(declaring.FullName);
+                if (type == null)
+                {
+                    failures.Add($"CONTRACT type {declaring.FullName}");
+                    continue;
+                }
+
+                bool ok = type.Methods.Any(m => m.Name == methodName
+                    && m.Parameters.Count >= minParams
+                    && (firstParam == null || (m.Parameters.Count > 0 && m.Parameters[0].ParameterType.Name == firstParam))
+                    && (returnType == null || m.ReturnType.Name == returnType.Name));
+                if (!ok)
+                {
+                    string ret = isFunc ? $", returns {returnType.Name}" : "";
+                    failures.Add($"CONTRACT {declaring.Name}.{methodName}(first={firstParam ?? "any"}, >={minParams} params{ret})");
+                }
+            }
+            return members.Count;
         }
 
         static bool IsTarget(IMetadataScope scope, string target)

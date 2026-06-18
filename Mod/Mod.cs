@@ -165,39 +165,12 @@ namespace WalkerSim
             return ctx;
         }
 
-        static System.Reflection.MethodInfo _getLocationMethod;
-
         internal static string GetWorldFolder(string worldName)
         {
             try
             {
-                if (_getLocationMethod == null)
-                {
-                    _getLocationMethod = typeof(PathAbstractions.SearchDefinition).GetMethod("GetLocation");
-                }
-
-                if (_getLocationMethod == null)
-                {
-                    Logging.Err("PathAbstractions.SearchDefinition.GetLocation not found, incompatible game version.");
-                    return string.Empty;
-                }
-
-                var pars = _getLocationMethod.GetParameters();
-                if (pars.Length < 1 || pars[0].ParameterType != typeof(string))
-                {
-                    Logging.Err("Unexpected GetLocation signature, incompatible game version.");
-                    return string.Empty;
-                }
-
-                var args = new object[pars.Length];
-                args[0] = worldName;
-                for (int i = 1; i < pars.Length; i++)
-                {
-                    args[i] = pars[i].HasDefaultValue ? pars[i].DefaultValue : null;
-                }
-
-                var location = (PathAbstractions.AbstractedLocation)_getLocationMethod.Invoke(PathAbstractions.WorldsSearchPaths, args);
-                return location.FullPath;
+                var location = GameApi.GetLocation.Invoke(PathAbstractions.WorldsSearchPaths, worldName);
+                return location.FullPath ?? string.Empty;
             }
             catch (Exception ex)
             {
