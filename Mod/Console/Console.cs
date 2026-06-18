@@ -249,6 +249,8 @@ namespace WalkerSim.Console
                     ConsoleOutput.Log("  Random Seed: {0}", config.RandomSeed);
                     ConsoleOutput.Log("  Population Density: {0} agents/km²", config.PopulationDensity);
                     ConsoleOutput.Log("  Start Agents Grouped: {0}", config.StartAgentsGrouped);
+                    ConsoleOutput.Log("  Start Position: {0}", config.StartPosition);
+                    ConsoleOutput.Log("  Respawn Position: {0}", config.RespawnPosition);
                     ConsoleOutput.Log("  Pause During Bloodmoon: {0}", config.PauseDuringBloodmoon);
                     ConsoleOutput.Log("  Sound Distance Scale: {0}", config.SoundDistanceScale);
                     ConsoleOutput.Log("");

@@ -39,8 +39,9 @@ How many zombies are in each of this system's groups.
 
 Where this system's agents spawn when the simulation begins.
 
+- **Global**: Use the base configuration's `AgentStartPosition` (default)
 - **RandomBorderLocation**: Around the edges of the map
-- **RandomLocation**: Anywhere on the map (default)
+- **RandomLocation**: Anywhere on the map
 - **RandomPOI**: At buildings and landmarks
 - **RandomCity**: In cities
 - **Mixed**: A mix of the above
@@ -56,7 +57,8 @@ Restricts the start location to a biome. Combined with `StartPosition`, so for e
 
 Where this system's agents come back after they die.
 
-- **None**: Dead agents don't come back (default)
+- **Global**: Use the base configuration's `AgentRespawnPosition` (default)
+- **None**: Dead agents don't come back
 - **RandomBorderLocation**: Come back at the edges of the map
 - **RandomLocation**: Come back anywhere on the map
 - **RandomPOI**: Come back at buildings

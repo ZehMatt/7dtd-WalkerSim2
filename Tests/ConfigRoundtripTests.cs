@@ -57,6 +57,8 @@ namespace WalkerSim.Tests
             original.Processors[0].GroupSize = 64;
             original.Processors[0].StartPosition = Config.WorldLocation.RandomBorderLocation;
             original.Processors[0].RespawnPosition = Config.WorldLocation.RandomCity;
+            original.StartPosition = Config.WorldLocation.RandomCity;
+            original.RespawnPosition = Config.WorldLocation.RandomPOI;
             original.PauseDuringBloodmoon = false;
             original.SpawnProtectionTime = 600;
             original.InfiniteZombieLifetime = true;
@@ -83,6 +85,8 @@ namespace WalkerSim.Tests
             Assert.AreEqual(original.Processors[0].GroupSize, loaded.Processors[0].GroupSize);
             Assert.AreEqual(original.Processors[0].StartPosition, loaded.Processors[0].StartPosition);
             Assert.AreEqual(original.Processors[0].RespawnPosition, loaded.Processors[0].RespawnPosition);
+            Assert.AreEqual(original.StartPosition, loaded.StartPosition);
+            Assert.AreEqual(original.RespawnPosition, loaded.RespawnPosition);
             Assert.AreEqual(original.PauseDuringBloodmoon, loaded.PauseDuringBloodmoon);
             Assert.AreEqual(original.SpawnProtectionTime, loaded.SpawnProtectionTime);
             Assert.AreEqual(original.InfiniteZombieLifetime, loaded.InfiniteZombieLifetime);

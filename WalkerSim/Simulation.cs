@@ -464,28 +464,52 @@ namespace WalkerSim
 
         private Config.WorldLocation GetSystemStartPosition(int group)
         {
+            var loc = Config.WorldLocation.Global;
             if (group >= 0 && group < _groupToSystemIndex.Length)
             {
                 int sys = _groupToSystemIndex[group];
                 if (sys >= 0 && sys < _state.Config.Processors.Count)
                 {
-                    return _state.Config.Processors[sys].StartPosition;
+                    loc = _state.Config.Processors[sys].StartPosition;
                 }
             }
-            return Config.WorldLocation.RandomLocation;
+
+            if (loc == Config.WorldLocation.Global)
+            {
+                loc = _state.Config.StartPosition;
+            }
+
+            if (loc == Config.WorldLocation.Global)
+            {
+                loc = Config.WorldLocation.RandomLocation;
+            }
+
+            return loc;
         }
 
         private Config.WorldLocation GetSystemRespawnPosition(int group)
         {
+            var loc = Config.WorldLocation.Global;
             if (group >= 0 && group < _groupToSystemIndex.Length)
             {
                 int sys = _groupToSystemIndex[group];
                 if (sys >= 0 && sys < _state.Config.Processors.Count)
                 {
-                    return _state.Config.Processors[sys].RespawnPosition;
+                    loc = _state.Config.Processors[sys].RespawnPosition;
                 }
             }
-            return Config.WorldLocation.None;
+
+            if (loc == Config.WorldLocation.Global)
+            {
+                loc = _state.Config.RespawnPosition;
+            }
+
+            if (loc == Config.WorldLocation.Global)
+            {
+                loc = Config.WorldLocation.None;
+            }
+
+            return loc;
         }
 
         private Config.WorldBiome GetSystemStartBiome(int group)

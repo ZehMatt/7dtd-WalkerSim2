@@ -72,7 +72,7 @@ namespace Editor.Models
         }
 
         [ObservableProperty]
-        private Config.WorldLocation _startPosition = Config.WorldLocation.RandomLocation;
+        private Config.WorldLocation _startPosition = Config.WorldLocation.Global;
 
         partial void OnStartPositionChanged(Config.WorldLocation value)
         {
@@ -81,7 +81,7 @@ namespace Editor.Models
         }
 
         [ObservableProperty]
-        private Config.WorldLocation _respawnPosition = Config.WorldLocation.None;
+        private Config.WorldLocation _respawnPosition = Config.WorldLocation.Global;
 
         partial void OnRespawnPositionChanged(Config.WorldLocation value)
         {

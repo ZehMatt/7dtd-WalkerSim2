@@ -20,6 +20,8 @@ namespace WalkerSim.Tests
             Assert.AreEqual(configA.RandomSeed, configB.RandomSeed);
             Assert.AreEqual(configA.PopulationDensity, configB.PopulationDensity);
             Assert.AreEqual(configA.StartAgentsGrouped, configB.StartAgentsGrouped);
+            Assert.AreEqual(configA.StartPosition, configB.StartPosition);
+            Assert.AreEqual(configA.RespawnPosition, configB.RespawnPosition);
             Assert.AreEqual(configA.PauseDuringBloodmoon, configB.PauseDuringBloodmoon);
 
             Assert.AreEqual(configA.Processors.Count, configB.Processors.Count);

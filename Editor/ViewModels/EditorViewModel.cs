@@ -192,6 +192,36 @@ namespace Editor.ViewModels
             }
         }
 
+        public Config.WorldLocation StartPosition
+        {
+            get => Config.StartPosition;
+            set
+            {
+                Config.StartPosition = value;
+                OnPropertyChanged();
+                MarkDirty();
+                if (!_suppressReset)
+                {
+                    ResetSimulation();
+                }
+            }
+        }
+
+        public Config.WorldLocation RespawnPosition
+        {
+            get => Config.RespawnPosition;
+            set
+            {
+                Config.RespawnPosition = value;
+                OnPropertyChanged();
+                MarkDirty();
+                if (!_suppressReset)
+                {
+                    ResetSimulation();
+                }
+            }
+        }
+
         public bool PauseDuringBloodmoon
         {
             get => Config.PauseDuringBloodmoon;
@@ -564,6 +594,12 @@ namespace Editor.ViewModels
 
         public Config.WorldLocation[] RespawnPositionOptions { get; } = Enum.GetValues<Config.WorldLocation>();
 
+        public Config.WorldLocation[] GlobalStartPositionOptions { get; } =
+            Enum.GetValues<Config.WorldLocation>().Where(v => v != Config.WorldLocation.Global).ToArray();
+
+        public Config.WorldLocation[] GlobalRespawnPositionOptions { get; } =
+            Enum.GetValues<Config.WorldLocation>().Where(v => v != Config.WorldLocation.Global).ToArray();
+
         public Config.WorldBiome[] BiomeOptions { get; } = Enum.GetValues<Config.WorldBiome>();
 
         public Config.PostSpawnBehavior[] PostSpawnBehaviorOptions { get; } = Enum.GetValues<Config.PostSpawnBehavior>();
@@ -789,6 +825,8 @@ namespace Editor.ViewModels
             OnPropertyChanged(nameof(StartAgentsGrouped));
             OnPropertyChanged(nameof(EnhancedSoundAwareness));
             OnPropertyChanged(nameof(SoundDistanceScale));
+            OnPropertyChanged(nameof(StartPosition));
+            OnPropertyChanged(nameof(RespawnPosition));
             OnPropertyChanged(nameof(PauseDuringBloodmoon));
             OnPropertyChanged(nameof(SpawnProtectionTime));
             OnPropertyChanged(nameof(InfiniteZombieLifetime));

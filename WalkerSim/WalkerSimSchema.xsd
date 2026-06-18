@@ -93,6 +93,18 @@
                     </xs:annotation>
                 </xs:element>
 
+                <xs:element name="AgentStartPosition" type="SpawnPosition" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>Default starting position of agents, used by systems with StartPosition set to Global</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+
+                <xs:element name="AgentRespawnPosition" type="RespawnPosition" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>Default respawn position of agents, used by systems with RespawnPosition set to Global</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+
 
                 <xs:element name="PauseDuringBloodmoon" type="xs:boolean">
                     <xs:annotation>
@@ -233,10 +245,11 @@
                                             </xs:restriction>
                                         </xs:simpleType>
                                     </xs:attribute>
-                                    <xs:attribute name="StartPosition" type="SpawnPosition" use="optional" default="RandomLocation">
+                                    <xs:attribute name="StartPosition" type="SystemSpawnPosition" use="optional" default="Global">
                                         <xs:annotation>
                                             <xs:documentation>
                                                 Where this system's agents spawn initially.
+                                                Global uses the AgentStartPosition from the base configuration.
                                             </xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
@@ -248,11 +261,12 @@
                                             </xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
-                                    <xs:attribute name="RespawnPosition" type="RespawnPosition" use="optional" default="None">
+                                    <xs:attribute name="RespawnPosition" type="SystemRespawnPosition" use="optional" default="Global">
                                         <xs:annotation>
                                             <xs:documentation>
                                                 Where this system's agents respawn after dying.
                                                 None means they do not respawn.
+                                                Global uses the AgentRespawnPosition from the base configuration.
                                             </xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
@@ -458,6 +472,87 @@
             <xs:documentation>Enumeration for agent respawn positions</xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
+            <xs:enumeration value="None">
+                <xs:annotation>
+                    <xs:documentation>The agent will not respawn</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RandomBorderLocation">
+                <xs:annotation>
+                    <xs:documentation>Agents respawn at a random border location</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RandomLocation">
+                <xs:annotation>
+                    <xs:documentation>Agents respawn at a random location</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RandomPOI">
+                <xs:annotation>
+                    <xs:documentation>Agents respawn at a random point of interest</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RandomCity">
+                <xs:annotation>
+                    <xs:documentation>Agents respawn at a random city</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Mixed">
+                <xs:annotation>
+                    <xs:documentation>Agents respawn at a mix of different locations</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="SystemSpawnPosition">
+        <xs:annotation>
+            <xs:documentation>Enumeration for per-system starting positions, Global defers to the base configuration</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Global">
+                <xs:annotation>
+                    <xs:documentation>Use the AgentStartPosition from the base configuration</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RandomBorderLocation">
+                <xs:annotation>
+                    <xs:documentation>Agents start at a random border location</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RandomLocation">
+                <xs:annotation>
+                    <xs:documentation>Agents start at a random location</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RandomPOI">
+                <xs:annotation>
+                    <xs:documentation>Agents start at a random point of interest</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RandomCity">
+                <xs:annotation>
+                    <xs:documentation>Agents start at a random city</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Mixed">
+                <xs:annotation>
+                    <xs:documentation>Agents start at a mix of different locations</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="SystemRespawnPosition">
+        <xs:annotation>
+            <xs:documentation>Enumeration for per-system respawn positions, Global defers to the base configuration</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Global">
+                <xs:annotation>
+                    <xs:documentation>Use the AgentRespawnPosition from the base configuration</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
             <xs:enumeration value="None">
                 <xs:annotation>
                     <xs:documentation>The agent will not respawn</xs:documentation>
