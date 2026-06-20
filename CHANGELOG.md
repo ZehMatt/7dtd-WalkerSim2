@@ -1,4 +1,5 @@
 # 2.0.5 (in progress)
+- Fix: Map info parsing no longer throws on 3.0 maps that nest property groups without `name`/`value` attributes in `map_info.xml`.
 - Change: Spawn and respawn locations can again be configured globally via `AgentStartPosition` and `AgentRespawnPosition`. Each movement system still has its own `StartPosition`/`RespawnPosition`, which now default to `Global` and fall back to the global setting unless overridden with a specific location.
 
 # 2.0.4

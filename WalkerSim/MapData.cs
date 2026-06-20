@@ -114,8 +114,17 @@ namespace WalkerSim
                     {
                         if (node.Name == "property")
                         {
-                            var name = node.Attributes.GetNamedItem("name").Value;
-                            var value = node.Attributes.GetNamedItem("value").Value;
+                            var nameAttr = node.Attributes.GetNamedItem("name");
+                            var valueAttr = node.Attributes.GetNamedItem("value");
+                            if (nameAttr == null || valueAttr == null)
+                            {
+                                // Skip this property, we don't care, 3.0 added class to identify sub properties instead of fucking
+                                // doing xml right.
+                                continue;
+                            }
+
+                            var name = nameAttr.Value;
+                            var value = valueAttr.Value;
 
                             if (name == "Name")
                             {
