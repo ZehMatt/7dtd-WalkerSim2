@@ -1,4 +1,6 @@
 # 2.0.6 (in progress)
+- Fix: At low `PopulationStartPercent` entire biomes could start empty, the initial population is now allocated proportionally per movement system before being split across groups so every biome gets its share.
+- Fix: Respawn position no longer incorrectly defaults to none.
 
 # 2.0.5
 - Fix: Map info parsing no longer throws on 3.0 maps that nest property groups without `name`/`value` attributes in `map_info.xml`.

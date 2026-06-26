@@ -658,20 +658,100 @@ namespace WalkerSim
             }
             else
             {
-                int assigned = 0;
+                int systemCount = 0;
                 for (int g = 0; g < _state.GroupCount; g++)
                 {
-                    int groupTarget = (int)(_groupSizes[g] * popFraction);
-                    activeForGroup[g] = groupTarget;
-                    assigned += groupTarget;
-                }
-                // Distribute any rounding remainder across groups.
-                for (int g = 0; assigned < targetTotal && g < _state.GroupCount; g++)
-                {
-                    if (activeForGroup[g] < _groupSizes[g])
+                    if (_groupToSystemIndex[g] + 1 > systemCount)
                     {
-                        activeForGroup[g]++;
-                        assigned++;
+                        systemCount = _groupToSystemIndex[g] + 1;
+                    }
+                }
+
+                var systemTotal = new int[systemCount];
+                for (int g = 0; g < _state.GroupCount; g++)
+                {
+                    systemTotal[_groupToSystemIndex[g]] += _groupSizes[g];
+                }
+
+                // Level 1: proportional active count per system, with the rounding
+                // remainder going to the systems with the largest fractional shortfall.
+                // Allocating per system first keeps each biome represented even when its
+                // share is split into many small groups that would each truncate to zero.
+                var activeForSystem = new int[systemCount];
+                var systemRemainder = new float[systemCount];
+                int assigned = 0;
+                for (int s = 0; s < systemCount; s++)
+                {
+                    float ideal = systemTotal[s] * popFraction;
+                    activeForSystem[s] = (int)ideal;
+                    systemRemainder[s] = ideal - activeForSystem[s];
+                    assigned += activeForSystem[s];
+                }
+                while (assigned < targetTotal)
+                {
+                    int best = -1;
+                    float bestRemainder = 0f;
+                    for (int s = 0; s < systemCount; s++)
+                    {
+                        if (activeForSystem[s] < systemTotal[s] && systemRemainder[s] > bestRemainder)
+                        {
+                            bestRemainder = systemRemainder[s];
+                            best = s;
+                        }
+                    }
+                    if (best < 0)
+                    {
+                        break;
+                    }
+                    activeForSystem[best]++;
+                    systemRemainder[best] = 0f;
+                    assigned++;
+                }
+
+                // Level 2: spread each system's active count across its own groups.
+                for (int s = 0; s < systemCount; s++)
+                {
+                    int systemActive = activeForSystem[s];
+                    if (systemActive <= 0 || systemTotal[s] <= 0)
+                    {
+                        continue;
+                    }
+
+                    float groupFraction = (float)systemActive / systemTotal[s];
+                    int systemAssigned = 0;
+                    for (int g = 0; g < _state.GroupCount; g++)
+                    {
+                        if (_groupToSystemIndex[g] != s)
+                        {
+                            continue;
+                        }
+                        int groupTarget = (int)(_groupSizes[g] * groupFraction);
+                        activeForGroup[g] = groupTarget;
+                        systemAssigned += groupTarget;
+                    }
+                    while (systemAssigned < systemActive)
+                    {
+                        int best = -1;
+                        float bestRemainder = -1f;
+                        for (int g = 0; g < _state.GroupCount; g++)
+                        {
+                            if (_groupToSystemIndex[g] != s || activeForGroup[g] >= _groupSizes[g])
+                            {
+                                continue;
+                            }
+                            float rem = _groupSizes[g] * groupFraction - activeForGroup[g];
+                            if (rem > bestRemainder)
+                            {
+                                bestRemainder = rem;
+                                best = g;
+                            }
+                        }
+                        if (best < 0)
+                        {
+                            break;
+                        }
+                        activeForGroup[best]++;
+                        systemAssigned++;
                     }
                 }
             }

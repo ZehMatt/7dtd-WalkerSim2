@@ -128,7 +128,7 @@ namespace WalkerSim
         public bool EnhancedSoundAwareness = true;
         public float SoundDistanceScale = 1.0f;
         public WorldLocation StartPosition = WorldLocation.RandomLocation;
-        public WorldLocation RespawnPosition = WorldLocation.None;
+        public WorldLocation RespawnPosition = WorldLocation.RandomBorderLocation;
         public bool PauseDuringBloodmoon = true;
         public uint SpawnProtectionTime = 300;
         public bool InfiniteZombieLifetime = false;
@@ -235,7 +235,7 @@ namespace WalkerSim
                 config.EnhancedSoundAwareness = ReadBool(root, "ws:EnhancedSoundAwareness", nsMgr, true);
                 config.SoundDistanceScale = ReadFloat(root, "ws:SoundDistanceScale", nsMgr, 1.0f);
                 config.StartPosition = ReadEnum(root, "ws:AgentStartPosition", nsMgr, WorldLocation.RandomLocation);
-                config.RespawnPosition = ReadEnum(root, "ws:AgentRespawnPosition", nsMgr, WorldLocation.None);
+                config.RespawnPosition = ReadEnum(root, "ws:AgentRespawnPosition", nsMgr, WorldLocation.RandomBorderLocation);
                 config.PauseDuringBloodmoon = ReadBool(root, "ws:PauseDuringBloodmoon", nsMgr, true);
                 config.SpawnProtectionTime = ReadUInt(root, "ws:SpawnProtectionTime", nsMgr, 300);
                 config.InfiniteZombieLifetime = ReadBool(root, "ws:InfiniteZombieLifetime", nsMgr, false);
