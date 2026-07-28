@@ -20,7 +20,7 @@ Example path:
 
 ## Step 2: Download and Extract WalkerSim2
 
-1. Download the latest `WalkerSim2-{version}.zip` from the [Releases](https://github.com/ZehMatt/WalkerSim2/releases) page.
+1. Download the latest `WalkerSim2-{version}.zip` from the [Releases](https://github.com/ZehMatt/7dtd-WalkerSim2/releases) page.
 2. Use an extraction tool like **7-Zip** or **WinRAR** to unpack the archive.
 3. You should get a folder named:
 > ```WalkerSim2```
